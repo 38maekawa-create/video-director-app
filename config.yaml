@@ -1,0 +1,42 @@
+# 映像品質追求・自動ディレクションシステム設定
+
+# AI開発5（動画ナレッジシステム）との連携
+ai_dev_5:
+  # 処理済み文字起こしデータのパス
+  knowledge_path: ~/TEKO/knowledge/raw-data/video_transcripts/
+  # AI開発5のプロジェクトパス
+  project_path: ~/AI開発5/
+
+# ディレクションレポート出力設定
+report:
+  output_dir: ./output/reports/
+  format: markdown  # markdown / html / pdf
+  # 動画編集者用マニュアルのパス（ユーザーが配置）
+  editor_manual_path: ./config/editor_manual/
+
+# 映像品質トラッキング設定
+tracker:
+  # トラッキング対象
+  targets:
+    - type: youtube
+      enabled: true
+    - type: teko_interview
+      enabled: true
+  # 分析結果の格納先
+  analysis_output_dir: ./output/tracking/
+
+# 映像品質ナレッジベース設定
+knowledge:
+  # ナレッジDB格納先
+  db_path: ./data/knowledge.db
+  # 生データ格納先（生データ格納プロトコル準拠）
+  raw_data_path: ~/TEKO/knowledge/raw-data/video-direction/
+  # 分析カテゴリ
+  categories:
+    - cut_transition    # カット割り
+    - color_grading     # 色彩・カラーグレーディング
+    - typography        # テロップ・タイポグラフィ
+    - bgm_sound         # BGM・サウンドデザイン
+    - camera_work       # カメラワーク
+    - composition       # 構図・レイアウト
+    - pacing            # テンポ・ペーシング

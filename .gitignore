@@ -1,28 +1,8 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.egg-info/
-dist/
-build/
-.eggs/
-
-# 環境
-.env
-.venv/
 venv/
-env/
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-
-# 出力データ
+__pycache__/
+*.pyc
+.env
+*.egg-info/
+.pytest_cache/
 output/
 data/
-
-# ログ
-*.log

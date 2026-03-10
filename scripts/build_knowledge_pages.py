@@ -21,7 +21,7 @@ DEST_DIR = WEBAPP_DIR / "knowledge-pages"
 OUTPUT_JS = WEBAPP_DIR / "knowledge-pages-map.js"
 
 
-def extract_guest_name(filename: str) -> str | None:
+def extract_guest_name(filename: str) -> Optional[str]:
     """ファイル名からゲスト名を抽出する。
     パターン: YYYYMMDD_YYYYMMDD撮影_ゲスト名さん*.html
     """
@@ -42,7 +42,7 @@ def extract_guest_name(filename: str) -> str | None:
     return raw
 
 
-def find_best_file(guest_name: str, files_by_guest: dict) -> str | None:
+def find_best_file(guest_name: str, files_by_guest: dict) -> Optional[str]:
     """同一ゲストの複数ファイルから最適なものを選択する。
     - fix_ 付きを優先（修正版）
     - _clean 付きを優先（クリーン版）

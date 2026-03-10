@@ -117,8 +117,16 @@ def _match_guest_name(guest_name: str, sheet_title: str) -> bool:
         if name_clean.lower() == title_name.lower():
             return True
 
-    # 部分一致（ゲスト名がタイトルに含まれる）
-    if name_clean and name_clean in title_clean:
+    # 番号+名前形式（例: "53.izuさん"）
+    num_match = re.search(r"\d+[._]\s*(.+?)(?:さん)?$", title_clean)
+    if num_match:
+        title_name = num_match.group(1).strip()
+        if name_clean.lower() == title_name.lower():
+            return True
+
+    # 部分一致（ゲスト名がタイトルに含まれる、大文字小文字無視）
+    # 1文字の場合は誤マッチ防止のためスキップ
+    if name_clean and len(name_clean) >= 2 and name_clean.lower() in title_clean.lower():
         return True
 
     return False

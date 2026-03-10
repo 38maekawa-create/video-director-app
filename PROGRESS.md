@@ -1,10 +1,20 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-10 (Phase 2 全9機能 実装完了)
+2026-03-11 02:00 (WebアプリMVP実装完了)
 
 ## 現在の作業状態
-Phase 2 全機能実装完了（9/9機能） → Phase 3（映像トラッキング+学習）待ち
+**本番運用可能** — E2Eテスト完了、GitHub Pages公開+スプシ連携動作確認済み。**WebアプリMVP完成**（webapp/、PWA対応） → Phase 4（opencv/ffmpeg実連携+映像トラッキング+学習）待ち
+
+### WebアプリMVP（2026-03-11 完了）
+- `webapp/` ディレクトリにHTML+CSS+JS（フレームワーク不使用）でNetflix風UIを再現
+- 4画面実装: ホーム（ヒーロー+カルーセル）、レポート詳細（タブ+折りたたみ）、履歴（フィルタ+日付グループ化）、品質ダッシュボード（Canvas折れ線グラフ）
+- PWA対応: manifest.json + service-worker.js + アイコン（192/512）
+- 録音モーダル（中央赤丸ボタン）
+- レスポンシブ対応（iPhone SE〜Pro Max、タブレット中央寄せ）
+- フォント: ゲスト名=Georgia太字letter-spacing:3px、タイトル=Georgiaイタリックweight:300、ヘッダー=コンデンスド赤#E50914 letter-spacing:4px
+- ローカル動作確認済み（python3 -m http.server 8080、全ファイルHTTP 200、JS構文チェックOK）
+- 残: GitHub Pagesデプロイ設定（なおとさん確認後）
 
 ## ここまでの作業サマリー
 
@@ -66,103 +76,78 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 | NEW-2 | ハイライトカットポイントディレクション | `src/video_direction/analyzer/highlight_cutter.py` | 343行 |
 | B-1 | 7要素品質スコアリング（推定版） | `src/video_direction/analyzer/quality_scorer.py` | 479行 |
 
-#### Phase 2 Tier 2: テロップチェック（1機能 — 新規）
+#### Phase 2 Tier 2-4（6機能 — 新規）
 
-| 機能ID | 機能名 | ファイル | 行数 |
-|--------|--------|----------|------|
-| C-2 | テロップ自動チェック | `src/video_direction/analyzer/telop_checker.py` | 387行 |
+| 機能ID | 機能名 | ファイル |
+|--------|--------|----------|
+| C-2 | テロップ自動チェック | `src/video_direction/analyzer/telop_checker.py` |
+| C-1 | フレーム画像マルチモデル評価（スタブ） | `src/video_direction/analyzer/frame_evaluator.py` |
+| C-3 | 音声品質自動評価（スタブ） | `src/video_direction/analyzer/audio_evaluator.py` |
+| B-2 | 品質トラッキングダッシュボード | `src/video_direction/tracker/quality_dashboard.py` |
+| B-3 | 編集者別スキルマトリクス | `src/video_direction/tracker/skill_matrix.py` |
+| NEW-3 | 編集後動画FB | `src/video_direction/analyzer/post_edit_feedback.py` |
 
-- フォント統一性・サイズ適正・配置の一貫性チェック
-- 誤字脱字検出（括弧不一致、冗長表現、数字表記ゆれ）
-- テロップ候補テキストの文字数チェック（推奨12文字以下）
-- テロップ間の一貫性スコア（0-100）
+### E2E完走テスト（2026-03-10 完了）
 
-#### Phase 2 Tier 3: 映像・音声解析（2機能 — 新規、opencv/ffmpegスタブ対応）
+#### direction-pages リポジトリ
+- リポジトリ: `38maekawa-create/direction-pages`（既存、GitHub Pages有効）
+- 公開URL: https://38maekawa-create.github.io/direction-pages/
+- 32件のHTMLディレクションレポートを公開中
 
-| 機能ID | 機能名 | ファイル | 行数 |
-|--------|--------|----------|------|
-| C-1 | フレーム画像マルチモデル評価 | `src/video_direction/analyzer/frame_evaluator.py` | 397行 |
-| C-3 | 音声品質自動評価 | `src/video_direction/analyzer/audio_evaluator.py` | 459行 |
+#### GitHub Pages E2Eテスト結果
+- 全30件のHTMLレポートを生成 → direction-pagesにpush
+- 全ページHTTP 200確認（index.html + 個別レポート）
+- ブラウザ表示正常（日本語・CSS・レスポンシブ対応）
 
-**C-1 フレーム画像マルチモデル評価**:
-- 代表フレームをClaude Opus 4.6 + GPT-5.4で独立評価する設計
-- 両モデル合意 → 「指摘」に昇格、不合意 → 「要検討」
-- 評価軸5つ: 構図、照明、色バランス、フォーカス、フレーミング
-- Phase 2はスタブ評価（文字起こしベースの推定）。Phase 3でopencv+API実装
+#### スプシ連携E2Eテスト結果
+- スプレッドシートID: `1bW_qb13p747xoa2yf7RHaccNVTFCMxV8a5CjGdNqI6I`
+- タブ: 【インタビュー対談動画】管理（84件登録済み）
+- ディレクションURL列（65列目）に書き込み成功（Izu/PAY/RYO）
+- 既存URL上書き防止機能正常動作
 
-**C-3 音声品質自動評価**:
-- BGMと会話音声のバランス + ノイズレベル検出 + SE適切性評価
-- 評価軸5つ: 音声明瞭度、BGMバランス、ノイズレベル、効果音品質、音量一貫性
-- グレード判定: S/A/B/C/D
-- Phase 2はスタブ評価（文字起こしベースの推定）。Phase 3でffmpeg実装
+#### バグ修正（E2Eテスト中に発見・修正）
+1. **main.py**: ゲスト名フォールバック追加（プロファイル空の場合にタイトルから抽出）
+2. **sheets_manager.py**: ゲスト名マッチングをcase-insensitive化 + 番号形式マッチング追加 + 1文字名ガード追加
 
-#### Phase 2 Tier 4: ダッシュボード + FB（3機能 — 新規）
+#### 自走修正3サイクル完了（E2E）
+- **サイクル1**: コード品質検証。5件検出（中1件: 1文字誤マッチ → 修正、低2件、情報2件）
+- **サイクル2**: 全30件網羅性チェック。不明ゲスト0件（修正前2件→解消）。スプシマッチ15/30件（残りはスプシ側未登録）
+- **サイクル3**: ユーザー視点検証。GitHub Pages・個別レポートの表示品質確認
+- 検証レポート: `output/E2E_VERIFICATION_REPORT.md`
 
-| 機能ID | 機能名 | ファイル | 行数 |
-|--------|--------|----------|------|
-| B-2 | 品質トラッキングダッシュボード | `src/video_direction/tracker/quality_dashboard.py` | 364行 |
-| B-3 | 編集者別スキルマトリクス | `src/video_direction/tracker/skill_matrix.py` | 384行 |
-| NEW-3 | 編集後動画FB | `src/video_direction/analyzer/post_edit_feedback.py` | 287行 |
+### Phase 4 計画書作成（2026-03-10 完了）
+- `docs/PHASE4_PLAN.md` 作成
+- 12機能の実装計画・優先順位・依存関係を整理
+- P0: C-1/C-3実映像対応（opencv/ffmpeg）
+- P1: 人間FB学習 + 巡回監査 + 通知
+- P2-P3: 映像トラッキング + 管理 + インフラ
 
-**B-2 品質トラッキングダッシュボード**:
-- 動画ごとの品質スコア時系列推移（初稿→修正1→修正2→完成版）
-- 改善率の自動計算
-- 編集者統計・グレード分布・上位/下位ランキング
-- JSON永続化（~/TEKO/knowledge/raw-data/video-direction/quality_dashboard.json）
-
-**B-3 編集者別スキルマトリクス**:
-- B-1の7要素に対応した7次元スキル評価
-- 指数移動平均（alpha=0.3）による漸進的スキル更新
-- 得意/苦手の自動判定
-- タスクアサイン時の最適マッチング提案
-- 編集者ランキング・スキル成長推移・比較表
-- JSON永続化（~/TEKO/knowledge/raw-data/video-direction/skill_matrix.json）
-
-**NEW-3 編集後動画FB**:
-- B-1基準の品質スコアリング
-- ハイライトシーンの取捨選択チェック（重要シーン除外時に警告）
-- ゲスト分類（層a/b/c）に基づくコンテンツ適正チェック
-- テロップ誤字チェック（C-2連携）
-- コンテンツバランスの多様性チェック
-
-#### Phase 2 テスト一覧
-
-| テストファイル | テスト数 | 対象機能 |
-|---------------|---------|----------|
-| test_clip_cutter.py | 15 | E-1改 |
-| test_highlight_cutter.py | 13 | NEW-2 |
-| test_quality_scorer.py | 18 | B-1 |
-| test_telop_checker.py | 26 | C-2 |
-| test_frame_evaluator.py | 25 | C-1 |
-| test_audio_evaluator.py | 31 | C-3 |
-| test_quality_dashboard.py | 21 | B-2 |
-| test_skill_matrix.py | 20 | B-3 |
-| test_post_edit_feedback.py | 15 | NEW-3 |
-| test_e2e_pipeline.py | 9 | E2E統合 |
-| （Phase 1既存テスト） | 50 | Phase 1 |
-| （Phase 3既存テスト） | 7 | Phase 3 |
-| **合計** | **250** | |
-
-#### 自走修正3サイクル完了（Phase 2全体）
-- **サイクル1**: 全6新規ファイルの構文チェック・インポートチェック・クロス依存チェック通過
-- **サイクル2**: Phase 2全9機能の実装状況確認。9/9機能+テスト全件実装済み。要件充足度100%
-- **サイクル3**: 実データに近いIzuさんデータでE2E統合テスト。全7モジュール連携して正常動作
+### スマホアプリ UI Netflix風リデザイン（2026-03-11 完了）
+- タスク指示書: `TASK_UI_NETFLIX_REDESIGN.md`
+- 全5画面をNetflix風ダークUI（黒#000000 + 赤#E50914 + 白）に全面書き換え
+- 画面1（ホーム）: ヒーローバナー + カルーセル横スクロール + 検索バー
+- 画面2（レポート詳細）: ゲスト情報ヘッダー + タブ切替 + 折りたたみセクション + Vimeoリンク + 下部固定FBボタン
+- 画面3（音声FB）: 全画面モーダル + 大きな録音ボタン + 波形アニメーション + Before/After変換UI
+- 画面4（FB履歴）: 日付グループ化タイムライン + フィルタ（すべて/未送信）+ 検索
+- 画面5（品質ダッシュボード）: 大きなスコア表示 + 折れ線グラフ + カテゴリ別スコア + AI改善提案
+- カスタムタブバー: 中央に大きな赤い録音ボタン（Instagram風）
+- モックデータで全画面動作確認
+- Xcodeビルド成功（iPhone 17 Simulator, iOS 26.3.1）
 
 ## 未完了の作業
-- **GitHub Pages公開のE2Eテスト**: 実環境でのpublisher.py動作確認
-- **スプシ連携のE2Eテスト**: 実環境でのsheets_manager.py動作確認
-- **direction-pages/ GitHubリポジトリ作成**
+なし（E2Eテスト完走。Phase 4は次フェーズ）
 
 ## 次にやるべき作業（優先順位付き）
-1. **実環境テスト** — GitHub Pages公開とスプシ連携のE2E（direction-pagesリポジトリ作成が前提）
-2. **Phase 3 映像トラッキング+学習（4機能）** — NEW-4/5/6/7
-3. **Phase 4 管理+インフラ（6機能）** — NEW-8, F-3, J-3/4/5/6
-4. **C-1/C-3の実映像対応** — opencv-python/ffmpegインストール後に実測値への切り替え
+1. **Phase 4A: C-1/C-3実映像対応** — opencv/ffmpegインストール→スタブから実測値への切り替え
+2. **Phase 4B: 映像トラッキング+学習** — NEW-4/5/6/7（外部映像収集・分析・FB学習）
+3. **Phase 4C: 管理+インフラ** — NEW-8, F-3, J-3/4/5/6（編集者管理・巡回監査・通知・PDCA）
+4. **スプシマッチング精度改善** — 15/30 → 目標25/30以上
 
 ## 既知の問題・課題
 1. **層cの該当者0件**: 現在のデータセット30件に自営業家系の該当者がいない。追加データで検証が必要
 2. **Python 3.9 EOL警告**: google-auth, urllib3がPython 3.9サポート終了の警告を出す
 3. **LLM分析はオプション**: Claude Sonnet APIキーがない場合でも基本機能は動作するが、追加分析は生成されない
-4. **ディレクションマニュアルが103行と短い**: 実運用でルールが追加される前提で拡張可能な設計にしている
-5. **品質スコアリングは推定値**: Phase 2実装は文字起こし・メタデータベースの推定。C-1（opencv）/C-3（ffmpeg）実装後に実測値に切り替え
-6. **C-1/C-3はスタブ実装**: opencv/ffmpegの実際のインストールとAPI連携はPhase 3以降。現在は文字起こしベースの推定で動作
+4. **品質スコアリングは推定値**: Phase 2実装は文字起こし・メタデータベースの推定。C-1（opencv）/C-3（ffmpeg）実装後に実測値に切り替え
+5. **C-1/C-3はスタブ実装**: opencv/ffmpegの実際のインストールとAPI連携はPhase 4A。現在は文字起こしベースの推定で動作
+6. **スプシマッチング**: 30件中15件マッチ。ゲスト名の正規化（括弧・敬称除去）やスプシ側の登録追加で改善可能
+7. **index.htmlのURLエンコーディング**: 日本語ファイル名がhrefにURLエンコードなしで入る。主要ブラウザでは動作するがPhase4で改善予定

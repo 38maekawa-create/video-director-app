@@ -13,6 +13,7 @@ from __future__ import annotations
 """
 
 import argparse
+import re
 import sys
 import os
 from pathlib import Path
@@ -99,10 +100,16 @@ def process_single_file(
         direction_timeline=direction_timeline,
     )
 
-    guest_name = video_data.profiles[0].name if video_data.profiles else "不明"
+    # ゲスト名の取得（プロファイル → タイトルからフォールバック）
+    if video_data.profiles:
+        guest_name = video_data.profiles[0].name
+    elif video_data.title:
+        name_match = re.search(r"撮影_(.+?)(?:さん|：|$)", video_data.title)
+        guest_name = (name_match.group(1) + "さん") if name_match else "不明"
+    else:
+        guest_name = "不明"
 
     # 撮影日を取得（ファイル名から）
-    import re
     date_match = re.search(r"(\d{8})撮影", filepath.name)
     date_str = date_match.group(1) if date_match else datetime.now().strftime("%Y%m%d")
 

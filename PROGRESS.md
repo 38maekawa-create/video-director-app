@@ -166,6 +166,7 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 - Xcodeビルド成功（iPhone 17 Simulator, iOS 26.3.1）
 
 ### before / after 統合カルテ v1.1（2026-03-11 進行中）
+- mock relay server + send CLI で relay ローカル往復成功（sample request 1件 / postedCount=1）
 - root正本の `data.js` / `app.js` / `styles.css` を拡張
 - 一覧カードで `素材 / 編集後 / KB / Vimeo / FB件数 / 最新FB` を可視化
 - 詳細ページを `概要 / ディレクション / 素材 / 編集後 / FB / 評価 / ナレッジ` へ拡張
@@ -178,9 +179,13 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 - `relay送信用 curl` と Mac側中継APIリクエストのプレビュー/コピー導線を追加
 - `docs/VIMEO_RELAY_ADAPTER_SPEC.md` を追加し、Mac側 relay adapter の入出力仕様を固定
 - `scripts/send_vimeo_relay_package.py` を追加し、relay request JSON を POST するCLI叩き台を作成
+- `scripts/mock_vimeo_relay_server.py` を追加し、Mac側 relay adapter の最小モック受け口を用意
 
 ## 未完了の作業
-なし（E2Eテスト完走。Phase 4は次フェーズ）
+- Mac側 relay adapter の本実装
+- Vimeo API 実コメント投稿
+- 音声FBの実録音 / STT 本線接続
+- 映像品質学習の本線実装
 
 ## 次にやるべき作業（優先順位付き）
 1. **Phase 4A: C-1/C-3実映像対応** — opencv/ffmpegインストール→スタブから実測値への切り替え

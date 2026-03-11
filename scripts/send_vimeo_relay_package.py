@@ -1,15 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Send a relay request JSON to the Mac-side Vimeo relay adapter.
-
-Usage:
-  python3 scripts/send_vimeo_relay_package.py path/to/relay-request.json
-  python3 scripts/send_vimeo_relay_package.py path/to/relay-request.json --dry-run
-
-Environment:
-  VIMEO_RELAY_ENDPOINT  Optional override for request endpoint
-  VIMEO_RELAY_TOKEN     Bearer token when authMode is relay_token
-"""
+"""Send a relay request JSON to the Mac-side Vimeo relay adapter."""
 
 from __future__ import annotations
 
@@ -72,12 +63,10 @@ def main() -> int:
         status, response_text = post_payload(endpoint, payload, headers)
     except urllib.error.HTTPError as exc:
         sys.stderr.write(exc.read().decode('utf-8', errors='replace'))
-        sys.stderr.write('
-')
+        sys.stderr.write('\n')
         return exc.code or 1
     except urllib.error.URLError as exc:
-        sys.stderr.write(f'relay request failed: {exc}
-')
+        sys.stderr.write(f'relay request failed: {exc}\n')
         return 1
 
     print(response_text)

@@ -37,7 +37,9 @@ const MockData = {
       },
       knowledge: {
         summary: '冒頭フックを強くし、判断基準を先出しする構成が有効。',
-        transcriptAvailable: true
+        transcriptAvailable: true,
+        highlights: ['冒頭15秒で結論先出し', '判断基準を先出し', '中盤の事例整理が肝'],
+        transcriptPreview: '意思決定の基準を最初に提示してから、具体事例に入ると視聴維持が安定する。'
       },
       vimeoReview: {
         url: '#vimeo-vd-001',
@@ -81,7 +83,9 @@ const MockData = {
       },
       knowledge: {
         summary: '採用系は感情の乗る表情カットを早めに入れると持続率が上がる。',
-        transcriptAvailable: true
+        transcriptAvailable: true,
+        highlights: ['表情カットを早めに入れる', '導入で現場空気感を掴ませる', '音声の抜けを先に整える'],
+        transcriptPreview: '採用現場の温度感は強いので、導入で空気感を見せ切ってから情報に入る方が刺さる。'
       },
       vimeoReview: {
         url: '#vimeo-vd-002',
@@ -125,7 +129,9 @@ const MockData = {
       },
       knowledge: {
         summary: 'ブランドムービーは情緒だけでなく、視聴者の判断材料を一つ入れると強い。',
-        transcriptAvailable: true
+        transcriptAvailable: true,
+        highlights: ['情緒だけで押し切らない', '冒頭フックを一段強く', '判断材料を1つ差し込む'],
+        transcriptPreview: '世界観訴求だけでなく、視聴者が判断できる具体要素を一つ置くとブランド理解が深まる。'
       },
       vimeoReview: {
         url: '#vimeo-vd-003',
@@ -169,7 +175,9 @@ const MockData = {
       },
       knowledge: {
         summary: 'イベント系は冒頭で全体空気感を掴ませ、その後に人物寄りを差すと良い。',
-        transcriptAvailable: true
+        transcriptAvailable: true,
+        highlights: ['冒頭で全体空気感を掴ませる', '人物寄りで感情を補う', 'ハイライトの切り出し精度を維持'],
+        transcriptPreview: 'イベントダイジェストは雰囲気だけでなく、人の熱量が見える寄りカットで記憶に残る。'
       },
       vimeoReview: {
         url: '#vimeo-vd-004',
@@ -213,7 +221,9 @@ const MockData = {
       },
       knowledge: {
         summary: '入門系は章立ての可視化と、結論の先出しが理解効率を上げる。',
-        transcriptAvailable: true
+        transcriptAvailable: true,
+        highlights: ['章立てを可視化', '結論を先出し', '初心者の理解負荷を下げる'],
+        transcriptPreview: '入門動画は情報密度より理解速度が大事なので、章立てと結論先出しが効く。'
       },
       vimeoReview: {
         url: '#vimeo-vd-005',

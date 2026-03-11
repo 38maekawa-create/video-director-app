@@ -310,70 +310,126 @@
     return timestampToSeconds(duration);
   }
 
-  function getProjectKnowledgeFile(project) {
-    if (typeof findKnowledgePage !== 'function') return null;
-    return findKnowledgePage(project.guestName);
-  }
+function getProjectKnowledgeFile(project) {
+  if (typeof findKnowledgePage !== 'function') return null;
+  return findKnowledgePage(project.guestName);
+}
 
-  function renderOverviewSection() {
-    const p = currentProject;
-    const feedbackItems = getProjectFeedbackItems(p);
-    const knowledgeFile = getProjectKnowledgeFile(p);
-    const container = document.getElementById('report-sections');
+function wireReportTabJumps(container) {
+  container.querySelectorAll('[data-report-tab]').forEach(button => {
+    button.addEventListener('click', () => {
+      currentReportTab = button.dataset.reportTab;
+      renderReport();
+    });
+  });
+}
 
-    container.innerHTML = `
-      <div class="report-stack">
-        <div class="info-card">
-          <div class="info-card-title">案件サマリー</div>
-          <div class="info-grid two-col">
-            <div class="info-pill">
-              <span class="info-pill-label">videoId</span>
-              <span class="info-pill-value">${p.videoId}</span>
-            </div>
-            <div class="info-pill">
-              <span class="info-pill-label">Vimeo</span>
-              <span class="info-pill-value">${p.vimeoReview?.statusLabel || '未設定'}</span>
-            </div>
-            <div class="info-pill">
-              <span class="info-pill-label">素材</span>
-              <span class="info-pill-value">${p.sourceVideo?.duration || '-'}</span>
-            </div>
-            <div class="info-pill">
-              <span class="info-pill-label">FB件数</span>
-              <span class="info-pill-value">${feedbackItems.length}</span>
-            </div>
+function renderOverviewSection() {
+  const p = currentProject;
+  const feedbackItems = getProjectFeedbackItems(p);
+  const pendingItems = feedbackItems.filter(item => !item.isSent || item.syncState !== 'synced');
+  const knowledgeFile = getProjectKnowledgeFile(p);
+  const knowledgeHighlights = p.knowledge?.highlights || [];
+  const container = document.getElementById('report-sections');
+
+  container.innerHTML = `
+    <div class="report-stack">
+      <div class="info-card">
+        <div class="info-card-title">案件サマリー</div>
+        <div class="info-grid two-col">
+          <div class="info-pill">
+            <span class="info-pill-label">videoId</span>
+            <span class="info-pill-value">${p.videoId}</span>
           </div>
-          <div class="summary-callout">
-            ${p.feedbackSummary?.evaluation || 'この案件の評価サマリーは未設定です。'}
+          <div class="info-pill">
+            <span class="info-pill-label">Vimeo</span>
+            <span class="info-pill-value">${p.vimeoReview?.statusLabel || '未設定'}</span>
+          </div>
+          <div class="info-pill">
+            <span class="info-pill-label">素材</span>
+            <span class="info-pill-value">${p.sourceVideo?.duration || '-'}</span>
+          </div>
+          <div class="info-pill">
+            <span class="info-pill-label">FB件数</span>
+            <span class="info-pill-value">${feedbackItems.length}</span>
           </div>
         </div>
-
-        <div class="before-after-board">
-          <div class="ba-card">
-            <div class="ba-label">BEFORE</div>
-            <div class="ba-title">${p.sourceVideo?.title || '素材未設定'}</div>
-            <div class="ba-meta">${p.sourceVideo?.duration || '-'} / ${p.sourceVideo?.summary || ''}</div>
-          </div>
-          <div class="ba-arrow">→</div>
-          <div class="ba-card after">
-            <div class="ba-label">AFTER</div>
-            <div class="ba-title">${p.editedVideo?.title || '編集後未設定'}</div>
-            <div class="ba-meta">${p.editedVideo?.statusLabel || '-'} / 品質 ${p.editedVideo?.qualityScore ?? '-'}</div>
-          </div>
-        </div>
-
-        <div class="info-card">
-          <div class="info-card-title">連携状況</div>
-          <div class="link-list">
-            <div class="link-row"><span>素材URL</span><a href="${p.sourceVideo?.sourceUrl || '#'}" target="_blank">開く ↗</a></div>
-            <div class="link-row"><span>編集後URL</span><a href="${p.editedVideo?.editedUrl || '#'}" target="_blank">開く ↗</a></div>
-            <div class="link-row"><span>Vimeoレビュー</span><a href="${p.vimeoReview?.url || '#'}" target="_blank">開く ↗</a></div>
-            <div class="link-row"><span>ナレッジ</span><span>${knowledgeFile ? 'あり' : '未生成'}</span></div>
-          </div>
+        <div class="summary-callout">
+          ${p.feedbackSummary?.evaluation || 'この案件の評価サマリーは未設定です。'}
         </div>
       </div>
-    `;
-  }
+
+      <div class="before-after-board">
+        <div class="ba-card">
+          <div class="ba-label">BEFORE</div>
+          <div class="ba-title">${p.sourceVideo?.title || '素材未設定'}</div>
+          <div class="ba-meta">${p.sourceVideo?.duration || '-'} / ${p.sourceVideo?.summary || ''}</div>
+        </div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-card after">
+          <div class="ba-label">AFTER</div>
+          <div class="ba-title">${p.editedVideo?.title || '編集後未設定'}</div>
+          <div class="ba-meta">${p.editedVideo?.statusLabel || '-'} / 品質 ${p.editedVideo?.qualityScore ?? '-'}</div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">連携状況</div>
+        <div class="link-list">
+          <div class="link-row"><span>素材URL</span><a href="${p.sourceVideo?.sourceUrl || '#'}" target="_blank">開く ↗</a></div>
+          <div class="link-row"><span>編集後URL</span><a href="${p.editedVideo?.editedUrl || '#'}" target="_blank">開く ↗</a></div>
+          <div class="link-row"><span>Vimeoレビュー</span><a href="${p.vimeoReview?.url || '#'}" target="_blank">開く ↗</a></div>
+          <div class="link-row"><span>ナレッジ</span><span>${knowledgeFile ? 'あり' : '未生成'}</span></div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">素材ナレッジ要点</div>
+        <div class="summary-callout">${p.knowledge?.summary || '素材ナレッジ要約は未設定です。'}</div>
+        ${knowledgeHighlights.length ? `
+          <div class="highlight-chip-row">
+            ${knowledgeHighlights.map(item => `<span class="highlight-chip">${item}</span>`).join('')}
+          </div>
+        ` : ''}
+        ${p.knowledge?.transcriptPreview ? `<div class="transcript-preview">${p.knowledge.transcriptPreview}</div>` : ''}
+        <div class="detail-actions inline-actions">
+          <button class="detail-link detail-link-button" data-report-tab="knowledge">ナレッジを開く</button>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">レビュー同期キュー</div>
+        <div class="sync-summary-row">
+          <div class="sync-status-pill ${p.vimeoReview?.syncStatus || 'draftOnly'}">
+            ${p.vimeoReview?.statusLabel || '未設定'}
+          </div>
+          <div class="sync-meta">
+            <span>未送信 ${pendingItems.length}</span>
+            <span>最終同期 ${p.vimeoReview?.lastSyncedAt || '-'}</span>
+          </div>
+        </div>
+        ${pendingItems.length ? `
+          <div class="pending-review-list compact">
+            ${pendingItems.slice(0, 3).map(item => `
+              <div class="pending-review-item compact">
+                <div class="pending-review-time">${item.timestamp}</div>
+                <div class="pending-review-body">
+                  <div class="pending-review-title">${item.convertedText}</div>
+                  <div class="pending-review-sub">${renderSyncBadgeLabel(item.syncState)}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : `<div class="summary-callout">未送信レビューはありません。Vimeoとアプリのコメントは揃っています。</div>`}
+        <div class="detail-actions inline-actions">
+          <button class="detail-link detail-link-button" data-report-tab="feedback">FB / 評価へ</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  wireReportTabJumps(container);
+}
 
   function renderDirectionSection() {
     const container = document.getElementById('report-sections');
@@ -403,67 +459,97 @@
     });
   }
 
-  function renderSourceSection() {
-    const p = currentProject;
-    const container = document.getElementById('report-sections');
-    container.innerHTML = `
-      <div class="report-stack">
-        <div class="detail-card">
-          <div class="detail-card-header">
-            <span class="detail-chip">素材</span>
-            <span class="detail-score">${p.sourceVideo?.duration || '-'}</span>
+function renderSourceSection() {
+  const p = currentProject;
+  const knowledgeHighlights = p.knowledge?.highlights || [];
+  const container = document.getElementById('report-sections');
+  container.innerHTML = `
+    <div class="report-stack">
+      <div class="detail-card">
+        <div class="detail-card-header">
+          <span class="detail-chip">素材</span>
+          <span class="detail-score">${p.sourceVideo?.duration || '-'}</span>
+        </div>
+        <div class="detail-card-title">${p.sourceVideo?.title || '素材未設定'}</div>
+        <div class="detail-card-body">${p.sourceVideo?.summary || '素材要約はまだありません。'}</div>
+        ${knowledgeHighlights.length ? `
+          <div class="highlight-chip-row">
+            ${knowledgeHighlights.map(item => `<span class="highlight-chip">${item}</span>`).join('')}
           </div>
-          <div class="detail-card-title">${p.sourceVideo?.title || '素材未設定'}</div>
-          <div class="detail-card-body">${p.sourceVideo?.summary || '素材要約はまだありません。'}</div>
-          <div class="detail-actions">
-            <a href="${p.sourceVideo?.sourceUrl || '#'}" target="_blank" class="detail-link">素材を開く ↗</a>
-          </div>
+        ` : ''}
+        ${p.knowledge?.transcriptPreview ? `<div class="transcript-preview">${p.knowledge.transcriptPreview}</div>` : ''}
+        <div class="detail-actions">
+          <a href="${p.sourceVideo?.sourceUrl || '#'}" target="_blank" class="detail-link">素材を開く ↗</a>
+          <button class="detail-link detail-link-button" data-report-tab="knowledge">全文を見る</button>
         </div>
       </div>
-    `;
-  }
+    </div>
+  `;
 
-  function renderEditedSection() {
-    const p = currentProject;
-    const container = document.getElementById('report-sections');
-    const syncLabelMap = {
-      synced: 'Vimeo同期済み',
-      partial: '一部未送信あり',
-      draftOnly: '変換レビュー待ち'
-    };
+  wireReportTabJumps(container);
+}
 
-    container.innerHTML = `
-      <div class="report-stack">
-        <div class="detail-card">
-          <div class="detail-card-header">
-            <span class="detail-chip success">${p.editedVideo?.statusLabel || '編集後未設定'}</span>
-            <span class="detail-score">品質 ${p.editedVideo?.qualityScore ?? '-'}</span>
-          </div>
-          <div class="detail-card-title">${p.editedVideo?.title || '編集後未設定'}</div>
-          <div class="detail-card-body">${p.feedbackSummary?.latestFeedback || '最新フィードバックはまだありません。'}</div>
-          <div class="detail-actions">
-            <a href="${p.editedVideo?.editedUrl || '#'}" target="_blank" class="detail-link">編集後を開く ↗</a>
-            <a href="${p.vimeoReview?.url || '#'}" target="_blank" class="detail-link">Vimeoレビュー ↗</a>
-          </div>
+function renderEditedSection() {
+  const p = currentProject;
+  const container = document.getElementById('report-sections');
+  const feedbackItems = getProjectFeedbackItems(p);
+  const pendingItems = feedbackItems.filter(item => !item.isSent || item.syncState !== 'synced');
+  const syncLabelMap = {
+    synced: 'Vimeo同期済み',
+    partial: '一部未送信あり',
+    draftOnly: '変換レビュー待ち'
+  };
+
+  container.innerHTML = `
+    <div class="report-stack">
+      <div class="detail-card">
+        <div class="detail-card-header">
+          <span class="detail-chip success">${p.editedVideo?.statusLabel || '編集後未設定'}</span>
+          <span class="detail-score">品質 ${p.editedVideo?.qualityScore ?? '-'}</span>
         </div>
-        <div class="info-card">
-          <div class="info-card-title">レビュー同期状況</div>
-          <div class="sync-summary-row">
-            <div class="sync-status-pill ${p.vimeoReview?.syncStatus || 'draftOnly'}">
-              ${syncLabelMap[p.vimeoReview?.syncStatus] || '未設定'}
-            </div>
-            <div class="sync-meta">
-              <span>未送信 ${p.vimeoReview?.pendingCount ?? 0}</span>
-              <span>最終同期 ${p.vimeoReview?.lastSyncedAt || '-'}</span>
-            </div>
-          </div>
-          <div class="summary-callout">
-            スマホ音声FB → 変換レビュー → Vimeoコメント投稿 → アプリ内タイムライン同期、の流れをここで追えるようにする。
-          </div>
+        <div class="detail-card-title">${p.editedVideo?.title || '編集後未設定'}</div>
+        <div class="detail-card-body">${p.feedbackSummary?.latestFeedback || '最新フィードバックはまだありません。'}</div>
+        <div class="detail-actions">
+          <a href="${p.editedVideo?.editedUrl || '#'}" target="_blank" class="detail-link">編集後を開く ↗</a>
+          <a href="${p.vimeoReview?.url || '#'}" target="_blank" class="detail-link">Vimeoレビュー ↗</a>
         </div>
       </div>
-    `;
-  }
+      <div class="info-card">
+        <div class="info-card-title">レビュー同期状況</div>
+        <div class="sync-summary-row">
+          <div class="sync-status-pill ${p.vimeoReview?.syncStatus || 'draftOnly'}">
+            ${syncLabelMap[p.vimeoReview?.syncStatus] || '未設定'}
+          </div>
+          <div class="sync-meta">
+            <span>未送信 ${pendingItems.length}</span>
+            <span>最終同期 ${p.vimeoReview?.lastSyncedAt || '-'}</span>
+          </div>
+        </div>
+        <div class="summary-callout">
+          スマホ音声FB → 変換レビュー → Vimeoコメント投稿 → アプリ内タイムライン同期、の流れをここで追えるようにする。
+        </div>
+        ${pendingItems.length ? `
+          <div class="pending-review-list">
+            ${pendingItems.map(item => `
+              <div class="pending-review-item">
+                <div class="pending-review-time">${item.timestamp}</div>
+                <div class="pending-review-body">
+                  <div class="pending-review-title">${item.convertedText}</div>
+                  <div class="pending-review-sub">${item.referenceExample?.title || '参考事例なし'} / ${renderSyncBadgeLabel(item.syncState)}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+        <div class="detail-actions inline-actions">
+          <button class="detail-link detail-link-button" data-report-tab="feedback">FB / 評価へ</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  wireReportTabJumps(container);
+}
 
   function renderFeedbackSection() {
     const p = currentProject;

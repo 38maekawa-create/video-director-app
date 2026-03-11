@@ -1703,3 +1703,85 @@ html, body {
   color: var(--text-primary);
   border-color: var(--text-primary);
 }
+
+.highlight-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.highlight-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(229, 9, 20, 0.12);
+  border: 1px solid rgba(229, 9, 20, 0.2);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.transcript-preview {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.inline-actions {
+  margin-top: 14px;
+}
+
+.detail-link-button {
+  border: none;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.pending-review-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.pending-review-list.compact {
+  gap: 8px;
+}
+
+.pending-review-item {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pending-review-item.compact {
+  padding: 10px 12px;
+}
+
+.pending-review-time {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.pending-review-title {
+  font-size: 12px;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.pending-review-sub {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+}

@@ -1764,6 +1764,33 @@ html, body {
   display: block;
 }
 
+.modal-inline-actions {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 18px;
+}
+
+.modal-action-btn {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.modal-action-btn.primary {
+  background: linear-gradient(135deg, rgba(229, 9, 20, 0.95), rgba(255, 91, 46, 0.92));
+  border-color: rgba(255, 120, 100, 0.28);
+  box-shadow: 0 14px 30px rgba(229, 9, 20, 0.22);
+}
+
+.modal-action-btn:active {
+  transform: translateY(1px);
+}
+
 .modal-close {
   background: none;
   border: 1px solid var(--text-muted);

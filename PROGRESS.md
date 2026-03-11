@@ -181,11 +181,15 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 - `scripts/send_vimeo_relay_package.py` を追加し、relay request JSON を POST するCLI叩き台を作成
 - `scripts/mock_vimeo_relay_server.py` を追加し、Mac側 relay adapter の最小モック受け口を用意
 - `scripts/post_vimeo_review_comments.py` を追加し、Vimeo API 実投稿アダプタの叩き台を作成（dry-run対応）
+- `scripts/mock_vimeo_relay_server.py` を relay 本体寄りに拡張し、`mock / dry_run / post` のモード切替に対応
+- relay server(`dry_run`) -> `send_vimeo_relay_package.py` -> `post_vimeo_review_comments.py --dry-run` の往復を成功確認
+- 音声フィードバックモーダルに実マイク入力とリアルタイム文字起こしの本線を追加
+- 録音中の文字起こし / エラー / ブラウザ対応状況をモーダル内で可視化
 
 ## 未完了の作業
-- Mac側 relay adapter の本実装
+- Mac側 relay adapter の実投稿運用化（本番トークン / ログ運用 / 再送設計）
 - Vimeo API 実コメント投稿
-- 音声FBの実録音 / STT 本線接続
+- 音声FBの実録音 / STT 結果を案件データへ永続化
 - 映像品質学習の本線実装
 
 ## 次にやるべき作業（優先順位付き）

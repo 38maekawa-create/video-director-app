@@ -100,6 +100,139 @@
     return getRecordingPreviewItem(project)?.convertedText || '';
   }
 
+  function buildConvertedReviewText(project, rawText) {
+    const base = getRecordingPreviewItem(project);
+    const cleaned = (rawText || '').trim();
+    if (!cleaned) return base?.convertedText || 'レビュー文未生成';
+    const normalized = cleaned.replace(/\s+/g, ' ').trim();
+    if (base?.timestamp) {
+      return `${base.timestamp}付近について: ${normalized}`;
+    }
+    return normalized;
+  }
+
+  function buildReferenceExample(project) {
+    const base = getRecordingPreviewItem(project);
+    if (base?.referenceExample) return base.referenceExample;
+    return {
+      title: '参考事例はこれから追加',
+      url: 'https://example.com/reference/pending',
+      note: '品質学習ラインから自動推薦される想定'
+    };
+  }
+
+  function saveRecordingAsFeedback() {
+    if (!currentProject) return false;
+    const rawText = getActiveRawVoiceText(currentProject);
+    if (!rawText.trim()) {
+      recordingError = '保存する文字起こしがありません。短く話してから停止してみて。';
+      updateRecordingStatusUI();
+      return false;
+    }
+
+    const base = getRecordingPreviewItem(currentProject);
+    const now = new Date();
+    const newItem = {
+      id: `h${Date.now()}`,
+      videoId: currentProject.videoId,
+      projectTitle: currentProject.title,
+      guestName: currentProject.guestName,
+      date: now.toLocaleDateString('ja-JP').replace(/\//g, '/'),
+      timestamp: base?.timestamp || '00:00',
+      rawVoiceText: rawText.trim(),
+      convertedText: buildConvertedReviewText(currentProject, rawText),
+      isSent: false,
+      editorStatus: '未対応',
+      reviewMode: 'transformed',
+      syncState: 'pending_sync',
+      learningEffect: '',
+      referenceExample: buildReferenceExample(currentProject),
+    };
+
+    MockData.historyItems.unshift(newItem);
+    refreshProjectSyncSummary(currentProject);
+    recordingTranscript = '';
+    recordingInterimTranscript = '';
+    recordingError = '';
+    updateRecordingModalUI();
+    updateRecordingStatusUI();
+    renderRecordingPreview();
+    renderHome();
+    renderReport();
+    return true;
+  }
+
+  function applyRelayResponse(project, response) {
+    if (!project || !response) return false;
+    const results = response.results || response.downstream?.results || [];
+    const requests = response.downstream?.requests || [];
+    if (!Array.isArray(results) && !Array.isArray(requests)) return false;
+
+    const feedbackItems = getProjectFeedbackItems(project);
+    let updatedCount = 0;
+
+    feedbackItems.forEach((item) => {
+      const postedResult = Array.isArray(results)
+        ? results.find(result => result.feedbackId === item.id)
+        : null;
+      if (postedResult) {
+        if (postedResult.status === 'posted') {
+          item.isSent = true;
+          item.syncState = 'synced';
+          item.editorStatus = 'Vimeo投稿済み';
+          item.vimeoCommentId = postedResult.vimeoCommentId || item.vimeoCommentId || null;
+        } else if (postedResult.status === 'failed') {
+          item.isSent = false;
+          item.syncState = 'pending_sync';
+          item.editorStatus = `投稿失敗: ${postedResult.error || postedResult.response || 'unknown'}`;
+        }
+        updatedCount += 1;
+        return;
+      }
+
+      const plannedRequest = Array.isArray(requests)
+        ? requests.find(result => result.feedbackId === item.id)
+        : null;
+      if (plannedRequest) {
+        item.isSent = false;
+        item.syncState = 'awaiting_editor';
+        item.editorStatus = '投稿計画確認済み';
+        updatedCount += 1;
+      }
+    });
+
+    project.relay = project.relay || {};
+    project.relay.lastResponseAt = new Date().toLocaleString('ja-JP');
+    project.relay.routeStatus = updatedCount > 0 ? 'response_applied' : (project.relay.routeStatus || 'ready');
+    refreshProjectSyncSummary(project);
+    renderHome();
+    renderReport();
+    return updatedCount > 0;
+  }
+
+  function importRelayResponseFile(project, file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result || '{}'));
+        const applied = applyRelayResponse(project, parsed);
+        const statusNode = document.getElementById('relay-import-status');
+        if (statusNode) {
+          statusNode.textContent = applied ? 'relay結果を反映しました' : '反映できる結果がありませんでした';
+          statusNode.classList.toggle('is-error', !applied);
+        }
+      } catch (error) {
+        const statusNode = document.getElementById('relay-import-status');
+        if (statusNode) {
+          statusNode.textContent = `JSON読込エラー: ${error.message}`;
+          statusNode.classList.add('is-error');
+        }
+      }
+    };
+    reader.readAsText(file, 'utf-8');
+  }
+
   function updateRecordingStatusUI() {
     const modal = document.getElementById('recording-modal');
     if (!modal) return;
@@ -882,6 +1015,15 @@ function renderEditedSection() {
           <div class="package-preview-title">relay送信用 curl</div>
           <pre class="package-preview-code">${buildRelayCurlCommand(p)}</pre>
         </div>
+        <div class="package-preview-box relay">
+          <div class="package-preview-title">relay / Vimeo 結果の取り込み</div>
+          <div class="summary-callout">relay server や Vimeo 投稿アダプタが返した結果JSONを読み込むと、送信状態をこの案件へ反映できます。</div>
+          <div class="detail-actions inline-actions">
+            <input type="file" id="relay-response-file" accept=".json,application/json" hidden>
+            <button class="detail-link detail-link-button" id="import-relay-response-btn">relay結果JSONを取り込む</button>
+          </div>
+          <div class="relay-import-status" id="relay-import-status">未取り込み</div>
+        </div>
         <div class="detail-actions inline-actions">
           <button class="detail-link detail-link-button" data-report-tab="feedback">FB / 評価へ</button>
           <button class="detail-link detail-link-button" id="export-vimeo-package-btn">JSONを書き出す</button>
@@ -926,6 +1068,16 @@ function renderEditedSection() {
   const simulateBtn = document.getElementById('simulate-relay-send-btn');
   if (simulateBtn) {
     simulateBtn.addEventListener('click', () => simulateRelaySend(p));
+  }
+  const importBtn = document.getElementById('import-relay-response-btn');
+  const importInput = document.getElementById('relay-response-file');
+  if (importBtn && importInput) {
+    importBtn.addEventListener('click', () => importInput.click());
+    importInput.addEventListener('change', (event) => {
+      const file = event.target.files?.[0];
+      importRelayResponseFile(p, file);
+      importInput.value = '';
+    });
   }
 }
 
@@ -1552,6 +1704,9 @@ function renderEditedSection() {
         <div class="modal-live-transcript is-empty" id="modal-live-transcript">ここに録音中の文字起こしが表示されます。</div>
         <div class="modal-recording-error" id="modal-recording-error"></div>
         <div class="modal-preview-stack"></div>
+        <div class="modal-inline-actions">
+          <button class="modal-action-btn primary" id="modal-save-feedback-btn">この内容をFBに追加</button>
+        </div>
         <button class="modal-close" id="modal-close">閉じる</button>
       </div>
     `;
@@ -1568,6 +1723,16 @@ function renderEditedSection() {
         return;
       }
       await startRecordingSession();
+    });
+
+    document.getElementById('modal-save-feedback-btn').addEventListener('click', () => {
+      const saved = saveRecordingAsFeedback();
+      const btn = document.getElementById('modal-save-feedback-btn');
+      if (!btn) return;
+      btn.textContent = saved ? '追加済み' : '追加できず';
+      setTimeout(() => {
+        btn.textContent = 'この内容をFBに追加';
+      }, 1400);
     });
 
     modal.addEventListener('click', (e) => {
@@ -1638,6 +1803,8 @@ function renderEditedSection() {
       if (!show) {
         resetRecordingSession();
         recordingTranscript = '';
+        recordingInterimTranscript = '';
+        recordingError = '';
         updateRecordingModalUI();
         updateRecordingStatusUI();
       }

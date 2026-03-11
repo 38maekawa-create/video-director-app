@@ -176,6 +176,8 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 - `レビュー同期キュー` を追加し、未送信レビューを概要/編集後画面から追えるようにした
 
 - `relay送信用 curl` と Mac側中継APIリクエストのプレビュー/コピー導線を追加
+- `docs/VIMEO_RELAY_ADAPTER_SPEC.md` を追加し、Mac側 relay adapter の入出力仕様を固定
+- `scripts/send_vimeo_relay_package.py` を追加し、relay request JSON を POST するCLI叩き台を作成
 
 ## 未完了の作業
 なし（E2Eテスト完走。Phase 4は次フェーズ）

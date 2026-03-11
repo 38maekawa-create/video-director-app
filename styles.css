@@ -1785,3 +1785,102 @@ html, body {
   font-size: 11px;
   color: var(--text-muted);
 }
+
+
+.modal-project-name {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.modal-preview-stack {
+  display: grid;
+  gap: 12px;
+  width: min(560px, 92vw);
+  margin: 0 auto 24px;
+}
+
+.modal-preview-card {
+  text-align: left;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modal-preview-card.converted {
+  border-color: rgba(70, 211, 105, 0.24);
+  background: rgba(70, 211, 105, 0.08);
+}
+
+.modal-preview-card.sync {
+  border-color: rgba(158, 208, 255, 0.22);
+  background: rgba(158, 208, 255, 0.08);
+}
+
+.modal-preview-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.modal-preview-time {
+  font-family: monospace;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.modal-preview-text {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.modal-preview-text.strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.modal-preview-sub {
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.modal-preview-arrow {
+  color: var(--accent);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.modal-reference-box {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-reference-title {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.modal-reference-link {
+  color: #9ed0ff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.modal-reference-note {
+  margin-top: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}

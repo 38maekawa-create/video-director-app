@@ -549,6 +549,10 @@ function renderEditedSection() {
   `;
 
   wireReportTabJumps(container);
+  const exportBtn = document.getElementById('export-vimeo-package-btn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => exportVimeoReviewPackage(p));
+  }
 }
 
   function renderFeedbackSection() {
@@ -579,6 +583,9 @@ function renderEditedSection() {
         <div class="info-card">
           <div class="info-card-title">評価サマリー</div>
           <div class="summary-callout">${p.feedbackSummary?.evaluation || '-'}</div>
+          <div class="detail-actions inline-actions">
+            <button class="detail-link detail-link-button" id="feedback-export-package-btn">Vimeo送信パッケージを書き出す</button>
+          </div>
         </div>
         <div class="review-timeline-shell">
           <div class="review-timeline-header">
@@ -638,6 +645,11 @@ function renderEditedSection() {
         }
       });
     });
+
+    const exportBtn = document.getElementById('feedback-export-package-btn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => exportVimeoReviewPackage(p));
+    }
   }
 
   function renderSyncBadgeLabel(syncState) {
@@ -648,6 +660,46 @@ function renderEditedSection() {
       draftOnly: '変換レビューのみ'
     };
     return labels[syncState] || '状態未設定';
+  }
+
+
+  function buildVimeoReviewPayload(project) {
+    const feedbackItems = getProjectFeedbackItems(project);
+    const pendingItems = feedbackItems.filter(item => !item.isSent || item.syncState !== 'synced');
+    return {
+      videoId: project.videoId,
+      projectTitle: project.title,
+      guestName: project.guestName,
+      vimeoReviewUrl: project.vimeoReview?.url || null,
+      exportedAt: new Date().toISOString(),
+      pendingCount: pendingItems.length,
+      comments: pendingItems.map(item => ({
+        feedbackId: item.id,
+        timestamp: item.timestamp,
+        rawVoiceText: item.rawVoiceText,
+        convertedText: item.convertedText,
+        syncState: item.syncState,
+        editorStatus: item.editorStatus,
+        referenceExample: item.referenceExample || null
+      }))
+    };
+  }
+
+  function downloadJsonFile(filename, payload) {
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportVimeoReviewPackage(project) {
+    const payload = buildVimeoReviewPayload(project);
+    downloadJsonFile(`${project.videoId}-vimeo-review-package.json`, payload);
   }
 
   function renderKnowledgeSection() {
@@ -1065,10 +1117,12 @@ function renderEditedSection() {
     modal.innerHTML = `
       <div class="modal-content">
         <div class="modal-text">音声フィードバック</div>
+        <div class="modal-project-name">案件未選択</div>
         <div class="modal-subtext">タップして録音を開始</div>
         <button class="modal-record-btn" id="modal-record-btn">
           <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
         </button>
+        <div class="modal-preview-stack"></div>
         <button class="modal-close" id="modal-close">閉じる</button>
       </div>
     `;
@@ -1085,20 +1139,74 @@ function renderEditedSection() {
       document.querySelector('.modal-subtext').textContent = isRecording ? '録音中... タップして停止' : 'タップして録音を開始';
     });
 
-    // 背景クリックで閉じる
     modal.addEventListener('click', (e) => {
       if (e.target === modal) showRecordingModal(false);
     });
+  }
+
+  function getRecordingPreviewItem(project) {
+    const items = getProjectFeedbackItems(project);
+    return items.find(item => item.syncState !== 'synced') || items[0] || null;
+  }
+
+  function renderRecordingPreview() {
+    const modal = document.getElementById('recording-modal');
+    if (!modal || !currentProject) return;
+    const preview = getRecordingPreviewItem(currentProject);
+    const projectNode = modal.querySelector('.modal-project-name');
+    const previewNode = modal.querySelector('.modal-preview-stack');
+    if (!projectNode || !previewNode) return;
+
+    projectNode.textContent = `${currentProject.title} / ${currentProject.guestName}`;
+
+    if (!preview) {
+      previewNode.innerHTML = `
+        <div class="modal-preview-card raw">
+          <div class="modal-preview-label">音声FBイメージ</div>
+          <div class="modal-preview-text">ここで話した内容が、編集者向けの具体指示に変換されます。</div>
+        </div>
+      `;
+      return;
+    }
+
+    previewNode.innerHTML = `
+      <div class="modal-preview-card raw">
+        <div class="modal-preview-label">生の音声FB</div>
+        <div class="modal-preview-time">${preview.timestamp}</div>
+        <div class="modal-preview-text">${preview.rawVoiceText}</div>
+      </div>
+      <div class="modal-preview-arrow">→</div>
+      <div class="modal-preview-card converted">
+        <div class="modal-preview-label">Vimeo送信用レビュー</div>
+        <div class="modal-preview-time">${preview.timestamp}</div>
+        <div class="modal-preview-text strong">${preview.convertedText}</div>
+        ${preview.referenceExample ? `
+          <div class="modal-reference-box">
+            <div class="modal-reference-title">参考事例</div>
+            <a href="${preview.referenceExample.url}" target="_blank" class="modal-reference-link">${preview.referenceExample.title} ↗</a>
+            <div class="modal-reference-note">${preview.referenceExample.note}</div>
+          </div>
+        ` : ''}
+      </div>
+      <div class="modal-preview-card sync">
+        <div class="modal-preview-label">投稿先</div>
+        <div class="modal-preview-text strong">Vimeoレビューモード ${preview.timestamp}</div>
+        <div class="modal-preview-sub">アプリ内タイムラインにも同時反映</div>
+      </div>
+    `;
   }
 
   function showRecordingModal(show) {
     const modal = document.getElementById('recording-modal');
     if (modal) {
       modal.classList.toggle('visible', show);
+      if (show) renderRecordingPreview();
       if (!show) {
         isRecording = false;
         const btn = document.getElementById('modal-record-btn');
         if (btn) btn.classList.remove('recording');
+        const sub = document.querySelector('.modal-subtext');
+        if (sub) sub.textContent = 'タップして録音を開始';
       }
     }
   }

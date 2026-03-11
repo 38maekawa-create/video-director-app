@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VIDEO DIRECTOR">
+  <meta name="theme-color" content="#000000">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>VIDEO DIRECTOR</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- メインコンテンツ -->
+  <div id="app">
+    <!-- 画面1: ホーム -->
+    <div id="page-home" class="page active">
+      <!-- ヒーローバナー -->
+      <div id="hero-banner" class="hero-banner"></div>
+      <!-- 検索バー -->
+      <div class="search-bar-wrap">
+        <div class="search-bar">
+          <svg class="icon-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input type="text" id="search-input" placeholder="ゲスト名、プロジェクト名で検索">
+        </div>
+      </div>
+      <!-- カルーセル: 最近のフィードバック -->
+      <div id="carousel-recent" class="carousel-section"></div>
+      <!-- カルーセル: 要対応 -->
+      <div id="carousel-action" class="carousel-section"></div>
+      <!-- カルーセル: 全プロジェクト -->
+      <div id="carousel-all" class="carousel-section"></div>
+    </div>
+
+    <!-- 画面2: レポート詳細 -->
+    <div id="page-report" class="page">
+      <div id="report-content"></div>
+    </div>
+
+    <!-- 画面3: 履歴 -->
+    <div id="page-history" class="page">
+      <div class="page-header">
+        <h2 class="page-title">フィードバック履歴</h2>
+      </div>
+      <div class="search-bar-wrap">
+        <div class="search-bar">
+          <svg class="icon-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input type="text" id="history-search" placeholder="プロジェクト、ゲスト名で検索">
+        </div>
+      </div>
+      <div class="filter-bar" id="history-filters"></div>
+      <div id="history-list" class="history-list"></div>
+    </div>
+
+    <!-- 画面4: 品質ダッシュボード -->
+    <div id="page-quality" class="page">
+      <div class="page-header">
+        <h2 class="page-title">品質ダッシュボード</h2>
+      </div>
+      <div id="quality-content"></div>
+    </div>
+  </div>
+
+  <!-- タブバー（下部固定） -->
+  <nav id="tab-bar">
+    <button class="tab-btn active" data-tab="home">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span>ホーム</span>
+    </button>
+    <button class="tab-btn" data-tab="report">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+      <span>レポート</span>
+    </button>
+    <button class="tab-btn tab-record" data-tab="record">
+      <div class="record-btn-circle">
+        <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+      </div>
+      <span>録音</span>
+    </button>
+    <button class="tab-btn" data-tab="history">
+      <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+      <span>履歴</span>
+    </button>
+    <button class="tab-btn" data-tab="quality">
+      <svg viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg>
+      <span>品質</span>
+    </button>
+  </nav>
+
+  <script src="knowledge-pages-map.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Service Worker登録
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(() => console.log('SW registered'))
+        .catch(err => console.log('SW error:', err));
+    }
+  </script>
+</body>
+</html>

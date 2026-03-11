@@ -1006,53 +1006,72 @@ html, body {
 
 /* ナレッジページビューア */
 .knowledge-viewer {
-  margin: 6px 16px;
+  margin: 6px 0;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  box-shadow: 0 18px 40px rgba(0,0,0,0.24);
 }
 
 .knowledge-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 16px;
-  background: var(--card);
-  border-radius: 12px 12px 0 0;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(229,9,20,0.18), rgba(255,255,255,0.03));
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
 .knowledge-header-icon {
-  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(229,9,20,0.85);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
 }
 
 .knowledge-header-title {
-  font-size: 16px;
-  font-weight: 600;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 17px;
+  font-weight: 700;
   color: var(--text-primary);
+  letter-spacing: 0.4px;
 }
 
 .knowledge-iframe-wrap {
-  background: #fff;
-  border-left: 1px solid rgba(128, 128, 128, 0.2);
-  border-right: 1px solid rgba(128, 128, 128, 0.2);
+  background: #f6f7fa;
+  padding: 10px;
   overflow: hidden;
 }
 
 .knowledge-iframe {
   width: 100%;
-  height: 60vh;
+  height: 68vh;
+  min-height: 560px;
   border: none;
   display: block;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
 }
 
 .knowledge-open-btn {
   display: block;
   text-align: center;
-  padding: 14px;
-  background: var(--card);
-  border-radius: 0 0 12px 12px;
+  padding: 14px 16px 16px;
+  background: rgba(255,255,255,0.02);
   color: var(--accent);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
-  border-top: 1px solid rgba(128, 128, 128, 0.15);
+  border-top: 1px solid rgba(255,255,255,0.06);
 }
 
 .knowledge-open-btn:active {
@@ -1973,4 +1992,46 @@ html, body {
   background: rgba(255,255,255,0.04);
   color: var(--text-muted);
   font-size: 13px;
+}
+
+
+.knowledge-viewer.fallback-mode {
+  padding: 16px;
+}
+
+.knowledge-fallback {
+  display: grid;
+  gap: 14px;
+}
+
+.knowledge-fallback-section {
+  display: grid;
+  gap: 10px;
+}
+
+.knowledge-fallback-title {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+
+.embedded-source-knowledge {
+  margin-top: 2px;
+}
+
+.knowledge-viewer.fallback-mode {
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+}
+
+.knowledge-fallback .summary-callout {
+  margin-top: 0;
+}
+
+.inline-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
 }

@@ -28,6 +28,30 @@
     return !!url && !String(url).startsWith('#');
   }
 
+  function renderKnowledgeFallback(project) {
+    const highlights = project.knowledge?.highlights || [];
+    return `
+      <div class="knowledge-fallback">
+        <div class="knowledge-fallback-section">
+          <div class="knowledge-fallback-title">3行要約 / 要点</div>
+          <div class="summary-callout">${project.knowledge?.summary || '要約未設定'}</div>
+        </div>
+        ${highlights.length ? `
+          <div class="knowledge-fallback-section">
+            <div class="knowledge-fallback-title">主要ポイント</div>
+            <div class="highlight-chip-row">
+              ${highlights.map(item => `<span class="highlight-chip">${item}</span>`).join('')}
+            </div>
+          </div>
+        ` : ''}
+        <div class="knowledge-fallback-section">
+          <div class="knowledge-fallback-title">全文文字起こし</div>
+          ${renderTranscriptBlock(project.knowledge?.fullTranscript)}
+        </div>
+      </div>
+    `;
+  }
+
   function renderTranscriptBlock(fullTranscript) {
     if (!fullTranscript) return '<div class="transcript-empty">全文スクリプトはまだ未設定です。</div>';
     return `<div class="transcript-block">${String(fullTranscript).replace(/\n/g, '<br>')}</div>`;
@@ -567,10 +591,12 @@ function renderSourceSection() {
           </a>
         </div>
       ` : `
-        <div class="knowledge-empty">
-          <div class="knowledge-empty-icon">KN</div>
-          <div class="knowledge-empty-text">素材ナレッジ閲覧ページ未生成</div>
-          <div class="knowledge-empty-sub">スプシの閲覧ページ相当データはまだ利用できません</div>
+        <div class="knowledge-viewer embedded-source-knowledge fallback-mode">
+          <div class="knowledge-header">
+            <span class="knowledge-header-icon">KN</span>
+            <span class="knowledge-header-title">素材ナレッジ閲覧ページ（アプリ内再構成）</span>
+          </div>
+          ${renderKnowledgeFallback(p)}
         </div>
       `}
     </div>
@@ -918,7 +944,7 @@ function renderEditedSection() {
         <div class="knowledge-viewer">
           <div class="knowledge-header">
             <span class="knowledge-header-icon">KN</span>
-            <span class="knowledge-header-title">動画ナレッジページ</span>
+            <span class="knowledge-header-title">動画ナレッジ閲覧ページ</span>
           </div>
           <div class="knowledge-iframe-wrap">
             <iframe
@@ -955,7 +981,7 @@ function renderEditedSection() {
       <div class="knowledge-viewer">
         <div class="knowledge-header">
           <span class="knowledge-header-icon">KN</span>
-          <span class="knowledge-header-title">動画ナレッジページ</span>
+          <span class="knowledge-header-title">動画ナレッジ閲覧ページ</span>
         </div>
         <div class="knowledge-iframe-wrap">
           <iframe

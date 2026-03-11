@@ -64,8 +64,8 @@
         <div class="hero-guest-name">${hero.guestName}</div>
         <div class="hero-title">${hero.title}</div>
         <div class="hero-meta">
-          <span>📅 ${hero.shootDate}</span>
-          ${hero.qualityScore ? `<span>📊 スコア ${hero.qualityScore}</span>` : ''}
+          <span>${hero.shootDate}</span>
+          ${hero.qualityScore ? `<span>Score ${hero.qualityScore}</span>` : ''}
         </div>
         <div class="hero-badges">
           <span class="badge badge-status" data-status="${hero.status}">${hero.statusLabel}</span>
@@ -79,14 +79,14 @@
 
     // カルーセル: 最近のフィードバック（未送信FBがあるもの）
     const recentFB = projects.filter(p => p.hasUnsentFeedback);
-    renderCarousel('carousel-recent', '最近のフィードバック', '💬', recentFB);
+    renderCarousel('carousel-recent', '最近のフィードバック', 'FB', recentFB);
 
     // カルーセル: 要対応（未レビューがあるもの）
     const actionRequired = projects.filter(p => p.unreviewedCount > 0);
-    renderCarousel('carousel-action', '要対応', '⚠️', actionRequired);
+    renderCarousel('carousel-action', '要対応', '!', actionRequired);
 
     // カルーセル: 全プロジェクト
-    renderCarousel('carousel-all', '全プロジェクト', '🎞️', projects);
+    renderCarousel('carousel-all', '全プロジェクト', 'ALL', projects);
   }
 
   function renderCarousel(containerId, title, icon, projects) {
@@ -161,7 +161,7 @@
       : all;
 
     // 全プロジェクトカルーセルのみ更新
-    renderCarousel('carousel-all', '全プロジェクト', '🎞️', filtered);
+    renderCarousel('carousel-all', '全プロジェクト', 'ALL', filtered);
   }
 
   // ===== 画面2: レポート詳細 =====
@@ -187,9 +187,9 @@
         <div class="report-guest-name">${p.guestName}</div>
         <div class="report-title">${p.title}</div>
         <div class="report-meta">
-          ${p.guestAge ? `<span>👤 ${p.guestAge}歳</span>` : ''}
-          ${p.guestOccupation ? `<span>💼 ${p.guestOccupation}</span>` : ''}
-          <span>📅 ${p.shootDate}</span>
+          ${p.guestAge ? `<span>${p.guestAge}歳</span>` : ''}
+          ${p.guestOccupation ? `<span>${p.guestOccupation}</span>` : ''}
+          <span>${p.shootDate}</span>
         </div>
         <div class="report-actions">
           <button class="btn-vimeo">▶ Vimeoレビューを開く</button>
@@ -219,10 +219,19 @@
   }
 
   function renderReportTabs() {
+    // ナレッジページの有無を確認
+    const knowledgePage = (typeof findKnowledgePage === 'function' && currentProject)
+      ? findKnowledgePage(currentProject.guestName)
+      : null;
+
     const tabs = ['演出', 'テロップ', 'カメラ', '音声FB'];
+    if (knowledgePage) {
+      tabs.push('ナレッジ');
+    }
+
     const container = document.getElementById('report-tabs');
     container.innerHTML = tabs.map((t, i) => `
-      <button class="tab-selector-btn ${i === 0 ? 'active' : ''}" data-index="${i}">
+      <button class="tab-selector-btn ${i === 0 ? 'active' : ''}" data-index="${i}" data-tab-name="${t}">
         <span class="tab-label">${t}</span>
         <div class="tab-indicator"></div>
       </button>
@@ -232,7 +241,12 @@
       btn.addEventListener('click', () => {
         container.querySelectorAll('.tab-selector-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        renderReportSection(parseInt(btn.dataset.index));
+        const tabName = btn.dataset.tabName;
+        if (tabName === 'ナレッジ') {
+          renderKnowledgePage(knowledgePage);
+        } else {
+          renderReportSection(parseInt(btn.dataset.index));
+        }
       });
     });
   }
@@ -272,6 +286,42 @@
     });
   }
 
+  // ===== ナレッジページ表示 =====
+  function renderKnowledgePage(filename) {
+    const container = document.getElementById('report-sections');
+    if (!filename) {
+      container.innerHTML = `
+        <div class="knowledge-empty">
+          <div class="knowledge-empty-icon">--</div>
+          <div class="knowledge-empty-text">ナレッジページ未生成</div>
+          <div class="knowledge-empty-sub">この対談動画のナレッジページはまだ作成されていません</div>
+        </div>
+      `;
+      return;
+    }
+
+    const encodedFilename = encodeURIComponent(filename);
+    container.innerHTML = `
+      <div class="knowledge-viewer">
+        <div class="knowledge-header">
+          <span class="knowledge-header-icon">KN</span>
+          <span class="knowledge-header-title">動画ナレッジページ</span>
+        </div>
+        <div class="knowledge-iframe-wrap">
+          <iframe
+            src="knowledge-pages/${encodedFilename}"
+            class="knowledge-iframe"
+            sandbox="allow-same-origin"
+            title="動画ナレッジページ"
+          ></iframe>
+        </div>
+        <a href="knowledge-pages/${encodedFilename}" target="_blank" class="knowledge-open-btn">
+          別タブで開く ↗
+        </a>
+      </div>
+    `;
+  }
+
   // ===== 下部固定アクションバー =====
   function showBottomActionBar(show) {
     let bar = document.querySelector('.bottom-action-bar');
@@ -280,7 +330,7 @@
       bar.className = 'bottom-action-bar';
       bar.innerHTML = `
         <button class="btn-voice-fb">
-          🎙️ 音声フィードバックを追加
+          + 音声フィードバックを追加
         </button>
       `;
       bar.querySelector('.btn-voice-fb').addEventListener('click', () => {
@@ -408,7 +458,7 @@
         <!-- スコア推移グラフ -->
         <div class="trend-card">
           <div class="card-title-row">
-            <span class="card-title-icon">📈</span>
+            <span class="card-title-icon">^</span>
             <span class="card-title">スコア推移（過去10回）</span>
           </div>
           <canvas id="trend-chart"></canvas>
@@ -418,7 +468,7 @@
         <!-- カテゴリ別スコア -->
         <div class="category-card">
           <div class="card-title-row">
-            <span class="card-title-icon">📊</span>
+            <span class="card-title-icon">#</span>
             <span class="card-title">カテゴリ別スコア</span>
           </div>
           <div class="category-grid">
@@ -438,7 +488,7 @@
         <!-- 改善提案 -->
         <div class="suggestions-card">
           <div class="card-title-row">
-            <span class="card-title-icon">💡</span>
+            <span class="card-title-icon">*</span>
             <span class="card-title">AIからの改善提案</span>
           </div>
           ${MockData.improvementSuggestions.map(s => `
@@ -455,7 +505,7 @@
         <!-- アラート -->
         <div class="alerts-card">
           <div class="card-title-row">
-            <span class="card-title-icon" style="color: var(--accent)">⚠️</span>
+            <span class="card-title-icon" style="color: var(--accent)">!</span>
             <span class="card-title">品質アラート</span>
           </div>
           ${MockData.alerts.map(a => `

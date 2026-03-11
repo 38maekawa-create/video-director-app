@@ -7,7 +7,7 @@ const MockData = {
       id: 'p1',
       guestName: 'さといも・トーマス',
       title: 'CEO対談 Vol.12',
-      icon: '🎬',
+      icon: 'VD',
       shootDate: '2026/03/08',
       guestAge: 34,
       guestOccupation: '不動産投資家',
@@ -21,7 +21,7 @@ const MockData = {
       id: 'p2',
       guestName: 'メンイチ',
       title: '採用密着ドキュメント',
-      icon: '👥',
+      icon: 'DC',
       shootDate: '2026/03/05',
       guestAge: 29,
       guestOccupation: 'Webマーケター',
@@ -35,7 +35,7 @@ const MockData = {
       id: 'p3',
       guestName: 'けー',
       title: 'ブランドムービー 2026',
-      icon: '✨',
+      icon: 'BM',
       shootDate: '2026/03/01',
       guestAge: 31,
       guestOccupation: 'コンサルタント',
@@ -49,7 +49,7 @@ const MockData = {
       id: 'p4',
       guestName: 'hirai',
       title: 'イベントダイジェスト',
-      icon: '🎞️',
+      icon: 'EV',
       shootDate: '2026/02/28',
       guestAge: 27,
       guestOccupation: '映像クリエイター',
@@ -63,7 +63,7 @@ const MockData = {
       id: 'p5',
       guestName: 'コテ',
       title: '不動産投資入門シリーズ #3',
-      icon: '🏢',
+      icon: 'RE',
       shootDate: '2026/02/25',
       guestAge: 38,
       guestOccupation: '不動産オーナー',
@@ -80,7 +80,7 @@ const MockData = {
     {
       id: 'rs1',
       title: '演出ディレクション',
-      icon: '🎭',
+      icon: 'DR',
       items: [
         '層b（実務志向）: 成果の再現性を重視',
         '刺さる訴求: プロセスと判断基準を明示',
@@ -90,7 +90,7 @@ const MockData = {
     {
       id: 'rs2',
       title: 'テロップ指示',
-      icon: '📝',
+      icon: 'TL',
       items: [
         '年収ワードは補助的に使用。主軸は意思決定スピード',
         '金額より『改善幅』を見せる方が信頼形成に有効',
@@ -100,7 +100,7 @@ const MockData = {
     {
       id: 'rs3',
       title: 'カメラワーク',
-      icon: '📷',
+      icon: 'CM',
       items: [
         '00:12-00:26: 冒頭フックを強化（結論先出し）',
         '02:18-02:34: Bロール差し替えでテンポ改善',
@@ -110,7 +110,7 @@ const MockData = {
     {
       id: 'rs4',
       title: '音声FB履歴',
-      icon: '🎙️',
+      icon: 'VO',
       items: [
         '「テロップ多すぎ」→ 1カット1メッセージに整理',
         '「BGM強い」→ ナレーション帯域を避けるEQ調整'
@@ -185,10 +185,10 @@ const MockData = {
   ],
 
   categoryScores: [
-    { category: 'カメラワーク', score: 85, icon: '📷' },
-    { category: 'テロップ', score: 78, icon: '📝' },
-    { category: '音声', score: 91, icon: '🔊' },
-    { category: '演出', score: 82, icon: '🎭' }
+    { category: 'カメラワーク', score: 85, icon: 'CM' },
+    { category: 'テロップ', score: 78, icon: 'TL' },
+    { category: '音声', score: 91, icon: 'AU' },
+    { category: '演出', score: 82, icon: 'DR' }
   ],
 
   improvementSuggestions: [

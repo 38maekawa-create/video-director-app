@@ -1,5 +1,5 @@
 // Service Worker — VideoDirectorAgent PWA
-const CACHE_NAME = 'video-director-v1';
+const CACHE_NAME = 'video-director-v2';
 const ASSETS = [
   './',
   './index.html',

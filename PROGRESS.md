@@ -180,6 +180,7 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 - `docs/VIMEO_RELAY_ADAPTER_SPEC.md` を追加し、Mac側 relay adapter の入出力仕様を固定
 - `scripts/send_vimeo_relay_package.py` を追加し、relay request JSON を POST するCLI叩き台を作成
 - `scripts/mock_vimeo_relay_server.py` を追加し、Mac側 relay adapter の最小モック受け口を用意
+- `scripts/post_vimeo_review_comments.py` を追加し、Vimeo API 実投稿アダプタの叩き台を作成（dry-run対応）
 
 ## 未完了の作業
 - Mac側 relay adapter の本実装

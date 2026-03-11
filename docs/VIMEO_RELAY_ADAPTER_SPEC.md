@@ -169,3 +169,10 @@ relay adapter は最低限次を保存する。
 2. `send_vimeo_relay_package.py` から POST できるようにする
 3. Vimeo API adapter を差し込む
 4. 成功/失敗レスポンスを映像エージェントUIへ戻す
+
+## 12. Vimeo API 投稿アダプタ
+
+- 実投稿の叩き台は `scripts/post_vimeo_review_comments.py` に置く。
+- 既定では `https://api.vimeo.com/videos/{targetVideoId}/comments` へ投稿する。
+- 既知の不確定要素は timecode フィールドの扱いで、初期実装は `VIMEO_TIMECODE_MODE=embed_text` を既定にする。
+- Vimeo 側の正式 timecode body field が確定したら `VIMEO_TIMECODE_MODE=body_field` と `VIMEO_TIMECODE_FIELD` で切り替える。

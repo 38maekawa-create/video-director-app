@@ -45,10 +45,19 @@ def post_payload(endpoint: str, payload: dict, headers: dict) -> tuple[int, str]
         return resp.status, resp.read().decode('utf-8')
 
 
+def save_output(path: str | None, content: str) -> None:
+    if not path:
+        return
+    output_path = Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(content, encoding='utf-8')
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description='Send Vimeo relay request JSON to relay adapter')
     parser.add_argument('json_path', help='Path to relay request JSON file')
     parser.add_argument('--dry-run', action='store_true', help='Print request instead of sending')
+    parser.add_argument('--output', help='Optional path to save the relay response JSON/text')
     args = parser.parse_args()
 
     payload = load_payload(Path(args.json_path))
@@ -56,19 +65,26 @@ def main() -> int:
     headers = build_headers(payload)
 
     if args.dry_run:
-        print(json.dumps({'endpoint': endpoint, 'headers': headers, 'payload': payload}, ensure_ascii=False, indent=2))
+        content = json.dumps({'endpoint': endpoint, 'headers': headers, 'payload': payload}, ensure_ascii=False, indent=2)
+        save_output(args.output, content)
+        print(content)
         return 0
 
     try:
         status, response_text = post_payload(endpoint, payload, headers)
     except urllib.error.HTTPError as exc:
-        sys.stderr.write(exc.read().decode('utf-8', errors='replace'))
+        error_text = exc.read().decode('utf-8', errors='replace')
+        save_output(args.output, error_text)
+        sys.stderr.write(error_text)
         sys.stderr.write('\n')
         return exc.code or 1
     except urllib.error.URLError as exc:
-        sys.stderr.write(f'relay request failed: {exc}\n')
+        error_text = f'relay request failed: {exc}\n'
+        save_output(args.output, error_text)
+        sys.stderr.write(error_text)
         return 1
 
+    save_output(args.output, response_text)
     print(response_text)
     return 0 if 200 <= status < 300 else 1
 

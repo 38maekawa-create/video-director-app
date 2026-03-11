@@ -67,10 +67,19 @@ def post_json(url: str, token: str, payload: dict) -> tuple[int, str]:
         return resp.status, resp.read().decode('utf-8')
 
 
+def save_output(path: str | None, payload: dict) -> None:
+    if not path:
+        return
+    output_path = Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description='Post converted review comments to Vimeo API')
     parser.add_argument('json_path', help='Path to relay request JSON file')
     parser.add_argument('--dry-run', action='store_true', help='Print Vimeo request plan instead of posting')
+    parser.add_argument('--output', help='Optional path to save the Vimeo result JSON')
     args = parser.parse_args()
 
     relay_request = load_payload(Path(args.json_path))
@@ -94,7 +103,9 @@ def main() -> int:
         })
 
     if args.dry_run:
-        print(json.dumps({'targetVideoId': target_video_id, 'requests': plan}, ensure_ascii=False, indent=2))
+        dry_payload = {'targetVideoId': target_video_id, 'requests': plan}
+        save_output(args.output, dry_payload)
+        print(json.dumps(dry_payload, ensure_ascii=False, indent=2))
         return 0
 
     token = os.getenv('VIMEO_ACCESS_TOKEN')
@@ -128,7 +139,9 @@ def main() -> int:
                 'response': f'{exc}',
             })
 
-    print(json.dumps({'targetVideoId': target_video_id, 'results': results}, ensure_ascii=False, indent=2))
+    result_payload = {'targetVideoId': target_video_id, 'results': results}
+    save_output(args.output, result_payload)
+    print(json.dumps(result_payload, ensure_ascii=False, indent=2))
     return 0
 
 

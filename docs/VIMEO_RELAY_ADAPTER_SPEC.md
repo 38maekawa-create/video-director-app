@@ -176,3 +176,5 @@ relay adapter は最低限次を保存する。
 - 既定では `https://api.vimeo.com/videos/{targetVideoId}/comments` へ投稿する。
 - 既知の不確定要素は timecode フィールドの扱いで、初期実装は `VIMEO_TIMECODE_MODE=embed_text` を既定にする。
 - Vimeo 側の正式 timecode body field が確定したら `VIMEO_TIMECODE_MODE=body_field` と `VIMEO_TIMECODE_FIELD` で切り替える。
+- `send_vimeo_relay_package.py` と `post_vimeo_review_comments.py` は `--output` で結果JSONを書き出せる。
+- この結果JSONは、映像エージェントUIの `relay結果JSONを取り込む` から案件状態へ反映できる。

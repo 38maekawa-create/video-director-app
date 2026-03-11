@@ -185,11 +185,14 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 - relay server(`dry_run`) -> `send_vimeo_relay_package.py` -> `post_vimeo_review_comments.py --dry-run` の往復を成功確認
 - 音声フィードバックモーダルに実マイク入力とリアルタイム文字起こしの本線を追加
 - 録音中の文字起こし / エラー / ブラウザ対応状況をモーダル内で可視化
+- 録音した文字起こしを案件FB履歴へ追加し、そのまま review queue / FBタイムラインへ反映できるようにした
+- relay / Vimeo 結果JSONの取り込みUIを追加し、案件ごとの同期状態を戻り線で更新できるようにした
+- `send_vimeo_relay_package.py` / `post_vimeo_review_comments.py` に `--output` を追加し、結果JSONをファイル保存できるようにした
 
 ## 未完了の作業
 - Mac側 relay adapter の実投稿運用化（本番トークン / ログ運用 / 再送設計）
 - Vimeo API 実コメント投稿
-- 音声FBの実録音 / STT 結果を案件データへ永続化
+- 音声FBの実録音 / STT 結果を永続ストレージへ保存
 - 映像品質学習の本線実装
 
 ## 次にやるべき作業（優先順位付き）

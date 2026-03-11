@@ -2030,6 +2030,17 @@ html, body {
   color: var(--text-muted);
 }
 
+.relay-import-status {
+  margin-top: 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.relay-import-status.is-error {
+  color: #ffb4bc;
+}
+
 
 .detail-link-button.primary {
   background: rgba(229, 9, 20, 0.18);

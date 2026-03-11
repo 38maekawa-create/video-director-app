@@ -9,6 +9,14 @@
   let currentProject = null;
   let historyFilter = 'all';
   let isRecording = false;
+  let mediaRecorder = null;
+  let recordingStream = null;
+  let speechRecognition = null;
+  let recordedChunks = [];
+  let recordingTranscript = '';
+  let recordingInterimTranscript = '';
+  let recordingError = '';
+  let recordingAudioBlob = null;
   let currentReportTab = '概要';
 
   // ===== 初期化 =====
@@ -62,6 +70,205 @@
       return `<span class="${className} is-disabled" aria-disabled="true">${label}</span>`;
     }
     return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="${className}">${label}</a>`;
+  }
+
+  function getSpeechRecognitionCtor() {
+    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  }
+
+  function supportsRealtimeTranscript() {
+    return !!getSpeechRecognitionCtor();
+  }
+
+  function supportsAudioCapture() {
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  }
+
+  function getRecordingPreviewItem(project) {
+    const items = getProjectFeedbackItems(project);
+    return items.find(item => item.syncState !== 'synced') || items[0] || null;
+  }
+
+  function getActiveRawVoiceText(project) {
+    if (recordingTranscript.trim()) return recordingTranscript.trim();
+    if (recordingInterimTranscript.trim()) return recordingInterimTranscript.trim();
+    return getRecordingPreviewItem(project)?.rawVoiceText || '';
+  }
+
+  function getActiveConvertedText(project) {
+    if (recordingTranscript.trim()) return recordingTranscript.trim();
+    return getRecordingPreviewItem(project)?.convertedText || '';
+  }
+
+  function updateRecordingStatusUI() {
+    const modal = document.getElementById('recording-modal');
+    if (!modal) return;
+    const capabilityNode = modal.querySelector('#modal-recording-capability');
+    const transcriptNode = modal.querySelector('#modal-live-transcript');
+    const errorNode = modal.querySelector('#modal-recording-error');
+    if (capabilityNode) {
+      const capture = supportsAudioCapture() ? 'マイク入力OK' : 'マイク入力不可';
+      const transcript = supportsRealtimeTranscript() ? 'リアルタイム文字起こしOK' : '文字起こし非対応';
+      capabilityNode.textContent = `${capture} / ${transcript}`;
+      capabilityNode.classList.toggle('is-warning', !supportsAudioCapture() || !supportsRealtimeTranscript());
+    }
+    if (transcriptNode) {
+      const liveText = [recordingTranscript.trim(), recordingInterimTranscript.trim()].filter(Boolean).join('\n');
+      transcriptNode.innerHTML = liveText
+        ? liveText.replace(/\n/g, '<br>')
+        : 'ここに録音中の文字起こしが表示されます。';
+      transcriptNode.classList.toggle('is-empty', !liveText);
+    }
+    if (errorNode) {
+      errorNode.textContent = recordingError || '';
+      errorNode.classList.toggle('visible', !!recordingError);
+    }
+  }
+
+  function resetRecordingSession() {
+    if (speechRecognition) {
+      try { speechRecognition.onresult = null; } catch (_) {}
+      try { speechRecognition.onerror = null; } catch (_) {}
+      try { speechRecognition.onend = null; } catch (_) {}
+      try { speechRecognition.stop(); } catch (_) {}
+    }
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      try { mediaRecorder.stop(); } catch (_) {}
+    }
+    if (recordingStream) {
+      recordingStream.getTracks().forEach(track => track.stop());
+    }
+    mediaRecorder = null;
+    recordingStream = null;
+    speechRecognition = null;
+    recordedChunks = [];
+    recordingInterimTranscript = '';
+    recordingError = '';
+    recordingAudioBlob = null;
+    isRecording = false;
+  }
+
+  async function startRecordingSession() {
+    recordingTranscript = '';
+    recordingInterimTranscript = '';
+    recordingError = '';
+    recordingAudioBlob = null;
+    recordedChunks = [];
+
+    if (!supportsAudioCapture()) {
+      recordingError = 'このブラウザではマイク入力が使えません。';
+      updateRecordingStatusUI();
+      renderRecordingPreview();
+      return;
+    }
+
+    try {
+      recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (error) {
+      recordingError = `マイク権限を取得できませんでした: ${error.message}`;
+      updateRecordingStatusUI();
+      renderRecordingPreview();
+      return;
+    }
+
+    if (typeof MediaRecorder !== 'undefined') {
+      mediaRecorder = new MediaRecorder(recordingStream);
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          recordedChunks.push(event.data);
+        }
+      };
+      mediaRecorder.onstop = () => {
+        if (recordedChunks.length) {
+          recordingAudioBlob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+        }
+      };
+      mediaRecorder.start();
+    }
+
+    const RecognitionCtor = getSpeechRecognitionCtor();
+    if (RecognitionCtor) {
+      speechRecognition = new RecognitionCtor();
+      speechRecognition.lang = 'ja-JP';
+      speechRecognition.continuous = true;
+      speechRecognition.interimResults = true;
+      speechRecognition.onresult = (event) => {
+        let finalTranscript = '';
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i += 1) {
+          const transcript = event.results[i][0]?.transcript || '';
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        if (finalTranscript) {
+          recordingTranscript = [recordingTranscript, finalTranscript].filter(Boolean).join('\n').trim();
+        }
+        recordingInterimTranscript = interimTranscript.trim();
+        updateRecordingStatusUI();
+        renderRecordingPreview();
+      };
+      speechRecognition.onerror = (event) => {
+        if (event.error === 'no-speech') return;
+        recordingError = `文字起こしエラー: ${event.error}`;
+        updateRecordingStatusUI();
+      };
+      speechRecognition.onend = () => {
+        if (isRecording) {
+          try { speechRecognition.start(); } catch (_) {}
+        }
+      };
+      try {
+        speechRecognition.start();
+      } catch (error) {
+        recordingError = `文字起こしを開始できませんでした: ${error.message}`;
+      }
+    }
+
+    isRecording = true;
+    updateRecordingModalUI();
+    updateRecordingStatusUI();
+    renderRecordingPreview();
+  }
+
+  function stopRecordingSession() {
+    if (speechRecognition) {
+      try { speechRecognition.stop(); } catch (_) {}
+    }
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      try { mediaRecorder.stop(); } catch (_) {}
+    }
+    if (recordingStream) {
+      recordingStream.getTracks().forEach(track => track.stop());
+    }
+    recordingStream = null;
+    speechRecognition = null;
+    mediaRecorder = null;
+    isRecording = false;
+    if (!recordingTranscript.trim() && recordingInterimTranscript.trim()) {
+      recordingTranscript = recordingInterimTranscript.trim();
+      recordingInterimTranscript = '';
+    }
+    updateRecordingModalUI();
+    updateRecordingStatusUI();
+    renderRecordingPreview();
+  }
+
+  function updateRecordingModalUI() {
+    const btn = document.getElementById('modal-record-btn');
+    const sub = document.querySelector('.modal-subtext');
+    if (btn) btn.classList.toggle('recording', isRecording);
+    if (sub) {
+      if (isRecording) {
+        sub.textContent = '録音中... タップして停止';
+      } else if (recordingTranscript.trim()) {
+        sub.textContent = '録音停止。文字起こし結果を確認できます';
+      } else {
+        sub.textContent = 'タップして録音を開始';
+      }
+    }
   }
 
   function scoreColor(score) {
@@ -1338,9 +1545,12 @@ function renderEditedSection() {
         <div class="modal-text">音声フィードバック</div>
         <div class="modal-project-name">案件未選択</div>
         <div class="modal-subtext">タップして録音を開始</div>
+        <div class="modal-recording-capability" id="modal-recording-capability"></div>
         <button class="modal-record-btn" id="modal-record-btn">
           <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
         </button>
+        <div class="modal-live-transcript is-empty" id="modal-live-transcript">ここに録音中の文字起こしが表示されます。</div>
+        <div class="modal-recording-error" id="modal-recording-error"></div>
         <div class="modal-preview-stack"></div>
         <button class="modal-close" id="modal-close">閉じる</button>
       </div>
@@ -1348,24 +1558,26 @@ function renderEditedSection() {
     document.body.appendChild(modal);
 
     document.getElementById('modal-close').addEventListener('click', () => {
+      if (isRecording) stopRecordingSession();
       showRecordingModal(false);
     });
 
-    document.getElementById('modal-record-btn').addEventListener('click', () => {
-      isRecording = !isRecording;
-      const btn = document.getElementById('modal-record-btn');
-      btn.classList.toggle('recording', isRecording);
-      document.querySelector('.modal-subtext').textContent = isRecording ? '録音中... タップして停止' : 'タップして録音を開始';
+    document.getElementById('modal-record-btn').addEventListener('click', async () => {
+      if (isRecording) {
+        stopRecordingSession();
+        return;
+      }
+      await startRecordingSession();
     });
 
     modal.addEventListener('click', (e) => {
-      if (e.target === modal) showRecordingModal(false);
+      if (e.target === modal) {
+        if (isRecording) stopRecordingSession();
+        showRecordingModal(false);
+      }
     });
-  }
 
-  function getRecordingPreviewItem(project) {
-    const items = getProjectFeedbackItems(project);
-    return items.find(item => item.syncState !== 'synced') || items[0] || null;
+    updateRecordingStatusUI();
   }
 
   function renderRecordingPreview() {
@@ -1392,13 +1604,13 @@ function renderEditedSection() {
       <div class="modal-preview-card raw">
         <div class="modal-preview-label">生の音声FB</div>
         <div class="modal-preview-time">${preview.timestamp}</div>
-        <div class="modal-preview-text">${preview.rawVoiceText}</div>
+        <div class="modal-preview-text">${getActiveRawVoiceText(currentProject) || preview.rawVoiceText}</div>
       </div>
       <div class="modal-preview-arrow">→</div>
       <div class="modal-preview-card converted">
         <div class="modal-preview-label">Vimeo送信用レビュー</div>
         <div class="modal-preview-time">${preview.timestamp}</div>
-        <div class="modal-preview-text strong">${preview.convertedText}</div>
+        <div class="modal-preview-text strong">${getActiveConvertedText(currentProject) || preview.convertedText}</div>
         ${preview.referenceExample ? `
           <div class="modal-reference-box">
             <div class="modal-reference-title">参考事例</div>
@@ -1419,13 +1631,15 @@ function renderEditedSection() {
     const modal = document.getElementById('recording-modal');
     if (modal) {
       modal.classList.toggle('visible', show);
-      if (show) renderRecordingPreview();
+      if (show) {
+        renderRecordingPreview();
+        updateRecordingStatusUI();
+      }
       if (!show) {
-        isRecording = false;
-        const btn = document.getElementById('modal-record-btn');
-        if (btn) btn.classList.remove('recording');
-        const sub = document.querySelector('.modal-subtext');
-        if (sub) sub.textContent = 'タップして録音を開始';
+        resetRecordingSession();
+        recordingTranscript = '';
+        updateRecordingModalUI();
+        updateRecordingStatusUI();
       }
     }
   }

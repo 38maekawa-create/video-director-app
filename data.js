@@ -47,6 +47,12 @@ const MockData = {
         syncStatus: 'partial',
         pendingCount: 1,
         lastSyncedAt: '2026/03/11 16:20'
+      },
+      relay: {
+        endpoint: 'http://mac-relay.local/api/vimeo/review-comments',
+        authMode: 'relay_token',
+        targetVideoId: 'vimeo-vd-001',
+        routeStatus: 'ready'
       }
     },
     {
@@ -93,6 +99,12 @@ const MockData = {
         syncStatus: 'draftOnly',
         pendingCount: 1,
         lastSyncedAt: '2026/03/11 15:40'
+      },
+      relay: {
+        endpoint: 'http://mac-relay.local/api/vimeo/review-comments',
+        authMode: 'relay_token',
+        targetVideoId: 'vimeo-vd-002',
+        routeStatus: 'draft'
       }
     },
     {
@@ -139,6 +151,12 @@ const MockData = {
         syncStatus: 'synced',
         pendingCount: 0,
         lastSyncedAt: '2026/03/11 12:03'
+      },
+      relay: {
+        endpoint: 'http://mac-relay.local/api/vimeo/review-comments',
+        authMode: 'relay_token',
+        targetVideoId: 'vimeo-vd-003',
+        routeStatus: 'ready'
       }
     },
     {
@@ -185,6 +203,12 @@ const MockData = {
         syncStatus: 'synced',
         pendingCount: 0,
         lastSyncedAt: '2026/03/10 21:48'
+      },
+      relay: {
+        endpoint: 'http://mac-relay.local/api/vimeo/review-comments',
+        authMode: 'relay_token',
+        targetVideoId: 'vimeo-vd-004',
+        routeStatus: 'ready'
       }
     },
     {
@@ -231,6 +255,12 @@ const MockData = {
         syncStatus: 'synced',
         pendingCount: 0,
         lastSyncedAt: '2026/03/10 20:52'
+      },
+      relay: {
+        endpoint: 'http://mac-relay.local/api/vimeo/review-comments',
+        authMode: 'relay_token',
+        targetVideoId: 'vimeo-vd-005',
+        routeStatus: 'ready'
       }
     }
   ],

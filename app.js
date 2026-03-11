@@ -541,8 +541,23 @@ function renderEditedSection() {
             `).join('')}
           </div>
         ` : ''}
+        <div class="package-preview-box">
+          <div class="package-preview-title">Vimeo送信パッケージ</div>
+          <pre class="package-preview-code">${serializeVimeoReviewPayload(p)}</pre>
+        </div>
+        <div class="package-preview-box relay">
+          <div class="package-preview-title">Mac側中継APIリクエスト</div>
+          <div class="relay-meta-row">
+            <span>endpoint: ${p.relay?.endpoint || '-'}</span>
+            <span>route: ${p.relay?.routeStatus || '-'}</span>
+          </div>
+          <pre class="package-preview-code">${serializeRelayRequest(p)}</pre>
+        </div>
         <div class="detail-actions inline-actions">
           <button class="detail-link detail-link-button" data-report-tab="feedback">FB / 評価へ</button>
+          <button class="detail-link detail-link-button" id="export-vimeo-package-btn">JSONを書き出す</button>
+          <button class="detail-link detail-link-button" id="copy-vimeo-package-btn">JSONをコピー</button>
+          <button class="detail-link detail-link-button" id="copy-relay-request-btn">中継API用JSONをコピー</button>
         </div>
       </div>
     </div>
@@ -552,6 +567,22 @@ function renderEditedSection() {
   const exportBtn = document.getElementById('export-vimeo-package-btn');
   if (exportBtn) {
     exportBtn.addEventListener('click', () => exportVimeoReviewPackage(p));
+  }
+  const copyBtn = document.getElementById('copy-vimeo-package-btn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const copied = await copyVimeoReviewPackage(p);
+      copyBtn.textContent = copied ? 'コピー済み' : 'コピー不可';
+      setTimeout(() => { copyBtn.textContent = 'JSONをコピー'; }, 1400);
+    });
+  }
+  const relayBtn = document.getElementById('copy-relay-request-btn');
+  if (relayBtn) {
+    relayBtn.addEventListener('click', async () => {
+      const copied = await copyRelayRequest(p);
+      relayBtn.textContent = copied ? 'コピー済み' : 'コピー不可';
+      setTimeout(() => { relayBtn.textContent = '中継API用JSONをコピー'; }, 1400);
+    });
   }
 }
 
@@ -685,6 +716,10 @@ function renderEditedSection() {
     };
   }
 
+  function serializeVimeoReviewPayload(project) {
+    return JSON.stringify(buildVimeoReviewPayload(project), null, 2);
+  }
+
   function downloadJsonFile(filename, payload) {
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -697,9 +732,42 @@ function renderEditedSection() {
     URL.revokeObjectURL(url);
   }
 
+  async function copyVimeoReviewPackage(project) {
+    const text = serializeVimeoReviewPayload(project);
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    return false;
+  }
+
   function exportVimeoReviewPackage(project) {
     const payload = buildVimeoReviewPayload(project);
     downloadJsonFile(`${project.videoId}-vimeo-review-package.json`, payload);
+  }
+
+
+  function buildRelayRequest(project) {
+    return {
+      endpoint: project.relay?.endpoint || null,
+      method: 'POST',
+      authMode: project.relay?.authMode || 'relay_token',
+      targetVideoId: project.relay?.targetVideoId || null,
+      body: buildVimeoReviewPayload(project)
+    };
+  }
+
+  function serializeRelayRequest(project) {
+    return JSON.stringify(buildRelayRequest(project), null, 2);
+  }
+
+  async function copyRelayRequest(project) {
+    const text = serializeRelayRequest(project);
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    return false;
   }
 
   function renderKnowledgeSection() {

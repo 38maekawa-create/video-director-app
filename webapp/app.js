@@ -458,7 +458,7 @@
         <!-- スコア推移グラフ -->
         <div class="trend-card">
           <div class="card-title-row">
-            <span class="card-title-icon">📈</span>
+            <span class="card-title-icon">^</span>
             <span class="card-title">スコア推移（過去10回）</span>
           </div>
           <canvas id="trend-chart"></canvas>
@@ -468,7 +468,7 @@
         <!-- カテゴリ別スコア -->
         <div class="category-card">
           <div class="card-title-row">
-            <span class="card-title-icon">📊</span>
+            <span class="card-title-icon">#</span>
             <span class="card-title">カテゴリ別スコア</span>
           </div>
           <div class="category-grid">
@@ -488,7 +488,7 @@
         <!-- 改善提案 -->
         <div class="suggestions-card">
           <div class="card-title-row">
-            <span class="card-title-icon">💡</span>
+            <span class="card-title-icon">*</span>
             <span class="card-title">AIからの改善提案</span>
           </div>
           ${MockData.improvementSuggestions.map(s => `
@@ -505,7 +505,7 @@
         <!-- アラート -->
         <div class="alerts-card">
           <div class="card-title-row">
-            <span class="card-title-icon" style="color: var(--accent)">⚠️</span>
+            <span class="card-title-icon" style="color: var(--accent)">!</span>
             <span class="card-title">品質アラート</span>
           </div>
           ${MockData.alerts.map(a => `

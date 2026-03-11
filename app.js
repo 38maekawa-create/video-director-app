@@ -426,6 +426,12 @@
   function renderEditedSection() {
     const p = currentProject;
     const container = document.getElementById('report-sections');
+    const syncLabelMap = {
+      synced: 'Vimeo同期済み',
+      partial: '一部未送信あり',
+      draftOnly: '変換レビュー待ち'
+    };
+
     container.innerHTML = `
       <div class="report-stack">
         <div class="detail-card">
@@ -438,6 +444,21 @@
           <div class="detail-actions">
             <a href="${p.editedVideo?.editedUrl || '#'}" target="_blank" class="detail-link">編集後を開く ↗</a>
             <a href="${p.vimeoReview?.url || '#'}" target="_blank" class="detail-link">Vimeoレビュー ↗</a>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title">レビュー同期状況</div>
+          <div class="sync-summary-row">
+            <div class="sync-status-pill ${p.vimeoReview?.syncStatus || 'draftOnly'}">
+              ${syncLabelMap[p.vimeoReview?.syncStatus] || '未設定'}
+            </div>
+            <div class="sync-meta">
+              <span>未送信 ${p.vimeoReview?.pendingCount ?? 0}</span>
+              <span>最終同期 ${p.vimeoReview?.lastSyncedAt || '-'}</span>
+            </div>
+          </div>
+          <div class="summary-callout">
+            スマホ音声FB → 変換レビュー → Vimeoコメント投稿 → アプリ内タイムライン同期、の流れをここで追えるようにする。
           </div>
         </div>
       </div>
@@ -495,7 +516,12 @@
             <div class="timeline-card" id="feedback-${item.id}">
               <div class="timeline-head">
                 <span class="timeline-time">${item.timestamp}</span>
-                <span class="sent-badge ${item.isSent ? 'sent' : 'unsent'}">${item.isSent ? '送信済み' : '未送信'}</span>
+                <div class="timeline-badges">
+                  <span class="sent-badge ${item.isSent ? 'sent' : 'unsent'}">${item.isSent ? '送信済み' : '未送信'}</span>
+                  <span class="review-sync-badge ${item.syncState || 'draftOnly'}">
+                    ${renderSyncBadgeLabel(item.syncState)}
+                  </span>
+                </div>
               </div>
               <div class="timeline-raw">${item.rawVoiceText}</div>
               <div class="timeline-converted">${item.convertedText}</div>
@@ -526,6 +552,16 @@
         }
       });
     });
+  }
+
+  function renderSyncBadgeLabel(syncState) {
+    const labels = {
+      synced: 'Vimeo同期済み',
+      pending_sync: '送信待ち',
+      awaiting_editor: '編集者確認中',
+      draftOnly: '変換レビューのみ'
+    };
+    return labels[syncState] || '状態未設定';
   }
 
   function renderKnowledgeSection() {

@@ -41,7 +41,10 @@ const MockData = {
       },
       vimeoReview: {
         url: '#vimeo-vd-001',
-        statusLabel: 'コメント未送信あり'
+        statusLabel: 'コメント未送信あり',
+        syncStatus: 'partial',
+        pendingCount: 1,
+        lastSyncedAt: '2026/03/11 16:20'
       }
     },
     {
@@ -82,7 +85,10 @@ const MockData = {
       },
       vimeoReview: {
         url: '#vimeo-vd-002',
-        statusLabel: '変換レビュー待ち'
+        statusLabel: '変換レビュー待ち',
+        syncStatus: 'draftOnly',
+        pendingCount: 1,
+        lastSyncedAt: '2026/03/11 15:40'
       }
     },
     {
@@ -123,7 +129,10 @@ const MockData = {
       },
       vimeoReview: {
         url: '#vimeo-vd-003',
-        statusLabel: '確認済み'
+        statusLabel: '確認済み',
+        syncStatus: 'synced',
+        pendingCount: 0,
+        lastSyncedAt: '2026/03/11 12:03'
       }
     },
     {
@@ -164,7 +173,10 @@ const MockData = {
       },
       vimeoReview: {
         url: '#vimeo-vd-004',
-        statusLabel: '公開完了'
+        statusLabel: '公開完了',
+        syncStatus: 'synced',
+        pendingCount: 0,
+        lastSyncedAt: '2026/03/10 21:48'
       }
     },
     {
@@ -205,7 +217,10 @@ const MockData = {
       },
       vimeoReview: {
         url: '#vimeo-vd-005',
-        statusLabel: '公開完了'
+        statusLabel: '公開完了',
+        syncStatus: 'synced',
+        pendingCount: 0,
+        lastSyncedAt: '2026/03/10 20:52'
       }
     }
   ],
@@ -266,6 +281,8 @@ const MockData = {
       convertedText: '02:18付近のテロップ情報量を減らし、1カット1メッセージに整理してください。',
       isSent: true,
       editorStatus: '対応済み',
+      reviewMode: 'transformed',
+      syncState: 'synced',
       learningEffect: '次案件で平均テロップ文字数が18%改善',
       referenceExample: {
         title: '会話密度が高い対談の整理例',
@@ -284,6 +301,8 @@ const MockData = {
       convertedText: '05:01-05:16のBロールを差し替え、カット間隔を2秒以内に短縮してください。',
       isSent: false,
       editorStatus: '未対応',
+      reviewMode: 'transformed',
+      syncState: 'pending_sync',
       learningEffect: '',
       referenceExample: {
         title: 'テンポ改善のBロール差し替え事例',
@@ -302,6 +321,8 @@ const MockData = {
       convertedText: '00:44-01:05のBGMレベルを-3dB調整し、ナレーション明瞭度を優先してください。',
       isSent: true,
       editorStatus: '確認中',
+      reviewMode: 'transformed',
+      syncState: 'awaiting_editor',
       learningEffect: '同編集者の音声明瞭度スコア +7',
       referenceExample: {
         title: '会話主体コンテンツの音量設計例',
@@ -320,6 +341,8 @@ const MockData = {
       convertedText: '冒頭15秒に結論を先出しし、視聴者が自分ごと化できるフックを挿入してください。',
       isSent: true,
       editorStatus: '対応済み',
+      reviewMode: 'transformed',
+      syncState: 'synced',
       learningEffect: '冒頭離脱率が23%改善',
       referenceExample: {
         title: 'フック先出し型の冒頭構成例',

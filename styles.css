@@ -787,6 +787,52 @@ html, body {
   margin-bottom: 12px;
 }
 
+.sync-summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.sync-status-pill,
+.review-sync-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.sync-status-pill.synced,
+.review-sync-badge.synced {
+  background: rgba(70,211,105,0.18);
+  color: #9af0b0;
+}
+
+.sync-status-pill.partial,
+.review-sync-badge.awaiting_editor {
+  background: rgba(245,166,35,0.18);
+  color: #ffd48d;
+}
+
+.sync-status-pill.draftOnly,
+.review-sync-badge.pending_sync,
+.review-sync-badge.draftOnly {
+  background: rgba(229,9,20,0.18);
+  color: #ff9aa1;
+}
+
+.sync-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .detail-chip {
   display: inline-flex;
   align-items: center;
@@ -822,6 +868,13 @@ html, body {
 .timeline-list {
   display: grid;
   gap: 12px;
+}
+
+.timeline-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .review-timeline-shell {

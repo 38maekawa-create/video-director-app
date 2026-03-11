@@ -324,6 +324,48 @@ function wireReportTabJumps(container) {
   });
 }
 
+
+function refreshProjectSyncSummary(project) {
+  const items = getProjectFeedbackItems(project);
+  const pendingItems = items.filter(item => !item.isSent || item.syncState === 'pending_sync' || item.syncState === 'draftOnly');
+  project.hasUnsentFeedback = pendingItems.length > 0;
+  project.feedbackSummary = project.feedbackSummary || {};
+  project.feedbackSummary.historyCount = items.length;
+  project.feedbackSummary.latestFeedback = items[0]?.convertedText || project.feedbackSummary.latestFeedback || '';
+  project.vimeoReview = project.vimeoReview || {};
+  project.vimeoReview.pendingCount = pendingItems.length;
+  project.vimeoReview.lastSyncedAt = new Date().toLocaleString('ja-JP');
+
+  if (pendingItems.length === 0) {
+    project.vimeoReview.syncStatus = 'awaiting_editor';
+    project.vimeoReview.statusLabel = '編集者確認待ち';
+  } else if (pendingItems.length < items.length) {
+    project.vimeoReview.syncStatus = 'partial';
+    project.vimeoReview.statusLabel = '一部未送信あり';
+  } else {
+    project.vimeoReview.syncStatus = 'draftOnly';
+    project.vimeoReview.statusLabel = '変換レビュー待ち';
+  }
+}
+
+function simulateRelaySend(project) {
+  const items = getProjectFeedbackItems(project);
+  let sentCount = 0;
+  items.forEach(item => {
+    if (!item.isSent || item.syncState === 'pending_sync' || item.syncState === 'draftOnly') {
+      item.isSent = true;
+      item.syncState = 'awaiting_editor';
+      item.editorStatus = '編集者確認待ち';
+      sentCount += 1;
+    }
+  });
+  project.relay = project.relay || {};
+  project.relay.routeStatus = sentCount > 0 ? 'sent' : (project.relay.routeStatus || 'ready');
+  refreshProjectSyncSummary(project);
+  renderHome();
+  renderReport();
+}
+
 function renderOverviewSection() {
   const p = currentProject;
   const feedbackItems = getProjectFeedbackItems(p);
@@ -497,7 +539,8 @@ function renderEditedSection() {
   const syncLabelMap = {
     synced: 'Vimeo同期済み',
     partial: '一部未送信あり',
-    draftOnly: '変換レビュー待ち'
+    draftOnly: '変換レビュー待ち',
+    awaiting_editor: '編集者確認待ち'
   };
 
   container.innerHTML = `
@@ -550,14 +593,21 @@ function renderEditedSection() {
           <div class="relay-meta-row">
             <span>endpoint: ${p.relay?.endpoint || '-'}</span>
             <span>route: ${p.relay?.routeStatus || '-'}</span>
+            <span>auth: ${p.relay?.authMode || '-'}</span>
           </div>
           <pre class="package-preview-code">${serializeRelayRequest(p)}</pre>
+        </div>
+        <div class="package-preview-box relay">
+          <div class="package-preview-title">relay送信用 curl</div>
+          <pre class="package-preview-code">${buildRelayCurlCommand(p)}</pre>
         </div>
         <div class="detail-actions inline-actions">
           <button class="detail-link detail-link-button" data-report-tab="feedback">FB / 評価へ</button>
           <button class="detail-link detail-link-button" id="export-vimeo-package-btn">JSONを書き出す</button>
           <button class="detail-link detail-link-button" id="copy-vimeo-package-btn">JSONをコピー</button>
           <button class="detail-link detail-link-button" id="copy-relay-request-btn">中継API用JSONをコピー</button>
+          <button class="detail-link detail-link-button" id="copy-relay-curl-btn">curlをコピー</button>
+          <button class="detail-link detail-link-button primary" id="simulate-relay-send-btn">relay送信をシミュレート</button>
         </div>
       </div>
     </div>
@@ -583,6 +633,18 @@ function renderEditedSection() {
       relayBtn.textContent = copied ? 'コピー済み' : 'コピー不可';
       setTimeout(() => { relayBtn.textContent = '中継API用JSONをコピー'; }, 1400);
     });
+  }
+  const relayCurlBtn = document.getElementById('copy-relay-curl-btn');
+  if (relayCurlBtn) {
+    relayCurlBtn.addEventListener('click', async () => {
+      const copied = await copyRelayCurlCommand(p);
+      relayCurlBtn.textContent = copied ? 'コピー済み' : 'コピー不可';
+      setTimeout(() => { relayCurlBtn.textContent = 'curlをコピー'; }, 1400);
+    });
+  }
+  const simulateBtn = document.getElementById('simulate-relay-send-btn');
+  if (simulateBtn) {
+    simulateBtn.addEventListener('click', () => simulateRelaySend(p));
   }
 }
 
@@ -687,7 +749,7 @@ function renderEditedSection() {
     const labels = {
       synced: 'Vimeo同期済み',
       pending_sync: '送信待ち',
-      awaiting_editor: '編集者確認中',
+      awaiting_editor: '編集者確認待ち',
       draftOnly: '変換レビューのみ'
     };
     return labels[syncState] || '状態未設定';
@@ -761,8 +823,23 @@ function renderEditedSection() {
     return JSON.stringify(buildRelayRequest(project), null, 2);
   }
 
+  function buildRelayCurlCommand(project) {
+    const request = buildRelayRequest(project);
+    const body = JSON.stringify(request.body).replace(/'/g, "'\''");
+    return `curl -X ${request.method} "${request.endpoint}" -H "Content-Type: application/json" -H "X-Relay-Auth: ${request.authMode}" -d '${body}'`;
+  }
+
   async function copyRelayRequest(project) {
     const text = serializeRelayRequest(project);
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    return false;
+  }
+
+  async function copyRelayCurlCommand(project) {
+    const text = buildRelayCurlCommand(project);
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(text);
       return true;

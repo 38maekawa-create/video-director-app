@@ -173,6 +173,24 @@
     };
   }
 
+  function buildLearningSnapshot() {
+    const learning = deriveQualityLearning();
+    return {
+      exportedAt: new Date().toISOString(),
+      categoryScores: learning.categoryScores,
+      suggestions: learning.suggestions,
+      alerts: learning.alerts,
+      recentLearnings: learning.recentLearnings,
+      referenceDeck: learning.referenceDeck,
+      feedbackCount: MockData.historyItems.length,
+      projectCount: MockData.projects.length
+    };
+  }
+
+  function exportLearningSnapshot() {
+    downloadJsonFile(`video-learning-snapshot-${Date.now()}.json`, buildLearningSnapshot());
+  }
+
   // ===== スコア色判定 =====
   function hasNavigableUrl(url) {
     return !!url && !String(url).startsWith('#');
@@ -1702,6 +1720,9 @@ function renderEditedSection() {
             <span class="card-title-icon">L</span>
             <span class="card-title">学習された改善知見</span>
           </div>
+          <div class="detail-actions inline-actions">
+            <button class="detail-link detail-link-button" id="export-learning-snapshot-btn">学習スナップショットを書き出す</button>
+          </div>
           ${learning.recentLearnings.length ? learning.recentLearnings.map(item => `
             <div class="suggestion-item">
               <div>
@@ -1732,6 +1753,11 @@ function renderEditedSection() {
 
     // グラフ描画
     requestAnimationFrame(() => drawTrendChart());
+
+    const exportLearningBtn = document.getElementById('export-learning-snapshot-btn');
+    if (exportLearningBtn) {
+      exportLearningBtn.addEventListener('click', () => exportLearningSnapshot());
+    }
 
     // ラベル
     const labelsContainer = document.getElementById('trend-labels');

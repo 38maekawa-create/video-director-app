@@ -9,6 +9,7 @@
   let currentProject = null;
   let historyFilter = 'all';
   let isRecording = false;
+  let currentReportTab = '概要';
 
   // ===== 初期化 =====
   document.addEventListener('DOMContentLoaded', init);
@@ -130,6 +131,12 @@
         </div>
         <div class="card-guest">${p.guestName}</div>
         <div class="card-date">${p.shootDate}</div>
+        <div class="card-flags">
+          <span class="card-flag">素材</span>
+          <span class="card-flag">編集後</span>
+          ${p.knowledge ? '<span class="card-flag">KB</span>' : ''}
+          ${p.feedbackSummary?.historyCount ? `<span class="card-flag">FB ${p.feedbackSummary.historyCount}</span>` : ''}
+        </div>
       </div>
     `;
   }
@@ -174,6 +181,7 @@
   function renderReport(p) {
     const content = document.getElementById('report-content');
     const gradient = `linear-gradient(135deg, ${statusGradient(p.status)}, var(--card))`;
+    currentReportTab = '概要';
 
     content.innerHTML = `
       <button class="back-btn" id="report-back">← 戻る</button>
@@ -192,7 +200,7 @@
           <span>${p.shootDate}</span>
         </div>
         <div class="report-actions">
-          <button class="btn-vimeo">▶ Vimeoレビューを開く</button>
+          <button class="btn-vimeo" id="open-vimeo-review">▶ Vimeoレビューを開く</button>
           ${p.qualityScore ? `
             <div class="score-display">
               <div class="score-value ${scoreClass(p.qualityScore)}" style="color: ${scoreColor(p.qualityScore)}">${p.qualityScore}</div>
@@ -209,29 +217,24 @@
     document.getElementById('report-back').addEventListener('click', () => {
       navigateTo('home');
     });
+    document.getElementById('open-vimeo-review').addEventListener('click', () => {
+      window.open(p.vimeoReview?.url || '#', '_blank');
+    });
 
     // タブ
     renderReportTabs();
-    renderReportSection(0);
+    renderReportTab(currentReportTab);
 
     // 下部アクションバー表示
     showBottomActionBar(true);
   }
 
   function renderReportTabs() {
-    // ナレッジページの有無を確認
-    const knowledgePage = (typeof findKnowledgePage === 'function' && currentProject)
-      ? findKnowledgePage(currentProject.guestName)
-      : null;
-
-    const tabs = ['演出', 'テロップ', 'カメラ', '音声FB'];
-    if (knowledgePage) {
-      tabs.push('ナレッジ');
-    }
+    const tabs = ['概要', 'ディレクション', '素材', '編集後', 'FB / 評価', 'ナレッジ'];
 
     const container = document.getElementById('report-tabs');
     container.innerHTML = tabs.map((t, i) => `
-      <button class="tab-selector-btn ${i === 0 ? 'active' : ''}" data-index="${i}" data-tab-name="${t}">
+      <button class="tab-selector-btn ${i === 0 ? 'active' : ''}" data-tab-name="${t}">
         <span class="tab-label">${t}</span>
         <div class="tab-indicator"></div>
       </button>
@@ -241,25 +244,109 @@
       btn.addEventListener('click', () => {
         container.querySelectorAll('.tab-selector-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const tabName = btn.dataset.tabName;
-        if (tabName === 'ナレッジ') {
-          renderKnowledgePage(knowledgePage);
-        } else {
-          renderReportSection(parseInt(btn.dataset.index));
-        }
+        currentReportTab = btn.dataset.tabName;
+        renderReportTab(currentReportTab);
       });
     });
   }
 
-  function renderReportSection(index) {
-    const container = document.getElementById('report-sections');
-    const section = MockData.reportSections[index];
-    if (!section) {
-      container.innerHTML = '';
-      return;
+  function renderReportTab(tabName) {
+    switch (tabName) {
+      case '概要':
+        renderOverviewSection();
+        break;
+      case 'ディレクション':
+        renderDirectionSection();
+        break;
+      case '素材':
+        renderSourceSection();
+        break;
+      case '編集後':
+        renderEditedSection();
+        break;
+      case 'FB / 評価':
+        renderFeedbackSection();
+        break;
+      case 'ナレッジ':
+        renderKnowledgeSection();
+        break;
+      default:
+        renderOverviewSection();
     }
+  }
+
+  function getProjectFeedbackItems(project) {
+    return MockData.historyItems.filter(item => item.videoId === project.videoId);
+  }
+
+  function getProjectKnowledgeFile(project) {
+    if (typeof findKnowledgePage !== 'function') return null;
+    return findKnowledgePage(project.guestName);
+  }
+
+  function renderOverviewSection() {
+    const p = currentProject;
+    const feedbackItems = getProjectFeedbackItems(p);
+    const knowledgeFile = getProjectKnowledgeFile(p);
+    const container = document.getElementById('report-sections');
 
     container.innerHTML = `
+      <div class="report-stack">
+        <div class="info-card">
+          <div class="info-card-title">案件サマリー</div>
+          <div class="info-grid two-col">
+            <div class="info-pill">
+              <span class="info-pill-label">videoId</span>
+              <span class="info-pill-value">${p.videoId}</span>
+            </div>
+            <div class="info-pill">
+              <span class="info-pill-label">Vimeo</span>
+              <span class="info-pill-value">${p.vimeoReview?.statusLabel || '未設定'}</span>
+            </div>
+            <div class="info-pill">
+              <span class="info-pill-label">素材</span>
+              <span class="info-pill-value">${p.sourceVideo?.duration || '-'}</span>
+            </div>
+            <div class="info-pill">
+              <span class="info-pill-label">FB件数</span>
+              <span class="info-pill-value">${feedbackItems.length}</span>
+            </div>
+          </div>
+          <div class="summary-callout">
+            ${p.feedbackSummary?.evaluation || 'この案件の評価サマリーは未設定です。'}
+          </div>
+        </div>
+
+        <div class="before-after-board">
+          <div class="ba-card">
+            <div class="ba-label">BEFORE</div>
+            <div class="ba-title">${p.sourceVideo?.title || '素材未設定'}</div>
+            <div class="ba-meta">${p.sourceVideo?.duration || '-'} / ${p.sourceVideo?.summary || ''}</div>
+          </div>
+          <div class="ba-arrow">→</div>
+          <div class="ba-card after">
+            <div class="ba-label">AFTER</div>
+            <div class="ba-title">${p.editedVideo?.title || '編集後未設定'}</div>
+            <div class="ba-meta">${p.editedVideo?.statusLabel || '-'} / 品質 ${p.editedVideo?.qualityScore ?? '-'}</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-title">連携状況</div>
+          <div class="link-list">
+            <div class="link-row"><span>素材URL</span><a href="${p.sourceVideo?.sourceUrl || '#'}" target="_blank">開く ↗</a></div>
+            <div class="link-row"><span>編集後URL</span><a href="${p.editedVideo?.editedUrl || '#'}" target="_blank">開く ↗</a></div>
+            <div class="link-row"><span>Vimeoレビュー</span><a href="${p.vimeoReview?.url || '#'}" target="_blank">開く ↗</a></div>
+            <div class="link-row"><span>ナレッジ</span><span>${knowledgeFile ? 'あり' : '未生成'}</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderDirectionSection() {
+    const container = document.getElementById('report-sections');
+    container.innerHTML = MockData.reportSections.map(section => `
       <div class="expandable-section" id="section-${section.id}">
         <div class="expandable-header">
           <span class="section-icon">${section.icon}</span>
@@ -275,15 +362,145 @@
           `).join('')}
         </div>
       </div>
-    `;
+    `).join('');
 
-    // 折りたたみ動作
     container.querySelectorAll('.expandable-header').forEach(header => {
       header.addEventListener('click', () => {
         const section = header.closest('.expandable-section');
         section.classList.toggle('collapsed');
       });
     });
+  }
+
+  function renderSourceSection() {
+    const p = currentProject;
+    const container = document.getElementById('report-sections');
+    container.innerHTML = `
+      <div class="report-stack">
+        <div class="detail-card">
+          <div class="detail-card-header">
+            <span class="detail-chip">素材</span>
+            <span class="detail-score">${p.sourceVideo?.duration || '-'}</span>
+          </div>
+          <div class="detail-card-title">${p.sourceVideo?.title || '素材未設定'}</div>
+          <div class="detail-card-body">${p.sourceVideo?.summary || '素材要約はまだありません。'}</div>
+          <div class="detail-actions">
+            <a href="${p.sourceVideo?.sourceUrl || '#'}" target="_blank" class="detail-link">素材を開く ↗</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderEditedSection() {
+    const p = currentProject;
+    const container = document.getElementById('report-sections');
+    container.innerHTML = `
+      <div class="report-stack">
+        <div class="detail-card">
+          <div class="detail-card-header">
+            <span class="detail-chip success">${p.editedVideo?.statusLabel || '編集後未設定'}</span>
+            <span class="detail-score">品質 ${p.editedVideo?.qualityScore ?? '-'}</span>
+          </div>
+          <div class="detail-card-title">${p.editedVideo?.title || '編集後未設定'}</div>
+          <div class="detail-card-body">${p.feedbackSummary?.latestFeedback || '最新フィードバックはまだありません。'}</div>
+          <div class="detail-actions">
+            <a href="${p.editedVideo?.editedUrl || '#'}" target="_blank" class="detail-link">編集後を開く ↗</a>
+            <a href="${p.vimeoReview?.url || '#'}" target="_blank" class="detail-link">Vimeoレビュー ↗</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderFeedbackSection() {
+    const p = currentProject;
+    const feedbackItems = getProjectFeedbackItems(p);
+    const container = document.getElementById('report-sections');
+
+    if (!feedbackItems.length) {
+      container.innerHTML = `
+        <div class="knowledge-empty">
+          <div class="knowledge-empty-icon">FB</div>
+          <div class="knowledge-empty-text">フィードバック履歴なし</div>
+          <div class="knowledge-empty-sub">この案件に紐づいた音声FBはまだありません</div>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="report-stack">
+        <div class="info-card">
+          <div class="info-card-title">評価サマリー</div>
+          <div class="summary-callout">${p.feedbackSummary?.evaluation || '-'}</div>
+        </div>
+        <div class="timeline-list">
+          ${feedbackItems.map(item => `
+            <div class="timeline-card">
+              <div class="timeline-head">
+                <span class="timeline-time">${item.timestamp}</span>
+                <span class="sent-badge ${item.isSent ? 'sent' : 'unsent'}">${item.isSent ? '送信済み' : '未送信'}</span>
+              </div>
+              <div class="timeline-raw">${item.rawVoiceText}</div>
+              <div class="timeline-converted">${item.convertedText}</div>
+              ${item.referenceExample ? `
+                <div class="reference-box">
+                  <div class="reference-title">参考事例</div>
+                  <a href="${item.referenceExample.url}" target="_blank" class="reference-link">${item.referenceExample.title} ↗</a>
+                  <div class="reference-note">${item.referenceExample.note}</div>
+                </div>
+              ` : ''}
+              <div class="timeline-foot">
+                <span>${item.editorStatus}</span>
+                ${item.learningEffect ? `<span>${item.learningEffect}</span>` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderKnowledgeSection() {
+    const p = currentProject;
+    const knowledgePage = getProjectKnowledgeFile(p);
+    const container = document.getElementById('report-sections');
+
+    if (!knowledgePage) {
+      renderKnowledgePage(null);
+      return;
+    }
+
+    const encodedFilename = encodeURIComponent(knowledgePage);
+    container.innerHTML = `
+      <div class="report-stack">
+        <div class="info-card">
+          <div class="info-card-title">素材ナレッジ要約</div>
+          <div class="summary-callout">${p.knowledge?.summary || '要約未設定'}</div>
+          <div class="link-list compact">
+            <div class="link-row"><span>全文文字起こし</span><span>${p.knowledge?.transcriptAvailable ? 'あり' : 'なし'}</span></div>
+          </div>
+        </div>
+        <div class="knowledge-viewer">
+          <div class="knowledge-header">
+            <span class="knowledge-header-icon">KN</span>
+            <span class="knowledge-header-title">動画ナレッジページ</span>
+          </div>
+          <div class="knowledge-iframe-wrap">
+            <iframe
+              src="knowledge-pages/${encodedFilename}"
+              class="knowledge-iframe"
+              sandbox="allow-same-origin"
+              title="動画ナレッジページ"
+            ></iframe>
+          </div>
+          <a href="knowledge-pages/${encodedFilename}" target="_blank" class="knowledge-open-btn">
+            全文を別タブで開く ↗
+          </a>
+        </div>
+      </div>
+    `;
   }
 
   // ===== ナレッジページ表示 =====

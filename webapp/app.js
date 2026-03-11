@@ -64,8 +64,8 @@
         <div class="hero-guest-name">${hero.guestName}</div>
         <div class="hero-title">${hero.title}</div>
         <div class="hero-meta">
-          <span>📅 ${hero.shootDate}</span>
-          ${hero.qualityScore ? `<span>📊 スコア ${hero.qualityScore}</span>` : ''}
+          <span>${hero.shootDate}</span>
+          ${hero.qualityScore ? `<span>Score ${hero.qualityScore}</span>` : ''}
         </div>
         <div class="hero-badges">
           <span class="badge badge-status" data-status="${hero.status}">${hero.statusLabel}</span>
@@ -79,14 +79,14 @@
 
     // カルーセル: 最近のフィードバック（未送信FBがあるもの）
     const recentFB = projects.filter(p => p.hasUnsentFeedback);
-    renderCarousel('carousel-recent', '最近のフィードバック', '💬', recentFB);
+    renderCarousel('carousel-recent', '最近のフィードバック', 'FB', recentFB);
 
     // カルーセル: 要対応（未レビューがあるもの）
     const actionRequired = projects.filter(p => p.unreviewedCount > 0);
-    renderCarousel('carousel-action', '要対応', '⚠️', actionRequired);
+    renderCarousel('carousel-action', '要対応', '!', actionRequired);
 
     // カルーセル: 全プロジェクト
-    renderCarousel('carousel-all', '全プロジェクト', '🎞️', projects);
+    renderCarousel('carousel-all', '全プロジェクト', 'ALL', projects);
   }
 
   function renderCarousel(containerId, title, icon, projects) {
@@ -161,7 +161,7 @@
       : all;
 
     // 全プロジェクトカルーセルのみ更新
-    renderCarousel('carousel-all', '全プロジェクト', '🎞️', filtered);
+    renderCarousel('carousel-all', '全プロジェクト', 'ALL', filtered);
   }
 
   // ===== 画面2: レポート詳細 =====
@@ -187,9 +187,9 @@
         <div class="report-guest-name">${p.guestName}</div>
         <div class="report-title">${p.title}</div>
         <div class="report-meta">
-          ${p.guestAge ? `<span>👤 ${p.guestAge}歳</span>` : ''}
-          ${p.guestOccupation ? `<span>💼 ${p.guestOccupation}</span>` : ''}
-          <span>📅 ${p.shootDate}</span>
+          ${p.guestAge ? `<span>${p.guestAge}歳</span>` : ''}
+          ${p.guestOccupation ? `<span>${p.guestOccupation}</span>` : ''}
+          <span>${p.shootDate}</span>
         </div>
         <div class="report-actions">
           <button class="btn-vimeo">▶ Vimeoレビューを開く</button>
@@ -292,7 +292,7 @@
     if (!filename) {
       container.innerHTML = `
         <div class="knowledge-empty">
-          <div class="knowledge-empty-icon">📄</div>
+          <div class="knowledge-empty-icon">--</div>
           <div class="knowledge-empty-text">ナレッジページ未生成</div>
           <div class="knowledge-empty-sub">この対談動画のナレッジページはまだ作成されていません</div>
         </div>
@@ -304,7 +304,7 @@
     container.innerHTML = `
       <div class="knowledge-viewer">
         <div class="knowledge-header">
-          <span class="knowledge-header-icon">📚</span>
+          <span class="knowledge-header-icon">KN</span>
           <span class="knowledge-header-title">動画ナレッジページ</span>
         </div>
         <div class="knowledge-iframe-wrap">
@@ -330,7 +330,7 @@
       bar.className = 'bottom-action-bar';
       bar.innerHTML = `
         <button class="btn-voice-fb">
-          🎙️ 音声フィードバックを追加
+          + 音声フィードバックを追加
         </button>
       `;
       bar.querySelector('.btn-voice-fb').addEventListener('click', () => {

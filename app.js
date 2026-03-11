@@ -521,6 +521,8 @@ function renderOverviewSection() {
 function renderSourceSection() {
   const p = currentProject;
   const knowledgeHighlights = p.knowledge?.highlights || [];
+  const knowledgeFile = getProjectKnowledgeFile(p);
+  const encodedFilename = knowledgeFile ? encodeURIComponent(knowledgeFile) : null;
   const container = document.getElementById('report-sections');
   container.innerHTML = `
     <div class="report-stack">
@@ -543,9 +545,34 @@ function renderSourceSection() {
         </div>
         <div class="detail-actions">
           ${renderExternalLink(p.sourceVideo?.sourceUrl, '素材を開く ↗', 'detail-link')}
-          <button class="detail-link detail-link-button" data-report-tab="knowledge">ナレッジを開く</button>
+          <button class="detail-link detail-link-button" data-report-tab="knowledge">ナレッジタブを開く</button>
         </div>
       </div>
+      ${knowledgeFile ? `
+        <div class="knowledge-viewer embedded-source-knowledge">
+          <div class="knowledge-header">
+            <span class="knowledge-header-icon">KN</span>
+            <span class="knowledge-header-title">素材ナレッジ閲覧ページ</span>
+          </div>
+          <div class="knowledge-iframe-wrap">
+            <iframe
+              src="knowledge-pages/${encodedFilename}"
+              class="knowledge-iframe"
+              sandbox="allow-same-origin"
+              title="素材ナレッジ閲覧ページ"
+            ></iframe>
+          </div>
+          <a href="knowledge-pages/${encodedFilename}" target="_blank" class="knowledge-open-btn">
+            閲覧ページを別タブで開く ↗
+          </a>
+        </div>
+      ` : `
+        <div class="knowledge-empty">
+          <div class="knowledge-empty-icon">KN</div>
+          <div class="knowledge-empty-text">素材ナレッジ閲覧ページ未生成</div>
+          <div class="knowledge-empty-sub">スプシの閲覧ページ相当データはまだ利用できません</div>
+        </div>
+      `}
     </div>
   `;
 

@@ -24,6 +24,17 @@
   }
 
   // ===== スコア色判定 =====
+  function hasNavigableUrl(url) {
+    return !!url && !String(url).startsWith('#');
+  }
+
+  function renderExternalLink(url, label, className = 'detail-link') {
+    if (!hasNavigableUrl(url)) {
+      return `<span class="${className} is-disabled" aria-disabled="true">${label}</span>`;
+    }
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="${className}">${label}</a>`;
+  }
+
   function scoreColor(score) {
     if (score >= 85) return 'var(--status-complete)';
     if (score >= 70) return 'var(--status-editing)';
@@ -219,7 +230,7 @@
           <span>${p.shootDate}</span>
         </div>
         <div class="report-actions">
-          <button class="btn-vimeo" id="open-vimeo-review">▶ Vimeoレビューを開く</button>
+          <button class="btn-vimeo ${hasNavigableUrl(p.vimeoReview?.url) ? '' : 'is-disabled'}" id="open-vimeo-review" ${hasNavigableUrl(p.vimeoReview?.url) ? '' : 'disabled'}>▶ Vimeoレビューを開く</button>
           ${p.qualityScore ? `
             <div class="score-display">
               <div class="score-value ${scoreClass(p.qualityScore)}" style="color: ${scoreColor(p.qualityScore)}">${p.qualityScore}</div>
@@ -237,7 +248,8 @@
       navigateTo('home');
     });
     document.getElementById('open-vimeo-review').addEventListener('click', () => {
-      window.open(p.vimeoReview?.url || '#', '_blank');
+      if (!hasNavigableUrl(p.vimeoReview?.url)) return;
+      window.open(p.vimeoReview.url, '_blank', 'noopener,noreferrer');
     });
 
     // タブ
@@ -420,7 +432,7 @@ function renderOverviewSection() {
         <div class="link-list">
           <div class="link-row"><span>素材URL</span><a href="${p.sourceVideo?.sourceUrl || '#'}" target="_blank">開く ↗</a></div>
           <div class="link-row"><span>編集後URL</span><a href="${p.editedVideo?.editedUrl || '#'}" target="_blank">開く ↗</a></div>
-          <div class="link-row"><span>Vimeoレビュー</span><a href="${p.vimeoReview?.url || '#'}" target="_blank">開く ↗</a></div>
+          <div class="link-row"><span>Vimeoレビュー</span>${renderExternalLink(p.vimeoReview?.url, '開く ↗', 'inline-link')}</div>
           <div class="link-row"><span>ナレッジ</span><span>${knowledgeFile ? 'あり' : '未生成'}</span></div>
         </div>
       </div>
@@ -554,7 +566,7 @@ function renderEditedSection() {
         <div class="detail-card-body">${p.feedbackSummary?.latestFeedback || '最新フィードバックはまだありません。'}</div>
         <div class="detail-actions">
           <a href="${p.editedVideo?.editedUrl || '#'}" target="_blank" class="detail-link">編集後を開く ↗</a>
-          <a href="${p.vimeoReview?.url || '#'}" target="_blank" class="detail-link">Vimeoレビュー ↗</a>
+          ${renderExternalLink(p.vimeoReview?.url, 'Vimeoレビュー ↗', 'detail-link')}
         </div>
       </div>
       <div class="info-card">

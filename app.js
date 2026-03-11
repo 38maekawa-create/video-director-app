@@ -18,17 +18,159 @@
   let recordingError = '';
   let recordingAudioBlob = null;
   let currentReportTab = '概要';
+  const STORAGE_KEYS = {
+    projects: 'videoDirectorAgent.projects.v1',
+    history: 'videoDirectorAgent.history.v1'
+  };
 
   // ===== 初期化 =====
   document.addEventListener('DOMContentLoaded', init);
 
   function init() {
+    hydratePersistedState();
+    refreshAllProjectSyncSummaries();
     renderHome();
     renderHistoryPage();
     renderQualityDashboard();
     setupTabBar();
     setupSearchHandlers();
     createRecordingModal();
+  }
+
+  function hydratePersistedState() {
+    try {
+      const savedProjects = localStorage.getItem(STORAGE_KEYS.projects);
+      const savedHistory = localStorage.getItem(STORAGE_KEYS.history);
+      if (savedProjects) {
+        const parsedProjects = JSON.parse(savedProjects);
+        if (Array.isArray(parsedProjects)) {
+          MockData.projects = parsedProjects;
+        }
+      }
+      if (savedHistory) {
+        const parsedHistory = JSON.parse(savedHistory);
+        if (Array.isArray(parsedHistory)) {
+          MockData.historyItems = parsedHistory;
+        }
+      }
+    } catch (error) {
+      console.warn('persisted state hydrate failed', error);
+    }
+  }
+
+  function persistAppState() {
+    try {
+      localStorage.setItem(STORAGE_KEYS.projects, JSON.stringify(MockData.projects));
+      localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(MockData.historyItems));
+    } catch (error) {
+      console.warn('persist app state failed', error);
+    }
+  }
+
+  function refreshAllProjectSyncSummaries() {
+    MockData.projects.forEach(project => refreshProjectSyncSummary(project));
+    persistAppState();
+  }
+
+  function inferFeedbackCategory(item) {
+    const text = `${item.rawVoiceText || ''} ${item.convertedText || ''}`.toLowerCase();
+    if (/テロップ|字幕|文字/.test(text)) return 'テロップ';
+    if (/bgm|音|ナレーション|声|明瞭/.test(text)) return '音声';
+    if (/bロール|カット|寄り|引き|ショット|カメラ/.test(text)) return 'カメラワーク';
+    if (/フック|冒頭|結論|演出|テンポ|構成/.test(text)) return '演出';
+    return '演出';
+  }
+
+  function deriveQualityLearning() {
+    const items = MockData.historyItems || [];
+    const categoryStats = {
+      'カメラワーク': { total: 0, sent: 0, learned: 0, references: [] },
+      'テロップ': { total: 0, sent: 0, learned: 0, references: [] },
+      '音声': { total: 0, sent: 0, learned: 0, references: [] },
+      '演出': { total: 0, sent: 0, learned: 0, references: [] }
+    };
+
+    items.forEach((item) => {
+      const category = inferFeedbackCategory(item);
+      const stat = categoryStats[category] || categoryStats['演出'];
+      stat.total += 1;
+      if (item.isSent) stat.sent += 1;
+      if (item.learningEffect) stat.learned += 1;
+      if (item.referenceExample?.url) {
+        stat.references.push(item.referenceExample);
+      }
+    });
+
+    const dynamicCategoryScores = MockData.categoryScores.map((cat) => {
+      const stat = categoryStats[cat.category] || { total: 0, sent: 0, learned: 0 };
+      const sentRatio = stat.total ? Math.round((stat.sent / stat.total) * 10) : 0;
+      const learnedRatio = stat.total ? Math.round((stat.learned / stat.total) * 8) : 0;
+      return {
+        ...cat,
+        score: Math.max(55, Math.min(98, cat.score + sentRatio + learnedRatio))
+      };
+    });
+
+    const rankedCategories = Object.entries(categoryStats)
+      .map(([category, stat]) => ({ category, ...stat }))
+      .sort((a, b) => b.total - a.total);
+
+    const learnedItems = items.filter(item => item.learningEffect);
+    const unsentItems = items.filter(item => !item.isSent || item.syncState === 'pending_sync');
+
+    const suggestions = rankedCategories
+      .filter(item => item.total > 0)
+      .slice(0, 3)
+      .map((item, index) => {
+        const priority = index === 0 ? 'high' : index === 1 ? 'medium' : 'low';
+        const messageMap = {
+          'テロップ': 'テロップは情報量を削るより、1カット1メッセージへの分解を標準化する',
+          '音声': 'BGMと声の帯域衝突を避け、言葉の明瞭度を優先する基準を共通化する',
+          'カメラワーク': '寄りショットとBロール切替のテンポ基準を固定し、感情の山で画を寄せる',
+          '演出': '冒頭フックと結論先出しを先に設計し、テンポ改善を初手で入れる'
+        };
+        return {
+          category: item.category,
+          suggestion: `${messageMap[item.category]}（直近FB ${item.total}件）`,
+          priority
+        };
+      });
+
+    const alerts = [];
+    if (unsentItems.length) {
+      alerts.push({
+        level: unsentItems.length >= 3 ? 'high' : 'medium',
+        message: `未送信レビューが ${unsentItems.length} 件あります`
+      });
+    }
+    if (learnedItems.length) {
+      alerts.push({
+        level: 'low',
+        message: `学習済みの改善知見が ${learnedItems.length} 件あります`
+      });
+    }
+    if (!alerts.length) {
+      alerts.push({ level: 'low', message: 'レビュー待ちや学習不足のアラートはありません' });
+    }
+
+    const recentLearnings = learnedItems.slice(0, 4).map((item) => ({
+      category: inferFeedbackCategory(item),
+      effect: item.learningEffect,
+      projectTitle: item.projectTitle,
+      timestamp: item.timestamp
+    }));
+
+    const referenceDeck = rankedCategories
+      .flatMap((item) => item.references.slice(0, 2).map((ref) => ({ category: item.category, ...ref })))
+      .slice(0, 4);
+
+    return {
+      categoryScores: dynamicCategoryScores,
+      suggestions: suggestions.length ? suggestions : MockData.improvementSuggestions,
+      alerts,
+      recentLearnings,
+      referenceDeck
+    };
   }
 
   // ===== スコア色判定 =====
@@ -151,6 +293,7 @@
 
     MockData.historyItems.unshift(newItem);
     refreshProjectSyncSummary(currentProject);
+    persistAppState();
     recordingTranscript = '';
     recordingInterimTranscript = '';
     recordingError = '';
@@ -205,6 +348,7 @@
     project.relay.lastResponseAt = new Date().toLocaleString('ja-JP');
     project.relay.routeStatus = updatedCount > 0 ? 'response_applied' : (project.relay.routeStatus || 'ready');
     refreshProjectSyncSummary(project);
+    persistAppState();
     renderHome();
     renderReport();
     return updatedCount > 0;
@@ -743,6 +887,7 @@ function simulateRelaySend(project) {
   project.relay = project.relay || {};
   project.relay.routeStatus = sentCount > 0 ? 'sent' : (project.relay.routeStatus || 'ready');
   refreshProjectSyncSummary(project);
+  persistAppState();
   renderHome();
   renderReport();
 }
@@ -1478,6 +1623,7 @@ function renderEditedSection() {
     const latestScore = trend[trend.length - 1].score;
     const prevScore = trend[trend.length - 2].score;
     const delta = latestScore - prevScore;
+    const learning = deriveQualityLearning();
 
     container.innerHTML = `
       <div class="quality-content">
@@ -1507,7 +1653,7 @@ function renderEditedSection() {
             <span class="card-title">カテゴリ別スコア</span>
           </div>
           <div class="category-grid">
-            ${MockData.categoryScores.map(cat => `
+            ${learning.categoryScores.map(cat => `
               <div class="category-item">
                 <div class="category-icon">${cat.icon}</div>
                 <div class="category-score" style="color: ${scoreColor(cat.score)}">${cat.score}</div>
@@ -1526,7 +1672,7 @@ function renderEditedSection() {
             <span class="card-title-icon">*</span>
             <span class="card-title">AIからの改善提案</span>
           </div>
-          ${MockData.improvementSuggestions.map(s => `
+          ${learning.suggestions.map(s => `
             <div class="suggestion-item">
               <div class="priority-badge ${s.priority}">${s.priority === 'high' ? '高' : s.priority === 'medium' ? '中' : '低'}</div>
               <div>
@@ -1543,12 +1689,43 @@ function renderEditedSection() {
             <span class="card-title-icon" style="color: var(--accent)">!</span>
             <span class="card-title">品質アラート</span>
           </div>
-          ${MockData.alerts.map(a => `
+          ${learning.alerts.map(a => `
             <div class="alert-item">
               <div class="alert-dot ${a.level}"></div>
               <div class="alert-text">${a.message}</div>
             </div>
           `).join('')}
+        </div>
+
+        <div class="suggestions-card">
+          <div class="card-title-row">
+            <span class="card-title-icon">L</span>
+            <span class="card-title">学習された改善知見</span>
+          </div>
+          ${learning.recentLearnings.length ? learning.recentLearnings.map(item => `
+            <div class="suggestion-item">
+              <div>
+                <div class="suggestion-category">${item.category} / ${item.projectTitle} / ${item.timestamp}</div>
+                <div class="suggestion-text">${item.effect}</div>
+              </div>
+            </div>
+          `).join('') : `<div class="suggestion-item"><div><div class="suggestion-text">学習済み知見はまだありません。</div></div></div>`}
+        </div>
+
+        <div class="suggestions-card">
+          <div class="card-title-row">
+            <span class="card-title-icon">@</span>
+            <span class="card-title">参考事例デッキ</span>
+          </div>
+          ${learning.referenceDeck.length ? learning.referenceDeck.map(item => `
+            <div class="suggestion-item">
+              <div>
+                <div class="suggestion-category">${item.category}</div>
+                <div class="suggestion-text"><a href="${item.url}" target="_blank" class="reference-link">${item.title} ↗</a></div>
+                <div class="reference-note">${item.note || ''}</div>
+              </div>
+            </div>
+          `).join('') : `<div class="suggestion-item"><div><div class="suggestion-text">参考事例はまだ蓄積中です。</div></div></div>`}
         </div>
       </div>
     `;

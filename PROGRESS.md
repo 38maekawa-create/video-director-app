@@ -4,11 +4,11 @@
 2026-03-11 07:17 (動画ナレッジページ閲覧機能追加)
 
 ## 現在の作業状態
-**本番運用可能** — E2Eテスト完了、GitHub Pages公開+スプシ連携動作確認済み。**WebアプリMVP完成**（webapp/、PWA対応） → Phase 4（opencv/ffmpeg実連携+映像トラッキング+学習）待ち
+**本番運用可能** — E2Eテスト完了、GitHub Pages公開+スプシ連携動作確認済み。**WebアプリMVP完成**（ルート配信ディレクトリが正本、PWA対応） → Phase 4（opencv/ffmpeg実連携+映像トラッキング+学習）待ち
 
 ### 動画ナレッジページ閲覧機能（2026-03-11 完了）
 - レポート詳細画面に「ナレッジ」タブを追加。ゲスト名ベースで自動マッチング
-- `~/video-knowledge-pages/` のTEKO対談動画HTML 28件から24名分を `webapp/knowledge-pages/` にコピー
+- `~/video-knowledge-pages/` のTEKO対談動画HTML 28件から24名分を `knowledge-pages/` にコピー
 - ビルドスクリプト `scripts/build_knowledge_pages.py` でマッチング+コピー+マッピングJS生成を自動化
 - マッチングロジック: ゲスト名の正規化（小文字化・敬称除去・記号除去）→ 完全一致 → 部分一致
 - fix_付きファイル優先、_clean付きファイル優先、日付新しいもの優先
@@ -18,14 +18,20 @@
 - 全ファイルHTTP 200確認、JS構文チェックOK
 
 ### WebアプリMVP（2026-03-11 完了）
-- `webapp/` ディレクトリにHTML+CSS+JS（フレームワーク不使用）でNetflix風UIを再現
+- ルート配信ディレクトリにHTML+CSS+JS（フレームワーク不使用）でNetflix風UIを再現
 - 4画面実装: ホーム（ヒーロー+カルーセル）、レポート詳細（タブ+折りたたみ）、履歴（フィルタ+日付グループ化）、品質ダッシュボード（Canvas折れ線グラフ）
 - PWA対応: manifest.json + service-worker.js + アイコン（192/512）
 - 録音モーダル（中央赤丸ボタン）
 - レスポンシブ対応（iPhone SE〜Pro Max、タブレット中央寄せ）
 - フォント: ゲスト名=Georgia太字letter-spacing:3px、タイトル=Georgiaイタリックweight:300、ヘッダー=コンデンスド赤#E50914 letter-spacing:4px
 - ローカル動作確認済み（python3 -m http.server 8080、全ファイルHTTP 200、JS構文チェックOK）
-- 残: GitHub Pagesデプロイ設定（なおとさん確認後）
+- 残: Phase 4 の高精度化
+
+### 配信正本ルール（2026-03-11 追記）
+- GitHub Pages が配信する **ルートディレクトリ** を正本とする
+- `webapp/` 配下は過去の作業コピーであり、今後の機能追加・修正の正本にしない
+- UI修正、ナレッジページ生成、PWA関連ファイル更新はルート配信ディレクトリへ反映する
+- `knowledge-pages-map.js` と `knowledge-pages/` もルート配下を正本とする
 
 ## ここまでの作業サマリー
 

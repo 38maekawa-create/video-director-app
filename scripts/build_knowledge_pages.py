@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-動画ナレッジページをwebapp/knowledge-pages/にコピーし、
+動画ナレッジページをルート配信ディレクトリの knowledge-pages/ にコピーし、
 マッピングデータ（knowledge-pages-map.js）を生成するビルドスクリプト。
 
 対象: ~/video-knowledge-pages/ 内のTEKO対談動画HTML（ファイル名に「撮影」を含むもの）
@@ -16,9 +16,9 @@ from typing import Optional
 
 # パス設定
 SOURCE_DIR = Path.home() / "video-knowledge-pages"
-WEBAPP_DIR = Path(__file__).resolve().parent.parent / "webapp"
-DEST_DIR = WEBAPP_DIR / "knowledge-pages"
-OUTPUT_JS = WEBAPP_DIR / "knowledge-pages-map.js"
+APP_ROOT = Path(__file__).resolve().parent.parent
+DEST_DIR = APP_ROOT / "knowledge-pages"
+OUTPUT_JS = APP_ROOT / "knowledge-pages-map.js"
 
 
 def extract_guest_name(filename: str) -> Optional[str]:

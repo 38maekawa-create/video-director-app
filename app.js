@@ -120,6 +120,13 @@
 
   function projectCardHTML(p) {
     const gradient = `linear-gradient(135deg, var(--card), ${statusGradient(p.status)})`;
+    const integrationStates = [
+      { label: '素材', ok: !!p.sourceVideo },
+      { label: '編集後', ok: !!p.editedVideo },
+      { label: 'KB', ok: !!p.knowledge },
+      { label: 'Vimeo', ok: !!p.vimeoReview }
+    ];
+
     return `
       <div class="project-card" data-id="${p.id}">
         <div class="card-thumbnail">
@@ -131,12 +138,24 @@
         </div>
         <div class="card-guest">${p.guestName}</div>
         <div class="card-date">${p.shootDate}</div>
+        <div class="card-status-line">
+          <span class="card-status-pill" data-status="${p.status}">${p.statusLabel}</span>
+          ${p.feedbackSummary?.historyCount ? `<span class="card-status-meta">FB ${p.feedbackSummary.historyCount}</span>` : ''}
+        </div>
         <div class="card-flags">
           <span class="card-flag">素材</span>
           <span class="card-flag">編集後</span>
           ${p.knowledge ? '<span class="card-flag">KB</span>' : ''}
           ${p.feedbackSummary?.historyCount ? `<span class="card-flag">FB ${p.feedbackSummary.historyCount}</span>` : ''}
         </div>
+        <div class="card-integration-bar">
+          ${integrationStates.map(state => `
+            <div class="integration-chip ${state.ok ? 'ready' : 'missing'}">${state.label}</div>
+          `).join('')}
+        </div>
+        ${p.feedbackSummary?.latestFeedback ? `
+          <div class="card-feedback-preview">${p.feedbackSummary.latestFeedback}</div>
+        ` : ''}
       </div>
     `;
   }
@@ -277,6 +296,18 @@
 
   function getProjectFeedbackItems(project) {
     return MockData.historyItems.filter(item => item.videoId === project.videoId);
+  }
+
+  function timestampToSeconds(timestamp) {
+    if (!timestamp) return 0;
+    const parts = timestamp.split(':').map(n => parseInt(n, 10));
+    if (parts.length === 2) return parts[0] * 60 + parts[1];
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    return 0;
+  }
+
+  function durationToSeconds(duration) {
+    return timestampToSeconds(duration);
   }
 
   function getProjectKnowledgeFile(project) {
@@ -429,15 +460,39 @@
       return;
     }
 
+    const durationSeconds = durationToSeconds(p.sourceVideo?.duration || p.editedVideo?.duration || '00:01');
+    const markers = feedbackItems.map(item => {
+      const seconds = timestampToSeconds(item.timestamp);
+      const ratio = durationSeconds > 0 ? Math.min((seconds / durationSeconds) * 100, 100) : 0;
+      return { ...item, ratio };
+    });
+
     container.innerHTML = `
       <div class="report-stack">
         <div class="info-card">
           <div class="info-card-title">評価サマリー</div>
           <div class="summary-callout">${p.feedbackSummary?.evaluation || '-'}</div>
         </div>
+        <div class="review-timeline-shell">
+          <div class="review-timeline-header">
+            <div>
+              <div class="review-timeline-title">レビュータイムライン</div>
+              <div class="review-timeline-sub">動画時間とFBを紐づけて確認</div>
+            </div>
+            <div class="review-duration">${p.sourceVideo?.duration || '-'}</div>
+          </div>
+          <div class="review-track">
+            <div class="review-track-line"></div>
+            ${markers.map(item => `
+              <button class="review-marker ${item.isSent ? 'sent' : 'unsent'}" style="left: ${item.ratio}%;" data-feedback-id="${item.id}">
+                <span>${item.timestamp}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
         <div class="timeline-list">
           ${feedbackItems.map(item => `
-            <div class="timeline-card">
+            <div class="timeline-card" id="feedback-${item.id}">
               <div class="timeline-head">
                 <span class="timeline-time">${item.timestamp}</span>
                 <span class="sent-badge ${item.isSent ? 'sent' : 'unsent'}">${item.isSent ? '送信済み' : '未送信'}</span>
@@ -460,6 +515,17 @@
         </div>
       </div>
     `;
+
+    container.querySelectorAll('.review-marker').forEach(marker => {
+      marker.addEventListener('click', () => {
+        const target = document.getElementById(`feedback-${marker.dataset.feedbackId}`);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.classList.add('focus-pulse');
+          setTimeout(() => target.classList.remove('focus-pulse'), 1400);
+        }
+      });
+    });
   }
 
   function renderKnowledgeSection() {

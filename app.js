@@ -28,6 +28,11 @@
     return !!url && !String(url).startsWith('#');
   }
 
+  function renderTranscriptBlock(fullTranscript) {
+    if (!fullTranscript) return '<div class="transcript-empty">全文スクリプトはまだ未設定です。</div>';
+    return `<div class="transcript-block">${String(fullTranscript).replace(/\n/g, '<br>')}</div>`;
+  }
+
   function renderExternalLink(url, label, className = 'detail-link') {
     if (!hasNavigableUrl(url)) {
       return `<span class="${className} is-disabled" aria-disabled="true">${label}</span>`;
@@ -430,8 +435,8 @@ function renderOverviewSection() {
       <div class="info-card">
         <div class="info-card-title">連携状況</div>
         <div class="link-list">
-          <div class="link-row"><span>素材URL</span><a href="${p.sourceVideo?.sourceUrl || '#'}" target="_blank">開く ↗</a></div>
-          <div class="link-row"><span>編集後URL</span><a href="${p.editedVideo?.editedUrl || '#'}" target="_blank">開く ↗</a></div>
+          <div class="link-row"><span>素材URL</span>${renderExternalLink(p.sourceVideo?.sourceUrl, '開く ↗', 'inline-link')}</div>
+          <div class="link-row"><span>編集後URL</span>${renderExternalLink(p.editedVideo?.editedUrl, '開く ↗', 'inline-link')}</div>
           <div class="link-row"><span>Vimeoレビュー</span>${renderExternalLink(p.vimeoReview?.url, '開く ↗', 'inline-link')}</div>
           <div class="link-row"><span>ナレッジ</span><span>${knowledgeFile ? 'あり' : '未生成'}</span></div>
         </div>
@@ -532,9 +537,13 @@ function renderSourceSection() {
           </div>
         ` : ''}
         ${p.knowledge?.transcriptPreview ? `<div class="transcript-preview">${p.knowledge.transcriptPreview}</div>` : ''}
+        <div class="transcript-section">
+          <div class="transcript-section-title">全文スクリプト</div>
+          ${renderTranscriptBlock(p.knowledge?.fullTranscript)}
+        </div>
         <div class="detail-actions">
-          <a href="${p.sourceVideo?.sourceUrl || '#'}" target="_blank" class="detail-link">素材を開く ↗</a>
-          <button class="detail-link detail-link-button" data-report-tab="knowledge">全文を見る</button>
+          ${renderExternalLink(p.sourceVideo?.sourceUrl, '素材を開く ↗', 'detail-link')}
+          <button class="detail-link detail-link-button" data-report-tab="knowledge">ナレッジを開く</button>
         </div>
       </div>
     </div>
@@ -565,7 +574,7 @@ function renderEditedSection() {
         <div class="detail-card-title">${p.editedVideo?.title || '編集後未設定'}</div>
         <div class="detail-card-body">${p.feedbackSummary?.latestFeedback || '最新フィードバックはまだありません。'}</div>
         <div class="detail-actions">
-          <a href="${p.editedVideo?.editedUrl || '#'}" target="_blank" class="detail-link">編集後を開く ↗</a>
+          ${renderExternalLink(p.editedVideo?.editedUrl, '編集後を開く ↗', 'detail-link')}
           ${renderExternalLink(p.vimeoReview?.url, 'Vimeoレビュー ↗', 'detail-link')}
         </div>
       </div>

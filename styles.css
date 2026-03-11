@@ -43,7 +43,7 @@ html, body {
 
 .page {
   display: none;
-  padding-bottom: 32px;
+  padding-bottom: 180px;
 }
 
 .page.active {
@@ -638,7 +638,7 @@ html, body {
 .report-stack {
   display: grid;
   gap: 16px;
-  padding: 16px 20px 0;
+  padding: 16px 20px 180px;
 }
 
 .info-card,
@@ -1933,4 +1933,44 @@ html, body {
   background: rgba(229, 9, 20, 0.18);
   border: 1px solid rgba(229, 9, 20, 0.28);
   color: var(--text-primary);
+}
+
+
+.inline-link.is-disabled,
+.detail-link.is-disabled,
+.btn-vimeo.is-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  cursor: default;
+}
+
+.transcript-section {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.transcript-section-title {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.transcript-block {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text-secondary);
+  line-height: 1.75;
+  font-size: 13px;
+  max-height: none;
+}
+
+.transcript-empty {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  font-size: 13px;
 }

@@ -1142,3 +1142,11 @@ INFO:     Finished server process [48827]
 INFO:     Started server process [54580]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'tests/test_api_phase3_4.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [54580]
+INFO:     Started server process [57261]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

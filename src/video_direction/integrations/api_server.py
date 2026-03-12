@@ -129,6 +129,15 @@ class TitleSelect(BaseModel):
     by: str
 
 
+class FeedbackCreate(BaseModel):
+    timestamp_mark: Optional[str] = None
+    raw_voice_text: Optional[str] = None
+    converted_text: Optional[str] = None
+    category: Optional[str] = None
+    priority: str = "medium"
+    created_by: Optional[str] = None
+
+
 # --- FastAPI アプリ ---
 
 app = FastAPI(title="Video Director Agent API", version="1.0.0")
@@ -329,6 +338,27 @@ def list_feedbacks(project_id: str):
     return [dict(r) for r in rows]
 
 
+@app.post("/api/projects/{project_id}/feedbacks")
+def create_feedback(project_id: str, fb: FeedbackCreate):
+    conn = _get_db()
+    conn.execute(
+        """INSERT INTO feedbacks (project_id, timestamp_mark, raw_voice_text,
+           converted_text, category, priority, created_by)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        (project_id, fb.timestamp_mark, fb.raw_voice_text,
+         fb.converted_text, fb.category, fb.priority, fb.created_by)
+    )
+    # プロジェクトの未レビュー数を更新
+    conn.execute(
+        "UPDATE projects SET unreviewed_count = unreviewed_count + 1, "
+        "has_unsent_feedback = 1, updated_at = datetime('now') WHERE id = ?",
+        (project_id,)
+    )
+    conn.commit()
+    conn.close()
+    return {"status": "created", "project_id": project_id}
+
+
 @app.get("/api/feedbacks")
 def list_all_feedbacks():
     conn = _get_db()
@@ -337,6 +367,31 @@ def list_all_feedbacks():
     ).fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+
+# --- 同期チェック（ポーリング用） ---
+
+@app.get("/api/projects/{project_id}/sync-check")
+def sync_check(project_id: str):
+    """クライアントがポーリングで最終更新時刻を確認するためのエンドポイント"""
+    conn = _get_db()
+    row = conn.execute(
+        "SELECT updated_at FROM projects WHERE id = ?", (project_id,)
+    ).fetchone()
+    assets_row = conn.execute(
+        "SELECT updated_at, last_edited_by FROM youtube_assets WHERE project_id = ?",
+        (project_id,)
+    ).fetchone()
+    fb_count = conn.execute(
+        "SELECT COUNT(*) FROM feedbacks WHERE project_id = ?", (project_id,)
+    ).fetchone()[0]
+    conn.close()
+    return {
+        "project_updated_at": row["updated_at"] if row else None,
+        "assets_updated_at": assets_row["updated_at"] if assets_row else None,
+        "assets_last_edited_by": assets_row["last_edited_by"] if assets_row else None,
+        "feedback_count": fb_count,
+    }
 
 
 # --- ヘルスチェック ---

@@ -241,6 +241,7 @@ struct DirectionReportView: View {
                     "未送信FB: \(displayProject.hasUnsentFeedback ? "あり" : "なし")"
                 ]
             )
+            pdcaCard
         }
     }
 
@@ -429,6 +430,50 @@ struct DirectionReportView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AppTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var pdcaCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .foregroundStyle(AppTheme.accent)
+                Text("品質改善サイクル")
+                    .font(AppTheme.sectionFont(18))
+                    .foregroundStyle(.white)
+            }
+
+            HStack(spacing: 12) {
+                pdcaStep("D", "ディレクション", completed: true)
+                pdcaStep("C", "編集", completed: displayProject.editedVideoURL != nil)
+                pdcaStep("A", "評価", completed: !feedbacks.isEmpty)
+                pdcaStep("R", "ルール更新", completed: false)
+            }
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func pdcaStep(_ short: String, _ title: String, completed: Bool) -> some View {
+        VStack(spacing: 8) {
+            ZStack {
+                Circle()
+                    .fill(completed ? AppTheme.statusComplete.opacity(0.18) : AppTheme.cardBackgroundLight)
+                    .frame(width: 44, height: 44)
+                Circle()
+                    .strokeBorder(completed ? AppTheme.statusComplete : AppTheme.textMuted.opacity(0.35), lineWidth: 1.5)
+                    .frame(width: 44, height: 44)
+                Text(short)
+                    .font(.headline)
+                    .foregroundStyle(completed ? AppTheme.statusComplete : AppTheme.textMuted)
+            }
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private var bottomActionBar: some View {

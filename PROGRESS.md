@@ -65,17 +65,14 @@
    - APIレスポンスのBoolean変換修正（SQLite 0/1 → JSON true/false）
 5. **シミュレータ動作確認**: iPhone 17 Pro シミュレータで起動、APIから60件の実データ取得・表示成功
 
-**現在進行中（Codex CLI on pao）**:
-- TASK_SWIFT_POLISH.md に基づくUI品質向上
-  - DirectionReportView 7タブ実装
-  - QualityDashboardView/FeedbackHistoryView 実データ対応
-  - プルダウンリフレッシュ統一、エラーUI改善
+**全機能実装+ビルド成功（2026-03-13）**:
+- Phase 3-4 Swift新画面5つ + 既存画面修正完了
+- xcodebuild BUILD SUCCEEDED（エラー0件）
+- シミュレータで起動・API実データ表示確認済み
+- アプリアイコン・Bundle ID・Info.plist本番化済み
 
 **次のステップ**:
-- Codex CLI完了→同期→ビルド検証→エラー修正
-- Bundle ID変更（com.example.→本番）+ Team ID設定（UHNBL94PS9）
-- iPhone実機テスト→TestFlight配布
-- Distribution Certificate作成（Apple Developer Portal、なおとさん操作必要）
+- XcodeにApple ID登録（なおとさん操作）→ 実機ビルド → TestFlight配布
 
 ### YouTube素材3機能追加（2026-03-12 完了）
 ディレクションレポート生成時に、以下3つのYouTube公開用素材を同時生成する機能を追加:

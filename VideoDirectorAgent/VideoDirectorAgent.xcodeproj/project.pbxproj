@@ -19,8 +19,8 @@
 		A1000001000000000000000A /* VoiceFeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000A /* VoiceFeedbackView.swift */; };
 		A1000001000000000000000B /* FeedbackHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000B /* FeedbackHistoryView.swift */; };
 		A1000001000000000000000C /* QualityDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000C /* QualityDashboardView.swift */; };
-		A1000001000000000000000D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000E /* Assets.xcassets */; };
-		A1000001000000000000000E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000F /* Preview Assets.xcassets */; };
+		A1000001000000000000000D /* Resources/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000E /* Resources/Assets.xcassets */; };
+		A1000001000000000000000E /* Preview Content/Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000F /* Preview Content/Preview Assets.xcassets */; };
 		A1000001000000000000000F /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000011 /* APIClient.swift */; };
 		A10000010000000000000010 /* YouTubeAssetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000012 /* YouTubeAssetsView.swift */; };
 		A10000010000000000000011 /* WebViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000013 /* WebViewRepresentable.swift */; };
@@ -45,8 +45,8 @@
 		A2000001000000000000000B /* FeedbackHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackHistoryView.swift; sourceTree = "<group>"; };
 		A2000001000000000000000C /* QualityDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QualityDashboardView.swift; sourceTree = "<group>"; };
 		A2000001000000000000000D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A2000001000000000000000E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Resources/Assets.xcassets; sourceTree = "<group>"; };
-		A2000001000000000000000F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Content/Preview Assets.xcassets"; sourceTree = "<group>"; };
+		A2000001000000000000000E /* Resources/Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Resources/Assets.xcassets; sourceTree = "<group>"; };
+		A2000001000000000000000F /* Preview Content/Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Content/Preview Assets.xcassets"; sourceTree = "<group>"; };
 		A20000010000000000000010 /* VideoDirectorAgent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = VideoDirectorAgent.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000010000000000000011 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 		A20000010000000000000012 /* YouTubeAssetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouTubeAssetsView.swift; sourceTree = "<group>"; };
@@ -85,8 +85,8 @@
 				A40000010000000000000007 /* Services */,
 				A40000010000000000000005 /* ViewModels */,
 				A40000010000000000000006 /* Views */,
-				A2000001000000000000000E /* Assets.xcassets */,
-				A2000001000000000000000F /* Preview Assets.xcassets */,
+				A2000001000000000000000E /* Resources/Assets.xcassets */,
+				A2000001000000000000000F /* Preview Content/Preview Assets.xcassets */,
 				A2000001000000000000000D /* Info.plist */,
 			);
 			path = VideoDirectorAgent;
@@ -205,8 +205,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1000001000000000000000D /* Assets.xcassets in Resources */,
-				A1000001000000000000000E /* Preview Assets.xcassets in Resources */,
+				A1000001000000000000000D /* Resources/Assets.xcassets in Resources */,
+				A1000001000000000000000E /* Preview Content/Preview Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -298,7 +298,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = UHNBL94PS9;
+				DEVELOPMENT_TEAM = TT2DA7H5NJ;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = VideoDirectorAgent/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -323,7 +323,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = UHNBL94PS9;
+				DEVELOPMENT_TEAM = TT2DA7H5NJ;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = VideoDirectorAgent/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;

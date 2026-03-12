@@ -149,9 +149,29 @@ struct VideoProject: Identifiable, Codable {
         case sourceVideoURL
         case editedVideoURL
         case knowledge
+        // デコード専用キー（APIレスポンスのネスト構造を展開するため）
         case sourceVideo
         case editedVideo
         case feedbackSummary
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(guestName, forKey: .guestName)
+        try container.encode(title, forKey: .title)
+        try container.encode(thumbnailSymbol, forKey: .thumbnailSymbol)
+        try container.encode(shootDate, forKey: .shootDate)
+        try container.encodeIfPresent(guestAge, forKey: .guestAge)
+        try container.encodeIfPresent(guestOccupation, forKey: .guestOccupation)
+        try container.encode(status, forKey: .status)
+        try container.encode(unreviewedCount, forKey: .unreviewedCount)
+        try container.encodeIfPresent(qualityScore, forKey: .qualityScore)
+        try container.encode(hasUnsentFeedback, forKey: .hasUnsentFeedback)
+        try container.encodeIfPresent(directionReportURL, forKey: .directionReportURL)
+        try container.encodeIfPresent(sourceVideoURL, forKey: .sourceVideoURL)
+        try container.encodeIfPresent(editedVideoURL, forKey: .editedVideoURL)
+        try container.encodeIfPresent(knowledge, forKey: .knowledge)
     }
 
     init(from decoder: Decoder) throws {
@@ -193,10 +213,10 @@ struct VideoProject: Identifiable, Codable {
         key: CodingKeys,
         fallbackKey: CodingKeys
     ) -> String? {
-        if let direct = try? container.decodeIfPresent(String.self, forKey: key), let direct, !direct.isEmpty {
+        if let direct = try? container.decodeIfPresent(String.self, forKey: key), !direct.isEmpty {
             return direct
         }
-        if let payload = try? container.decodeIfPresent([String: JSONValue].self, forKey: fallbackKey), let payload {
+        if let payload = try? container.decodeIfPresent([String: JSONValue].self, forKey: fallbackKey) {
             for candidateKey in ["url", "vimeoUrl", "videoUrl", "link"] {
                 if let value = payload[candidateKey]?.stringValue, !value.isEmpty {
                     return value
@@ -207,10 +227,10 @@ struct VideoProject: Identifiable, Codable {
     }
 
     private static func decodeKnowledgeText(from container: KeyedDecodingContainer<CodingKeys>) -> String? {
-        if let direct = try? container.decodeIfPresent(String.self, forKey: .knowledge), let direct, !direct.isEmpty {
+        if let direct = try? container.decodeIfPresent(String.self, forKey: .knowledge), !direct.isEmpty {
             return direct
         }
-        if let payload = try? container.decodeIfPresent([String: JSONValue].self, forKey: .knowledge), let payload {
+        if let payload = try? container.decodeIfPresent([String: JSONValue].self, forKey: .knowledge) {
             if let highlights = payload["highlights"]?.arrayValue {
                 let lines = highlights.compactMap { item -> String? in
                     guard let object = item.objectValue else { return nil }
@@ -458,6 +478,17 @@ struct FeedbackItem: Identifiable, Codable {
         timestamp = try container.decodeIfPresent(String.self, forKey: .timestampMark)
         feedbackType = try container.decodeIfPresent(String.self, forKey: .feedbackType)
             ?? ((raw?.isEmpty == false) ? "voice" : nil)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(projectId, forKey: .projectId)
+        try container.encode(content, forKey: .convertedText)
+        try container.encode(createdBy, forKey: .createdBy)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encodeIfPresent(timestamp, forKey: .timestampMark)
+        try container.encodeIfPresent(feedbackType, forKey: .category)
     }
 }
 

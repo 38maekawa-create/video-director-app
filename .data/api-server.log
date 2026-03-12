@@ -126,3 +126,8 @@ INFO:     127.0.0.1:58077 - "PUT /api/projects/p-2026-02-16_20251123%E6%92%AE%E5
 INFO:     127.0.0.1:58079 - "PUT /api/projects/p-2026-02-16_20251123%E6%92%AE%E5%BD%B1_%E3%82%8A%E3%82%87%E3%81%86%E3%81%99%E3%81%91%E3%81%95%E3%82%93-20%E4%BB%A3%E5%BE%8C%E5%8D%8A%E5%86%85%E8%B3%87it%E5%8B%A4%E5%8B%99%E5%B9%B4%E5%8F%8E600%E4%B8%87/youtube-assets HTTP/1.1" 200 OK
 INFO:     127.0.0.1:58081 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
 INFO:     127.0.0.1:58091 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58100 - "GET /api/projects/p-20251213-%E3%82%B9%E3%83%AA%E3%83%9E%E3%83%B3/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58102 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58104 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58107 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58148 - "GET /api/projects HTTP/1.1" 200 OK

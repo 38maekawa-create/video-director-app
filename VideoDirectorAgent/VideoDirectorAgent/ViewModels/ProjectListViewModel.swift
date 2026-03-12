@@ -54,7 +54,8 @@ final class ProjectListViewModel: ObservableObject {
             errorMessage = nil
         } catch {
             projects = MockData.projects
-            errorMessage = "API未接続のためモックデータを表示中"
+            errorMessage = "API未接続のためモックデータを表示中: \(error.localizedDescription)"
+            print("❌ API Error: \(error)")
         }
     }
 }

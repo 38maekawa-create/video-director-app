@@ -1,13 +1,46 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-13 02:45 (シミュレータ実データ表示成功・Codex CLIにUI品質向上タスク委譲)
+2026-03-13 04:30 (Phase 3-4 全機能Python実装完了・API 30+エンドポイント稼働・270テストPASS)
 
 ## 現在の作業状態
-**本番運用可能** — E2Eテスト完了、GitHub Pages公開+スプシ連携動作確認済み。**WebアプリMVP完成**。**ネイティブiOSアプリ: シミュレータ動作確認済み、UI品質向上中**
+**全28機能のPython実装完了** — Phase 1-4全機能のバックエンド実装が完了。APIサーバー30+エンドポイント稼働中。Swift側はCodex CLIが新画面実装中。
+
+### Phase 3-4 全機能実装（2026-03-13 Python側完了）
+
+**新規実装ファイル（10ファイル）**:
+- `analyzer/frame_evaluator.py` — C-1: opencv実フレーム抽出+Claude Vision評価（スタブから実装に昇格）
+- `analyzer/audio_evaluator.py` — C-3: ffmpeg実音声解析LUFS/RMS測定（スタブから実装に昇格）
+- `tracker/video_tracker.py` — NEW-4: yt-dlpメタデータ取得+トラッキング管理
+- `tracker/video_analyzer.py` — NEW-5: 文字起こし/映像/メタデータからの要素分解
+- `tracker/feedback_learner.py` — NEW-6: FBパターン抽出→ルール自動生成
+- `tracker/video_learner.py` — NEW-7: 映像分析結果のパターン学習
+- `integrations/editor_manager.py` — NEW-8: 編集者管理（名簿・スキル・工程・引継ぎ）
+- `integrations/audit_runner.py` — J-3: DB/API死活監視+品質異常検出+滞留アラート
+- `integrations/notifier.py` — J-4: Telegram/LINE通知送信
+- `integrations/pdca_loop.py` — J-5: PDCA状態管理
+- `integrations/distributed_processor.py` — J-6: SSH経由マルチMac分散処理
+
+**APIサーバー新規エンドポイント（14個追加、合計30+）**:
+- `GET/POST /api/editors` + `GET/PUT /api/editors/{id}` + `GET /api/editors/{id}/handover`
+- `GET/POST/DELETE /api/tracking/videos` + `POST /api/tracking/videos/{id}/analyze`
+- `GET /api/tracking/insights` + `GET /api/learning/feedback-patterns` + `GET /api/learning/summary`
+- `GET /api/audit/latest` + `POST /api/audit/run` + `GET /api/audit/history`
+- `GET/PUT /api/notifications/config` + `POST /api/notifications/test`
+- `GET /api/pdca/states` + `GET /api/pdca/summary`
+- `GET /api/distributed/macs` + `POST /api/distributed/macs/check`
+- `POST /api/feedback/convert`（Claude API音声→ディレクション変換）
+
+**テスト**: 270テスト全件PASS（既存テスト破壊なし）
+
+**現在進行中（Codex CLI on pao）**:
+- TASK_PHASE3_4_SWIFT.md に基づくSwift新画面実装
+  - FeedbackHistoryView/QualityDashboardView 実データ化
+  - EditorManagementView/VideoTrackingView/NotificationSettingsView 新規画面
+  - VoiceFeedbackViewModel convertFeedback() API化
 
 ### ネイティブiOSアプリ化（2026-03-13 シミュレータ実データ表示成功）
-スマホからYouTube素材（サムネ指示書・タイトル案・概要欄）の閲覧・編集を可能にするネイティブアプリ。
+スマホからYouTube素材（サムネ指示書・タイトル案・概要欄）の閲覧・編集を可能にするネイティブアプリ。なおとさんとパグさん（ディレクター）の2ユーザー。
 
 **Phase1-5 完了（バックエンド+Swift UI+実データ接続）**:
 1. **FastAPI + SQLiteバックエンド** — `src/video_direction/integrations/api_server.py`

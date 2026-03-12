@@ -4,6 +4,10 @@ import Foundation
 final class ProjectListViewModel: ObservableObject {
     @Published var projects: [VideoProject] = MockData.projects
     @Published var searchText: String = ""
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+
+    private var hasLoaded = false
 
     // フィルタ済みプロジェクト
     var filteredProjects: [VideoProject] {
@@ -28,5 +32,24 @@ final class ProjectListViewModel: ObservableObject {
     // ヒーロープロジェクト（最新）
     var heroProject: VideoProject? {
         projects.first
+    }
+
+    func loadProjectsIfNeeded() async {
+        guard !hasLoaded else { return }
+        hasLoaded = true
+        await loadProjects()
+    }
+
+    func loadProjects() async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            projects = try await APIClient.shared.fetchProjects()
+            errorMessage = nil
+        } catch {
+            projects = MockData.projects
+            errorMessage = "API未接続のためモックデータを表示中"
+        }
     }
 }

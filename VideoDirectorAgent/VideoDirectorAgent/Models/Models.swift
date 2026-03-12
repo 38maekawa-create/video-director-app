@@ -57,11 +57,20 @@ extension Color {
 }
 
 // MARK: - プロジェクト関連モデル
-enum ProjectStatus: String, CaseIterable {
-    case directed = "ディレクション済"
-    case editing = "編集中"
-    case reviewPending = "レビュー待ち"
-    case published = "公開"
+enum ProjectStatus: String, CaseIterable, Codable {
+    case directed
+    case editing
+    case reviewPending
+    case published
+
+    var label: String {
+        switch self {
+        case .directed: return "ディレクション済"
+        case .editing: return "編集中"
+        case .reviewPending: return "レビュー待ち"
+        case .published: return "公開"
+        }
+    }
 
     var color: Color {
         switch self {
@@ -73,18 +82,93 @@ enum ProjectStatus: String, CaseIterable {
     }
 }
 
-struct VideoProject: Identifiable {
-    let id: UUID
-    let guestName: String           // ゲスト名
-    let title: String               // プロジェクト名
-    let thumbnailSymbol: String     // SF Symbols（サムネイル代替）
-    let shootDate: String           // 撮影日
-    let guestAge: Int?              // 年齢
-    let guestOccupation: String?    // 職業
+struct VideoProject: Identifiable, Codable {
+    let id: String
+    let guestName: String
+    let title: String
+    let thumbnailSymbol: String
+    let shootDate: String
+    let guestAge: Int?
+    let guestOccupation: String?
     let status: ProjectStatus
     let unreviewedCount: Int
-    let qualityScore: Int?          // 品質スコア
-    let hasUnsentFeedback: Bool     // 未送信FBあり
+    let qualityScore: Int?
+    let hasUnsentFeedback: Bool
+    let directionReportURL: String?
+
+    init(
+        id: String,
+        guestName: String,
+        title: String,
+        thumbnailSymbol: String = "video.fill",
+        shootDate: String,
+        guestAge: Int? = nil,
+        guestOccupation: String? = nil,
+        status: ProjectStatus,
+        unreviewedCount: Int = 0,
+        qualityScore: Int? = nil,
+        hasUnsentFeedback: Bool = false,
+        directionReportURL: String? = nil
+    ) {
+        self.id = id
+        self.guestName = guestName
+        self.title = title
+        self.thumbnailSymbol = thumbnailSymbol
+        self.shootDate = shootDate
+        self.guestAge = guestAge
+        self.guestOccupation = guestOccupation
+        self.status = status
+        self.unreviewedCount = unreviewedCount
+        self.qualityScore = qualityScore
+        self.hasUnsentFeedback = hasUnsentFeedback
+        self.directionReportURL = directionReportURL
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case guestName
+        case title
+        case thumbnailSymbol
+        case shootDate
+        case guestAge
+        case guestOccupation
+        case status
+        case unreviewedCount
+        case qualityScore
+        case hasUnsentFeedback
+        case directionReportURL
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        guestName = try container.decode(String.self, forKey: .guestName)
+        title = try container.decode(String.self, forKey: .title)
+        shootDate = try container.decodeIfPresent(String.self, forKey: .shootDate) ?? ""
+        guestAge = try container.decodeIfPresent(Int.self, forKey: .guestAge)
+        guestOccupation = try container.decodeIfPresent(String.self, forKey: .guestOccupation)
+        unreviewedCount = try container.decodeIfPresent(Int.self, forKey: .unreviewedCount) ?? 0
+        qualityScore = try container.decodeIfPresent(Int.self, forKey: .qualityScore)
+        hasUnsentFeedback = try container.decodeIfPresent(Bool.self, forKey: .hasUnsentFeedback) ?? false
+        directionReportURL = try container.decodeIfPresent(String.self, forKey: .directionReportURL)
+
+        if let status = try container.decodeIfPresent(ProjectStatus.self, forKey: .status) {
+            self.status = status
+        } else {
+            self.status = .directed
+        }
+
+        thumbnailSymbol = try container.decodeIfPresent(String.self, forKey: .thumbnailSymbol)
+            ?? VideoProject.defaultThumbnailSymbol(for: title)
+    }
+
+    static func defaultThumbnailSymbol(for title: String) -> String {
+        if title.contains("採用") { return "person.2.fill" }
+        if title.contains("ブランド") { return "sparkles.tv.fill" }
+        if title.contains("イベント") { return "film.stack.fill" }
+        if title.contains("不動産") { return "building.2.fill" }
+        return "video.fill"
+    }
 }
 
 struct ReportSection: Identifiable {
@@ -172,4 +256,105 @@ struct ImprovementSuggestion: Identifiable {
 enum SendDestination: String, CaseIterable {
     case vimeo = "Vimeoレビュー"
     case chat = "編集者チャット"
+}
+
+// MARK: - YouTube素材モデル
+struct YouTubeAssets: Codable {
+    var projectId: String
+    var thumbnailDesign: ThumbnailDesign?
+    var titleProposals: TitleProposals?
+    var descriptionOriginal: String?
+    var descriptionEdited: String?
+    var descriptionFinalizedAt: String?
+    var descriptionFinalizedBy: String?
+    var selectedTitleIndex: Int?
+    var editedTitle: String?
+    var lastEditedBy: String?
+    var generatedAt: String?
+    var updatedAt: String?
+
+    var activeDescription: String {
+        if let descriptionEdited, !descriptionEdited.isEmpty {
+            return descriptionEdited
+        }
+        return descriptionOriginal ?? ""
+    }
+}
+
+struct ThumbnailDesign: Codable {
+    var overallConcept: String
+    var fontSuggestion: String
+    var backgroundSuggestion: String
+    var zones: [ThumbnailZone]
+
+    init(
+        overallConcept: String,
+        fontSuggestion: String,
+        backgroundSuggestion: String,
+        zones: [ThumbnailZone]
+    ) {
+        self.overallConcept = overallConcept
+        self.fontSuggestion = fontSuggestion
+        self.backgroundSuggestion = backgroundSuggestion
+        self.zones = zones
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case overallConcept
+        case fontSuggestion
+        case backgroundSuggestion
+        case zones
+        case topLeft
+        case topRight
+        case diagonal
+        case bottomRight
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        overallConcept = try container.decodeIfPresent(String.self, forKey: .overallConcept) ?? ""
+        fontSuggestion = try container.decodeIfPresent(String.self, forKey: .fontSuggestion) ?? ""
+        backgroundSuggestion = try container.decodeIfPresent(String.self, forKey: .backgroundSuggestion) ?? ""
+
+        if let zones = try container.decodeIfPresent([ThumbnailZone].self, forKey: .zones), !zones.isEmpty {
+            self.zones = zones
+        } else {
+            let decodedZones = [
+                try container.decodeIfPresent(ThumbnailZone.self, forKey: .topLeft),
+                try container.decodeIfPresent(ThumbnailZone.self, forKey: .topRight),
+                try container.decodeIfPresent(ThumbnailZone.self, forKey: .diagonal),
+                try container.decodeIfPresent(ThumbnailZone.self, forKey: .bottomRight)
+            ].compactMap { $0 }
+            self.zones = decodedZones
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(overallConcept, forKey: .overallConcept)
+        try container.encode(fontSuggestion, forKey: .fontSuggestion)
+        try container.encode(backgroundSuggestion, forKey: .backgroundSuggestion)
+        try container.encode(zones, forKey: .zones)
+    }
+}
+
+struct ThumbnailZone: Codable, Identifiable {
+    var id: String { role }
+    var role: String
+    var content: String
+    var colorSuggestion: String
+    var notes: String
+}
+
+struct TitleProposals: Codable {
+    var candidates: [TitleCandidate]
+    var recommendedIndex: Int
+}
+
+struct TitleCandidate: Codable, Identifiable {
+    var id: String { title }
+    var title: String
+    var targetSegment: String
+    var appealType: String
+    var rationale: String
 }

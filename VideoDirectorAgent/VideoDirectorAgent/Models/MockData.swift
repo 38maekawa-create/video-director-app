@@ -4,41 +4,126 @@ enum MockData {
     // MARK: - プロジェクト一覧（撮影日の新しい順）
     static let projects: [VideoProject] = [
         .init(
-            id: UUID(), guestName: "さといも・トーマス", title: "CEO対談 Vol.12",
+            id: "p-satoimo-thomas", guestName: "さといも・トーマス", title: "CEO対談 Vol.12",
             thumbnailSymbol: "video.fill", shootDate: "2026/03/08",
             guestAge: 34, guestOccupation: "不動産投資家",
             status: .reviewPending, unreviewedCount: 3, qualityScore: 78,
             hasUnsentFeedback: true
         ),
         .init(
-            id: UUID(), guestName: "メンイチ", title: "採用密着ドキュメント",
+            id: "p-menichi", guestName: "メンイチ", title: "採用密着ドキュメント",
             thumbnailSymbol: "person.2.fill", shootDate: "2026/03/05",
             guestAge: 29, guestOccupation: "Webマーケター",
             status: .editing, unreviewedCount: 1, qualityScore: 82,
             hasUnsentFeedback: true
         ),
         .init(
-            id: UUID(), guestName: "けー", title: "ブランドムービー 2026",
+            id: "p-kee", guestName: "けー", title: "ブランドムービー 2026",
             thumbnailSymbol: "sparkles.tv.fill", shootDate: "2026/03/01",
             guestAge: 31, guestOccupation: "コンサルタント",
             status: .directed, unreviewedCount: 0, qualityScore: 91,
             hasUnsentFeedback: false
         ),
         .init(
-            id: UUID(), guestName: "hirai", title: "イベントダイジェスト",
+            id: "p-hirai", guestName: "hirai", title: "イベントダイジェスト",
             thumbnailSymbol: "film.stack.fill", shootDate: "2026/02/28",
             guestAge: 27, guestOccupation: "映像クリエイター",
             status: .published, unreviewedCount: 0, qualityScore: 88,
             hasUnsentFeedback: false
         ),
         .init(
-            id: UUID(), guestName: "コテ", title: "不動産投資入門シリーズ #3",
+            id: "p-kote", guestName: "コテ", title: "不動産投資入門シリーズ #3",
             thumbnailSymbol: "building.2.fill", shootDate: "2026/02/25",
             guestAge: 38, guestOccupation: "不動産オーナー",
             status: .published, unreviewedCount: 0, qualityScore: 85,
             hasUnsentFeedback: false
         )
     ]
+
+    static let sampleYouTubeAssets = YouTubeAssets(
+        projectId: "p-izu",
+        thumbnailDesign: ThumbnailDesign(
+            overallConcept: "元アクセンチュアの会社員が不動産投資で意思決定を変えた流れを、Z型4ゾーンで一瞬で伝える",
+            fontSuggestion: "太めのゴシック体。数字は縦詰めで視認性重視",
+            backgroundSuggestion: "暗めネイビー背景に赤とゴールドでアクセント",
+            zones: [
+                ThumbnailZone(
+                    role: "フック",
+                    content: "元アクセンチュアが不動産投資で何を変えたか",
+                    colorSuggestion: "赤",
+                    notes: "左上で最も大きく、2行以内に圧縮"
+                ),
+                ThumbnailZone(
+                    role: "人物+属性",
+                    content: "30代中盤 / 元アクセンチュア / 会社員",
+                    colorSuggestion: "白",
+                    notes: "人物シルエット横に属性を短く置く"
+                ),
+                ThumbnailZone(
+                    role: "コンテンツ要素",
+                    content: "意思決定 / 行動変化 / 投資判断の実例",
+                    colorSuggestion: "ゴールド",
+                    notes: "視線が左上から右下へ流れる斜め配置"
+                ),
+                ThumbnailZone(
+                    role: "ベネフィット",
+                    content: "再現できる判断軸がわかる",
+                    colorSuggestion: "黄色",
+                    notes: "右下にCTA的に配置"
+                )
+            ]
+        ),
+        titleProposals: TitleProposals(
+            candidates: [
+                TitleCandidate(
+                    title: "元アクセンチュア会社員が不動産投資で手にした判断軸",
+                    targetSegment: "会社員投資初心者",
+                    appealType: "権威系",
+                    rationale: "属性の強さと学びを両立"
+                ),
+                TitleCandidate(
+                    title: "30代会社員が不動産投資で変えた意思決定のリアル",
+                    targetSegment: "再現性重視の視聴者",
+                    appealType: "ストーリー系",
+                    rationale: "変化のプロセスを見せやすい"
+                ),
+                TitleCandidate(
+                    title: "なぜ元アクセンチュアは不動産投資を選んだのか？",
+                    targetSegment: "比較検討層",
+                    appealType: "問いかけ系",
+                    rationale: "クリック動機が明確"
+                )
+            ],
+            recommendedIndex: 0
+        ),
+        descriptionOriginal: """
+元アクセンチュアの30代中盤会社員ゲストが、不動産投資を通じてどう意思決定を変えたのかを深掘りした対談です。
+
+▼ 今回のトーク内容
+・会社員時代の判断軸
+・不動産投資を始めた背景
+・行動が変わった具体ポイント
+
+▼ タイムスタンプ
+0:00 オープニング
+1:14 投資を始めた理由
+4:32 判断軸が変わった瞬間
+7:20 今後の展望
+
+▼ TEKO（テコ）について詳しくはこちら
+https://teko-lp.com/
+
+#不動産投資 #資産形成 #会社員投資
+""",
+        descriptionEdited: nil,
+        descriptionFinalizedAt: nil,
+        descriptionFinalizedBy: nil,
+        selectedTitleIndex: 0,
+        editedTitle: nil,
+        lastEditedBy: "なおとさん",
+        generatedAt: "2026-03-12T12:00:00Z",
+        updatedAt: "2026-03-12T12:00:00Z"
+    )
 
     // MARK: - ディレクションレポートセクション
     static let reportSections: [ReportSection] = [

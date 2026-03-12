@@ -1,35 +1,44 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-13 03:00 (ネイティブiOSアプリ Phase1 ビルド成功)
+2026-03-13 02:45 (シミュレータ実データ表示成功・Codex CLIにUI品質向上タスク委譲)
 
 ## 現在の作業状態
-**本番運用可能** — E2Eテスト完了、GitHub Pages公開+スプシ連携動作確認済み。**WebアプリMVP完成**（ルート配信ディレクトリが正本、PWA対応）
+**本番運用可能** — E2Eテスト完了、GitHub Pages公開+スプシ連携動作確認済み。**WebアプリMVP完成**。**ネイティブiOSアプリ: シミュレータ動作確認済み、UI品質向上中**
 
-### ネイティブiOSアプリ化（2026-03-13 Phase1 ビルド成功）
+### ネイティブiOSアプリ化（2026-03-13 シミュレータ実データ表示成功）
 スマホからYouTube素材（サムネ指示書・タイトル案・概要欄）の閲覧・編集を可能にするネイティブアプリ。
 
-**Phase1 完了（バックエンド+Swift UI）**:
+**Phase1-5 完了（バックエンド+Swift UI+実データ接続）**:
 1. **FastAPI + SQLiteバックエンド** — `src/video_direction/integrations/api_server.py`
-   - 11エンドポイント（projects CRUD, youtube-assets UPSERT, description/title PATCH, feedbacks）
+   - 11エンドポイント（projects CRUD, youtube-assets UPSERT, description/title PATCH, feedbacks, quality summary）
    - SQLite WALモード、DB: `~/.data/video_director.db`、ポート8210
-   - launchd自動起動設定済み・登録済み（`com.maekawa.video-direction-api.plist`）
+   - launchd自動起動登録済み（`com.maekawa.video-direction-api.plist`、bootstrap成功）
+   - DB: 60プロジェクト、60 YouTube素材、1フィードバック
 2. **main.pyにAPI同期ステップ追加** — パイプライン実行後、自動的にプロジェクト+YouTube素材をAPIサーバーに投入
-3. **一括データ投入スクリプト** — `scripts/seed_api_data.py`、全30件のプロジェクトをSQLiteに投入完了（31件格納中）
-4. **Swift側（Codex CLI実装 + ビルド修正）**:
-   - `Models.swift`: Codable対応、YouTubeAssets/ThumbnailDesign/TitleProposals/TitleCandidateモデル追加
-   - `APIClient.swift`: 新規作成（@MainActor、フォールバックURL対応）
-   - `YouTubeAssetsView.swift`: サムネ指示書グリッド/タイトル案選択+編集/概要欄TextEditor+コピー+確定保存
-   - `DirectionReportView.swift`: タブ拡張（4→7: 概要/ディレクション/YouTube素材/素材/編集後/FB・評価/ナレッジ）
-   - `ProjectListViewModel.swift`: API対応
-   - Xcodeビルド成功確認済み（iPhone 17 Pro Simulator）
-5. **E2E検証**: APIサーバーへのYouTube素材UPSERT→読み出し動作確認OK
+3. **データ投入スクリプト** — `scripts/seed_api_data.py`(プロジェクト60件) + `scripts/populate_youtube_assets.py`(YouTube素材60件)
+4. **Swift側（Codex CLI実装 + バティ側ビルド修正）**:
+   - 14 Swiftファイル（Models, Views, ViewModels, Services）
+   - Codex CLIがpaoで9ファイル新規作成/変更
+   - バティ側でビルドエラー3種を修正:
+     - VideoProject/FeedbackItem の Encodable準拠（encode(to:) 明示実装）
+     - Swift 6 Optional バインディング修正
+     - WebViewRepresentable.swift の pbxproj登録
+   - Info.plist: ATS例外ドメイン追加、マイク/音声認識/ネットワーク権限設定
+   - APIレスポンスのBoolean変換修正（SQLite 0/1 → JSON true/false）
+5. **シミュレータ動作確認**: iPhone 17 Pro シミュレータで起動、APIから60件の実データ取得・表示成功
 
-**次のステップ（Phase2）**:
-- YouTube素材の編集・保存のリアルタイム同期（2ユーザー間）
-- 残り画面の実データ接続（概要/ディレクション/素材/編集後/FB・評価/ナレッジ）
-- 音声FB録音（AVFoundation）+ 文字起こし（Speech Framework）
-- TestFlight配布
+**現在進行中（Codex CLI on pao）**:
+- TASK_SWIFT_POLISH.md に基づくUI品質向上
+  - DirectionReportView 7タブ実装
+  - QualityDashboardView/FeedbackHistoryView 実データ対応
+  - プルダウンリフレッシュ統一、エラーUI改善
+
+**次のステップ**:
+- Codex CLI完了→同期→ビルド検証→エラー修正
+- Bundle ID変更（com.example.→本番）+ Team ID設定（UHNBL94PS9）
+- iPhone実機テスト→TestFlight配布
+- Distribution Certificate作成（Apple Developer Portal、なおとさん操作必要）
 
 ### YouTube素材3機能追加（2026-03-12 完了）
 ディレクションレポート生成時に、以下3つのYouTube公開用素材を同時生成する機能を追加:

@@ -6,40 +6,30 @@ struct DirectionReportView: View {
     @State private var selectedTab = 0
     @State private var expandedSections: Set<UUID> = []
 
-    // デフォルトプロジェクト（直接遷移用）
     private var displayProject: VideoProject {
         project ?? MockData.projects.first!
     }
 
-    private let tabTitles = ["演出", "テロップ", "カメラ", "音声FB"]
+    private let tabTitles = ["概要", "ディレクション", "YouTube素材", "素材", "編集後", "FB・評価", "ナレッジ"]
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 0) {
-                // ヘッダー
                 headerSection
-
-                // タブ切替
                 tabSelector
-
-                // セクション内容
                 sectionContent
-
                 Spacer(minLength: 100)
             }
         }
         .background(AppTheme.background.ignoresSafeArea())
         .overlay(alignment: .bottom) {
-            // 下部固定: 音声FBボタン
             bottomActionBar
         }
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    // MARK: - ヘッダー
     private var headerSection: some View {
         VStack(spacing: 0) {
-            // カバー画像エリア
             ZStack(alignment: .bottomLeading) {
                 ZStack {
                     LinearGradient(
@@ -53,7 +43,6 @@ struct DirectionReportView: View {
                 }
                 .frame(height: 180)
 
-                // グラデーション
                 LinearGradient(
                     colors: [.clear, AppTheme.background],
                     startPoint: .center,
@@ -63,7 +52,6 @@ struct DirectionReportView: View {
                 .frame(maxHeight: .infinity, alignment: .bottom)
             }
 
-            // ゲスト情報
             VStack(alignment: .leading, spacing: 8) {
                 Text(displayProject.guestName)
                     .font(AppTheme.heroFont(30))
@@ -86,10 +74,8 @@ struct DirectionReportView: View {
                 .font(.caption)
                 .foregroundStyle(AppTheme.textMuted)
 
-                // Vimeoリンク
                 HStack {
                     Button {
-                        // モック: Vimeoレビューへ遷移
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: "play.circle.fill")
@@ -126,7 +112,6 @@ struct DirectionReportView: View {
         }
     }
 
-    // MARK: - タブセレクター
     private var tabSelector: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 0) {
@@ -146,7 +131,7 @@ struct DirectionReportView: View {
                                 .fill(selectedTab == index ? AppTheme.accent : .clear)
                                 .frame(height: 2)
                         }
-                        .frame(width: 80)
+                        .frame(width: 104)
                     }
                 }
             }
@@ -155,28 +140,33 @@ struct DirectionReportView: View {
         .padding(.top, 20)
     }
 
-    // MARK: - セクション内容
     private var sectionContent: some View {
         VStack(spacing: 12) {
-            let filteredSections: [ReportSection] = {
-                if selectedTab < MockData.reportSections.count {
-                    return [MockData.reportSections[selectedTab]]
-                }
-                return []
-            }()
-
-            ForEach(filteredSections) { section in
-                expandableSection(section)
+            switch selectedTab {
+            case 0:
+                overviewSection
+            case 1:
+                expandableSection(MockData.reportSections[0])
+            case 2:
+                YouTubeAssetsView(projectId: displayProject.id)
+            case 3:
+                expandableSection(MockData.reportSections[2])
+            case 4:
+                editedSection
+            case 5:
+                feedbackSection
+            case 6:
+                knowledgeSection
+            default:
+                EmptyView()
             }
         }
         .padding(.horizontal, 16)
         .padding(.top, 16)
     }
 
-    // MARK: - 折りたたみセクション（Netflix「詳細」風）
     private func expandableSection(_ section: ReportSection) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            // ヘッダー（タップで展開/折りたたみ）
             Button {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     if expandedSections.contains(section.id) {
@@ -200,7 +190,6 @@ struct DirectionReportView: View {
                 .padding(16)
             }
 
-            // コンテンツ（デフォルト展開）
             if !expandedSections.contains(section.id) {
                 VStack(alignment: .leading, spacing: 10) {
                     ForEach(section.items, id: \.self) { item in
@@ -224,11 +213,99 @@ struct DirectionReportView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    // MARK: - 下部固定アクションバー
+    private var overviewSection: some View {
+        VStack(spacing: 12) {
+            overviewCard(
+                title: "プロジェクト概要",
+                icon: "doc.text.magnifyingglass",
+                items: [
+                    "ゲスト: \(displayProject.guestName)",
+                    "撮影日: \(displayProject.shootDate)",
+                    "状態: \(displayProject.status.label)"
+                ]
+            )
+            overviewCard(
+                title: "進行サマリー",
+                icon: "chart.bar.xaxis",
+                items: [
+                    "未レビュー: \(displayProject.unreviewedCount)件",
+                    "未送信FB: \(displayProject.hasUnsentFeedback ? "あり" : "なし")",
+                    "品質スコア: \(displayProject.qualityScore.map(String.init) ?? "未算出")"
+                ]
+            )
+        }
+    }
+
+    private var editedSection: some View {
+        overviewCard(
+            title: "編集後レビュー",
+            icon: "sparkles.rectangle.stack",
+            items: [
+                "編集後タブは Phase 2 で詳細連携予定",
+                "本フェーズでは YouTube素材の閲覧・編集を優先",
+                "Vimeoレビュー導線はヘッダーから遷移"
+            ]
+        )
+    }
+
+    private var feedbackSection: some View {
+        VStack(spacing: 12) {
+            expandableSection(MockData.reportSections[3])
+            overviewCard(
+                title: "評価メモ",
+                icon: "checkmark.seal",
+                items: [
+                    "音声FBの要点を YouTube素材に反映可能",
+                    "次フェーズでリアルタイム同期と評価連携を追加"
+                ]
+            )
+        }
+    }
+
+    private var knowledgeSection: some View {
+        overviewCard(
+            title: "ナレッジ連携",
+            icon: "books.vertical",
+            items: [
+                "本案件のディレクション知見は AI開発5 の素材知見と接続予定",
+                "ネイティブアプリ Phase 1 では閲覧の土台のみ構築",
+                "Phase 2 以降で関連ナレッジページ埋め込みへ拡張"
+            ]
+        )
+    }
+
+    private func overviewCard(title: String, icon: String, items: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundStyle(AppTheme.accent)
+                Text(title)
+                    .font(AppTheme.sectionFont(18))
+                    .foregroundStyle(.white)
+            }
+
+            ForEach(items, id: \.self) { item in
+                HStack(alignment: .top, spacing: 10) {
+                    Circle()
+                        .fill(AppTheme.accent)
+                        .frame(width: 6, height: 6)
+                        .padding(.top, 6)
+                    Text(item)
+                        .font(.subheadline)
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
     private var bottomActionBar: some View {
         HStack(spacing: 16) {
             Button {
-                // モック: 音声FB追加
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "mic.fill")

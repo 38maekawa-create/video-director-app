@@ -56,6 +56,9 @@ struct ProjectListView: View {
                     .tracking(4)
             }
         }
+        .task {
+            await viewModel.loadProjectsIfNeeded()
+        }
         .onChange(of: searchText) { _, newValue in
             viewModel.searchText = newValue
         }
@@ -105,6 +108,16 @@ struct ProjectListView: View {
                     .font(AppTheme.titleFont(20))
                     .foregroundStyle(AppTheme.textSecondary)
                     .tracking(1)
+
+                if let errorMessage = viewModel.errorMessage {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(AppTheme.cardBackground.opacity(0.85))
+                        .clipShape(Capsule())
+                }
 
                 HStack(spacing: 12) {
                     Label(project.shootDate, systemImage: "calendar")
@@ -244,7 +257,7 @@ struct ProjectListView: View {
 
     // MARK: - ステータスバッジ
     private func statusBadge(_ status: ProjectStatus) -> some View {
-        Text(status.rawValue)
+        Text(status.label)
             .font(.caption)
             .fontWeight(.medium)
             .foregroundStyle(.white)

@@ -285,6 +285,14 @@ struct StructuredFeedback: Identifiable {
     let note: String
 }
 
+struct StructuredFeedbackItem: Codable, Identifiable {
+    let id: String
+    let timestamp: String?
+    let element: String
+    let priority: String
+    let note: String
+}
+
 struct FeedbackHistoryItem: Identifiable {
     let id: UUID
     let projectTitle: String
@@ -446,6 +454,39 @@ struct FeedbackItem: Identifiable, Codable {
     let createdAt: String
     let timestamp: String?
     let feedbackType: String?
+    let projectTitle: String?
+    let guestName: String?
+    let rawVoiceText: String?
+    let convertedText: String?
+    let isSent: Bool
+
+    init(
+        id: String,
+        projectId: String,
+        content: String,
+        createdBy: String,
+        createdAt: String,
+        timestamp: String?,
+        feedbackType: String?,
+        projectTitle: String?,
+        guestName: String?,
+        rawVoiceText: String?,
+        convertedText: String?,
+        isSent: Bool
+    ) {
+        self.id = id
+        self.projectId = projectId
+        self.content = content
+        self.createdBy = createdBy
+        self.createdAt = createdAt
+        self.timestamp = timestamp
+        self.feedbackType = feedbackType
+        self.projectTitle = projectTitle
+        self.guestName = guestName
+        self.rawVoiceText = rawVoiceText
+        self.convertedText = convertedText
+        self.isSent = isSent
+    }
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -460,6 +501,9 @@ struct FeedbackItem: Identifiable, Codable {
         case convertedText
         case category
         case priority
+        case projectTitle
+        case guestName
+        case isSent
     }
 
     init(from decoder: Decoder) throws {
@@ -472,12 +516,17 @@ struct FeedbackItem: Identifiable, Codable {
         projectId = try container.decodeIfPresent(String.self, forKey: .projectId) ?? ""
         let converted = try container.decodeIfPresent(String.self, forKey: .convertedText)
         let raw = try container.decodeIfPresent(String.self, forKey: .rawVoiceText)
+        convertedText = converted
+        rawVoiceText = raw
         content = (converted?.isEmpty == false ? converted : raw) ?? ""
         createdBy = try container.decodeIfPresent(String.self, forKey: .createdBy) ?? "unknown"
         createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt) ?? ""
         timestamp = try container.decodeIfPresent(String.self, forKey: .timestampMark)
         feedbackType = try container.decodeIfPresent(String.self, forKey: .feedbackType)
             ?? ((raw?.isEmpty == false) ? "voice" : nil)
+        projectTitle = try container.decodeIfPresent(String.self, forKey: .projectTitle)
+        guestName = try container.decodeIfPresent(String.self, forKey: .guestName)
+        isSent = try container.decodeIfPresent(Bool.self, forKey: .isSent) ?? true
     }
 
     func encode(to encoder: Encoder) throws {
@@ -489,6 +538,9 @@ struct FeedbackItem: Identifiable, Codable {
         try container.encode(createdAt, forKey: .createdAt)
         try container.encodeIfPresent(timestamp, forKey: .timestampMark)
         try container.encodeIfPresent(feedbackType, forKey: .category)
+        try container.encodeIfPresent(projectTitle, forKey: .projectTitle)
+        try container.encodeIfPresent(guestName, forKey: .guestName)
+        try container.encode(isSent, forKey: .isSent)
     }
 }
 
@@ -519,6 +571,95 @@ struct FeedbackCreateRequest: Encodable {
         try container.encode("medium", forKey: .priority)
         try container.encode(createdBy, forKey: .createdBy)
     }
+}
+
+struct DashboardSummary: Codable {
+    let totalProjects: Int
+    let withAssets: Int
+    let avgQualityScore: Double?
+    let statusCounts: [String: Int]
+    let recentFeedbacks: [FeedbackItem]
+    let unsentFeedbackCount: Int
+}
+
+struct QualityTrendItem: Codable, Identifiable {
+    var id: String { "\(guestName)-\(shootDate)" }
+    let guestName: String
+    let shootDate: String
+    let qualityScore: Int?
+}
+
+struct Editor: Identifiable, Codable {
+    let id: String
+    let name: String
+    let contactInfo: String?
+    let status: String
+    let contractType: String?
+    let skills: EditorSkills?
+    let activeProjects: Int
+    let totalCompleted: Int
+    let avgQualityScore: Double?
+    let createdAt: String
+}
+
+struct EditorSkills: Codable {
+    let cutting: Double
+    let color: Double
+    let telop: Double
+    let bgm: Double
+    let cameraWork: Double
+    let composition: Double
+    let tempo: Double
+}
+
+struct TrackedVideo: Identifiable, Codable {
+    let id: String
+    let url: String
+    let title: String
+    let channelName: String?
+    let thumbnailUrl: String?
+    let analysisStatus: String
+    let analysisResult: VideoAnalysis?
+    let createdAt: String
+}
+
+struct VideoAnalysis: Codable {
+    let overallScore: Double?
+    let composition: String?
+    let tempo: String?
+    let cuttingStyle: String?
+    let colorGrading: String?
+    let keyTechniques: [String]?
+    let summary: String?
+}
+
+struct TrackingInsight: Identifiable, Codable {
+    let id: String
+    let category: String
+    let pattern: String
+    let sourceCount: Int
+    let confidence: Double
+    let createdAt: String
+}
+
+struct AuditReport: Codable, Identifiable {
+    var id: String { runAt }
+    let runAt: String
+    let pipelineStatus: String
+    let pendingVideos: Int
+    let qualityAnomalies: [String]
+    let staleProjects: [String]
+    let overallHealth: String
+}
+
+struct FeedbackConvertRequest: Encodable {
+    let rawText: String
+    let projectId: String
+}
+
+struct FeedbackConvertResponse: Codable {
+    let convertedText: String
+    let structuredItems: [StructuredFeedbackItem]
 }
 
 enum JSONValue: Codable {

@@ -53,6 +53,43 @@ final class APIClient: ObservableObject {
         try await request([FeedbackItem].self, path: "/api/projects/\(projectId)/feedbacks")
     }
 
+    func fetchAllFeedbacks(limit: Int = 50) async throws -> [FeedbackItem] {
+        try await request([FeedbackItem].self, path: "/api/feedbacks?limit=\(limit)")
+    }
+
+    func fetchDashboardSummary() async throws -> DashboardSummary {
+        try await request(DashboardSummary.self, path: "/api/dashboard/summary")
+    }
+
+    func fetchQualityTrend() async throws -> [QualityTrendItem] {
+        try await request([QualityTrendItem].self, path: "/api/dashboard/quality-trend")
+    }
+
+    func fetchEditors() async throws -> [Editor] {
+        try await request([Editor].self, path: "/api/editors")
+    }
+
+    func fetchTrackingVideos() async throws -> [TrackedVideo] {
+        try await request([TrackedVideo].self, path: "/api/tracking/videos")
+    }
+
+    func fetchTrackingInsights() async throws -> [TrackingInsight] {
+        try await request([TrackingInsight].self, path: "/api/tracking/insights")
+    }
+
+    func fetchLatestAudit() async throws -> AuditReport {
+        try await request(AuditReport.self, path: "/api/audit/latest")
+    }
+
+    func fetchAuditHistory() async throws -> [AuditReport] {
+        try await request([AuditReport].self, path: "/api/audit/history")
+    }
+
+    func convertFeedback(rawText: String, projectId: String) async throws -> FeedbackConvertResponse {
+        let body = FeedbackConvertRequest(rawText: rawText, projectId: projectId)
+        return try await request(FeedbackConvertResponse.self, path: "/api/feedback/convert", method: "POST", body: body)
+    }
+
     func createFeedback(
         projectId: String,
         content: String,

@@ -268,4 +268,121 @@ https://teko-lp.com/
         .init(id: UUID(), level: "High", message: "最新2本で音声明瞭度が基準値を下回りました"),
         .init(id: UUID(), level: "Medium", message: "レビュー待ち案件が3件滞留中です")
     ]
+
+    static let dashboardSummary = DashboardSummary(
+        totalProjects: projects.count,
+        withAssets: 3,
+        avgQualityScore: 85.6,
+        statusCounts: [
+            "directed": 1,
+            "editing": 1,
+            "reviewPending": 1,
+            "published": 2
+        ],
+        recentFeedbacks: [
+            FeedbackItem(
+                id: "mock-feedback-1",
+                projectId: "p-satoimo-thomas",
+                content: "02:18付近のテロップ情報量を減らし、1カット1メッセージに整理してください。",
+                createdBy: "なおとさん",
+                createdAt: "2026-03-10T13:20:00Z",
+                timestamp: "02:18",
+                feedbackType: "voice",
+                projectTitle: "CEO対談 Vol.12",
+                guestName: "さといも・トーマス",
+                rawVoiceText: "ここマジで伝わりづらい。テロップ多すぎる。",
+                convertedText: "02:18付近のテロップ情報量を減らし、1カット1メッセージに整理してください。",
+                isSent: true
+            )
+        ],
+        unsentFeedbackCount: 1
+    )
+
+    static let editorDirectory: [Editor] = [
+        .init(
+            id: "editor-pug",
+            name: "パグさん",
+            contactInfo: "@pug_edit",
+            status: "active",
+            contractType: "freelance",
+            skills: .init(cutting: 4.7, color: 4.2, telop: 4.8, bgm: 4.0, cameraWork: 3.8, composition: 4.3, tempo: 4.9),
+            activeProjects: 4,
+            totalCompleted: 81,
+            avgQualityScore: 87.4,
+            createdAt: "2025-11-01T09:00:00Z"
+        ),
+        .init(
+            id: "editor-aoi",
+            name: "あおいさん",
+            contactInfo: "@aoi_movie",
+            status: "on_leave",
+            contractType: "freelance",
+            skills: .init(cutting: 4.2, color: 4.6, telop: 4.1, bgm: 4.4, cameraWork: 4.0, composition: 4.5, tempo: 3.9),
+            activeProjects: 1,
+            totalCompleted: 54,
+            avgQualityScore: 84.1,
+            createdAt: "2025-08-21T09:00:00Z"
+        )
+    ]
+
+    static let trackedVideos: [TrackedVideo] = [
+        .init(
+            id: "track-1",
+            url: "https://youtube.com/watch?v=sample1",
+            title: "視聴維持率が高い不動産対談の型",
+            channelName: "競合チャンネルA",
+            thumbnailUrl: nil,
+            analysisStatus: "completed",
+            analysisResult: .init(
+                overallScore: 91,
+                composition: "冒頭3秒で数字と人物属性を固定",
+                tempo: "4-6秒の短い尺で視点切替",
+                cuttingStyle: "会話の切り返しを細かく維持",
+                colorGrading: "暗部を締めた高コントラスト",
+                keyTechniques: ["冒頭で結論提示", "Bロールは1.5秒以下", "テロップは2行以内"],
+                summary: "テンポ優位で維持率が高い典型パターン"
+            ),
+            createdAt: "2026-03-11T12:00:00Z"
+        )
+    ]
+
+    static let trackingInsights: [TrackingInsight] = [
+        .init(
+            id: "insight-1",
+            category: "tempo",
+            pattern: "冒頭15秒は2.5秒以内のカット切替が高維持率と相関",
+            sourceCount: 12,
+            confidence: 0.82,
+            createdAt: "2026-03-12T08:30:00Z"
+        ),
+        .init(
+            id: "insight-2",
+            category: "cutting",
+            pattern: "ゲストの感情が上がる箇所で寄りカットを挟むと保存率が改善",
+            sourceCount: 8,
+            confidence: 0.76,
+            createdAt: "2026-03-12T08:40:00Z"
+        )
+    ]
+
+    static let latestAudit = AuditReport(
+        runAt: "2026-03-13T03:20:00Z",
+        pipelineStatus: "warning",
+        pendingVideos: 2,
+        qualityAnomalies: ["音声明瞭度が基準値以下の案件が2件", "未送信フィードバックが1件残存"],
+        staleProjects: ["採用密着ドキュメント"],
+        overallHealth: "warning"
+    )
+
+    static let auditHistory: [AuditReport] = [
+        latestAudit,
+        .init(
+            runAt: "2026-03-12T03:20:00Z",
+            pipelineStatus: "healthy",
+            pendingVideos: 1,
+            qualityAnomalies: [],
+            staleProjects: [],
+            overallHealth: "good"
+        )
+    ]
 }

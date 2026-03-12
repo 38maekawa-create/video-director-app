@@ -229,9 +229,8 @@ def _sync_to_api_server(
 
     api_base = "http://localhost:8210"
 
-    # プロジェクトIDの生成（日付_ゲスト名）
-    safe_name = re.sub(r"[^\w]", "", guest_name)
-    project_id = f"p-{date_str}-{safe_name}"
+    # プロジェクトIDの生成
+    project_id = _build_project_id(video_data, guest_name, date_str)
 
     try:
         # プロジェクトデータ構築
@@ -239,7 +238,7 @@ def _sync_to_api_server(
             "id": project_id,
             "guest_name": guest_name,
             "title": video_data.title or f"{guest_name}さん対談",
-            "status": "directed",
+            "status": _status_from_tier(getattr(classification, "tier", "")),
             "shoot_date": f"{date_str[:4]}/{date_str[4:6]}/{date_str[6:8]}" if len(date_str) == 8 else date_str,
             "quality_score": None,
             "direction_report_url": direction_url or None,
@@ -248,7 +247,7 @@ def _sync_to_api_server(
         # ゲスト情報があれば追加
         if video_data.profiles:
             profile = video_data.profiles[0]
-            project_data["guest_age"] = profile.age
+            project_data["guest_age"] = _extract_age_number(profile.age)
             project_data["guest_occupation"] = profile.occupation
 
         # POST（新規）を試行、409なら PUT（更新）
@@ -282,15 +281,7 @@ def _sync_to_api_server(
                     "overall_concept": getattr(thumbnail_design, "overall_concept", ""),
                     "font_suggestion": getattr(thumbnail_design, "font_suggestion", ""),
                     "background_suggestion": getattr(thumbnail_design, "background_suggestion", ""),
-                    "zones": [
-                        {
-                            "role": z.role,
-                            "content": z.content,
-                            "color_suggestion": z.color_suggestion,
-                            "notes": z.notes,
-                        }
-                        for z in (thumbnail_design.zones or [])
-                    ],
+                    "zones": _thumbnail_zones(thumbnail_design),
                 }
 
             if title_proposals:
@@ -326,6 +317,56 @@ def _sync_to_api_server(
         pass
     except Exception as e:
         print(f"  ⚠️ APIサーバー同期スキップ: {e}")
+
+
+def _build_project_id(video_data, guest_name: str, date_str: str) -> str:
+    normalized_name = guest_name.strip().lower()
+    if re.fullmatch(r"[a-z0-9 _-]+", normalized_name):
+        slug = re.sub(r"[^a-z0-9]+", "-", normalized_name).strip("-")
+        if slug:
+            return f"p-{slug}"
+
+    source_name = getattr(video_data, "source_path", "") or f"{date_str}-{guest_name}"
+    fallback = re.sub(r"[^\w]+", "-", Path(source_name).stem, flags=re.UNICODE).strip("-").lower()
+    return f"p-{fallback[:80]}" if fallback else f"p-{date_str}"
+
+
+def _status_from_tier(tier: str) -> str:
+    if tier == "a":
+        return "reviewPending"
+    if tier == "b":
+        return "editing"
+    return "directed"
+
+
+def _extract_age_number(age_text: str) -> int | None:
+    if not age_text:
+        return None
+    match = re.search(r"(\d{2})", age_text)
+    return int(match.group(1)) if match else None
+
+
+def _thumbnail_zones(thumbnail_design) -> list[dict]:
+    if hasattr(thumbnail_design, "zones") and getattr(thumbnail_design, "zones"):
+        zones = getattr(thumbnail_design, "zones")
+    else:
+        zones = [
+            getattr(thumbnail_design, "top_left", None),
+            getattr(thumbnail_design, "top_right", None),
+            getattr(thumbnail_design, "diagonal", None),
+            getattr(thumbnail_design, "bottom_right", None),
+        ]
+
+    return [
+        {
+            "role": zone.role,
+            "content": zone.content,
+            "color_suggestion": zone.color_suggestion,
+            "notes": zone.notes,
+        }
+        for zone in zones
+        if zone is not None
+    ]
 
 
 def process_all(dry_run: bool = False, output_dir: str | Path = None) -> list[dict]:

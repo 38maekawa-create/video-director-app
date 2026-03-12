@@ -5,6 +5,13 @@ struct VoiceFeedbackView: View {
     @ObservedObject var viewModel: VoiceFeedbackViewModel
     @Environment(\.dismiss) private var dismiss
 
+    init(viewModel: VoiceFeedbackViewModel = VoiceFeedbackViewModel(), projectId: String? = nil) {
+        if let projectId {
+            viewModel.projectId = projectId
+        }
+        self.viewModel = viewModel
+    }
+
     var body: some View {
         ZStack {
             // 背景

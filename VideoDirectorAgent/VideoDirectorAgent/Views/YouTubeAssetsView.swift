@@ -12,9 +12,16 @@ struct YouTubeAssetsView: View {
     @State private var isSavingTitle = false
     @State private var isSavingDescription = false
     @State private var bannerMessage: String?
+    @State private var showUpdateBanner = false
+    @State private var lastKnownEditedBy: String?
+    @State private var pollingTimer: Timer?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            if showUpdateBanner {
+                updateBanner
+            }
+
             if let bannerMessage {
                 banner(text: bannerMessage)
             }
@@ -31,6 +38,12 @@ struct YouTubeAssetsView: View {
         }
         .task {
             await loadAssets()
+        }
+        .onAppear {
+            startPolling()
+        }
+        .onDisappear {
+            stopPolling()
         }
     }
 
@@ -271,6 +284,7 @@ struct YouTubeAssetsView: View {
 
     private func applyLoadedAssets(_ loaded: YouTubeAssets) {
         assets = loaded
+        lastKnownEditedBy = loaded.lastEditedBy
         selectedTitleIndex = loaded.selectedTitleIndex ?? loaded.titleProposals?.recommendedIndex ?? 0
         if let editedTitle = loaded.editedTitle, !editedTitle.isEmpty {
             self.editedTitle = editedTitle
@@ -280,6 +294,39 @@ struct YouTubeAssetsView: View {
             editedTitle = ""
         }
         descriptionText = loaded.activeDescription
+    }
+
+    private func startPolling() {
+        stopPolling()
+        pollingTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { _ in
+            Task { @MainActor in
+                await pollForUpdates()
+            }
+        }
+    }
+
+    private func stopPolling() {
+        pollingTimer?.invalidate()
+        pollingTimer = nil
+    }
+
+    private func pollForUpdates() async {
+        do {
+            let latest = try await APIClient.shared.fetchYouTubeAssets(projectId: projectId)
+            if let editedBy = latest.lastEditedBy,
+               editedBy != "naoto",
+               editedBy != "なおとさん",
+               editedBy != lastKnownEditedBy {
+                applyLoadedAssets(latest)
+                showUpdateBanner = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    showUpdateBanner = false
+                }
+            } else {
+                applyLoadedAssets(latest)
+            }
+        } catch {
+        }
     }
 
     private func saveSelectedTitle() async {
@@ -293,11 +340,11 @@ struct YouTubeAssetsView: View {
                 projectId: projectId,
                 index: selectedTitleIndex,
                 editedTitle: finalTitle.isEmpty ? nil : finalTitle,
-                by: "なおとさん"
+                by: "naoto"
             )
             self.assets?.selectedTitleIndex = selectedTitleIndex
             self.assets?.editedTitle = finalTitle.isEmpty ? nil : finalTitle
-            self.assets?.lastEditedBy = "なおとさん"
+            self.assets?.lastEditedBy = "naoto"
             bannerMessage = "タイトル案を保存しました"
         } catch {
             bannerMessage = "タイトル保存に失敗しました"
@@ -313,15 +360,31 @@ struct YouTubeAssetsView: View {
         defer { isSavingDescription = false }
 
         do {
-            try await APIClient.shared.updateDescription(projectId: projectId, edited: descriptionText, by: "なおとさん")
+            try await APIClient.shared.updateDescription(projectId: projectId, edited: descriptionText, by: "naoto")
             self.assets?.descriptionEdited = descriptionText
-            self.assets?.lastEditedBy = "なおとさん"
+            self.assets?.lastEditedBy = "naoto"
             bannerMessage = "概要欄を保存しました"
         } catch {
             self.assets?.descriptionEdited = descriptionText
-            self.assets?.lastEditedBy = "なおとさん"
+            self.assets?.lastEditedBy = "naoto"
             bannerMessage = "API未接続のためローカル表示のみ更新しました"
         }
+    }
+
+    private var updateBanner: some View {
+        HStack {
+            Image(systemName: "arrow.triangle.2.circlepath")
+            Text("パグさんが更新しました")
+        }
+        .font(.caption)
+        .fontWeight(.bold)
+        .foregroundStyle(.white)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(Color(hex: 0x4A90D9))
+        .clipShape(Capsule())
+        .transition(.move(edge: .top).combined(with: .opacity))
+        .animation(.easeInOut, value: showUpdateBanner)
     }
 
     private func banner(text: String) -> some View {

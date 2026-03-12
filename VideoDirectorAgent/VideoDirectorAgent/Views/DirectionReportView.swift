@@ -5,6 +5,9 @@ struct DirectionReportView: View {
     var project: VideoProject?
     @State private var selectedTab = 0
     @State private var expandedSections: Set<UUID> = []
+    @State private var feedbacks: [FeedbackItem] = []
+    @State private var isFeedbackLoading = false
+    @State private var showVoiceFeedback = false
 
     private var displayProject: VideoProject {
         project ?? MockData.projects.first!
@@ -26,6 +29,9 @@ struct DirectionReportView: View {
             bottomActionBar
         }
         .navigationBarTitleDisplayMode(.inline)
+        .fullScreenCover(isPresented: $showVoiceFeedback) {
+            VoiceFeedbackView(projectId: displayProject.id)
+        }
     }
 
     private var headerSection: some View {
@@ -146,17 +152,17 @@ struct DirectionReportView: View {
             case 0:
                 overviewSection
             case 1:
-                expandableSection(MockData.reportSections[0])
+                directionReportSection
             case 2:
                 YouTubeAssetsView(projectId: displayProject.id)
             case 3:
-                expandableSection(MockData.reportSections[2])
+                sourceVideoSection
             case 4:
-                editedSection
+                editedVideoSection
             case 5:
-                feedbackSection
+                feedbackListSection
             case 6:
-                knowledgeSection
+                knowledgeDetailSection
             default:
                 EmptyView()
             }
@@ -220,8 +226,11 @@ struct DirectionReportView: View {
                 icon: "doc.text.magnifyingglass",
                 items: [
                     "ゲスト: \(displayProject.guestName)",
+                    displayProject.guestAge.map { "年齢: \($0)歳" } ?? "年齢: 未設定",
+                    displayProject.guestOccupation.map { "職業: \($0)" } ?? "職業: 未設定",
                     "撮影日: \(displayProject.shootDate)",
-                    "状態: \(displayProject.status.label)"
+                    "状態: \(displayProject.status.label)",
+                    "品質スコア: \(displayProject.qualityScore.map(String.init) ?? "未算出")"
                 ]
             )
             overviewCard(
@@ -229,49 +238,168 @@ struct DirectionReportView: View {
                 icon: "chart.bar.xaxis",
                 items: [
                     "未レビュー: \(displayProject.unreviewedCount)件",
-                    "未送信FB: \(displayProject.hasUnsentFeedback ? "あり" : "なし")",
-                    "品質スコア: \(displayProject.qualityScore.map(String.init) ?? "未算出")"
+                    "未送信FB: \(displayProject.hasUnsentFeedback ? "あり" : "なし")"
                 ]
             )
         }
     }
 
-    private var editedSection: some View {
-        overviewCard(
-            title: "編集後レビュー",
-            icon: "sparkles.rectangle.stack",
-            items: [
-                "編集後タブは Phase 2 で詳細連携予定",
-                "本フェーズでは YouTube素材の閲覧・編集を優先",
-                "Vimeoレビュー導線はヘッダーから遷移"
-            ]
-        )
+    private var directionReportSection: some View {
+        Group {
+            if let urlString = displayProject.directionReportURL,
+               let url = URL(string: urlString) {
+                WebViewRepresentable(url: url)
+                    .frame(minHeight: 600)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else {
+                overviewCard(
+                    title: "ディレクションレポート",
+                    icon: "doc.richtext",
+                    items: ["レポートURLが未設定です"]
+                )
+            }
+        }
     }
 
-    private var feedbackSection: some View {
+    private var sourceVideoSection: some View {
         VStack(spacing: 12) {
-            expandableSection(MockData.reportSections[3])
             overviewCard(
-                title: "評価メモ",
-                icon: "checkmark.seal",
+                title: "撮影素材",
+                icon: "video.badge.waveform",
                 items: [
-                    "音声FBの要点を YouTube素材に反映可能",
-                    "次フェーズでリアルタイム同期と評価連携を追加"
+                    "ゲスト: \(displayProject.guestName)",
+                    "撮影日: \(displayProject.shootDate)"
                 ]
             )
+            if let url = displayProject.sourceVideoURL,
+               !url.isEmpty,
+               let destination = URL(string: url) {
+                Link(destination: destination) {
+                    HStack {
+                        Image(systemName: "play.rectangle.fill")
+                        Text("素材動画を開く（Vimeo）")
+                    }
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color(hex: 0x1AB7EA))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+            } else {
+                overviewCard(
+                    title: "素材動画",
+                    icon: "exclamationmark.triangle",
+                    items: ["素材動画URLが未登録です"]
+                )
+            }
         }
     }
 
-    private var knowledgeSection: some View {
-        overviewCard(
-            title: "ナレッジ連携",
-            icon: "books.vertical",
-            items: [
-                "本案件のディレクション知見は AI開発5 の素材知見と接続予定",
-                "ネイティブアプリ Phase 1 では閲覧の土台のみ構築",
-                "Phase 2 以降で関連ナレッジページ埋め込みへ拡張"
-            ]
-        )
+    private var editedVideoSection: some View {
+        VStack(spacing: 12) {
+            if let url = displayProject.editedVideoURL,
+               !url.isEmpty,
+               let destination = URL(string: url) {
+                overviewCard(
+                    title: "編集後動画",
+                    icon: "sparkles.rectangle.stack",
+                    items: ["編集完了。レビュー可能な状態です。"]
+                )
+                Link(destination: destination) {
+                    HStack {
+                        Image(systemName: "play.rectangle.fill")
+                        Text("編集後動画を開く")
+                    }
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(AppTheme.statusComplete)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+            } else {
+                overviewCard(
+                    title: "編集後動画",
+                    icon: "sparkles.rectangle.stack",
+                    items: [
+                        "編集後動画はまだアップロードされていません",
+                        "パグさんが編集完了後にここに表示されます"
+                    ]
+                )
+            }
+        }
+    }
+
+    private var feedbackListSection: some View {
+        VStack(spacing: 12) {
+            if isFeedbackLoading {
+                ProgressView()
+                    .tint(AppTheme.accent)
+                    .frame(maxWidth: .infinity, minHeight: 100)
+            } else if feedbacks.isEmpty {
+                overviewCard(
+                    title: "フィードバック",
+                    icon: "bubble.left.and.bubble.right",
+                    items: ["まだフィードバックがありません"]
+                )
+            } else {
+                ForEach(feedbacks) { fb in
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text(fb.createdBy)
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(AppTheme.accent)
+                            Spacer()
+                            Text(fb.createdAt)
+                                .font(.caption2)
+                                .foregroundStyle(AppTheme.textMuted)
+                        }
+                        Text(fb.content)
+                            .font(.subheadline)
+                            .foregroundStyle(AppTheme.textSecondary)
+                        if let timestamp = fb.timestamp {
+                            HStack(spacing: 4) {
+                                Image(systemName: "clock")
+                                Text(timestamp)
+                            }
+                            .font(.caption2)
+                            .foregroundStyle(AppTheme.textMuted)
+                        }
+                    }
+                    .padding(16)
+                    .background(AppTheme.cardBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+            }
+        }
+        .task(id: displayProject.id) {
+            await loadFeedbacks()
+        }
+    }
+
+    private var knowledgeDetailSection: some View {
+        VStack(spacing: 12) {
+            if let knowledge = displayProject.knowledge, !knowledge.isEmpty {
+                overviewCard(
+                    title: "ナレッジハイライト",
+                    icon: "lightbulb.fill",
+                    items: knowledge.components(separatedBy: "\n").filter { !$0.isEmpty }
+                )
+            } else {
+                overviewCard(
+                    title: "ナレッジ連携",
+                    icon: "books.vertical",
+                    items: [
+                        "この案件のナレッジはまだ生成されていません",
+                        "動画分析完了後に自動生成されます"
+                    ]
+                )
+            }
+        }
     }
 
     private func overviewCard(title: String, icon: String, items: [String]) -> some View {
@@ -306,6 +434,7 @@ struct DirectionReportView: View {
     private var bottomActionBar: some View {
         HStack(spacing: 16) {
             Button {
+                showVoiceFeedback = true
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "mic.fill")
@@ -335,5 +464,15 @@ struct DirectionReportView: View {
         if score >= 85 { return AppTheme.statusComplete }
         if score >= 70 { return Color(hex: 0xF5A623) }
         return AppTheme.accent
+    }
+
+    private func loadFeedbacks() async {
+        isFeedbackLoading = true
+        defer { isFeedbackLoading = false }
+        do {
+            feedbacks = try await APIClient.shared.fetchFeedbacks(projectId: displayProject.id)
+        } catch {
+            feedbacks = []
+        }
     }
 }

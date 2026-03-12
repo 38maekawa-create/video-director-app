@@ -209,7 +209,7 @@ struct YouTubeAssetsView: View {
             TextEditor(text: $descriptionText)
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 220)
-                .font(UIFont.preferredFont(forTextStyle: .body).monospaced())
+                .font(.system(.body, design: .monospaced))
                 .foregroundStyle(.white)
                 .padding(8)
                 .background(AppTheme.cardBackgroundLight)

@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 final class APIClient: ObservableObject {
     static let shared = APIClient()
 

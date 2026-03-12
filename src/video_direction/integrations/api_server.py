@@ -401,10 +401,12 @@ def health():
     conn = _get_db()
     project_count = conn.execute("SELECT COUNT(*) FROM projects").fetchone()[0]
     assets_count = conn.execute("SELECT COUNT(*) FROM youtube_assets").fetchone()[0]
+    feedback_count = conn.execute("SELECT COUNT(*) FROM feedbacks").fetchone()[0]
     conn.close()
     return {
         "status": "ok",
         "db_path": str(DB_PATH),
         "projects": project_count,
         "youtube_assets": assets_count,
+        "feedbacks": feedback_count,
     }

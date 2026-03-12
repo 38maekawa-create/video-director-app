@@ -12,6 +12,7 @@
         <string>0.0.0.0</string>
         <string>--port</string>
         <string>8210</string>
+        <string>--reload</string>
     </array>
     <key>WorkingDirectory</key>
     <string>/Users/maekawanaoto/AI開発10</string>

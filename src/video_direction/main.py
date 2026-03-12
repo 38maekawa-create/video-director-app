@@ -40,6 +40,10 @@ from .analyzer.income_evaluator import evaluate_income
 from .analyzer.proper_noun_filter import detect_proper_nouns
 from .analyzer.target_labeler import label_targets
 from .analyzer.direction_generator import generate_directions
+from .analyzer.thumbnail_designer import generate_thumbnail_design
+from .analyzer.title_generator import generate_title_proposals
+from .analyzer.description_writer import generate_description
+from .knowledge.loader import KnowledgeLoader
 from .reporter.html_generator import generate_direction_html
 from .reporter.publisher import publish_direction_page
 from .integrations.sheets_manager import SheetsManager
@@ -90,6 +94,25 @@ def process_single_file(
     direction_timeline = generate_directions(video_data, classification, income_eval)
     print(f"  🎬 演出指示: {len(direction_timeline.entries)}件")
 
+    # Step 2.5: YouTube素材生成（サムネ指示書・タイトル案・概要欄）
+    thumbnail_design = None
+    title_proposals = None
+    video_description = None
+    try:
+        knowledge_ctx = KnowledgeLoader().load()
+        thumbnail_design = generate_thumbnail_design(video_data, classification, income_eval, knowledge_ctx)
+        print(f"  🖼️ サムネ指示書: Z型4ゾーン設計完了")
+
+        title_proposals = generate_title_proposals(video_data, classification, income_eval, knowledge_ctx)
+        title_count = len(title_proposals.candidates) if title_proposals.candidates else 0
+        print(f"  📝 タイトル案: {title_count}件")
+
+        video_description = generate_description(video_data, classification, income_eval, knowledge_ctx)
+        desc_len = len(video_description.full_text) if video_description.full_text else 0
+        print(f"  📋 概要欄: {desc_len}文字")
+    except Exception as e:
+        print(f"  ⚠️ YouTube素材生成スキップ: {e}")
+
     # Step 3: HTMLレポート生成
     html_content = generate_direction_html(
         video_data=video_data,
@@ -98,6 +121,9 @@ def process_single_file(
         proper_nouns=proper_nouns,
         target_result=target_result,
         direction_timeline=direction_timeline,
+        thumbnail_design=thumbnail_design,
+        title_proposals=title_proposals,
+        video_description=video_description,
     )
 
     # ゲスト名の取得（プロファイル → タイトルからフォールバック）

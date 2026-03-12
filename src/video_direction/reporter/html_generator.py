@@ -10,6 +10,9 @@ from ..analyzer.income_evaluator import IncomeEvaluation
 from ..analyzer.proper_noun_filter import ProperNounEntry
 from ..analyzer.target_labeler import TargetLabelResult
 from ..analyzer.direction_generator import DirectionTimeline
+from ..analyzer.thumbnail_designer import ThumbnailDesign
+from ..analyzer.title_generator import TitleProposals
+from ..analyzer.description_writer import VideoDescription
 
 
 def generate_direction_html(
@@ -19,6 +22,9 @@ def generate_direction_html(
     proper_nouns: list[ProperNounEntry],
     target_result: TargetLabelResult,
     direction_timeline: DirectionTimeline,
+    thumbnail_design: ThumbnailDesign | None = None,
+    title_proposals: TitleProposals | None = None,
+    video_description: VideoDescription | None = None,
 ) -> str:
     """ディレクションレポートのHTMLを生成する"""
     guest_name = _get_guest_name(video_data)
@@ -31,10 +37,21 @@ def generate_direction_html(
         _build_proper_nouns(proper_nouns),
         _build_direction_timeline(direction_timeline),
         _build_target_checklist(target_result),
+    ]
+
+    # YouTube素材セクション（Optional — 生成されている場合のみ表示）
+    if thumbnail_design is not None:
+        sections.append(_build_thumbnail_design(thumbnail_design))
+    if title_proposals is not None:
+        sections.append(_build_title_proposals(title_proposals))
+    if video_description is not None:
+        sections.append(_build_video_description(video_description))
+
+    sections.extend([
         _build_highlights(video_data),
         _build_transcript(video_data),
         _build_footer(),
-    ]
+    ])
 
     body = "\n".join(sections)
 
@@ -253,6 +270,99 @@ def _build_transcript(video_data):
 <summary>整形済みトランスクリプト（全文）</summary>
 <div class="transcript">{_esc(video_data.full_transcript[:50000])}</div>
 </details>"""
+
+
+def _build_thumbnail_design(design: ThumbnailDesign) -> str:
+    """Z型サムネイル指示書セクション"""
+    def _zone_html(zone, css_class: str, label: str) -> str:
+        return f"""<div class="thumbnail-zone {css_class}">
+<span class="zone-label">{label}</span>
+<div class="zone-role">{_esc(zone.role)}</div>
+<div class="zone-content">{_esc(zone.content)}</div>
+<div class="zone-color">🎨 {_esc(zone.color_suggestion)}</div>
+<div class="zone-notes">{_esc(zone.notes)}</div>
+</div>"""
+
+    concept_html = ""
+    if design.overall_concept:
+        concept_html = f'<div class="thumbnail-concept">💡 {_esc(design.overall_concept)}</div>'
+
+    meta_html = ""
+    meta_parts = []
+    if design.font_suggestion:
+        meta_parts.append(f"フォント: {_esc(design.font_suggestion)}")
+    if design.background_suggestion:
+        meta_parts.append(f"背景: {_esc(design.background_suggestion)}")
+    if meta_parts:
+        meta_html = '<div class="thumbnail-meta">' + " | ".join(meta_parts) + "</div>"
+
+    grid = f"""<div class="thumbnail-grid">
+{_zone_html(design.top_left, "zone-top-left", "左上: フック")}
+{_zone_html(design.top_right, "zone-top-right", "右上: 人物")}
+{_zone_html(design.diagonal, "zone-diagonal", "斜め: コンテンツ")}
+{_zone_html(design.bottom_right, "zone-bottom-right", "右下: ベネフィット")}
+</div>"""
+
+    return f"""<section id="thumbnail-design" class="section">
+<h2>🖼️ Z型サムネイル指示書</h2>
+{concept_html}
+{meta_html}
+{grid}
+</section>"""
+
+
+def _build_title_proposals(proposals: TitleProposals) -> str:
+    """タイトル提案セクション"""
+    if not proposals.candidates:
+        return ""
+
+    cards_html = ""
+    for i, candidate in enumerate(proposals.candidates):
+        is_recommended = (i == proposals.recommended_index)
+        card_class = "title-card recommended" if is_recommended else "title-card"
+        badge = '<div class="title-badge">⭐ 推奨</div>' if is_recommended else ""
+
+        cards_html += f"""<div class="{card_class}">
+{badge}
+<div class="title-text">{_esc(candidate.title)}</div>
+<div class="title-meta">
+<span>🎯 {_esc(candidate.target_segment)}</span>
+<span>📢 {_esc(candidate.appeal_type)}</span>
+</div>
+<div class="title-rationale">{_esc(candidate.rationale)}</div>
+</div>"""
+
+    return f"""<section id="title-proposals" class="section">
+<h2>📝 タイトル案</h2>
+{cards_html}
+</section>"""
+
+
+def _build_video_description(desc: VideoDescription) -> str:
+    """概要欄文章セクション"""
+    if not desc.full_text:
+        return ""
+
+    # コピーボタン用のJavaScript
+    copy_script = """
+<script>
+function copyDescription() {
+    const text = document.getElementById('description-text').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✅ コピーしました！';
+        setTimeout(() => { btn.textContent = '📋 概要欄テキストをコピー'; }, 2000);
+    });
+}
+</script>"""
+
+    return f"""<section id="video-description" class="section">
+<h2>📋 YouTube概要欄</h2>
+<p style="font-size:0.85em;color:#888;">そのままコピーしてYouTubeの概要欄に貼り付けてください。</p>
+<div class="description-preview" id="description-text">{_esc(desc.full_text)}</div>
+<button class="copy-btn" id="copy-btn" onclick="copyDescription()">📋 概要欄テキストをコピー</button>
+{copy_script}
+</section>"""
 
 
 def _build_footer():

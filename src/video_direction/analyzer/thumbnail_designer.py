@@ -1,0 +1,187 @@
+from __future__ import annotations
+"""Z型サムネイル指示書生成
+
+青木さんのZ理論に基づく4ゾーン構成のサムネイル設計指示を生成する。
+LLM（Claude Sonnet）を使ってナレッジ + ゲスト情報から最適なサムネ設計を提案。
+"""
+
+import json
+import os
+import re
+from dataclasses import dataclass, field
+from pathlib import Path
+from ..integrations.ai_dev5_connector import VideoData
+from ..analyzer.guest_classifier import ClassificationResult
+from ..analyzer.income_evaluator import IncomeEvaluation
+from ..knowledge.loader import KnowledgeContext
+from ..knowledge.prompts import THUMBNAIL_DESIGN_PROMPT
+
+
+@dataclass
+class ThumbnailZone:
+    """サムネイルの1ゾーン"""
+    role: str = ""              # ゾーンの役割
+    content: str = ""           # 具体的な内容
+    color_suggestion: str = ""  # 色の提案
+    notes: str = ""             # 配置・サイズの注意点
+
+
+@dataclass
+class ThumbnailDesign:
+    """Z型サムネイル指示書"""
+    overall_concept: str = ""
+    font_suggestion: str = ""
+    background_suggestion: str = ""
+    top_left: ThumbnailZone = field(default_factory=ThumbnailZone)      # フック
+    top_right: ThumbnailZone = field(default_factory=ThumbnailZone)     # 人物シルエット＋属性
+    diagonal: ThumbnailZone = field(default_factory=ThumbnailZone)      # コンテンツ要素
+    bottom_right: ThumbnailZone = field(default_factory=ThumbnailZone)  # ベネフィット
+    llm_raw_response: str = ""  # デバッグ・監査用
+
+
+def generate_thumbnail_design(
+    video_data: VideoData,
+    classification: ClassificationResult,
+    income_eval: IncomeEvaluation,
+    knowledge_ctx: KnowledgeContext,
+) -> ThumbnailDesign:
+    """Z型サムネイル指示書を生成する"""
+
+    # APIキー読み込み
+    api_key = _get_api_key()
+    if not api_key:
+        return _fallback_thumbnail(video_data, classification, income_eval)
+
+    # プロンプト構築
+    profile = video_data.profiles[0] if video_data.profiles else None
+    highlights_text = "\n".join([
+        f"[{h.timestamp}] {h.speaker}: {h.text[:80]} ({h.category})"
+        for h in video_data.highlights[:5]
+    ])
+
+    prompt = THUMBNAIL_DESIGN_PROMPT.format(
+        z_theory_summary=knowledge_ctx.z_theory_summary,
+        z_theory_detailed=knowledge_ctx.z_theory_detailed,
+        marketing_principles=knowledge_ctx.marketing_principles,
+        video_title=video_data.title or "不明",
+        guest_name=profile.name if profile else "不明",
+        guest_age=profile.age if profile else "不明",
+        guest_occupation=profile.occupation if profile else "不明",
+        guest_income=profile.income if profile else "不明",
+        guest_tier=classification.tier,
+        tier_label=classification.tier_label,
+        income_emphasis="強調ON" if income_eval.emphasize else "強調OFF",
+        three_line_summary="\n".join(video_data.three_line_summary) if video_data.three_line_summary else "なし",
+        main_topics="\n".join(video_data.main_topics) if video_data.main_topics else "なし",
+        highlights_text=highlights_text or "なし",
+    )
+
+    # LLM呼び出し
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=api_key)
+        response = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=2000,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        raw = response.content[0].text
+
+        # JSONパース
+        return _parse_thumbnail_response(raw)
+
+    except Exception as e:
+        print(f"  ⚠️ サムネ指示書LLM生成失敗: {e}")
+        return _fallback_thumbnail(video_data, classification, income_eval)
+
+
+def _parse_thumbnail_response(raw: str) -> ThumbnailDesign:
+    """LLMレスポンスからThumbnailDesignを構築"""
+    # JSON部分を抽出
+    json_match = re.search(r"\{[\s\S]*\}", raw)
+    if not json_match:
+        return ThumbnailDesign(llm_raw_response=raw)
+
+    try:
+        data = json.loads(json_match.group())
+    except json.JSONDecodeError:
+        return ThumbnailDesign(llm_raw_response=raw)
+
+    zones = data.get("zones", {})
+
+    def _parse_zone(zone_data: dict) -> ThumbnailZone:
+        return ThumbnailZone(
+            role=zone_data.get("role", ""),
+            content=zone_data.get("content", ""),
+            color_suggestion=zone_data.get("color_suggestion", ""),
+            notes=zone_data.get("notes", ""),
+        )
+
+    return ThumbnailDesign(
+        overall_concept=data.get("overall_concept", ""),
+        font_suggestion=data.get("font_suggestion", ""),
+        background_suggestion=data.get("background_suggestion", ""),
+        top_left=_parse_zone(zones.get("top_left", {})),
+        top_right=_parse_zone(zones.get("top_right", {})),
+        diagonal=_parse_zone(zones.get("diagonal", {})),
+        bottom_right=_parse_zone(zones.get("bottom_right", {})),
+        llm_raw_response=raw,
+    )
+
+
+def _fallback_thumbnail(
+    video_data: VideoData,
+    classification: ClassificationResult,
+    income_eval: IncomeEvaluation,
+) -> ThumbnailDesign:
+    """APIキーなし・LLM失敗時のフォールバック（ルールベース）"""
+    profile = video_data.profiles[0] if video_data.profiles else None
+
+    # フック文言の決定
+    hook_text = "年収" + (profile.income if profile and profile.income else "???万円")
+    if not income_eval.emphasize and profile:
+        hook_text = profile.occupation or "会社員"
+
+    return ThumbnailDesign(
+        overall_concept=f"Z型レイアウト — {classification.tier_label}のゲスト対談",
+        font_suggestion="ゴシック体・太字（視認性重視）",
+        background_suggestion="ダークグレー or ネイビー系（高級感）",
+        top_left=ThumbnailZone(
+            role="フック",
+            content=hook_text,
+            color_suggestion="白テキスト on 赤/オレンジ背景",
+            notes="最も大きいフォントサイズ、画面左上1/4に配置",
+        ),
+        top_right=ThumbnailZone(
+            role="人物シルエット＋属性",
+            content=f"モザイクシルエット + 「{profile.age if profile else ''}・{profile.occupation if profile else ''}」",
+            color_suggestion="シルエットは白 or グレー、属性テキストは黄色",
+            notes="顔はモザイク。シルエットの横に属性テキストを配置",
+        ),
+        diagonal=ThumbnailZone(
+            role="コンテンツ要素",
+            content="主要トピックのキーワード or アイコン",
+            color_suggestion="アクセントカラー",
+            notes="左上→右下への視線誘導を意識した斜め配置",
+        ),
+        bottom_right=ThumbnailZone(
+            role="ベネフィット",
+            content="視聴者が得られる学び・気づきを1行で",
+            color_suggestion="黄色 or ゴールド",
+            notes="CTA的な要素、クリック動機に直結",
+        ),
+        llm_raw_response="[フォールバック: ルールベース生成]",
+    )
+
+
+def _get_api_key() -> str:
+    """Anthropic APIキーを取得"""
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        env_file = Path.home() / ".config" / "maekawa" / "api-keys.env"
+        if env_file.exists():
+            for line in env_file.read_text().split("\n"):
+                if line.startswith("ANTHROPIC_API_KEY="):
+                    api_key = line.split("=", 1)[1].strip()
+                    break
+    return api_key

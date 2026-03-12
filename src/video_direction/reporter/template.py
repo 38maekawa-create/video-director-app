@@ -185,6 +185,166 @@ footer {
 }
 a { color: #1a73e8; text-decoration: none; }
 a:hover { text-decoration: underline; }
+
+/* === Z型サムネイル指示書 === */
+.thumbnail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+}
+.thumbnail-zone {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    padding: 16px;
+    position: relative;
+}
+.thumbnail-zone .zone-label {
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background: #1a73e8;
+    color: #fff;
+    font-size: 0.7em;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 10px;
+}
+.thumbnail-zone .zone-role {
+    font-size: 0.8em;
+    color: #888;
+    margin-bottom: 6px;
+}
+.thumbnail-zone .zone-content {
+    font-weight: 600;
+    font-size: 1em;
+    margin-bottom: 6px;
+}
+.thumbnail-zone .zone-color {
+    font-size: 0.8em;
+    color: #666;
+}
+.thumbnail-zone .zone-notes {
+    font-size: 0.8em;
+    color: #999;
+    font-style: italic;
+    margin-top: 4px;
+}
+.zone-top-left { border-color: #d32f2f; }
+.zone-top-left .zone-label { background: #d32f2f; }
+.zone-top-right { border-color: #1565c0; }
+.zone-top-right .zone-label { background: #1565c0; }
+.zone-diagonal { border-color: #ff9800; }
+.zone-diagonal .zone-label { background: #ff9800; }
+.zone-bottom-right { border-color: #2e7d32; }
+.zone-bottom-right .zone-label { background: #2e7d32; }
+.thumbnail-concept {
+    background: #e8f0fe;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-weight: 600;
+}
+.thumbnail-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 0.85em;
+    color: #666;
+    margin: 8px 0;
+}
+
+/* === タイトル案 === */
+.title-card {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 16px;
+    margin: 10px 0;
+    transition: box-shadow 0.2s;
+}
+.title-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.title-card.recommended {
+    border: 2px solid #ffd700;
+    background: #fffef5;
+}
+.title-card .title-badge {
+    display: inline-block;
+    background: #ffd700;
+    color: #333;
+    font-size: 0.7em;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+}
+.title-card .title-text {
+    font-size: 1.15em;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #222;
+}
+.title-card .title-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.8em;
+    color: #888;
+    flex-wrap: wrap;
+}
+.title-card .title-meta span {
+    background: #f0f0f0;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+.title-card .title-rationale {
+    font-size: 0.85em;
+    color: #666;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* === 概要欄プレビュー === */
+.description-preview {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 16px 0;
+    font-family: 'SF Mono', 'Consolas', 'Roboto Mono', monospace;
+    font-size: 0.85em;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-all;
+    position: relative;
+    max-height: 500px;
+    overflow-y: auto;
+}
+.description-preview::before {
+    content: 'YouTube\u6982\u8981\u6b04\u30d7\u30ec\u30d3\u30e5\u30fc';
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #d32f2f;
+    color: #fff;
+    font-size: 0.7em;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 0 10px 0 8px;
+    font-family: -apple-system, sans-serif;
+}
+.copy-btn {
+    display: inline-block;
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    cursor: pointer;
+    margin-top: 8px;
+}
+.copy-btn:hover { background: #1558b0; }
 """
 
 # index.htmlテンプレート

@@ -186,6 +186,19 @@ def process_single_file(
         except Exception as e:
             print(f"  ❌ スプシ書き込み失敗: {e}")
 
+    # Step 6: APIサーバー同期（SQLiteにプロジェクト+YouTube素材を保存）
+    _sync_to_api_server(
+        video_data=video_data,
+        guest_name=guest_name,
+        classification=classification,
+        income_eval=income_eval,
+        date_str=date_str,
+        direction_url=url,
+        thumbnail_design=thumbnail_design,
+        title_proposals=title_proposals,
+        video_description=video_description,
+    )
+
     return {
         "guest_name": guest_name,
         "tier": classification.tier,
@@ -193,6 +206,126 @@ def process_single_file(
         "url": url,
         "success": True,
     }
+
+
+def _sync_to_api_server(
+    video_data,
+    guest_name: str,
+    classification,
+    income_eval,
+    date_str: str,
+    direction_url: str,
+    thumbnail_design=None,
+    title_proposals=None,
+    video_description=None,
+):
+    """APIサーバー（localhost:8210）にプロジェクトとYouTube素材を同期する
+
+    APIサーバーが起動していない場合は静かにスキップする。
+    """
+    import json as json_module
+    import urllib.request
+    import urllib.error
+
+    api_base = "http://localhost:8210"
+
+    # プロジェクトIDの生成（日付_ゲスト名）
+    safe_name = re.sub(r"[^\w]", "", guest_name)
+    project_id = f"p-{date_str}-{safe_name}"
+
+    try:
+        # プロジェクトデータ構築
+        project_data = {
+            "id": project_id,
+            "guest_name": guest_name,
+            "title": video_data.title or f"{guest_name}さん対談",
+            "status": "directed",
+            "shoot_date": f"{date_str[:4]}/{date_str[4:6]}/{date_str[6:8]}" if len(date_str) == 8 else date_str,
+            "quality_score": None,
+            "direction_report_url": direction_url or None,
+        }
+
+        # ゲスト情報があれば追加
+        if video_data.profiles:
+            profile = video_data.profiles[0]
+            project_data["guest_age"] = profile.age
+            project_data["guest_occupation"] = profile.occupation
+
+        # POST（新規）を試行、409なら PUT（更新）
+        data_bytes = json_module.dumps(project_data, ensure_ascii=False).encode("utf-8")
+        req = urllib.request.Request(
+            f"{api_base}/api/projects",
+            data=data_bytes,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            urllib.request.urlopen(req, timeout=5)
+        except urllib.error.HTTPError as e:
+            if e.code == 409:
+                req = urllib.request.Request(
+                    f"{api_base}/api/projects/{project_id}",
+                    data=data_bytes,
+                    headers={"Content-Type": "application/json"},
+                    method="PUT",
+                )
+                urllib.request.urlopen(req, timeout=5)
+            else:
+                raise
+
+        # YouTube素材の同期
+        if thumbnail_design or title_proposals or video_description:
+            assets_data = {}
+
+            if thumbnail_design:
+                assets_data["thumbnail_design"] = {
+                    "overall_concept": getattr(thumbnail_design, "overall_concept", ""),
+                    "font_suggestion": getattr(thumbnail_design, "font_suggestion", ""),
+                    "background_suggestion": getattr(thumbnail_design, "background_suggestion", ""),
+                    "zones": [
+                        {
+                            "role": z.role,
+                            "content": z.content,
+                            "color_suggestion": z.color_suggestion,
+                            "notes": z.notes,
+                        }
+                        for z in (thumbnail_design.zones or [])
+                    ],
+                }
+
+            if title_proposals:
+                assets_data["title_proposals"] = {
+                    "candidates": [
+                        {
+                            "title": c.title,
+                            "target_segment": c.target_segment,
+                            "appeal_type": c.appeal_type,
+                            "rationale": c.rationale,
+                        }
+                        for c in (title_proposals.candidates or [])
+                    ],
+                    "recommended_index": title_proposals.recommended_index,
+                }
+
+            if video_description:
+                assets_data["description_original"] = getattr(video_description, "full_text", "")
+
+            assets_bytes = json_module.dumps(assets_data, ensure_ascii=False).encode("utf-8")
+            req = urllib.request.Request(
+                f"{api_base}/api/projects/{project_id}/youtube-assets",
+                data=assets_bytes,
+                headers={"Content-Type": "application/json"},
+                method="PUT",
+            )
+            urllib.request.urlopen(req, timeout=5)
+
+        print(f"  📊 APIサーバー同期完了 (id={project_id})")
+
+    except (urllib.error.URLError, ConnectionRefusedError):
+        # APIサーバーが起動していない場合は静かにスキップ
+        pass
+    except Exception as e:
+        print(f"  ⚠️ APIサーバー同期スキップ: {e}")
 
 
 def process_all(dry_run: bool = False, output_dir: str | Path = None) -> list[dict]:

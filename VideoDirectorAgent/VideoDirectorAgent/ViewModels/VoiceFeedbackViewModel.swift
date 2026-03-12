@@ -136,26 +136,28 @@ final class VoiceFeedbackViewModel: ObservableObject {
 
     func convertFeedback() {
         guard canConvert else { return }
+        sentMessage = nil
+        flowState = .transcribing
 
-        structuredItems = [
-            .init(
-                id: UUID(),
-                timestamp: "02:18",
-                element: "テロップ",
-                priority: .high,
-                note: "1カット1メッセージに整理し、文字量を約50%削減"
-            ),
-            .init(
-                id: UUID(),
-                timestamp: "02:18-02:40",
-                element: "BGM",
-                priority: .medium,
-                note: "ナレーション帯域を避けるEQ調整 + 全体-2dB"
-            )
-        ]
-
-        convertedText = "02:18付近はテロップ情報量を削減し、要点を1メッセージずつ提示してください。合わせて02:18-02:40のBGMレベルを2dB下げ、ナレーションの明瞭度を優先してください。"
-        flowState = .readyToSend
+        Task {
+            do {
+                let response = try await APIClient.shared.convertFeedback(rawText: rawTranscript, projectId: projectId)
+                convertedText = response.convertedText
+                structuredItems = response.structuredItems.map { item in
+                    StructuredFeedback(
+                        id: UUID(),
+                        timestamp: item.timestamp ?? String(format: "%02d:%02d", Int(selectedTime) / 60, Int(selectedTime) % 60),
+                        element: item.element,
+                        priority: feedbackPriority(from: item.priority),
+                        note: item.note
+                    )
+                }
+                flowState = .readyToSend
+            } catch {
+                applyMockConversion()
+                sentMessage = "変換APIに接続できなかったため簡易変換を表示しています"
+            }
+        }
     }
 
     func sendFeedback() {
@@ -190,5 +192,37 @@ final class VoiceFeedbackViewModel: ObservableObject {
         structuredItems = []
         sentMessage = nil
         recordingDuration = 0
+    }
+
+    private func feedbackPriority(from value: String) -> FeedbackPriority {
+        switch value.lowercased() {
+        case "high", "高":
+            return .high
+        case "low", "低":
+            return .low
+        default:
+            return .medium
+        }
+    }
+
+    private func applyMockConversion() {
+        structuredItems = [
+            .init(
+                id: UUID(),
+                timestamp: "02:18",
+                element: "テロップ",
+                priority: .high,
+                note: "1カット1メッセージに整理し、文字量を約50%削減"
+            ),
+            .init(
+                id: UUID(),
+                timestamp: "02:18-02:40",
+                element: "BGM",
+                priority: .medium,
+                note: "ナレーション帯域を避けるEQ調整 + 全体-2dB"
+            )
+        ]
+        convertedText = "02:18付近はテロップ情報量を削減し、要点を1メッセージずつ提示してください。合わせて02:18-02:40のBGMレベルを2dB下げ、ナレーションの明瞭度を優先してください。"
+        flowState = .readyToSend
     }
 }

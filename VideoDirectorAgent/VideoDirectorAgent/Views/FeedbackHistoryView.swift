@@ -4,6 +4,9 @@ import SwiftUI
 struct FeedbackHistoryView: View {
     @State private var filterMode: HistoryFilter = .all
     @State private var searchText = ""
+    @State private var items: [FeedbackHistoryItem] = MockData.historyItems
+    @State private var isLoading = false
+    @State private var errorMessage: String?
 
     enum HistoryFilter: String, CaseIterable {
         case all = "すべて"
@@ -20,7 +23,7 @@ struct FeedbackHistoryView: View {
     }
 
     private var filteredItems: [FeedbackHistoryItem] {
-        var items = MockData.historyItems
+        var items = items
 
         // フィルタ
         switch filterMode {
@@ -82,6 +85,11 @@ struct FeedbackHistoryView: View {
             // タイムライン
             ScrollView(.vertical, showsIndicators: false) {
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                    if isLoading {
+                        ProgressView()
+                            .tint(AppTheme.accent)
+                            .padding(.vertical, 24)
+                    }
                     ForEach(groupedItems, id: \.0) { date, items in
                         Section {
                             ForEach(items) { item in
@@ -100,11 +108,27 @@ struct FeedbackHistoryView: View {
         .background(AppTheme.background.ignoresSafeArea())
         .navigationTitle("フィードバック履歴")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await loadFeedbacks()
+        }
+        .refreshable {
+            await loadFeedbacks(forceRefresh: true)
+        }
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text("フィードバック履歴")
                     .font(.headline)
                     .foregroundStyle(.white)
+            }
+        }
+        .safeAreaInset(edge: .top) {
+            if let errorMessage {
+                Text(errorMessage)
+                    .font(.caption)
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(Color(hex: 0x2A1717))
             }
         }
     }
@@ -216,5 +240,42 @@ struct FeedbackHistoryView: View {
         .padding(16)
         .background(AppTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func loadFeedbacks(forceRefresh: Bool = false) async {
+        if !forceRefresh, isLoading { return }
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let fetched = try await APIClient.shared.fetchAllFeedbacks()
+            items = fetched.map(makeHistoryItem)
+            errorMessage = nil
+        } catch {
+            items = MockData.historyItems
+            errorMessage = "API取得に失敗したためモック履歴を表示しています"
+        }
+    }
+
+    private func makeHistoryItem(from item: FeedbackItem) -> FeedbackHistoryItem {
+        FeedbackHistoryItem(
+            id: UUID(),
+            projectTitle: item.projectTitle ?? item.projectId,
+            guestName: item.guestName ?? "ゲスト未設定",
+            date: groupedDate(from: item.createdAt),
+            timestamp: item.timestamp ?? "--:--",
+            rawVoiceText: item.rawVoiceText ?? item.content,
+            convertedText: item.convertedText ?? item.content,
+            isSent: item.isSent,
+            editorStatus: item.isSent ? "送信済み" : "未送信",
+            learningEffect: item.feedbackType == "voice" ? "音声FB" : ""
+        )
+    }
+
+    private func groupedDate(from value: String) -> String {
+        if value.count >= 10 {
+            return String(value.prefix(10)).replacingOccurrences(of: "-", with: "/")
+        }
+        return value.isEmpty ? "日付不明" : value
     }
 }

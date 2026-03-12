@@ -1,10 +1,31 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-11 16:56 (before / after 統合カルテ v1 着手)
+2026-03-12 22:30 (YouTube素材3機能追加完了)
 
 ## 現在の作業状態
 **本番運用可能** — E2Eテスト完了、GitHub Pages公開+スプシ連携動作確認済み。**WebアプリMVP完成**（ルート配信ディレクトリが正本、PWA対応） → Phase 4（opencv/ffmpeg実連携+映像トラッキング+学習）待ち
+
+### YouTube素材3機能追加（2026-03-12 完了）
+ディレクションレポート生成時に、以下3つのYouTube公開用素材を同時生成する機能を追加:
+1. **Z型サムネイル指示書** — 青木さんのZ理論に基づく4ゾーン構成の設計指示（LLM生成）
+2. **タイトル考案** — 過去タイトルパターン+マーケティング原則から3-5案提案（LLM生成）
+3. **概要欄文章** — コピペ可能な完成版テキスト（冒頭フック→サマリー→タイムスタンプ→CTA→ハッシュタグ）
+
+**新規ファイル（5ファイル）**:
+- `src/video_direction/knowledge/loader.py` — KnowledgeLoader（Z理論・マーケ原則・過去タイトル・過去概要欄の読み込み）
+- `src/video_direction/knowledge/prompts.py` — 3機能分のLLMプロンプトテンプレート
+- `src/video_direction/analyzer/thumbnail_designer.py` — Z型サムネ指示書生成
+- `src/video_direction/analyzer/title_generator.py` — タイトル考案
+- `src/video_direction/analyzer/description_writer.py` — 概要欄文章生成
+
+**修正ファイル（3ファイル）**:
+- `src/video_direction/main.py` — パイプラインにYouTube素材生成ステップ追加
+- `src/video_direction/reporter/html_generator.py` — 3セクション追加（サムネグリッド/タイトルカード/概要欄プレビュー）
+- `src/video_direction/reporter/template.py` — CSS追加
+
+**後方互換性**: `generate_direction_html()` の新引数は全てOptional。既存テスト3件パス確認済み。
+**残タスク**: YouTubeチャンネルID設定後に過去概要欄のfew-shot取得を有効化（現在0件）
 
 ### 次の拡張候補（2026-03-11 整理）
 - 各動画固有ページで、編集前素材 / ディレクション / 編集後動画 / FB評価 / 素材ナレッジを統合表示する before / after 機能拡張

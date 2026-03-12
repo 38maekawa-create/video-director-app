@@ -1,10 +1,29 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-13 00:15 (YouTube過去概要欄few-shot取得完了)
+2026-03-13 02:30 (ネイティブiOSアプリ化: バックエンド完了+seed完了)
 
 ## 現在の作業状態
-**本番運用可能** — E2Eテスト完了、GitHub Pages公開+スプシ連携動作確認済み。**WebアプリMVP完成**（ルート配信ディレクトリが正本、PWA対応） → Phase 4（opencv/ffmpeg実連携+映像トラッキング+学習）待ち
+**本番運用可能** — E2Eテスト完了、GitHub Pages公開+スプシ連携動作確認済み。**WebアプリMVP完成**（ルート配信ディレクトリが正本、PWA対応）
+
+### ネイティブiOSアプリ化（2026-03-13 進行中）
+スマホからYouTube素材（サムネ指示書・タイトル案・概要欄）の閲覧・編集を可能にするネイティブアプリ。
+
+**完了した作業**:
+1. **FastAPI + SQLiteバックエンド** — `src/video_direction/integrations/api_server.py`
+   - 11エンドポイント（projects CRUD, youtube-assets UPSERT, description/title PATCH, feedbacks）
+   - SQLite WALモード、DB: `~/.data/video_director.db`、ポート8210
+   - launchd自動起動設定済み（`com.maekawa.video-direction-api.plist`）
+2. **main.pyにAPI同期ステップ追加** — パイプライン実行後、自動的にプロジェクト+YouTube素材をAPIサーバーに投入
+3. **一括データ投入スクリプト** — `scripts/seed_api_data.py`、全30件のプロジェクトをSQLiteに投入完了（31件格納中）
+4. **paoへのファイル同期** — main.py, seed_api_data.pyをrsyncでpaoに配置済み
+
+**未完了（Swift側 — Codex CLIで実装予定）**:
+- Models.swift: Codable対応、YouTubeAssetsモデル追加
+- APIClient.swift: 新規作成
+- YouTubeAssetsView.swift: サムネ指示書/タイトル案/概要欄の閲覧・編集UI
+- DirectionReportView.swift: タブ拡張（4→7タブ）
+- タスク指示書: `TASK_NATIVE_APP_PHASE1.md`
 
 ### YouTube素材3機能追加（2026-03-12 完了）
 ディレクションレポート生成時に、以下3つのYouTube公開用素材を同時生成する機能を追加:

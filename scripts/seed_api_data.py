@@ -20,6 +20,7 @@ import sys
 import urllib.request
 import urllib.error
 from pathlib import Path
+from typing import Optional
 
 # プロジェクトルートをsys.pathに追加
 project_root = Path(__file__).parent.parent
@@ -31,6 +32,34 @@ from src.video_direction.integrations.ai_dev5_connector import (
 )
 
 API_BASE = "http://localhost:8210"
+
+
+def _parse_age(age_str: str) -> Optional[int]:
+    """年齢文字列を数値に変換する（「28歳」→28、「30代前半」→32等）"""
+    if not age_str:
+        return None
+    # 「28歳」「31歳」等の直接数値
+    m = re.search(r"(\d{2})歳", age_str)
+    if m:
+        return int(m.group(1))
+    # 「30代前半」「20代後半」等の範囲表現
+    m = re.search(r"(\d)0代(前半|半ば|中盤|後半)?", age_str)
+    if m:
+        decade = int(m.group(1)) * 10
+        qualifier = m.group(2) or ""
+        if "前半" in qualifier:
+            return decade + 2
+        elif "半ば" in qualifier or "中盤" in qualifier:
+            return decade + 5
+        elif "後半" in qualifier:
+            return decade + 8
+        else:
+            return decade + 5  # 「20代」のみ→25
+    # 数値だけ
+    m = re.search(r"(\d{2})", age_str)
+    if m:
+        return int(m.group(1))
+    return None
 
 
 def _api_request(method: str, path: str, data: dict = None) -> dict:
@@ -89,7 +118,11 @@ def seed_project(filepath: Path) -> bool:
         # ゲスト情報
         if video_data.profiles:
             profile = video_data.profiles[0]
-            project_data["guest_age"] = profile.age
+            # 年齢を数値に変換（「28歳」→28、「30代前半」→32、「30代半ば」→35等）
+            if profile.age:
+                age_num = _parse_age(profile.age)
+                if age_num:
+                    project_data["guest_age"] = age_num
             project_data["guest_occupation"] = profile.occupation
 
         # ナレッジ情報
@@ -98,7 +131,7 @@ def seed_project(filepath: Path) -> bool:
                 "highlights": [
                     {
                         "timestamp": h.timestamp,
-                        "label": h.label,
+                        "category": h.category,
                         "text": h.text[:100] if h.text else "",
                     }
                     for h in video_data.highlights[:10]

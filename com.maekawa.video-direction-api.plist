@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.maekawa.video-direction-api</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/maekawanaoto/AI開発10/venv/bin/uvicorn</string>
+        <string>src.video_direction.integrations.api_server:app</string>
+        <string>--host</string>
+        <string>0.0.0.0</string>
+        <string>--port</string>
+        <string>8210</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/maekawanaoto/AI開発10</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/maekawanaoto/AI開発10/.data/api-server.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/maekawanaoto/AI開発10/.data/api-server-error.log</string>
+</dict>
+</plist>

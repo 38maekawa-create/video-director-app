@@ -40,6 +40,11 @@ final class ProjectListViewModel: ObservableObject {
         await loadProjects()
     }
 
+    func refresh() async {
+        hasLoaded = false
+        await loadProjectsIfNeeded()
+    }
+
     func loadProjects() async {
         isLoading = true
         defer { isLoading = false }

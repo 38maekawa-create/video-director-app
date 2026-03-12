@@ -95,6 +95,9 @@ struct VideoProject: Identifiable, Codable {
     let qualityScore: Int?
     let hasUnsentFeedback: Bool
     let directionReportURL: String?
+    let sourceVideoURL: String?
+    let editedVideoURL: String?
+    let knowledge: String?
 
     init(
         id: String,
@@ -108,7 +111,10 @@ struct VideoProject: Identifiable, Codable {
         unreviewedCount: Int = 0,
         qualityScore: Int? = nil,
         hasUnsentFeedback: Bool = false,
-        directionReportURL: String? = nil
+        directionReportURL: String? = nil,
+        sourceVideoURL: String? = nil,
+        editedVideoURL: String? = nil,
+        knowledge: String? = nil
     ) {
         self.id = id
         self.guestName = guestName
@@ -122,6 +128,9 @@ struct VideoProject: Identifiable, Codable {
         self.qualityScore = qualityScore
         self.hasUnsentFeedback = hasUnsentFeedback
         self.directionReportURL = directionReportURL
+        self.sourceVideoURL = sourceVideoURL
+        self.editedVideoURL = editedVideoURL
+        self.knowledge = knowledge
     }
 
     enum CodingKeys: String, CodingKey {
@@ -137,6 +146,12 @@ struct VideoProject: Identifiable, Codable {
         case qualityScore
         case hasUnsentFeedback
         case directionReportURL
+        case sourceVideoURL
+        case editedVideoURL
+        case knowledge
+        case sourceVideo
+        case editedVideo
+        case feedbackSummary
     }
 
     init(from decoder: Decoder) throws {
@@ -151,6 +166,9 @@ struct VideoProject: Identifiable, Codable {
         qualityScore = try container.decodeIfPresent(Int.self, forKey: .qualityScore)
         hasUnsentFeedback = try container.decodeIfPresent(Bool.self, forKey: .hasUnsentFeedback) ?? false
         directionReportURL = try container.decodeIfPresent(String.self, forKey: .directionReportURL)
+        sourceVideoURL = VideoProject.decodeNestedURL(from: container, key: .sourceVideoURL, fallbackKey: .sourceVideo)
+        editedVideoURL = VideoProject.decodeNestedURL(from: container, key: .editedVideoURL, fallbackKey: .editedVideo)
+        knowledge = VideoProject.decodeKnowledgeText(from: container)
 
         if let status = try container.decodeIfPresent(ProjectStatus.self, forKey: .status) {
             self.status = status
@@ -168,6 +186,47 @@ struct VideoProject: Identifiable, Codable {
         if title.contains("イベント") { return "film.stack.fill" }
         if title.contains("不動産") { return "building.2.fill" }
         return "video.fill"
+    }
+
+    private static func decodeNestedURL(
+        from container: KeyedDecodingContainer<CodingKeys>,
+        key: CodingKeys,
+        fallbackKey: CodingKeys
+    ) -> String? {
+        if let direct = try? container.decodeIfPresent(String.self, forKey: key), let direct, !direct.isEmpty {
+            return direct
+        }
+        if let payload = try? container.decodeIfPresent([String: JSONValue].self, forKey: fallbackKey), let payload {
+            for candidateKey in ["url", "vimeoUrl", "videoUrl", "link"] {
+                if let value = payload[candidateKey]?.stringValue, !value.isEmpty {
+                    return value
+                }
+            }
+        }
+        return nil
+    }
+
+    private static func decodeKnowledgeText(from container: KeyedDecodingContainer<CodingKeys>) -> String? {
+        if let direct = try? container.decodeIfPresent(String.self, forKey: .knowledge), let direct, !direct.isEmpty {
+            return direct
+        }
+        if let payload = try? container.decodeIfPresent([String: JSONValue].self, forKey: .knowledge), let payload {
+            if let highlights = payload["highlights"]?.arrayValue {
+                let lines = highlights.compactMap { item -> String? in
+                    guard let object = item.objectValue else { return nil }
+                    let timestamp = object["timestamp"]?.stringValue ?? ""
+                    let category = object["category"]?.stringValue ?? ""
+                    let text = object["text"]?.stringValue ?? ""
+                    let prefix = [timestamp, category].filter { !$0.isEmpty }.joined(separator: " ")
+                    return [prefix, text].filter { !$0.isEmpty }.joined(separator: " ")
+                }.filter { !$0.isEmpty }
+                if !lines.isEmpty {
+                    return lines.joined(separator: "\n")
+                }
+            }
+            return payload.values.compactMap(\.stringValue).joined(separator: "\n")
+        }
+        return nil
     }
 }
 
@@ -357,4 +416,135 @@ struct TitleCandidate: Codable, Identifiable {
     var targetSegment: String
     var appealType: String
     var rationale: String
+}
+
+struct FeedbackItem: Identifiable, Codable {
+    let id: String
+    let projectId: String
+    let content: String
+    let createdBy: String
+    let createdAt: String
+    let timestamp: String?
+    let feedbackType: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case projectId
+        case content
+        case createdBy
+        case createdAt
+        case timestamp
+        case feedbackType
+        case timestampMark
+        case rawVoiceText
+        case convertedText
+        case category
+        case priority
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let intId = try? container.decode(Int.self, forKey: .id) {
+            id = String(intId)
+        } else {
+            id = try container.decode(String.self, forKey: .id)
+        }
+        projectId = try container.decodeIfPresent(String.self, forKey: .projectId) ?? ""
+        let converted = try container.decodeIfPresent(String.self, forKey: .convertedText)
+        let raw = try container.decodeIfPresent(String.self, forKey: .rawVoiceText)
+        content = (converted?.isEmpty == false ? converted : raw) ?? ""
+        createdBy = try container.decodeIfPresent(String.self, forKey: .createdBy) ?? "unknown"
+        createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt) ?? ""
+        timestamp = try container.decodeIfPresent(String.self, forKey: .timestampMark)
+        feedbackType = try container.decodeIfPresent(String.self, forKey: .feedbackType)
+            ?? ((raw?.isEmpty == false) ? "voice" : nil)
+    }
+}
+
+struct FeedbackCreateRequest: Encodable {
+    let content: String
+    let createdBy: String
+    let timestamp: String?
+    let feedbackType: String
+
+    enum CodingKeys: String, CodingKey {
+        case timestampMark
+        case rawVoiceText
+        case convertedText
+        case category
+        case priority
+        case createdBy
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(timestamp, forKey: .timestampMark)
+        if feedbackType == "voice" {
+            try container.encode(content, forKey: .rawVoiceText)
+        } else {
+            try container.encode(content, forKey: .convertedText)
+        }
+        try container.encode(feedbackType, forKey: .category)
+        try container.encode("medium", forKey: .priority)
+        try container.encode(createdBy, forKey: .createdBy)
+    }
+}
+
+enum JSONValue: Codable {
+    case string(String)
+    case number(Double)
+    case bool(Bool)
+    case array([JSONValue])
+    case object([String: JSONValue])
+    case null
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if container.decodeNil() {
+            self = .null
+        } else if let string = try? container.decode(String.self) {
+            self = .string(string)
+        } else if let number = try? container.decode(Double.self) {
+            self = .number(number)
+        } else if let bool = try? container.decode(Bool.self) {
+            self = .bool(bool)
+        } else if let array = try? container.decode([JSONValue].self) {
+            self = .array(array)
+        } else if let object = try? container.decode([String: JSONValue].self) {
+            self = .object(object)
+        } else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Unsupported JSON value")
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .string(let value): try container.encode(value)
+        case .number(let value): try container.encode(value)
+        case .bool(let value): try container.encode(value)
+        case .array(let value): try container.encode(value)
+        case .object(let value): try container.encode(value)
+        case .null: try container.encodeNil()
+        }
+    }
+
+    var stringValue: String? {
+        switch self {
+        case .string(let value): return value
+        case .number(let value): return String(value)
+        case .bool(let value): return String(value)
+        default: return nil
+        }
+    }
+
+    var arrayValue: [JSONValue]? {
+        if case .array(let value) = self { return value }
+        return nil
+    }
+
+    var objectValue: [String: JSONValue]? {
+        if case .object(let value) = self { return value }
+        return nil
+    }
 }

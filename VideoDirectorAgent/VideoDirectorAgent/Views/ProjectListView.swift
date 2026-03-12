@@ -56,6 +56,9 @@ struct ProjectListView: View {
                     .tracking(4)
             }
         }
+        .refreshable {
+            await viewModel.refresh()
+        }
         .task {
             await viewModel.loadProjectsIfNeeded()
         }

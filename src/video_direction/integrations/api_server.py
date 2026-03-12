@@ -394,6 +394,51 @@ def sync_check(project_id: str):
     }
 
 
+# --- 品質ダッシュボード ---
+
+@app.get("/api/dashboard/summary")
+def dashboard_summary():
+    """品質ダッシュボードのサマリーデータ"""
+    conn = _get_db()
+    total = conn.execute("SELECT COUNT(*) FROM projects").fetchone()[0]
+    with_assets = conn.execute("SELECT COUNT(*) FROM youtube_assets").fetchone()[0]
+    avg_score = conn.execute(
+        "SELECT AVG(quality_score) FROM projects WHERE quality_score IS NOT NULL"
+    ).fetchone()[0]
+    status_counts = conn.execute(
+        "SELECT status, COUNT(*) as cnt FROM projects GROUP BY status"
+    ).fetchall()
+    recent_fbs = conn.execute(
+        "SELECT f.*, p.guest_name FROM feedbacks f "
+        "JOIN projects p ON f.project_id = p.id "
+        "ORDER BY f.created_at DESC LIMIT 10"
+    ).fetchall()
+    unsent_count = conn.execute(
+        "SELECT COUNT(*) FROM projects WHERE has_unsent_feedback = 1"
+    ).fetchone()[0]
+    conn.close()
+    return {
+        "total_projects": total,
+        "projects_with_assets": with_assets,
+        "average_quality_score": round(avg_score, 1) if avg_score else None,
+        "status_breakdown": {r["status"]: r["cnt"] for r in status_counts},
+        "recent_feedbacks": [dict(r) for r in recent_fbs],
+        "unsent_feedback_count": unsent_count,
+    }
+
+
+@app.get("/api/dashboard/quality-trend")
+def quality_trend():
+    """品質スコアの推移データ"""
+    conn = _get_db()
+    rows = conn.execute(
+        "SELECT guest_name, shoot_date, quality_score FROM projects "
+        "WHERE quality_score IS NOT NULL ORDER BY shoot_date ASC"
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
 # --- ヘルスチェック ---
 
 @app.get("/api/health")

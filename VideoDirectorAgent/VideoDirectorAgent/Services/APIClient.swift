@@ -49,6 +49,31 @@ final class APIClient: ObservableObject {
         )
     }
 
+    func fetchFeedbacks(projectId: String) async throws -> [FeedbackItem] {
+        try await request([FeedbackItem].self, path: "/api/projects/\(projectId)/feedbacks")
+    }
+
+    func createFeedback(
+        projectId: String,
+        content: String,
+        createdBy: String,
+        timestamp: String?,
+        feedbackType: String
+    ) async throws {
+        let body = FeedbackCreateRequest(
+            content: content,
+            createdBy: createdBy,
+            timestamp: timestamp,
+            feedbackType: feedbackType
+        )
+        _ = try await request(
+            EmptyResponse.self,
+            path: "/api/projects/\(projectId)/feedbacks",
+            method: "POST",
+            body: body
+        )
+    }
+
     private func request<T: Decodable>(
         _ type: T.Type,
         path: String,
@@ -133,7 +158,7 @@ enum APIError: Error {
     case server(statusCode: Int)
 }
 
-private struct EmptyResponse: Decodable {}
+struct EmptyResponse: Decodable {}
 
 private struct DescriptionPayload: Encodable {
     let edited: String

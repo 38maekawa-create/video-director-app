@@ -8,35 +8,55 @@ enum MockData {
             thumbnailSymbol: "video.fill", shootDate: "2026/03/08",
             guestAge: 34, guestOccupation: "不動産投資家",
             status: .reviewPending, unreviewedCount: 3, qualityScore: 78,
-            hasUnsentFeedback: true
+            hasUnsentFeedback: true,
+            directionReportURL: "https://example.com/report/satoimo",
+            sourceVideoURL: "https://vimeo.com/100000001",
+            editedVideoURL: "https://vimeo.com/100000002",
+            knowledge: "02:18 テロップ情報量が多い\n05:01 Bロールのテンポ改善余地あり"
         ),
         .init(
             id: "p-menichi", guestName: "メンイチ", title: "採用密着ドキュメント",
             thumbnailSymbol: "person.2.fill", shootDate: "2026/03/05",
             guestAge: 29, guestOccupation: "Webマーケター",
             status: .editing, unreviewedCount: 1, qualityScore: 82,
-            hasUnsentFeedback: true
+            hasUnsentFeedback: true,
+            directionReportURL: "https://example.com/report/menichi",
+            sourceVideoURL: "https://vimeo.com/100000003",
+            editedVideoURL: nil,
+            knowledge: "00:44 BGMとナレーションの帯域整理が必要"
         ),
         .init(
             id: "p-kee", guestName: "けー", title: "ブランドムービー 2026",
             thumbnailSymbol: "sparkles.tv.fill", shootDate: "2026/03/01",
             guestAge: 31, guestOccupation: "コンサルタント",
             status: .directed, unreviewedCount: 0, qualityScore: 91,
-            hasUnsentFeedback: false
+            hasUnsentFeedback: false,
+            directionReportURL: nil,
+            sourceVideoURL: nil,
+            editedVideoURL: nil,
+            knowledge: nil
         ),
         .init(
             id: "p-hirai", guestName: "hirai", title: "イベントダイジェスト",
             thumbnailSymbol: "film.stack.fill", shootDate: "2026/02/28",
             guestAge: 27, guestOccupation: "映像クリエイター",
             status: .published, unreviewedCount: 0, qualityScore: 88,
-            hasUnsentFeedback: false
+            hasUnsentFeedback: false,
+            directionReportURL: nil,
+            sourceVideoURL: nil,
+            editedVideoURL: "https://vimeo.com/100000004",
+            knowledge: "全体テンポ良好"
         ),
         .init(
             id: "p-kote", guestName: "コテ", title: "不動産投資入門シリーズ #3",
             thumbnailSymbol: "building.2.fill", shootDate: "2026/02/25",
             guestAge: 38, guestOccupation: "不動産オーナー",
             status: .published, unreviewedCount: 0, qualityScore: 85,
-            hasUnsentFeedback: false
+            hasUnsentFeedback: false,
+            directionReportURL: nil,
+            sourceVideoURL: "https://vimeo.com/100000005",
+            editedVideoURL: "https://vimeo.com/100000006",
+            knowledge: "実績数字の見せ方が強い"
         )
     ]
 

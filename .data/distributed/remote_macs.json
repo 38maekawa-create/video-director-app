@@ -1,0 +1,20 @@
+{
+  "macs": [
+    {
+      "name": "pao",
+      "host": "pao",
+      "ssh_user": "",
+      "status": "unknown",
+      "current_task": "",
+      "last_check": ""
+    },
+    {
+      "name": "mac-mini",
+      "host": "mac-mini-m4.local",
+      "ssh_user": "",
+      "status": "unknown",
+      "current_task": "",
+      "last_check": ""
+    }
+  ]
+}

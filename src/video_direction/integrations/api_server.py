@@ -446,6 +446,456 @@ def quality_trend():
     return [dict(r) for r in rows]
 
 
+# --- 編集者管理 (NEW-8) ---
+
+def _get_editor_manager():
+    """EditorManagerのシングルトン取得"""
+    try:
+        from src.video_direction.integrations.editor_manager import EditorManager
+        return EditorManager()
+    except ImportError:
+        return None
+
+
+class EditorCreate(BaseModel):
+    name: str
+    contact_info: str = ""
+    contract_type: str = "freelance"
+    specialties: list = []
+    capacity: int = 3
+    notes: str = ""
+
+
+class EditorUpdate(BaseModel):
+    name: Optional[str] = None
+    contact_info: Optional[str] = None
+    status: Optional[str] = None
+    contract_type: Optional[str] = None
+    specialties: Optional[list] = None
+    capacity: Optional[int] = None
+    notes: Optional[str] = None
+
+
+@app.get("/api/editors")
+def list_editors(status: Optional[str] = None):
+    mgr = _get_editor_manager()
+    if not mgr:
+        return []
+    editors = mgr.list_editors(status=status)
+    from dataclasses import asdict
+    return [asdict(e) for e in editors]
+
+
+@app.get("/api/editors/{editor_id}")
+def get_editor(editor_id: str):
+    mgr = _get_editor_manager()
+    if not mgr:
+        raise HTTPException(404, "Editor manager not available")
+    editor = mgr.get_editor(editor_id)
+    if not editor:
+        raise HTTPException(404, "Editor not found")
+    from dataclasses import asdict
+    return asdict(editor)
+
+
+@app.post("/api/editors")
+def create_editor(body: EditorCreate):
+    mgr = _get_editor_manager()
+    if not mgr:
+        raise HTTPException(500, "Editor manager not available")
+    editor = mgr.add_editor(
+        name=body.name, contact_info=body.contact_info,
+        contract_type=body.contract_type, capacity=body.capacity,
+        notes=body.notes,
+    )
+    from dataclasses import asdict
+    return asdict(editor)
+
+
+@app.put("/api/editors/{editor_id}")
+def update_editor(editor_id: str, body: EditorUpdate):
+    mgr = _get_editor_manager()
+    if not mgr:
+        raise HTTPException(500, "Editor manager not available")
+    updates = {k: v for k, v in body.model_dump().items() if v is not None}
+    editor = mgr.update_editor(editor_id, **updates)
+    if not editor:
+        raise HTTPException(404, "Editor not found")
+    from dataclasses import asdict
+    return asdict(editor)
+
+
+@app.get("/api/editors/{editor_id}/handover")
+def editor_handover(editor_id: str):
+    """F-3: 編集者引き継ぎパッケージ"""
+    mgr = _get_editor_manager()
+    if not mgr:
+        raise HTTPException(500, "Editor manager not available")
+    package = mgr.generate_handover_package(editor_id)
+    if not package:
+        raise HTTPException(404, "Editor not found")
+    return package
+
+
+# --- 映像トラッキング (NEW-4/5) ---
+
+def _get_video_tracker():
+    try:
+        from src.video_direction.tracker.video_tracker import VideoTracker
+        return VideoTracker()
+    except ImportError:
+        return None
+
+
+def _get_video_analyzer():
+    try:
+        from src.video_direction.tracker.video_analyzer import VideoAnalyzer
+        return VideoAnalyzer()
+    except ImportError:
+        return None
+
+
+class TrackingVideoAdd(BaseModel):
+    url: str
+    tags: list = []
+
+
+@app.get("/api/tracking/videos")
+def list_tracking_videos(status: Optional[str] = None):
+    tracker = _get_video_tracker()
+    if not tracker:
+        return []
+    from dataclasses import asdict
+    return [asdict(v) for v in tracker.list_videos(status=status)]
+
+
+@app.get("/api/tracking/videos/{video_id}")
+def get_tracking_video(video_id: str):
+    tracker = _get_video_tracker()
+    if not tracker:
+        raise HTTPException(404, "Tracker not available")
+    video = tracker.get_video(video_id)
+    if not video:
+        raise HTTPException(404, "Tracked video not found")
+    from dataclasses import asdict
+    return asdict(video)
+
+
+@app.post("/api/tracking/videos")
+def add_tracking_video(body: TrackingVideoAdd):
+    tracker = _get_video_tracker()
+    if not tracker:
+        raise HTTPException(500, "Tracker not available")
+    video = tracker.add_video(url=body.url, tags=body.tags)
+    from dataclasses import asdict
+    return asdict(video)
+
+
+@app.post("/api/tracking/videos/{video_id}/analyze")
+def analyze_tracking_video(video_id: str):
+    """トラッキング映像を分析"""
+    tracker = _get_video_tracker()
+    analyzer = _get_video_analyzer()
+    if not tracker or not analyzer:
+        raise HTTPException(500, "Tracker/Analyzer not available")
+    video = tracker.get_video(video_id)
+    if not video:
+        raise HTTPException(404, "Tracked video not found")
+    # 分析実行
+    result = analyzer.analyze(video_url=video.url)
+    from dataclasses import asdict
+    result_dict = asdict(result)
+    tracker.update_analysis(video_id, result_dict, "completed")
+    return result_dict
+
+
+@app.delete("/api/tracking/videos/{video_id}")
+def remove_tracking_video(video_id: str):
+    tracker = _get_video_tracker()
+    if not tracker:
+        raise HTTPException(500, "Tracker not available")
+    if tracker.remove_video(video_id):
+        return {"status": "removed"}
+    raise HTTPException(404, "Tracked video not found")
+
+
+# --- 映像学習インサイト (NEW-6/7) ---
+
+def _get_feedback_learner():
+    try:
+        from src.video_direction.tracker.feedback_learner import FeedbackLearner
+        return FeedbackLearner()
+    except ImportError:
+        return None
+
+
+def _get_video_learner():
+    try:
+        from src.video_direction.tracker.video_learner import VideoLearner
+        return VideoLearner()
+    except ImportError:
+        return None
+
+
+@app.get("/api/tracking/insights")
+def list_tracking_insights():
+    """学習済みインサイト一覧（映像+FB統合）"""
+    insights = []
+    vl = _get_video_learner()
+    if vl:
+        for p in vl.get_patterns(min_confidence=0.2):
+            from dataclasses import asdict
+            insights.append(asdict(p))
+    return insights
+
+
+@app.get("/api/learning/feedback-patterns")
+def list_feedback_patterns(category: Optional[str] = None):
+    """FB学習パターン一覧"""
+    fl = _get_feedback_learner()
+    if not fl:
+        return []
+    from dataclasses import asdict
+    return [asdict(p) for p in fl.get_patterns(category=category)]
+
+
+@app.get("/api/learning/summary")
+def learning_summary():
+    """学習状況サマリー"""
+    result = {"feedback_learning": {}, "video_learning": {}}
+    fl = _get_feedback_learner()
+    if fl:
+        result["feedback_learning"] = fl.get_insights()
+    vl = _get_video_learner()
+    if vl:
+        result["video_learning"] = vl.get_summary()
+    return result
+
+
+# --- 巡回監査 (J-3) ---
+
+def _get_audit_runner():
+    try:
+        from src.video_direction.integrations.audit_runner import AuditRunner
+        return AuditRunner()
+    except ImportError:
+        return None
+
+
+@app.get("/api/audit/latest")
+def get_latest_audit():
+    runner = _get_audit_runner()
+    if not runner:
+        return {"error": "Audit runner not available"}
+    report = runner.get_latest_report()
+    if not report:
+        return {"error": "No audit reports yet"}
+    from dataclasses import asdict
+    return asdict(report)
+
+
+@app.post("/api/audit/run")
+def run_audit():
+    """手動で監査を実行"""
+    runner = _get_audit_runner()
+    if not runner:
+        raise HTTPException(500, "Audit runner not available")
+    report = runner.run_audit()
+    from dataclasses import asdict
+    return asdict(report)
+
+
+@app.get("/api/audit/history")
+def audit_history(limit: int = 10):
+    runner = _get_audit_runner()
+    if not runner:
+        return []
+    from dataclasses import asdict
+    return [asdict(r) for r in runner.get_report_history(limit=limit)]
+
+
+# --- 通知設定 (J-4) ---
+
+def _get_notifier():
+    try:
+        from src.video_direction.integrations.notifier import Notifier
+        return Notifier()
+    except ImportError:
+        return None
+
+
+class NotificationConfigUpdate(BaseModel):
+    telegram_enabled: Optional[bool] = None
+    telegram_bot_token: Optional[str] = None
+    telegram_chat_id: Optional[str] = None
+    line_enabled: Optional[bool] = None
+    line_channel_token: Optional[str] = None
+    line_user_id: Optional[str] = None
+    notify_on_report: Optional[bool] = None
+    notify_on_quality_warning: Optional[bool] = None
+    notify_on_feedback: Optional[bool] = None
+
+
+@app.get("/api/notifications/config")
+def get_notification_config():
+    notifier = _get_notifier()
+    if not notifier:
+        return {"error": "Notifier not available"}
+    return notifier.get_config()
+
+
+@app.put("/api/notifications/config")
+def update_notification_config(body: NotificationConfigUpdate):
+    notifier = _get_notifier()
+    if not notifier:
+        raise HTTPException(500, "Notifier not available")
+    from src.video_direction.integrations.notifier import NotificationConfig
+    config = notifier.config
+    for key, value in body.model_dump().items():
+        if value is not None:
+            setattr(config, key, value)
+    notifier.save_config(config)
+    return notifier.get_config()
+
+
+@app.post("/api/notifications/test")
+def test_notification():
+    """テスト通知を送信"""
+    notifier = _get_notifier()
+    if not notifier:
+        raise HTTPException(500, "Notifier not available")
+    return notifier.notify("🔔 テスト通知 — Video Director Agent が正常に接続されています", "general")
+
+
+# --- PDCA品質改善ループ (J-5) ---
+
+def _get_pdca_loop():
+    try:
+        from src.video_direction.integrations.pdca_loop import PDCALoop
+        return PDCALoop()
+    except ImportError:
+        return None
+
+
+@app.get("/api/pdca/states")
+def list_pdca_states(phase: Optional[str] = None):
+    loop = _get_pdca_loop()
+    if not loop:
+        return []
+    from dataclasses import asdict
+    return [asdict(s) for s in loop.list_states(phase=phase)]
+
+
+@app.get("/api/pdca/states/{project_id}")
+def get_pdca_state(project_id: str):
+    loop = _get_pdca_loop()
+    if not loop:
+        raise HTTPException(500, "PDCA loop not available")
+    state = loop.get_state(project_id)
+    if not state:
+        raise HTTPException(404, "PDCA state not found")
+    from dataclasses import asdict
+    return asdict(state)
+
+
+@app.get("/api/pdca/summary")
+def pdca_summary():
+    loop = _get_pdca_loop()
+    if not loop:
+        return {}
+    return loop.get_summary()
+
+
+# --- 分散処理 (J-6) ---
+
+def _get_distributed_processor():
+    try:
+        from src.video_direction.integrations.distributed_processor import DistributedProcessor
+        return DistributedProcessor()
+    except ImportError:
+        return None
+
+
+@app.get("/api/distributed/macs")
+def list_remote_macs():
+    proc = _get_distributed_processor()
+    if not proc:
+        return []
+    from dataclasses import asdict
+    return [asdict(m) for m in proc.list_macs()]
+
+
+@app.post("/api/distributed/macs/check")
+def check_all_remote_macs():
+    proc = _get_distributed_processor()
+    if not proc:
+        raise HTTPException(500, "Distributed processor not available")
+    return proc.check_all_macs()
+
+
+# --- フィードバック変換 (音声→プロ指示) ---
+
+class FeedbackConvertRequest(BaseModel):
+    raw_text: str
+    project_id: str
+
+
+@app.post("/api/feedback/convert")
+def convert_feedback(body: FeedbackConvertRequest):
+    """音声テキストをプロのディレクション指示に変換"""
+    # Claude APIで変換（APIキーがない場合は簡易変換）
+    raw = body.raw_text
+    try:
+        import anthropic
+        client = anthropic.Anthropic()
+        response = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=1024,
+            messages=[{
+                "role": "user",
+                "content": f"""以下の音声フィードバックを、映像編集者向けのプロフェッショナルなディレクション指示に変換してください。
+
+音声テキスト:
+{raw}
+
+以下のJSON形式で出力:
+{{
+  "converted_text": "変換後のプロの指示テキスト",
+  "structured_items": [
+    {{
+      "id": "1",
+      "timestamp": "該当タイムスタンプ（推定）",
+      "element": "対象要素（テロップ/カット/BGM/カメラ等）",
+      "instruction": "具体的な指示",
+      "priority": "high/medium/low"
+    }}
+  ]
+}}"""
+            }]
+        )
+        import re
+        text = response.content[0].text
+        # JSONブロックを抽出
+        json_match = re.search(r'\{[\s\S]*\}', text)
+        if json_match:
+            result = json.loads(json_match.group())
+            return result
+    except (ImportError, Exception):
+        pass
+
+    # フォールバック: 簡易変換
+    return {
+        "converted_text": f"【ディレクション指示】\n{raw}\n\n※ 上記の音声フィードバックを確認し、該当箇所を修正してください。",
+        "structured_items": [{
+            "id": "1",
+            "timestamp": "00:00",
+            "element": "全般",
+            "instruction": raw[:200],
+            "priority": "medium",
+        }],
+    }
+
+
 # --- ヘルスチェック ---
 
 @app.get("/api/health")

@@ -14,6 +14,7 @@ APIサーバー（localhost:8210）にプロジェクトデータを投入する
     - venvがactivateされていること
 """
 
+import json
 import re
 import sys
 import urllib.request

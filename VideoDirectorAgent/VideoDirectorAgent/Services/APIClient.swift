@@ -52,8 +52,20 @@ final class APIClient: ObservableObject {
     private func request<T: Decodable>(
         _ type: T.Type,
         path: String,
-        method: String = "GET",
-        body: Encodable? = nil
+        method: String = "GET"
+    ) async throws -> T {
+        do {
+            return try await performRequest(baseURL: baseURL, path: path, method: method)
+        } catch {
+            return try await performRequest(baseURL: fallbackURL, path: path, method: method)
+        }
+    }
+
+    private func request<T: Decodable, Body: Encodable>(
+        _ type: T.Type,
+        path: String,
+        method: String,
+        body: Body
     ) async throws -> T {
         do {
             return try await performRequest(baseURL: baseURL, path: path, method: method, body: body)
@@ -65,18 +77,40 @@ final class APIClient: ObservableObject {
     private func performRequest<T: Decodable>(
         baseURL: URL,
         path: String,
-        method: String,
-        body: Encodable?
+        method: String
     ) async throws -> T {
         let url = baseURL.appending(path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.timeoutInterval = 12
 
-        if let body {
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpBody = try encoder.encode(AnyEncodable(body))
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
         }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.server(statusCode: httpResponse.statusCode)
+        }
+
+        if T.self == EmptyResponse.self {
+            return EmptyResponse() as! T
+        }
+
+        return try decoder.decode(T.self, from: data)
+    }
+
+    private func performRequest<T: Decodable, Body: Encodable>(
+        baseURL: URL,
+        path: String,
+        method: String,
+        body: Body
+    ) async throws -> T {
+        let url = baseURL.appending(path: path)
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.timeoutInterval = 12
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try encoder.encode(body)
 
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
@@ -110,16 +144,4 @@ private struct TitleSelectionPayload: Encodable {
     let index: Int
     let editedTitle: String?
     let by: String
-}
-
-private struct AnyEncodable: Encodable {
-    private let encodeImpl: (Encoder) throws -> Void
-
-    init(_ wrapped: Encodable) {
-        self.encodeImpl = wrapped.encode
-    }
-
-    func encode(to encoder: Encoder) throws {
-        try encodeImpl(encoder)
-    }
 }

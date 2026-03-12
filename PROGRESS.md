@@ -1,7 +1,7 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-12 22:30 (YouTube素材3機能追加完了)
+2026-03-13 00:15 (YouTube過去概要欄few-shot取得完了)
 
 ## 現在の作業状態
 **本番運用可能** — E2Eテスト完了、GitHub Pages公開+スプシ連携動作確認済み。**WebアプリMVP完成**（ルート配信ディレクトリが正本、PWA対応） → Phase 4（opencv/ffmpeg実連携+映像トラッキング+学習）待ち
@@ -25,7 +25,12 @@
 - `src/video_direction/reporter/template.py` — CSS追加
 
 **後方互換性**: `generate_direction_html()` の新引数は全てOptional。既存テスト3件パス確認済み。
-**残タスク**: YouTubeチャンネルID設定後に過去概要欄のfew-shot取得を有効化（現在0件）
+
+**過去概要欄few-shot取得（2026-03-13 完了）**:
+- YouTube Data API v3 → yt-dlpに切り替え（APIキー不要）
+- TEKOチャンネル（UCNEsgjVHvL4y0suJGwu8ZPg）から最新10件の概要欄を自動取得
+- 24時間ローカルキャッシュ（`~/AI開発10/.cache/youtube_descriptions.json`）
+- 概要欄生成時のfew-shotとしてプロンプトに注入し、TEKOチャンネルのフォーマット・トーンを学習
 
 ### 次の拡張候補（2026-03-11 整理）
 - 各動画固有ページで、編集前素材 / ディレクション / 編集後動画 / FB評価 / 素材ナレッジを統合表示する before / after 機能拡張

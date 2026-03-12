@@ -9,9 +9,9 @@ anthropic>=0.30.0
 pyyaml>=6.0
 pydantic>=2.0
 
-# 映像分析（将来的なフレーム分析用）
-# opencv-python>=4.8.0
-# Pillow>=10.0
+# 映像分析（フレーム抽出・画像評価）
+opencv-python>=4.8.0
+Pillow>=10.0
 
 # テスト
 pytest>=7.0

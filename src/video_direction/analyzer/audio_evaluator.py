@@ -8,16 +8,27 @@ Phase 2実装:
 - 文字起こしデータ・メタデータからの推定評価
 - 評価ロジックの骨格とデータ構造を先行実装
 
-Phase 3以降:
-- ffmpegによる実際の音声解析
-- RMS/LUFS測定、スペクトル分析
-- BGM/音声分離と自動バランスチェック
+Phase 3実装:
+- ffmpegによる実際の音声解析（LUFS/RMS/ピーク/ダイナミックレンジ）
+- ffprobe による音声トラック情報取得
+- ffmpeg が無い環境では推定評価にフォールバック
 """
 
+import json
+import logging
+import os
 import re
+import shutil
+import subprocess
 from dataclasses import dataclass, field
 from typing import Optional
 from ..integrations.ai_dev5_connector import VideoData, HighlightScene
+
+logger = logging.getLogger(__name__)
+
+# ffmpeg/ffprobe の利用可否を起動時に判定
+HAS_FFMPEG = shutil.which("ffmpeg") is not None
+HAS_FFPROBE = shutil.which("ffprobe") is not None
 
 
 # 音声品質の評価軸
@@ -159,15 +170,74 @@ def _evaluate_from_transcript(video_data: VideoData) -> AudioEvaluationResult:
 
 
 def _evaluate_with_ffmpeg(audio_path: str, video_data: VideoData) -> AudioEvaluationResult:
-    """ffmpegによる実測評価（Phase 3で実装予定）
+    """ffmpegによる実測評価
 
-    現時点ではスタブで推定評価と同じ動作をする。
+    ffmpeg/ffprobe を使って音声の実測値を取得し、5軸評価を行う。
+    ffmpeg が利用できない場合や解析に失敗した場合は推定評価にフォールバックする。
     """
-    # Phase 3以降:
-    # import subprocess
-    # result = subprocess.run(["ffprobe", ...], capture_output=True)
-    # ...
-    return _evaluate_from_transcript(video_data)
+    # ffmpeg が無い、またはファイルが存在しない場合はフォールバック
+    if not HAS_FFMPEG or not os.path.isfile(audio_path):
+        logger.warning(
+            "ffmpeg解析不可（HAS_FFMPEG=%s, file_exists=%s）: 推定評価にフォールバック",
+            HAS_FFMPEG, os.path.isfile(audio_path),
+        )
+        return _evaluate_from_transcript(video_data)
+
+    # ffmpeg で実測値を取得
+    ffmpeg_data = analyze_audio_with_ffmpeg(audio_path)
+    if not ffmpeg_data:
+        logger.warning("ffmpeg解析結果が空: 推定評価にフォールバック")
+        return _evaluate_from_transcript(video_data)
+
+    # 実測値に基づく5軸評価
+    axis_scores = []
+    all_issues = []
+
+    # セグメント情報は文字起こしベースのものを併用
+    segments = _estimate_audio_segments(video_data)
+
+    # 1. volume_balance（会話音声とBGMのバランス）
+    axis_scores.append(_score_volume_balance_ffmpeg(ffmpeg_data, video_data))
+
+    # 2. noise_level（ノイズレベル）
+    axis_scores.append(_score_noise_level_ffmpeg(ffmpeg_data))
+
+    # 3. dynamic_range（ダイナミックレンジ）
+    axis_scores.append(_score_dynamic_range_ffmpeg(ffmpeg_data))
+
+    # 4. se_quality（SE適切性 — ffmpegだけでは判定困難、推定値と併用）
+    axis_scores.append(_score_se_quality(video_data, segments))
+
+    # 5. overall（総合音声品質）
+    axis_scores.append(_score_overall_audio_ffmpeg(ffmpeg_data))
+
+    # 問題検出（ffmpeg実測値ベース）
+    all_issues = _detect_ffmpeg_issues(ffmpeg_data)
+    # 推定ベースの問題も追加
+    all_issues.extend(_detect_audio_issues(video_data, segments))
+
+    # 集計
+    overall = (
+        sum(a.score for a in axis_scores) / len(axis_scores)
+        if axis_scores else 0
+    )
+    overall = round(overall, 1)
+    grade = _determine_audio_grade(overall)
+
+    error_count = sum(1 for i in all_issues if i.severity == "error")
+    warning_count = sum(1 for i in all_issues if i.severity == "warning")
+
+    return AudioEvaluationResult(
+        axis_scores=axis_scores,
+        overall_score=overall,
+        grade=grade,
+        issues=all_issues,
+        segments=segments,
+        error_count=error_count,
+        warning_count=warning_count,
+        is_estimated=False,
+        analysis_method="ffmpeg_analysis",
+    )
 
 
 def _estimate_audio_segments(video_data: VideoData) -> list:
@@ -436,24 +506,503 @@ def _seconds_to_timestamp(seconds: int) -> str:
     return f"{m:02d}:{s:02d}"
 
 
-# === ffmpeg解析スタブ ===
+# === ffmpeg解析 ===
 
 def analyze_audio_with_ffmpeg(audio_path: str) -> dict:
-    """ffmpegで音声を解析する（Phase 3で実装）
+    """ffmpegで音声を解析する
+
+    ffprobe で音声トラック情報を取得し、ffmpeg で LUFS/RMS/ピーク値を測定する。
+    ffmpeg が利用できない場合やファイルが存在しない場合は空辞書を返す。
 
     Args:
         audio_path: 音声/動画ファイルパス
 
     Returns:
-        dict: 音声解析結果（LUFS、RMS、スペクトル情報等）
+        dict: 音声解析結果。キー:
+            - sample_rate (int): サンプルレート (Hz)
+            - bit_rate (int): ビットレート (bps)
+            - channels (int): チャンネル数
+            - codec_name (str): コーデック名
+            - duration (float): 音声の長さ（秒）
+            - loudness_lufs (float): 統合ラウドネス（LUFS）
+            - loudness_range (float): ラウドネスレンジ（LU）
+            - true_peak (float): トゥルーピーク（dBTP）
+            - rms_level (float): RMS平均レベル（dB）
+            - rms_peak (float): RMSピーク（dB）
+            - dynamic_range (float): ダイナミックレンジ（dB） = rms_peak - noise_floor推定
+            - noise_floor_estimate (float): ノイズフロア推定値（dB）
 
-    Note:
-        Phase 2ではスタブ。ffmpegのインストールが必要。
+        ffmpegが無い/ファイルが無い/エラー発生時は空辞書 {} を返す。
     """
-    # Phase 3以降:
-    # import subprocess
-    # result = subprocess.run(
-    #     ["ffmpeg", "-i", audio_path, "-af", "loudnorm=print_format=json", ...],
-    #     capture_output=True,
-    # )
-    return {}  # スタブ: 空辞書を返す
+    if not HAS_FFMPEG or not os.path.isfile(audio_path):
+        return {}
+
+    result = {}
+
+    # Step 1: ffprobe で音声トラック情報を取得
+    try:
+        probe_data = _run_ffprobe(audio_path)
+        if probe_data:
+            result.update(probe_data)
+    except Exception as e:
+        logger.warning("ffprobe 実行エラー: %s", e)
+
+    # Step 2: loudnorm フィルタで LUFS 測定
+    try:
+        loudness_data = _run_loudnorm(audio_path)
+        if loudness_data:
+            result.update(loudness_data)
+    except Exception as e:
+        logger.warning("loudnorm 測定エラー: %s", e)
+
+    # Step 3: astats フィルタで RMS/ピーク測定
+    try:
+        stats_data = _run_astats(audio_path)
+        if stats_data:
+            result.update(stats_data)
+    except Exception as e:
+        logger.warning("astats 測定エラー: %s", e)
+
+    # Step 4: ダイナミックレンジ計算
+    if "rms_peak" in result and "rms_level" in result:
+        # ダイナミックレンジ = ピーク - 平均RMS の近似
+        result["dynamic_range"] = round(
+            result["rms_peak"] - result["rms_level"], 2
+        )
+    if "rms_level" in result:
+        # ノイズフロアの推定: 平均RMSの-20dB以下をノイズフロアとみなす
+        result["noise_floor_estimate"] = round(result["rms_level"] - 20.0, 2)
+
+    return result
+
+
+def _run_ffprobe(audio_path: str) -> dict:
+    """ffprobe で音声ストリーム情報を取得する"""
+    if not HAS_FFPROBE:
+        return {}
+
+    cmd = [
+        "ffprobe",
+        "-v", "quiet",
+        "-print_format", "json",
+        "-show_streams",
+        "-select_streams", "a:0",  # 最初の音声ストリーム
+        audio_path,
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    if proc.returncode != 0:
+        logger.warning("ffprobe 失敗 (returncode=%d): %s", proc.returncode, proc.stderr[:200])
+        return {}
+
+    try:
+        data = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return {}
+
+    streams = data.get("streams", [])
+    if not streams:
+        return {}
+
+    stream = streams[0]
+    result = {}
+
+    # サンプルレート
+    if "sample_rate" in stream:
+        try:
+            result["sample_rate"] = int(stream["sample_rate"])
+        except (ValueError, TypeError):
+            pass
+
+    # ビットレート
+    if "bit_rate" in stream:
+        try:
+            result["bit_rate"] = int(stream["bit_rate"])
+        except (ValueError, TypeError):
+            pass
+
+    # チャンネル数
+    if "channels" in stream:
+        try:
+            result["channels"] = int(stream["channels"])
+        except (ValueError, TypeError):
+            pass
+
+    # コーデック名
+    if "codec_name" in stream:
+        result["codec_name"] = stream["codec_name"]
+
+    # 音声の長さ
+    if "duration" in stream:
+        try:
+            result["duration"] = float(stream["duration"])
+        except (ValueError, TypeError):
+            pass
+
+    return result
+
+
+def _run_loudnorm(audio_path: str) -> dict:
+    """ffmpeg loudnorm フィルタで LUFS/ラウドネスレンジ/トゥルーピークを測定する"""
+    cmd = [
+        "ffmpeg",
+        "-i", audio_path,
+        "-af", "loudnorm=print_format=json",
+        "-f", "null",
+        "-",
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+    if proc.returncode != 0:
+        logger.warning("loudnorm 失敗 (returncode=%d)", proc.returncode)
+        return {}
+
+    # loudnorm の JSON 出力は stderr に含まれる
+    stderr = proc.stderr
+    # JSON ブロックを抽出（最後の {...} を探す）
+    json_match = re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", stderr, re.DOTALL)
+    if not json_match:
+        logger.warning("loudnorm: JSON出力が見つからない")
+        return {}
+
+    try:
+        loudnorm_data = json.loads(json_match.group())
+    except json.JSONDecodeError:
+        logger.warning("loudnorm: JSONパースエラー")
+        return {}
+
+    result = {}
+
+    # 統合ラウドネス (LUFS)
+    if "input_i" in loudnorm_data:
+        try:
+            result["loudness_lufs"] = float(loudnorm_data["input_i"])
+        except (ValueError, TypeError):
+            pass
+
+    # ラウドネスレンジ (LU)
+    if "input_lra" in loudnorm_data:
+        try:
+            result["loudness_range"] = float(loudnorm_data["input_lra"])
+        except (ValueError, TypeError):
+            pass
+
+    # トゥルーピーク (dBTP)
+    if "input_tp" in loudnorm_data:
+        try:
+            result["true_peak"] = float(loudnorm_data["input_tp"])
+        except (ValueError, TypeError):
+            pass
+
+    return result
+
+
+def _run_astats(audio_path: str) -> dict:
+    """ffmpeg astats フィルタで RMS/ピーク値を測定する"""
+    cmd = [
+        "ffmpeg",
+        "-i", audio_path,
+        "-af", "astats=metadata=1:reset=1,ametadata=mode=print",
+        "-f", "null",
+        "-",
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+    if proc.returncode != 0:
+        logger.warning("astats 失敗 (returncode=%d)", proc.returncode)
+        return {}
+
+    stderr = proc.stderr
+
+    # astats の出力から RMS レベルとピークを抽出
+    # 出力形式: lavfi.astats.Overall.RMS_level=-XX.XX
+    rms_levels = []
+    rms_peaks = []
+
+    for line in stderr.split("\n"):
+        # Overall RMS レベル
+        m = re.search(r"lavfi\.astats\.Overall\.RMS_level=([-\d.]+)", line)
+        if m:
+            try:
+                rms_levels.append(float(m.group(1)))
+            except ValueError:
+                pass
+        # Overall RMS ピーク
+        m = re.search(r"lavfi\.astats\.Overall\.RMS_peak=([-\d.]+)", line)
+        if m:
+            try:
+                rms_peaks.append(float(m.group(1)))
+            except ValueError:
+                pass
+
+    result = {}
+
+    # RMS 平均レベル: 全フレームの平均
+    if rms_levels:
+        # -inf を除外してから平均を取る
+        valid_levels = [v for v in rms_levels if v > -150.0]
+        if valid_levels:
+            result["rms_level"] = round(sum(valid_levels) / len(valid_levels), 2)
+
+    # RMS ピーク: 全フレームの最大値
+    if rms_peaks:
+        valid_peaks = [v for v in rms_peaks if v > -150.0]
+        if valid_peaks:
+            result["rms_peak"] = round(max(valid_peaks), 2)
+
+    return result
+
+
+# === ffmpeg 実測値ベースのスコアリング ===
+
+def _score_volume_balance_ffmpeg(ffmpeg_data: dict, video_data: VideoData) -> AudioAxisScore:
+    """会話音声とBGMのバランス（ffmpeg実測値ベース）"""
+    score = 70  # ベースライン
+    notes = []
+    measured = ""
+
+    lufs = ffmpeg_data.get("loudness_lufs")
+    if lufs is not None:
+        measured = f"LUFS: {lufs:.1f}"
+        notes.append(f"統合ラウドネス: {lufs:.1f} LUFS")
+
+        # 推奨値 -14 LUFS（会話音声）との乖離を評価
+        deviation = abs(lufs - RECOMMENDED_VOICE_DB)
+        if deviation <= 2:
+            score += 20
+            notes.append("推奨レベル(-14 LUFS)にほぼ一致: 優秀")
+        elif deviation <= 5:
+            score += 10
+            notes.append("推奨レベルとの差は許容範囲内")
+        elif deviation <= 10:
+            notes.append("推奨レベルとやや乖離: 調整推奨")
+            score -= 5
+        else:
+            notes.append("推奨レベルと大きく乖離: 要調整")
+            score -= 15
+
+    # ラウドネスレンジで変動幅を評価
+    lra = ffmpeg_data.get("loudness_range")
+    if lra is not None:
+        notes.append(f"ラウドネスレンジ: {lra:.1f} LU")
+        if 5 <= lra <= 15:
+            score += 5
+            notes.append("音量変動幅は適切")
+        elif lra > 20:
+            score -= 10
+            notes.append("音量変動が大きすぎる: コンプレッサー推奨")
+        elif lra < 3:
+            score -= 5
+            notes.append("音量変動が小さすぎる: ダイナミクスが不足")
+
+    score = min(100, max(0, score))
+    return AudioAxisScore(
+        axis="volume_balance",
+        label="音量バランス",
+        score=score,
+        notes=notes,
+        measured_value=measured,
+        is_estimated=False,
+    )
+
+
+def _score_noise_level_ffmpeg(ffmpeg_data: dict) -> AudioAxisScore:
+    """ノイズレベル（ffmpeg実測値ベース）"""
+    score = 70  # ベースライン
+    notes = []
+    measured = ""
+
+    noise_floor = ffmpeg_data.get("noise_floor_estimate")
+    rms_level = ffmpeg_data.get("rms_level")
+
+    if rms_level is not None:
+        measured = f"RMS平均: {rms_level:.1f} dB"
+        notes.append(f"RMS平均レベル: {rms_level:.1f} dB")
+
+    if noise_floor is not None:
+        notes.append(f"ノイズフロア推定: {noise_floor:.1f} dB")
+        if noise_floor < MAX_NOISE_FLOOR:
+            score += 20
+            notes.append("ノイズフロアが十分低い: 優秀")
+        elif noise_floor < MAX_NOISE_FLOOR + 10:
+            score += 10
+            notes.append("ノイズフロアは許容範囲内")
+        elif noise_floor < MAX_NOISE_FLOOR + 20:
+            notes.append("ノイズが目立つ可能性: ノイズリダクション推奨")
+            score -= 10
+        else:
+            notes.append("ノイズレベルが高い: 要改善")
+            score -= 20
+
+    score = min(100, max(0, score))
+    return AudioAxisScore(
+        axis="noise_level",
+        label=AUDIO_AXIS_LABELS["noise_level"],
+        score=score,
+        notes=notes,
+        measured_value=measured,
+        is_estimated=False,
+    )
+
+
+def _score_dynamic_range_ffmpeg(ffmpeg_data: dict) -> AudioAxisScore:
+    """ダイナミックレンジ（ffmpeg実測値ベース）"""
+    score = 70  # ベースライン
+    notes = []
+    measured = ""
+
+    dr = ffmpeg_data.get("dynamic_range")
+    true_peak = ffmpeg_data.get("true_peak")
+
+    if dr is not None:
+        measured = f"DR: {dr:.1f} dB"
+        notes.append(f"ダイナミックレンジ: {dr:.1f} dB")
+        # 対談動画の推奨ダイナミックレンジ: 8-20 dB
+        if 8 <= dr <= 20:
+            score += 20
+            notes.append("ダイナミックレンジが適切: 聴きやすい")
+        elif 5 <= dr < 8:
+            score += 10
+            notes.append("ダイナミックレンジがやや狭い: 平坦な印象")
+        elif 20 < dr <= 30:
+            score += 5
+            notes.append("ダイナミックレンジが広め: コンプレッサー検討")
+        elif dr > 30:
+            notes.append("ダイナミックレンジが広すぎる: リミッター推奨")
+            score -= 10
+        else:
+            notes.append("ダイナミックレンジが極端に狭い: 過度な圧縮")
+            score -= 10
+
+    if true_peak is not None:
+        notes.append(f"トゥルーピーク: {true_peak:.1f} dBTP")
+        if true_peak > -1.0:
+            score -= 15
+            notes.append("トゥルーピークが高すぎる: クリッピング危険")
+        elif true_peak > -3.0:
+            score -= 5
+            notes.append("トゥルーピークがやや高い: マージン不足")
+        else:
+            score += 5
+            notes.append("トゥルーピークは安全範囲内")
+
+    score = min(100, max(0, score))
+    return AudioAxisScore(
+        axis="dynamic_range",
+        label="ダイナミックレンジ",
+        score=score,
+        notes=notes,
+        measured_value=measured,
+        is_estimated=False,
+    )
+
+
+def _score_overall_audio_ffmpeg(ffmpeg_data: dict) -> AudioAxisScore:
+    """総合音声品質（ffmpeg実測値ベース）"""
+    score = 65  # ベースライン
+    notes = []
+    measured_parts = []
+
+    # サンプルレート評価
+    sr = ffmpeg_data.get("sample_rate")
+    if sr is not None:
+        measured_parts.append(f"{sr}Hz")
+        if sr >= 48000:
+            score += 10
+            notes.append(f"サンプルレート{sr}Hz: プロフェッショナル品質")
+        elif sr >= 44100:
+            score += 5
+            notes.append(f"サンプルレート{sr}Hz: CD品質")
+        else:
+            notes.append(f"サンプルレート{sr}Hz: 低品質")
+            score -= 5
+
+    # ビットレート評価
+    br = ffmpeg_data.get("bit_rate")
+    if br is not None:
+        br_kbps = br / 1000
+        measured_parts.append(f"{br_kbps:.0f}kbps")
+        if br_kbps >= 256:
+            score += 5
+            notes.append(f"ビットレート{br_kbps:.0f}kbps: 高品質")
+        elif br_kbps >= 128:
+            score += 2
+        else:
+            notes.append(f"ビットレート{br_kbps:.0f}kbps: 低品質")
+            score -= 5
+
+    # チャンネル数
+    ch = ffmpeg_data.get("channels")
+    if ch is not None:
+        measured_parts.append(f"{ch}ch")
+        if ch >= 2:
+            score += 3
+            notes.append(f"{ch}チャンネル: ステレオ以上")
+        else:
+            notes.append("モノラル: ステレオ推奨")
+
+    measured = ", ".join(measured_parts) if measured_parts else ""
+
+    score = min(100, max(0, score))
+    return AudioAxisScore(
+        axis="overall",
+        label="総合音声品質",
+        score=score,
+        notes=notes,
+        measured_value=measured,
+        is_estimated=False,
+    )
+
+
+def _detect_ffmpeg_issues(ffmpeg_data: dict) -> list:
+    """ffmpeg実測値ベースの問題検出"""
+    issues = []
+
+    # トゥルーピークが0 dBTP超過 → クリッピング
+    true_peak = ffmpeg_data.get("true_peak")
+    if true_peak is not None and true_peak > 0.0:
+        issues.append(AudioIssue(
+            timestamp="全体",
+            issue_type="volume",
+            severity="error",
+            description=f"トゥルーピーク {true_peak:.1f} dBTP: クリッピングが発生",
+            suggestion="リミッターを適用し、トゥルーピークを -1.0 dBTP 以下に抑える",
+        ))
+    elif true_peak is not None and true_peak > -1.0:
+        issues.append(AudioIssue(
+            timestamp="全体",
+            issue_type="volume",
+            severity="warning",
+            description=f"トゥルーピーク {true_peak:.1f} dBTP: クリッピングの危険",
+            suggestion="トゥルーピークを -1.0 dBTP 以下に調整推奨",
+        ))
+
+    # ラウドネスが極端に低い/高い
+    lufs = ffmpeg_data.get("loudness_lufs")
+    if lufs is not None:
+        if lufs < -30:
+            issues.append(AudioIssue(
+                timestamp="全体",
+                issue_type="volume",
+                severity="warning",
+                description=f"統合ラウドネス {lufs:.1f} LUFS: 音量が非常に小さい",
+                suggestion="ノーマライズ処理で -14 LUFS 前後に調整推奨",
+            ))
+        elif lufs > -5:
+            issues.append(AudioIssue(
+                timestamp="全体",
+                issue_type="volume",
+                severity="error",
+                description=f"統合ラウドネス {lufs:.1f} LUFS: 音量が大きすぎる",
+                suggestion="音量を -14 LUFS 前後に下げることを推奨",
+            ))
+
+    # ノイズフロアが高い
+    noise_floor = ffmpeg_data.get("noise_floor_estimate")
+    if noise_floor is not None and noise_floor > MAX_NOISE_FLOOR + 15:
+        issues.append(AudioIssue(
+            timestamp="全体",
+            issue_type="noise",
+            severity="warning",
+            description=f"ノイズフロア推定 {noise_floor:.1f} dB: バックグラウンドノイズが顕著",
+            suggestion="ノイズリダクション処理を推奨",
+        ))
+
+    return issues

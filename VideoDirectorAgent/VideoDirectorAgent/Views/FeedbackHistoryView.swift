@@ -23,25 +23,25 @@ struct FeedbackHistoryView: View {
     }
 
     private var filteredItems: [FeedbackHistoryItem] {
-        var items = items
+        var filtered = items
 
         // フィルタ
         switch filterMode {
         case .all: break
         case .unsent:
-            items = items.filter { !$0.isSent }
+            filtered = filtered.filter { !$0.isSent }
         }
 
         // 検索
         if !searchText.isEmpty {
-            items = items.filter {
+            filtered = filtered.filter {
                 $0.projectTitle.localizedCaseInsensitiveContains(searchText) ||
                 $0.guestName.localizedCaseInsensitiveContains(searchText) ||
                 $0.rawVoiceText.localizedCaseInsensitiveContains(searchText)
             }
         }
 
-        return items
+        return filtered
     }
 
     var body: some View {

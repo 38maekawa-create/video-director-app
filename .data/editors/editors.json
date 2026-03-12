@@ -1,7 +1,7 @@
 {
   "editors": [
     {
-      "id": "editor_20260313030314_0",
+      "id": "editor_20260313031536_1",
       "name": "パグさん",
       "contact_info": "",
       "status": "active",
@@ -11,11 +11,27 @@
       "active_projects": [],
       "completed_count": 0,
       "avg_quality_score": 0.0,
-      "capacity": 3,
-      "notes": "ディレクター",
-      "created_at": "2026-03-13T03:03:14.624351",
-      "updated_at": "2026-03-13T03:03:14.624353"
+      "capacity": 5,
+      "notes": "ディレクター。映像編集のプロ。なおとさんと2人でTEKO対談動画を制作。",
+      "created_at": "2026-03-13T03:15:36.708880",
+      "updated_at": "2026-03-13T03:15:36.708882"
+    },
+    {
+      "id": "editor_20260313031536_2",
+      "name": "なおとさん",
+      "contact_info": "",
+      "status": "active",
+      "contract_type": "fulltime",
+      "specialties": [],
+      "skills": {},
+      "active_projects": [],
+      "completed_count": 0,
+      "avg_quality_score": 0.0,
+      "capacity": 10,
+      "notes": "監督。映像ディレクション・全体統括。",
+      "created_at": "2026-03-13T03:15:36.709117",
+      "updated_at": "2026-03-13T03:15:36.709118"
     }
   ],
-  "updated_at": "2026-03-13T03:03:14.624373"
+  "updated_at": "2026-03-13T03:15:47.234796"
 }

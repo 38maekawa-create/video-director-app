@@ -167,6 +167,10 @@ def list_projects():
     result = []
     for r in rows:
         d = dict(r)
+        # SQLiteはBooleanを0/1で返すためPython boolに変換
+        for bool_field in ("has_unsent_feedback",):
+            if bool_field in d:
+                d[bool_field] = bool(d[bool_field])
         for json_field in ("source_video", "edited_video", "feedback_summary", "knowledge"):
             if d.get(json_field):
                 d[json_field] = json.loads(d[json_field])
@@ -182,6 +186,9 @@ def get_project(project_id: str):
     if not row:
         raise HTTPException(404, "Project not found")
     d = dict(row)
+    for bool_field in ("has_unsent_feedback",):
+        if bool_field in d:
+            d[bool_field] = bool(d[bool_field])
     for json_field in ("source_video", "edited_video", "feedback_summary", "knowledge"):
         if d.get(json_field):
             d[json_field] = json.loads(d[json_field])

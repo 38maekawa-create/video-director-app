@@ -94,8 +94,12 @@ struct YouTubeAssetsView: View {
                 metadataPill(title: "背景", value: design.backgroundSuggestion)
 
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    ForEach(design.zones) { zone in
+                    ForEach(Array(design.zones.enumerated()), id: \.element.id) { index, zone in
                         VStack(alignment: .leading, spacing: 8) {
+                            Text(zonePositionLabel(for: index))
+                                .font(AppTheme.labelFont(10))
+                                .foregroundStyle(AppTheme.textMuted)
+
                             Text(zone.role)
                                 .font(AppTheme.labelFont(12))
                                 .foregroundStyle(.white)
@@ -436,6 +440,16 @@ struct YouTubeAssetsView: View {
             return Color(hex: 0x102C5C)
         }
         return AppTheme.cardBackgroundLight
+    }
+
+    private func zonePositionLabel(for index: Int) -> String {
+        switch index {
+        case 0: return "左上"
+        case 1: return "右上"
+        case 2: return "対角"
+        case 3: return "右下"
+        default: return "ゾーン"
+        }
     }
 
     private func relativeLabel(from isoString: String) -> String {

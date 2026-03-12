@@ -80,13 +80,30 @@ struct RootTabView: View {
                     } label: {
                         ZStack {
                             Circle()
-                                .fill(AppTheme.accent)
+                                .fill(Color.white.opacity(0.08))
+                                .frame(width: 66, height: 66)
+                                .blur(radius: 2)
+
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color(hex: 0xFF4D57), AppTheme.accent],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
                                 .frame(width: 56, height: 56)
                                 .shadow(color: AppTheme.accentGlow, radius: 8, x: 0, y: 2)
+                                .shadow(color: .black.opacity(0.45), radius: 14, x: 0, y: 8)
+                                .overlay(
+                                    Circle()
+                                        .strokeBorder(Color.white.opacity(0.18), lineWidth: 1)
+                                )
 
                             Image(systemName: "mic.fill")
                                 .font(.system(size: 24, weight: .bold))
                                 .foregroundStyle(.white)
+                                .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 1)
                         }
                         .offset(y: -16)
                     }

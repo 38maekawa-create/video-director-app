@@ -251,6 +251,13 @@ struct ProjectListView: View {
                 .foregroundStyle(.white)
                 .lineLimit(1)
 
+            if let occupation = project.guestOccupation, !occupation.isEmpty {
+                Text(occupation)
+                    .font(.caption2)
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .lineLimit(1)
+            }
+
             Text(project.shootDate)
                 .font(.caption2)
                 .foregroundStyle(AppTheme.textMuted)

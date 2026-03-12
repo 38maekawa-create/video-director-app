@@ -37,6 +37,9 @@ class KnowledgeLoader:
     # 過去タイトル抽出元ディレクトリ
     VIDEO_TRANSCRIPTS_DIR = Path.home() / "TEKO" / "knowledge" / "raw-data" / "video_transcripts"
 
+    # TEKOチャンネルID（YouTube Data API用）
+    YOUTUBE_CHANNEL_ID = "UCNEsgjVHvL4y0suJGwu8ZPg"
+
     def __init__(self):
         self._cache: KnowledgeContext | None = None
 
@@ -182,52 +185,145 @@ class KnowledgeLoader:
         return titles
 
     def _fetch_past_descriptions(self) -> list[str]:
-        """過去投稿済み動画の概要欄テキストを取得する
+        """過去投稿済み動画の概要欄テキストをYouTube Data APIから取得する
 
-        AI開発5のyoutube_monitor.pyのYouTube Data API連携を利用。
-        チャンネルIDが未設定の場合は空リストを返す（安全な失敗）。
-
-        TODO: チャンネルID設定後にYouTube Data APIから取得する実装を追加
+        TEKOチャンネル（UCNEsgjVHvL4y0suJGwu8ZPg）の公開済み動画から
+        snippet.descriptionを取得し、概要欄生成のfew-shot examplesとして使う。
+        APIキーなし・ネットワークエラー時は空リスト（安全な失敗）。
+        取得結果はローカルにキャッシュして次回以降はAPI不要にする。
         """
-        descriptions = []
+        # まずローカルキャッシュを確認
+        cache_file = Path.home() / "AI開発10" / ".cache" / "youtube_descriptions.json"
+        descriptions = self._load_cached_descriptions(cache_file)
+        if descriptions:
+            return descriptions
 
+        # YouTube Data APIから取得
+        descriptions = self._fetch_from_youtube_api()
+
+        # 取得成功したらキャッシュ保存
+        if descriptions:
+            self._save_cached_descriptions(cache_file, descriptions)
+
+        return descriptions
+
+    def _load_cached_descriptions(self, cache_file: Path) -> list[str]:
+        """ローカルキャッシュから概要欄を読み込む（24時間有効）"""
         try:
-            # AI開発5のYouTube監視データから概要欄を取得
-            youtube_data_dir = Path.home() / "AI開発5" / "data" / "youtube_monitor"
-            if not youtube_data_dir.exists():
-                # 代替パス
-                youtube_data_dir = Path.home() / "AI開発5" / "output" / "youtube"
-
-            if not youtube_data_dir.exists():
-                return descriptions
+            if not cache_file.exists():
+                return []
 
             import json
-            for json_file in sorted(youtube_data_dir.glob("*.json"), reverse=True):
-                try:
-                    data = json.loads(json_file.read_text(encoding="utf-8"))
+            import time
+            data = json.loads(cache_file.read_text(encoding="utf-8"))
 
-                    # snippet.descriptionを取得
-                    if isinstance(data, dict):
-                        desc = data.get("snippet", {}).get("description", "")
-                        if not desc:
-                            desc = data.get("description", "")
-                        if desc and len(desc) > 50:  # 短すぎるものは除外
-                            descriptions.append(desc)
-                    elif isinstance(data, list):
-                        for item in data:
-                            desc = item.get("snippet", {}).get("description", "")
-                            if not desc:
-                                desc = item.get("description", "")
-                            if desc and len(desc) > 50:
-                                descriptions.append(desc)
+            # 24時間以内のキャッシュのみ有効
+            cached_at = data.get("cached_at", 0)
+            if time.time() - cached_at > 86400:  # 24時間
+                return []
 
-                except (json.JSONDecodeError, KeyError):
-                    continue
+            return data.get("descriptions", [])
+        except Exception:
+            return []
 
-            # 最新10件に制限（プロンプトサイズ管理）
-            descriptions = descriptions[:10]
-
+    def _save_cached_descriptions(self, cache_file: Path, descriptions: list[str]):
+        """概要欄をローカルキャッシュに保存"""
+        try:
+            import json
+            import time
+            cache_file.parent.mkdir(parents=True, exist_ok=True)
+            data = {
+                "cached_at": time.time(),
+                "channel_id": self.YOUTUBE_CHANNEL_ID,
+                "count": len(descriptions),
+                "descriptions": descriptions,
+            }
+            cache_file.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         except Exception:
             pass
 
-        return descriptions
+    def _fetch_from_youtube_api(self) -> list[str]:
+        """YouTube Data APIからチャンネルの動画概要欄を取得"""
+        import os
+
+        api_key = os.environ.get("YOUTUBE_API_KEY", "")
+        if not api_key:
+            # 複数の.envファイルを検索（AI開発5の.envも含む）
+            env_candidates = [
+                Path.home() / ".config" / "maekawa" / "api-keys.env",
+                Path.home() / "AI開発5" / ".env",
+            ]
+            for env_file in env_candidates:
+                if not env_file.exists():
+                    continue
+                for line in env_file.read_text().split("\n"):
+                    line = line.strip()
+                    if line.startswith("YOUTUBE_API_KEY="):
+                        api_key = line.split("=", 1)[1].strip()
+                        break
+                    if not api_key and line.startswith("GOOGLE_API_KEY="):
+                        api_key = line.split("=", 1)[1].strip()
+                if api_key:
+                    break
+
+        if not api_key:
+            return []
+
+        try:
+            import urllib.request
+            import json
+
+            # Step 1: チャンネルのアップロードプレイリストIDを取得
+            channel_url = (
+                f"https://www.googleapis.com/youtube/v3/channels"
+                f"?part=contentDetails&id={self.YOUTUBE_CHANNEL_ID}&key={api_key}"
+            )
+            req = urllib.request.Request(channel_url)
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                channel_data = json.loads(resp.read().decode("utf-8"))
+
+            items = channel_data.get("items", [])
+            if not items:
+                return []
+
+            uploads_playlist_id = items[0]["contentDetails"]["relatedPlaylists"]["uploads"]
+
+            # Step 2: アップロードプレイリストから動画IDを取得（最新20件）
+            playlist_url = (
+                f"https://www.googleapis.com/youtube/v3/playlistItems"
+                f"?part=contentDetails&playlistId={uploads_playlist_id}"
+                f"&maxResults=20&key={api_key}"
+            )
+            req = urllib.request.Request(playlist_url)
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                playlist_data = json.loads(resp.read().decode("utf-8"))
+
+            video_ids = [
+                item["contentDetails"]["videoId"]
+                for item in playlist_data.get("items", [])
+            ]
+
+            if not video_ids:
+                return []
+
+            # Step 3: 動画の概要欄を取得
+            ids_str = ",".join(video_ids)
+            videos_url = (
+                f"https://www.googleapis.com/youtube/v3/videos"
+                f"?part=snippet&id={ids_str}&key={api_key}"
+            )
+            req = urllib.request.Request(videos_url)
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                videos_data = json.loads(resp.read().decode("utf-8"))
+
+            descriptions = []
+            for item in videos_data.get("items", []):
+                desc = item.get("snippet", {}).get("description", "")
+                if desc and len(desc) > 50:  # 短すぎるものは除外
+                    descriptions.append(desc)
+
+            # 最新10件に制限（プロンプトサイズ管理）
+            return descriptions[:10]
+
+        except Exception:
+            return []

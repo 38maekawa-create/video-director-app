@@ -243,87 +243,79 @@ class KnowledgeLoader:
             pass
 
     def _fetch_from_youtube_api(self) -> list[str]:
-        """YouTube Data APIからチャンネルの動画概要欄を取得"""
-        import os
+        """チャンネルの動画概要欄をyt-dlpで取得する
 
-        api_key = os.environ.get("YOUTUBE_API_KEY", "")
-        if not api_key:
-            # 複数の.envファイルを検索（AI開発5の.envも含む）
-            env_candidates = [
-                Path.home() / ".config" / "maekawa" / "api-keys.env",
-                Path.home() / "AI開発5" / ".env",
-            ]
-            for env_file in env_candidates:
-                if not env_file.exists():
-                    continue
-                for line in env_file.read_text().split("\n"):
-                    line = line.strip()
-                    if line.startswith("YOUTUBE_API_KEY="):
-                        api_key = line.split("=", 1)[1].strip()
-                        break
-                    if not api_key and line.startswith("GOOGLE_API_KEY="):
-                        api_key = line.split("=", 1)[1].strip()
-                if api_key:
-                    break
-
-        if not api_key:
-            return []
-
+        YouTube Data API v3のAPIキーが不要。
+        yt-dlpが未インストールの場合は空リスト（安全な失敗）。
+        """
         try:
-            import urllib.request
+            import subprocess
             import json
 
-            # Step 1: チャンネルのアップロードプレイリストIDを取得
-            channel_url = (
-                f"https://www.googleapis.com/youtube/v3/channels"
-                f"?part=contentDetails&id={self.YOUTUBE_CHANNEL_ID}&key={api_key}"
+            # Step 1: チャンネルから最新20件の動画IDを取得
+            channel_url = f"https://www.youtube.com/channel/{self.YOUTUBE_CHANNEL_ID}/videos"
+            result = subprocess.run(
+                [
+                    "yt-dlp", "--flat-playlist", "--print", "%(id)s",
+                    channel_url,
+                ],
+                capture_output=True, text=True, timeout=30,
             )
-            req = urllib.request.Request(channel_url)
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                channel_data = json.loads(resp.read().decode("utf-8"))
 
-            items = channel_data.get("items", [])
-            if not items:
+            if result.returncode != 0:
+                # PATHにない場合のフォールバック
+                yt_dlp_path = Path.home() / "Library" / "Python" / "3.9" / "bin" / "yt-dlp"
+                if yt_dlp_path.exists():
+                    result = subprocess.run(
+                        [
+                            str(yt_dlp_path), "--flat-playlist", "--print", "%(id)s",
+                            channel_url,
+                        ],
+                        capture_output=True, text=True, timeout=30,
+                    )
+
+            if result.returncode != 0:
                 return []
 
-            uploads_playlist_id = items[0]["contentDetails"]["relatedPlaylists"]["uploads"]
-
-            # Step 2: アップロードプレイリストから動画IDを取得（最新20件）
-            playlist_url = (
-                f"https://www.googleapis.com/youtube/v3/playlistItems"
-                f"?part=contentDetails&playlistId={uploads_playlist_id}"
-                f"&maxResults=20&key={api_key}"
-            )
-            req = urllib.request.Request(playlist_url)
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                playlist_data = json.loads(resp.read().decode("utf-8"))
-
-            video_ids = [
-                item["contentDetails"]["videoId"]
-                for item in playlist_data.get("items", [])
-            ]
-
+            video_ids = [vid.strip() for vid in result.stdout.strip().split("\n") if vid.strip()]
             if not video_ids:
                 return []
 
-            # Step 3: 動画の概要欄を取得
-            ids_str = ",".join(video_ids)
-            videos_url = (
-                f"https://www.googleapis.com/youtube/v3/videos"
-                f"?part=snippet&id={ids_str}&key={api_key}"
-            )
-            req = urllib.request.Request(videos_url)
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                videos_data = json.loads(resp.read().decode("utf-8"))
+            # 最新20件に制限
+            video_ids = video_ids[:20]
 
+            # Step 2: 各動画の概要欄を取得
             descriptions = []
-            for item in videos_data.get("items", []):
-                desc = item.get("snippet", {}).get("description", "")
-                if desc and len(desc) > 50:  # 短すぎるものは除外
-                    descriptions.append(desc)
+            yt_dlp_cmd = "yt-dlp"
+            yt_dlp_path = Path.home() / "Library" / "Python" / "3.9" / "bin" / "yt-dlp"
+            if yt_dlp_path.exists():
+                yt_dlp_cmd = str(yt_dlp_path)
 
-            # 最新10件に制限（プロンプトサイズ管理）
-            return descriptions[:10]
+            for vid in video_ids:
+                try:
+                    vid_result = subprocess.run(
+                        [
+                            yt_dlp_cmd, "--skip-download",
+                            "--print", "%(description)s",
+                            f"https://www.youtube.com/watch?v={vid}",
+                        ],
+                        capture_output=True, text=True, timeout=15,
+                    )
+                    if vid_result.returncode == 0:
+                        desc = vid_result.stdout.strip()
+                        if desc and len(desc) > 50:  # 短すぎるものは除外
+                            descriptions.append(desc)
+                except subprocess.TimeoutExpired:
+                    continue
 
+                # 10件取得したら終了（プロンプトサイズ管理）
+                if len(descriptions) >= 10:
+                    break
+
+            return descriptions
+
+        except FileNotFoundError:
+            # yt-dlp未インストール
+            return []
         except Exception:
             return []

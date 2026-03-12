@@ -33,11 +33,15 @@
 
 **テスト**: 270テスト全件PASS（既存テスト破壊なし）
 
-**現在進行中（Codex CLI on pao）**:
-- TASK_PHASE3_4_SWIFT.md に基づくSwift新画面実装
-  - FeedbackHistoryView/QualityDashboardView 実データ化
-  - EditorManagementView/VideoTrackingView/NotificationSettingsView 新規画面
-  - VoiceFeedbackViewModel convertFeedback() API化
+**Swift Phase 3-4実装完了（Codex CLI → ビルド成功）**:
+- FeedbackHistoryView/QualityDashboardView 実データ化 ✅
+- EditorManagementView/VideoTrackingView/NotificationSettingsView 新規画面 ✅
+- VoiceFeedbackViewModel convertFeedback() API化 ✅
+- アプリアイコン生成（カチンコ風）✅
+- Bundle ID本番化（com.maekawa.VideoDirectorAgent）✅
+- Info.plist整備（表示名「映像ディレクター」）✅
+- シミュレータ起動・実データ表示確認済み ✅
+- **310テスト全PASS**（Python 270 + API Phase3-4 40）
 
 ### ネイティブiOSアプリ化（2026-03-13 シミュレータ実データ表示成功）
 スマホからYouTube素材（サムネ指示書・タイトル案・概要欄）の閲覧・編集を可能にするネイティブアプリ。なおとさんとパグさん（ディレクター）の2ユーザー。
@@ -290,11 +294,10 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 - 映像品質学習の本線実装
 
 ## 次にやるべき作業（優先順位付き）
-1. **Codex CLI Swift実装完了待ち** — TASK_PHASE3_4_SWIFT.md に基づく新画面+API実データ化が進行中
-2. **同期→ビルド→エラー修正** — Codex CLI完了後、paoから同期→xcodebuild→エラー修正
-3. **iPhone実機テスト** — USB接続してシミュレータではなく実機で動作確認
-4. **TestFlight配布** — Distribution Certificate作成（なおとさん操作）→Archive→配布
-5. **スプシマッチング精度改善** — 15/30 → 目標25/30以上
+1. **XcodeにApple ID登録** — Xcode > Settings > Accounts でApple ID追加（なおとさんの操作が必要）
+2. **iPhone実機ビルド+テスト** — Apple ID登録後、自動署名で実機ビルド→動作確認
+3. **TestFlight配布** — Archive → App Store Connect → TestFlight配布
+4. **スプシマッチング精度改善** — 15/30 → 目標25/30以上
 
 ## 既知の問題・課題
 1. **層cの該当者0件**: 現在のデータセット30件に自営業家系の該当者がいない。追加データで検証が必要
@@ -305,4 +308,5 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 6. **yt-dlp インストール済み**: 2025.10.14。映像トラッキングのメタデータ取得が実動作可能
 7. **スプシマッチング**: 30件中15件マッチ。ゲスト名の正規化（括弧・敬称除去）やスプシ側の登録追加で改善可能
 8. **index.htmlのURLエンコーディング**: 日本語ファイル名がhrefにURLエンコードなしで入る。主要ブラウザでは動作するが改善予定
-9. **launchd監査**: com.maekawa.video-direction-audit.plist 作成済み（毎日9:00 AM実行）。要bootstrap登録
+9. **launchd監査**: com.maekawa.video-direction-audit.plist 登録済み（毎日9:00 AM自動実行）
+10. **実機ビルド**: XcodeにApple IDが未登録のためProvisioning Profile自動生成ができない。Xcode > Settings > Accounts で登録が必要

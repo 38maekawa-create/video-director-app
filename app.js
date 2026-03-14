@@ -6,7 +6,7 @@
   'use strict';
 
   // ===== API設定 =====
-  const API_BASE_URL = 'http://localhost:8210';
+  const API_BASE_URL = window.location.origin;
   let apiConnected = false;
 
   // ===== 状態管理 =====

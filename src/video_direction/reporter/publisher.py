@@ -103,8 +103,10 @@ def _create_repo(cache_dir: Path):
 
 def _update_index(repo_path: Path, tier_map: dict = None):
     """index.htmlを全HTMLファイルリストから再生成する"""
+    existing_tiers = _extract_existing_tier_map(repo_path / "index.html")
     if tier_map is None:
         tier_map = {}
+    merged_tiers = {**existing_tiers, **tier_map}
 
     pages = []
     for f in sorted(repo_path.glob("*_direction.html")):
@@ -120,7 +122,7 @@ def _update_index(repo_path: Path, tier_map: dict = None):
         guest = "_".join(name_parts[1:-1]) if len(name_parts) > 2 else f.stem
         guest = guest.replace("_", " ")
 
-        tier = tier_map.get(f.name, "")
+        tier = merged_tiers.get(f.name, "")
 
         pages.append({
             "filename": f.name,
@@ -131,6 +133,20 @@ def _update_index(repo_path: Path, tier_map: dict = None):
 
     index_html = generate_index_html(pages)
     (repo_path / "index.html").write_text(index_html, encoding="utf-8")
+
+
+def _extract_existing_tier_map(index_path: Path) -> dict[str, str]:
+    """既存 index.html から filename -> tier を抽出する"""
+    if not index_path.exists():
+        return {}
+
+    text = index_path.read_text(encoding="utf-8")
+    pattern = re.compile(
+        r'<a[^>]+href="([^"]+_direction\.html)"[^>]*>.*?</a>\s*'
+        r'<span[^>]+class="[^"]*\btier-([a-z])\b[^"]*"',
+        re.IGNORECASE | re.DOTALL,
+    )
+    return {filename: tier.lower() for filename, tier in pattern.findall(text)}
 
 
 def _git_push(repo_path: Path, message: str):

@@ -1,10 +1,55 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-14 (実用化3機能実装: FB学習ループ・スプシマッチング改善・Vimeo API実投稿。310テストPASS)
+2026-03-14 22:40 (本番化: デモデータ→API接続に全面移行。Web+Swift両方のMockData依存を排除)
 
 ## 現在の作業状態
-**実用化フェーズ** — FB学習ループ、スプシマッチング精度改善、Vimeo API実投稿の3機能を追加。310テスト全パス。
+**本番運用可能** — Webアプリ・Swiftアプリの両方がAPIサーバー(localhost:8210)から本番データを取得する構成に移行完了。
+
+### デモ→本番化（2026-03-14 完了）
+
+#### 問題の特定
+- **Webアプリ (app.js)**: API呼び出しが一切なく、data.jsのMockDataをそのまま表示していた
+- **Swift ViewModels (全6ファイル)**: APIを呼ぶがcatch節で全てMockDataにフォールバックしており、API未接続時もデモデータが表示される設計だった
+- **Swift APIClient**: baseURLが `mac-mini-m4.local:8210` になっており、現環境では接続できなかった
+- **APIサーバー**: feedbacksエンドポイントがguest_name/project_titleをJOINせずに返していた
+
+#### 修正内容
+
+**1. Webアプリ本番API接続 (`app.js`)**
+- API通信レイヤー追加: `apiFetch()` 関数（タイムアウト10秒、エラーハンドリング）
+- `loadFromAPI()`: 起動時にAPIからプロジェクト60件+フィードバック+ダッシュボード+品質トレンドを取得
+- `apiProjectToAppFormat()`: APIレスポンス（snake_case）→Webアプリ形式への変換
+- `apiFeedbackToHistoryItem()`: フィードバックAPIレスポンス→履歴アイテム形式への変換
+- API接続ステータスバナー表示（成功: 緑、失敗: 赤）
+- フィードバック保存時にAPIにも非同期送信（ローカル保存は常に成功扱い）
+- API接続失敗時はlocalStorageキャッシュ→最終手段としてMockDataにフォールバック
+
+**2. Swift MockDataフォールバック排除 (6ファイル)**
+- `ProjectListViewModel`: 初期値を空配列に変更、catchでエラーメッセージ表示（MockDataに戻さない）
+- `DashboardViewModel`: 初期値をnil/空配列に変更、catchでエラーメッセージ表示
+- `EditorManagementViewModel`: 初期値を空配列に変更
+- `VideoTrackingViewModel`: 初期値を空配列に変更
+- `FeedbackHistoryView`: 初期値を空配列に変更
+- `VoiceFeedbackViewModel`: タイムラインマーカーを空配列化、簡易変換を実データベースに修正
+- `DirectionReportView`: MockData.projects.first!をプレースホルダーに置換
+- `QualityDashboardView`: MockData.dashboardSummaryをゼロ値サマリーに置換
+- `YouTubeAssetsView`: MockDataフォールバックをエラーメッセージ表示に変更
+
+**3. Swift APIClient本番化 (`APIClient.swift`)**
+- baseURLを `localhost:8210`（プライマリ）に変更
+- fallbackURLを `MacBook-Air.local:8210` に変更
+
+**4. APIサーバー拡張 (`api_server.py`)**
+- `GET /api/feedbacks`: projects テーブルとJOINしてguest_name, project_titleを返すように修正
+- `GET /api/projects/{project_id}/feedbacks`: 同様にJOIN追加
+- limitパラメータ追加（デフォルト100件）
+
+#### 検証結果
+- APIサーバー: launchd稼働中（PID 17171）、ヘルスチェックOK（60プロジェクト、60 YouTube素材、1フィードバック）
+- Swiftビルド: BUILD SUCCEEDED（iPhone 17 Pro Simulator）
+- Python APIテスト: 42テスト全PASS
+- feedbacks JOIN: guest_name, project_title が正しく返ることを確認
 
 ### 実用化3機能実装（2026-03-14 完了）
 
@@ -315,12 +360,15 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 - Vimeo API 実コメント投稿
 - 音声FBの実録音 / STT 結果をローカル永続ストレージから外部保存先へ拡張
 - 映像品質学習の本線実装
+- WebアプリのdirectionReportUrl表示対応（APIから取得したURLをレポート詳細画面で表示）
+- 品質スコアの自動計算・DB反映（現在全プロジェクトquality_score=null）
 
 ## 次にやるべき作業（優先順位付き）
 1. **XcodeにApple ID登録** — Xcode > Settings > Accounts でApple ID追加（なおとさんの操作が必要）
 2. **iPhone実機ビルド+テスト** — Apple ID登録後、自動署名で実機ビルド→動作確認
 3. **TestFlight配布** — Archive → App Store Connect → TestFlight配布
-4. **スプシマッチング精度改善** — 15/30 → 目標25/30以上
+4. **品質スコア自動計算** — パイプライン実行時にquality_scoreをDBに投入するロジック追加
+5. **スプシマッチング精度改善** — 15/30 → 目標25/30以上
 
 ## 既知の問題・課題
 1. **層cの該当者0件**: 現在のデータセット30件に自営業家系の該当者がいない。追加データで検証が必要
@@ -333,3 +381,5 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 8. **index.htmlのURLエンコーディング**: 日本語ファイル名がhrefにURLエンコードなしで入る。主要ブラウザでは動作するが改善予定
 9. **launchd監査**: com.maekawa.video-direction-audit.plist 登録済み（毎日9:00 AM自動実行）
 10. **実機ビルド**: XcodeにApple IDが未登録のためProvisioning Profile自動生成ができない。Xcode > Settings > Accounts で登録が必要
+11. **品質スコア全件null**: パイプライン実行でquality_scoreを計算・反映する処理が未実装。ダッシュボードの品質トレンドが空になる
+12. **Webアプリ初回表示**: APIサーバーが起動していない場合、MockDataが表示される（localStorageキャッシュがない初回のみ）

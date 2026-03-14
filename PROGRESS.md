@@ -383,3 +383,11 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 10. **実機ビルド**: XcodeにApple IDが未登録のためProvisioning Profile自動生成ができない。Xcode > Settings > Accounts で登録が必要
 11. **品質スコア全件null**: パイプライン実行でquality_scoreを計算・反映する処理が未実装。ダッシュボードの品質トレンドが空になる
 12. **Webアプリ初回表示**: APIサーバーが起動していない場合、MockDataが表示される（localStorageキャッシュがない初回のみ）
+
+### Webアプリ PCブラウザアクセス実装（2026-03-15 06:30 完了）
+- api_server.py にStaticFilesマウント + FileResponse追加
+- `http://localhost:8210/` でWebアプリが表示可能に
+- API_BASE_URLを `window.location.origin` に変更 → 任意のMacからTailscale IPでアクセス可能
+- Mac2から `http://100.110.206.6:8210/` でアクセス確認済み
+- 品質スコア暫定値を全60プロジェクトに設定（directed: 75-94, editing: 55-74, reviewPending: 40-64）
+- ダッシュボードサマリーAPI正常動作確認（average_quality_score: 72.8）

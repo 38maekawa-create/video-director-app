@@ -4,8 +4,9 @@ import Foundation
 final class APIClient: ObservableObject {
     static let shared = APIClient()
 
-    private let baseURL = URL(string: "http://mac-mini-m4.local:8210")!
-    private let fallbackURL = URL(string: "http://localhost:8210")!
+    // 本番: localhostをプライマリとし、ホスト名をフォールバックに
+    private let baseURL = URL(string: "http://localhost:8210")!
+    private let fallbackURL = URL(string: "http://MacBook-Air.local:8210")!
 
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()

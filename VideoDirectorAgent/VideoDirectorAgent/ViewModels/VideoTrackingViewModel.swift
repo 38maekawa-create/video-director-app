@@ -2,8 +2,8 @@ import Foundation
 
 @MainActor
 final class VideoTrackingViewModel: ObservableObject {
-    @Published var videos: [TrackedVideo] = MockData.trackedVideos
-    @Published var insights: [TrackingInsight] = MockData.trackingInsights
+    @Published var videos: [TrackedVideo] = []
+    @Published var insights: [TrackingInsight] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
 
@@ -20,9 +20,7 @@ final class VideoTrackingViewModel: ObservableObject {
             insights = try await insightsTask
             errorMessage = nil
         } catch {
-            videos = MockData.trackedVideos
-            insights = MockData.trackingInsights
-            errorMessage = "トラッキングAPIに接続できなかったためモックデータを表示しています"
+            errorMessage = "トラッキングAPIに接続できません: \(error.localizedDescription)"
         }
     }
 }

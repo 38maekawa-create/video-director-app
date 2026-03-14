@@ -10,7 +10,15 @@ struct DirectionReportView: View {
     @State private var showVoiceFeedback = false
 
     private var displayProject: VideoProject {
-        project ?? MockData.projects.first!
+        if let project { return project }
+        // 本番: projectがnilの場合はプレースホルダーを返す
+        return VideoProject(
+            id: "placeholder",
+            guestName: "読み込み中...",
+            title: "プロジェクト未選択",
+            shootDate: "",
+            status: .directed
+        )
     }
 
     private let tabTitles = ["概要", "ディレクション", "YouTube素材", "素材", "編集後", "FB・評価", "ナレッジ"]

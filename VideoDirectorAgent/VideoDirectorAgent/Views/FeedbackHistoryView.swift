@@ -4,7 +4,7 @@ import SwiftUI
 struct FeedbackHistoryView: View {
     @State private var filterMode: HistoryFilter = .all
     @State private var searchText = ""
-    @State private var items: [FeedbackHistoryItem] = MockData.historyItems
+    @State private var items: [FeedbackHistoryItem] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
 
@@ -252,8 +252,7 @@ struct FeedbackHistoryView: View {
             items = fetched.map(makeHistoryItem)
             errorMessage = nil
         } catch {
-            items = MockData.historyItems
-            errorMessage = "API取得に失敗したためモック履歴を表示しています"
+            errorMessage = "フィードバックAPIに接続できません: \(error.localizedDescription)"
         }
     }
 

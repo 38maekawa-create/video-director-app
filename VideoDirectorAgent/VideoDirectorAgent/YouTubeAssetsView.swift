@@ -280,9 +280,7 @@ struct YouTubeAssetsView: View {
             applyLoadedAssets(loaded)
             bannerMessage = nil
         } catch {
-            let fallback = MockData.sampleYouTubeAssets
-            applyLoadedAssets(fallback)
-            bannerMessage = "API未接続のためサンプル素材を表示中"
+            bannerMessage = "YouTube素材APIに接続できません: \(error.localizedDescription)"
         }
     }
 
@@ -352,10 +350,9 @@ struct YouTubeAssetsView: View {
             bannerMessage = "タイトル案を保存しました"
         } catch {
             bannerMessage = "タイトル保存に失敗しました"
-            if assets.projectId == MockData.sampleYouTubeAssets.projectId {
-                self.assets?.selectedTitleIndex = selectedTitleIndex
-                self.assets?.editedTitle = editedTitle
-            }
+            // API失敗時もローカル表示は更新
+            self.assets?.selectedTitleIndex = selectedTitleIndex
+            self.assets?.editedTitle = editedTitle
         }
     }
 

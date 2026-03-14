@@ -24,7 +24,7 @@ final class VoiceFeedbackViewModel: ObservableObject {
     @Published var sentMessage: String?
     @Published var recordingDuration: TimeInterval = 0
 
-    let markers = MockData.timelineMarkers
+    let markers: [TimelineMarker] = [] // 本番: タイムラインマーカーはAPI/FB履歴から動的に生成
 
     private var recordingTimer: Timer?
     private var audioRecorder: AVAudioRecorder?
@@ -154,8 +154,8 @@ final class VoiceFeedbackViewModel: ObservableObject {
                 }
                 flowState = .readyToSend
             } catch {
-                applyMockConversion()
-                sentMessage = "変換APIに接続できなかったため簡易変換を表示しています"
+                applySimpleConversion()
+                sentMessage = "変換APIに接続できなかったため簡易変換を適用しました: \(error.localizedDescription)"
             }
         }
     }
@@ -205,24 +205,19 @@ final class VoiceFeedbackViewModel: ObservableObject {
         }
     }
 
-    private func applyMockConversion() {
+    private func applySimpleConversion() {
+        // API接続不可時の簡易変換: 元テキストをそのままディレクション指示形式に整形
+        let timestamp = String(format: "%02d:%02d", Int(selectedTime) / 60, Int(selectedTime) % 60)
         structuredItems = [
             .init(
                 id: UUID(),
-                timestamp: "02:18",
-                element: "テロップ",
-                priority: .high,
-                note: "1カット1メッセージに整理し、文字量を約50%削減"
-            ),
-            .init(
-                id: UUID(),
-                timestamp: "02:18-02:40",
-                element: "BGM",
+                timestamp: timestamp,
+                element: "全般",
                 priority: .medium,
-                note: "ナレーション帯域を避けるEQ調整 + 全体-2dB"
+                note: rawTranscript
             )
         ]
-        convertedText = "02:18付近はテロップ情報量を削減し、要点を1メッセージずつ提示してください。合わせて02:18-02:40のBGMレベルを2dB下げ、ナレーションの明瞭度を優先してください。"
+        convertedText = "【ディレクション指示】\(timestamp)付近: \(rawTranscript)"
         flowState = .readyToSend
     }
 }

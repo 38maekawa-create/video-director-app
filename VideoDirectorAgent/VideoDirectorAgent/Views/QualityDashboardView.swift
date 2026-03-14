@@ -114,7 +114,7 @@ struct QualityDashboardView: View {
     }
 
     private var summaryCard: some View {
-        let summary = viewModel.summary ?? MockData.dashboardSummary
+        let summary = viewModel.summary ?? DashboardSummary(totalProjects: 0, withAssets: 0, avgQualityScore: nil, statusCounts: [:], recentFeedbacks: [], unsentFeedbackCount: 0)
         return VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Image(systemName: "square.stack.3d.up.fill")

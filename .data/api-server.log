@@ -139,3 +139,7 @@ INFO:     127.0.0.1:58526 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     127.0.0.1:59153 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:59508 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:59521 - "GET /api/projects?limit=3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52461 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52473 - "GET /api/feedbacks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52485 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52514 - "GET /api/dashboard/summary HTTP/1.1" 200 OK

@@ -25,8 +25,12 @@
   let currentReportTab = '概要';
   const STORAGE_KEYS = {
     projects: 'videoDirectorAgent.projects.v1',
-    history: 'videoDirectorAgent.history.v1'
+    history: 'videoDirectorAgent.history.v1',
+    feedbackOutbox: 'videoDirectorAgent.feedbackOutbox.v1'
   };
+  const FEEDBACK_SYNC_BASE_RETRY_MS = 5000;
+  let feedbackOutbox = [];
+  let feedbackOutboxFlushing = false;
 
   // ===== API通信レイヤー =====
   async function apiFetch(path, options = {}) {
@@ -102,6 +106,10 @@
       learningEffect: fb.learning_effect || '',
       reviewMode: 'transformed',
       syncState: fb.is_sent ? 'synced' : 'pending_sync',
+      externalStoreStatus: 'synced',
+      externalSyncAttempts: 0,
+      externalFeedbackId: `fb-${fb.id}`,
+      createdAt: fb.created_at || null,
     };
   }
 
@@ -126,8 +134,14 @@
   document.addEventListener('DOMContentLoaded', init);
 
   async function init() {
+    hydratePersistedState();
+    feedbackOutbox = loadFeedbackOutbox();
     // まずAPIからデータ取得を試みる
     await loadFromAPI();
+    flushFeedbackOutbox();
+    setInterval(() => {
+      flushFeedbackOutbox();
+    }, 15000);
     refreshAllProjectSyncSummaries();
     renderHome();
     renderHistoryPage();
@@ -149,7 +163,9 @@
       // フィードバック（履歴）取得
       const apiFeedbacks = await apiFetch('/api/feedbacks');
       if (Array.isArray(apiFeedbacks)) {
-        MockData.historyItems = apiFeedbacks.map(apiFeedbackToHistoryItem);
+        const apiHistoryItems = apiFeedbacks.map(apiFeedbackToHistoryItem);
+        const pendingLocalItems = getPendingLocalHistoryItems();
+        MockData.historyItems = mergeHistoryItems(apiHistoryItems, pendingLocalItems);
       }
 
       // ダッシュボードサマリー取得
@@ -173,11 +189,11 @@
 
       showConnectionStatus(true, `API接続成功 — ${MockData.projects.length}件のプロジェクトを取得`);
       persistAppState();
+      flushFeedbackOutbox();
 
     } catch (error) {
       console.warn('API接続失敗。ローカルキャッシュまたはモックデータを使用します:', error);
       apiConnected = false;
-      hydratePersistedState();
       showConnectionStatus(false, `API未接続 (${error.message}) — キャッシュデータを表示中`);
     }
   }
@@ -200,6 +216,125 @@
       }
     } catch (error) {
       console.warn('persisted state hydrate failed', error);
+    }
+  }
+
+  function loadFeedbackOutbox() {
+    try {
+      const savedOutbox = localStorage.getItem(STORAGE_KEYS.feedbackOutbox);
+      if (!savedOutbox) return [];
+      const parsed = JSON.parse(savedOutbox);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.warn('feedback outbox hydrate failed', error);
+      return [];
+    }
+  }
+
+  function persistFeedbackOutbox() {
+    try {
+      localStorage.setItem(STORAGE_KEYS.feedbackOutbox, JSON.stringify(feedbackOutbox));
+    } catch (error) {
+      console.warn('persist feedback outbox failed', error);
+    }
+  }
+
+  function mergeHistoryItems(primaryItems, fallbackItems) {
+    const merged = [];
+    const seen = new Set();
+    [...primaryItems, ...fallbackItems].forEach((item) => {
+      const key = item.externalFeedbackId
+        ? `external:${item.externalFeedbackId}`
+        : `local:${item.id}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      merged.push(item);
+    });
+    merged.sort((a, b) => {
+      const aDate = Date.parse(a.createdAt || '') || Date.parse(a.date || '') || 0;
+      const bDate = Date.parse(b.createdAt || '') || Date.parse(b.date || '') || 0;
+      return bDate - aDate;
+    });
+    return merged;
+  }
+
+  function getPendingLocalHistoryItems() {
+    const pendingByOutbox = new Set(feedbackOutbox.map(item => item.localHistoryId));
+    return (MockData.historyItems || []).filter(item => {
+      const externalPending = item.externalStoreStatus && item.externalStoreStatus !== 'synced';
+      return pendingByOutbox.has(item.id) || externalPending;
+    });
+  }
+
+  function setHistoryItemExternalStatus(localHistoryId, status, overrides = {}) {
+    const index = MockData.historyItems.findIndex(item => item.id === localHistoryId);
+    if (index < 0) return;
+    MockData.historyItems[index] = {
+      ...MockData.historyItems[index],
+      externalStoreStatus: status,
+      ...overrides,
+    };
+  }
+
+  function enqueueFeedbackOutbox(project, historyItem) {
+    if (!project || !historyItem) return;
+    if (feedbackOutbox.some(entry => entry.localHistoryId === historyItem.id)) return;
+    feedbackOutbox.push({
+      localHistoryId: historyItem.id,
+      projectId: project.id,
+      payload: {
+        timestamp_mark: historyItem.timestamp,
+        raw_voice_text: historyItem.rawVoiceText,
+        converted_text: historyItem.convertedText,
+        category: inferFeedbackCategory(historyItem),
+        priority: 'medium',
+        created_by: 'naoto',
+      },
+      attempts: 0,
+      nextRetryAt: 0,
+      createdAt: new Date().toISOString(),
+      lastError: null,
+    });
+    persistFeedbackOutbox();
+  }
+
+  async function flushFeedbackOutbox() {
+    if (!apiConnected || feedbackOutboxFlushing || !feedbackOutbox.length) return;
+    feedbackOutboxFlushing = true;
+    try {
+      const now = Date.now();
+      for (let i = 0; i < feedbackOutbox.length; i += 1) {
+        const task = feedbackOutbox[i];
+        if ((task.nextRetryAt || 0) > now) continue;
+        try {
+          const result = await apiFetch(`/api/projects/${encodeURIComponent(task.projectId)}/feedbacks`, {
+            method: 'POST',
+            body: JSON.stringify(task.payload),
+          });
+          setHistoryItemExternalStatus(task.localHistoryId, 'synced', {
+            externalStoredAt: new Date().toISOString(),
+            externalFeedbackId: result?.feedback_id ? `fb-${result.feedback_id}` : null,
+          });
+          feedbackOutbox.splice(i, 1);
+          i -= 1;
+          persistFeedbackOutbox();
+          persistAppState();
+        } catch (error) {
+          const attempts = (task.attempts || 0) + 1;
+          const retryDelay = FEEDBACK_SYNC_BASE_RETRY_MS * (2 ** Math.min(attempts, 6));
+          task.attempts = attempts;
+          task.lastError = error.message;
+          task.nextRetryAt = Date.now() + retryDelay;
+          setHistoryItemExternalStatus(task.localHistoryId, 'retrying', {
+            externalSyncAttempts: attempts,
+            externalSyncError: error.message,
+          });
+          persistFeedbackOutbox();
+          persistAppState();
+        }
+      }
+    } finally {
+      feedbackOutboxFlushing = false;
     }
   }
 
@@ -450,6 +585,9 @@
       editorStatus: '未対応',
       reviewMode: 'transformed',
       syncState: 'pending_sync',
+      externalStoreStatus: 'queued',
+      externalSyncAttempts: 0,
+      externalFeedbackId: null,
       learningEffect: '',
       referenceExample: buildReferenceExample(currentProject),
     };
@@ -458,20 +596,8 @@
     refreshProjectSyncSummary(currentProject);
     persistAppState();
 
-    // APIにもフィードバックを送信（非同期、失敗してもローカル保存は成功扱い）
-    if (apiConnected) {
-      apiFetch(`/api/projects/${encodeURIComponent(currentProject.id)}/feedbacks`, {
-        method: 'POST',
-        body: JSON.stringify({
-          timestamp_mark: newItem.timestamp,
-          raw_voice_text: newItem.rawVoiceText,
-          converted_text: newItem.convertedText,
-          category: inferFeedbackCategory(newItem),
-          priority: 'medium',
-          created_by: 'naoto',
-        }),
-      }).catch(err => console.warn('FB API送信失敗（ローカルには保存済み）:', err));
-    }
+    enqueueFeedbackOutbox(currentProject, newItem);
+    flushFeedbackOutbox();
 
     recordingTranscript = '';
     recordingInterimTranscript = '';

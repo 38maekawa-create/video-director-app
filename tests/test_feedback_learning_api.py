@@ -42,6 +42,8 @@ def test_create_feedback_triggers_feedback_learning(tmp_path):
             assert resp.status_code == 200
             payload = resp.json()
             assert payload["status"] == "created"
+            assert isinstance(payload["feedback_id"], int)
+            assert payload["feedback_id"] > 0
             assert payload["learning_applied"] is True
             assert payload["learned_patterns"] == 1
             learner.ingest_feedback.assert_called_once()

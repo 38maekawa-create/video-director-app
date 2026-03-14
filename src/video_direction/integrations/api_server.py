@@ -391,6 +391,7 @@ def create_feedback(project_id: str, fb: FeedbackCreate):
     return {
         "status": "created",
         "project_id": project_id,
+        "feedback_id": cursor.lastrowid,
         "learning_applied": learned,
         "learned_patterns": learned_patterns,
     }

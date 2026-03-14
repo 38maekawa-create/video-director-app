@@ -1,10 +1,10 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-14 (Phase5実運用チューニング: Mac側relay adapter実投稿運用化 + Vimeo連携テスト拡充。334テストPASS)
+2026-03-14 (Phase5実運用チューニング: 音声FB/STT外部保存拡張。334テストPASS)
 
 ## 現在の作業状態
-**実用化フェーズ** — FB学習ループ、スプシマッチング精度改善、Vimeo API実投稿に加え、Phase5実運用チューニングとしてMac側relay adapterの本番運用要素（トークン管理/ログ運用/再送キュー）を実装。334テスト全パス。
+**実用化フェーズ** — FB学習ループ、スプシマッチング精度改善、Vimeo API実投稿、Mac側relay adapter本番運用要素に続き、音声FB/STTの外部保存拡張（API復帰時自動再送）を実装。334テスト全パス。
 
 ### 実用化3機能実装（2026-03-14 完了）
 
@@ -351,16 +351,24 @@ Phase 2の全9機能を実装完了。250テスト全パス。
   - `tests/test_vimeo_relay_integration.py` にトークンフォールバック・再送キュー抽出・ログ保存テストを追加
 - テスト結果: `venv/bin/pytest -q` → `334 passed, 5 warnings`
 
+### Phase5実運用チューニング: 音声FB/STT外部保存拡張（2026-03-14 完了）
+- 対象: `app.js`, `src/video_direction/integrations/api_server.py`
+- Web側に `feedbackOutbox` を追加し、音声FB/STT結果を `localStorage` 一時保存後に API/DB へ非同期再送する経路を実装
+- API復帰時に outbox を自動 flush する再送処理を実装（初回起動時 + 15秒周期）
+- API取得データとローカル未同期FBをマージし、オフライン時に記録したSTT結果が接続復帰時に消えないよう修正
+- 外部保存状態を履歴アイテムに保持（`externalStoreStatus`, `externalFeedbackId`, `externalStoredAt`, `externalSyncAttempts`）
+- `POST /api/projects/{project_id}/feedbacks` が `feedback_id` を返すよう拡張し、クライアント側で保存済み照合可能にした
+- テスト更新: `tests/test_feedback_learning_api.py` に `feedback_id` 返却の検証を追加
+- テスト結果: `venv/bin/pytest -q` → `334 passed, 5 warnings`
+
 ## 未完了の作業
-- 音声FBの実録音 / STT 結果をローカル永続ストレージから外部保存先へ拡張
 - 映像品質学習の本線実装
 
 ## 次にやるべき作業（優先順位付き）
-1. **音声FB/STTの外部保存拡張** — ローカル`localStorage`以外（API/DB/クラウド）への保存先実装
-2. **映像品質学習の本線実装** — FB学習ループの運用データ投入と評価ルール精度改善
-3. **XcodeにApple ID登録** — Xcode > Settings > Accounts でApple ID追加（なおとさんの操作が必要）
-4. **iPhone実機ビルド+テスト** — Apple ID登録後、自動署名で実機ビルド→動作確認
-5. **TestFlight配布** — Archive → App Store Connect → TestFlight配布
+1. **映像品質学習の本線実装** — FB学習ループの運用データ投入と評価ルール精度改善
+2. **XcodeにApple ID登録** — Xcode > Settings > Accounts でApple ID追加（なおとさんの操作が必要）
+3. **iPhone実機ビルド+テスト** — Apple ID登録後、自動署名で実機ビルド→動作確認
+4. **TestFlight配布** — Archive → App Store Connect → TestFlight配布
 
 ## 既知の問題・課題
 1. **層cの該当者0件**: 現在のデータセット30件に自営業家系の該当者がいない。追加データで検証が必要

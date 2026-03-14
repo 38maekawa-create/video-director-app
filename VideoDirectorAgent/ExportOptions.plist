@@ -2,34 +2,22 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- App Store Connect経由でTestFlight配布 -->
     <key>method</key>
     <string>app-store-connect</string>
 
     <key>teamID</key>
     <string>TT2DA7H5NJ</string>
 
-    <!-- 自動署名 -->
     <key>signingStyle</key>
     <string>automatic</string>
 
-    <!-- App Store Connect へのアップロード（testflightInternal/external テスト用） -->
     <key>destination</key>
     <string>upload</string>
 
-    <!-- シンボル情報を含める（クラッシュレポート解析用） -->
     <key>uploadSymbols</key>
     <true/>
 
-    <!-- ビットコード（Xcodeが管理） -->
     <key>compileBitcode</key>
     <false/>
-
-    <!-- アプリ識別子 -->
-    <key>bundleIDProvisioningProfiles</key>
-    <dict>
-        <key>com.maekawa.VideoDirectorAgent</key>
-        <string>Automatic</string>
-    </dict>
 </dict>
 </plist>

@@ -1,9 +1,49 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-14 (Phase5実運用チューニング: 音声FB/STT外部保存拡張。334テストPASS)
+2026-03-15 (TestFlight配布準備: deploy-testflight.sh作成・Xcodeプロジェクト設定監査完了)
 
 ## 現在の作業状態
+**TestFlight配布準備完了** — Xcodeプロジェクト設定監査・Info.plist修正・deploy-testflight.sh / ExportOptions.plist 作成完了。Mac mini M4（Xcode搭載）での実行待ち。
+
+### TestFlight配布準備（2026-03-15 完了）
+
+#### 監査結果
+| 項目 | 状態 | 内容 |
+|------|------|------|
+| Bundle ID | ✅ | `com.maekawa.VideoDirectorAgent` |
+| Team ID | ✅ | `TT2DA7H5NJ` |
+| Code Sign Style | ✅ | Automatic（自動署名） |
+| Marketing Version | ✅ | `1.0.0` |
+| CFBundleDisplayName | ✅ | `映像ディレクター` |
+| CFBundleVersion | ✅ 修正済み | `1`（ハードコード）→ `$(CURRENT_PROJECT_VERSION)` |
+| Xcode インストール | ⚠️ 現Mac未導入 | Mac mini M4 でスクリプト実行が必要 |
+
+#### 作成ファイル
+- `deploy-testflight.sh` — Archive→Export→ASC Upload の全工程を自動化
+- `VideoDirectorAgent/ExportOptions.plist` — `method=app-store-connect`, `signingStyle=automatic`, `destination=upload`
+
+#### TestFlight配布の全手順
+1. **App-Specific Password 発行**（なおとさん操作）
+   - https://appleid.apple.com → セキュリティ → App-Specific Password
+   - Mac mini M4 で: `echo 'xxxx-xxxx-xxxx-xxxx' > ~/.config/maekawa/asc-password`
+2. **Apple ID を Xcode に登録**（Mac mini M4 で）
+   - Xcode > Settings > Accounts > + > Apple ID: `7010mae@gmail.com`
+3. **App Store Connect でアプリ登録**（なおとさん操作、未実施の場合）
+   - https://appstoreconnect.apple.com → マイApp → + → 新規App
+   - Bundle ID: `com.maekawa.VideoDirectorAgent` / 主言語: 日本語 / カテゴリ: ユーティリティ
+4. **スクリプト実行**（Mac mini M4 で）
+   ```bash
+   cd ~/AI開発10
+   ./deploy-testflight.sh
+   ```
+5. **ASC でテスター追加**（スクリプト完了後 5〜15分待機）
+   - App Store Connect → TestFlight → テスター追加（7010mae@gmail.com 等）
+
+---
+
+**（以下は前回までの状態）**
+
 **実用化フェーズ** — FB学習ループ、スプシマッチング精度改善、Vimeo API実投稿、Mac側relay adapter本番運用要素に続き、音声FB/STTの外部保存拡張（API復帰時自動再送）を実装。334テスト全パス。
 
 ### 実用化3機能実装（2026-03-14 完了）
@@ -365,10 +405,12 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 - 映像品質学習の本線実装
 
 ## 次にやるべき作業（優先順位付き）
-1. **映像品質学習の本線実装** — FB学習ループの運用データ投入と評価ルール精度改善
-2. **XcodeにApple ID登録** — Xcode > Settings > Accounts でApple ID追加（なおとさんの操作が必要）
-3. **iPhone実機ビルド+テスト** — Apple ID登録後、自動署名で実機ビルド→動作確認
-4. **TestFlight配布** — Archive → App Store Connect → TestFlight配布
+1. **[P1] TestFlight配布実行**（Mac mini M4で）
+   - App-Specific Password を `~/.config/maekawa/asc-password` に保存
+   - Xcode > Settings > Accounts に `7010mae@gmail.com` を登録
+   - App Store Connect でアプリ未登録なら登録（Bundle ID: `com.maekawa.VideoDirectorAgent`）
+   - `./deploy-testflight.sh` 実行
+2. **映像品質学習の本線実装** — FB学習ループの運用データ投入と評価ルール精度改善
 
 ## 既知の問題・課題
 1. **層cの該当者0件**: 現在のデータセット30件に自営業家系の該当者がいない。追加データで検証が必要

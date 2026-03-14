@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import email.utils
 import json
+import math
 import os
 import sys
 import time
@@ -222,10 +223,23 @@ def load_token() -> str:
 
 
 def _validate_comment(comment: dict) -> tuple[bool, list[str]]:
+    if not isinstance(comment, dict):
+        return False, ['comment(not_object)']
+
+    feedback_id = comment.get('feedbackId')
+    if isinstance(feedback_id, str):
+        feedback_id = feedback_id.strip()
+        comment['feedbackId'] = feedback_id
+
+    converted_text = comment.get('convertedText')
+    if isinstance(converted_text, str):
+        converted_text = converted_text.strip()
+        comment['convertedText'] = converted_text
+
     missing = []
-    if not comment.get('feedbackId'):
+    if not feedback_id:
         missing.append('feedbackId')
-    if not comment.get('convertedText'):
+    if not converted_text:
         missing.append('convertedText')
     if comment.get('timestampSeconds') is None:
         missing.append('timestampSeconds')
@@ -237,6 +251,9 @@ def _validate_comment(comment: dict) -> tuple[bool, list[str]]:
         timestamp_seconds = float(comment['timestampSeconds'])
     except (ValueError, TypeError):
         return False, ['timestampSeconds(invalid_number)']
+
+    if not math.isfinite(timestamp_seconds):
+        return False, ['timestampSeconds(non_finite)']
 
     if timestamp_seconds < 0:
         return False, ['timestampSeconds(negative)']
@@ -275,7 +292,7 @@ def main() -> int:
         seen_feedback_ids = set()
         for comment in comments:
             valid, reasons = _validate_comment(comment)
-            feedback_id = comment.get('feedbackId')
+            feedback_id = comment.get('feedbackId') if isinstance(comment, dict) else None
             if valid and feedback_id in seen_feedback_ids:
                 valid = False
                 reasons = ['duplicate feedbackId']

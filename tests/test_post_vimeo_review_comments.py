@@ -141,3 +141,32 @@ def test_main_dry_run_skips_invalid_and_duplicate_feedback(monkeypatch, tmp_path
     assert len(skipped) == 2
     assert any(item["reason"] == "duplicate feedbackId" for item in skipped)
     assert any("timestampSeconds" in item["reason"] for item in skipped)
+
+
+def test_main_dry_run_skips_non_object_and_non_finite_timestamp(monkeypatch, tmp_path, capsys):
+    relay_payload = {
+        "targetVideoId": "vimeo-001",
+        "body": {
+            "targetVideoId": "vimeo-001",
+            "comments": [
+                "invalid-comment",
+                {"feedbackId": "  fb-3  ", "timestampSeconds": "NaN", "convertedText": "  text  "},
+            ],
+        },
+    }
+    json_path = tmp_path / "relay_request.json"
+    json_path.write_text(json.dumps(relay_payload, ensure_ascii=False), encoding="utf-8")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["post_vimeo_review_comments.py", str(json_path), "--dry-run"],
+    )
+
+    rc = MODULE.main()
+    assert rc == 0
+    out = capsys.readouterr().out
+    data = json.loads(out)
+    skipped = [item for item in data["requests"] if item.get("status") == "skipped"]
+    assert len(skipped) == 2
+    assert any("comment(not_object)" in item["reason"] for item in skipped)
+    assert any("timestampSeconds(non_finite)" in item["reason"] for item in skipped)

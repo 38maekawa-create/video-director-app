@@ -2,9 +2,15 @@ from __future__ import annotations
 """J-2: スプシ統合 — 【インタビュー対談動画】管理タブとの連携"""
 
 import re
+import unicodedata
+from difflib import SequenceMatcher
 from pathlib import Path
-from google.oauth2.service_account import Credentials
-import gspread
+try:
+    from google.oauth2.service_account import Credentials
+    import gspread
+except ImportError:  # pragma: no cover - 依存がない環境のテスト実行を許容
+    Credentials = None
+    gspread = None
 
 
 SPREADSHEET_ID = "1bW_qb13p747xoa2yf7RHaccNVTFCMxV8a5CjGdNqI6I"
@@ -34,6 +40,11 @@ class SheetsManager:
         """スプレッドシートに接続（lazy）"""
         if self._worksheet is not None:
             return
+        if Credentials is None or gspread is None:
+            raise ImportError(
+                "gspread/google-auth is required for SheetsManager. "
+                "Install dependencies before using sheet integration."
+            )
 
         credentials = Credentials.from_service_account_file(
             str(self.credentials_path),
@@ -101,17 +112,17 @@ def _normalize_name(name: str) -> str:
     """名前を正規化（敬称除去・全角半角統一・括弧内情報除去・記号除去）"""
     if not name:
         return ""
+    name = unicodedata.normalize("NFKC", name)
     # 括弧内の情報を除去（例: "ゲスト氏（里芋、トーマス）" → "ゲスト氏"）
     name = re.sub(r"[（(].+?[）)]", "", name)
     # 敬称を除去（末尾の「さん」「氏」「くん」「ちゃん」）
-    name = re.sub(r"(さん|氏|くん|ちゃん|様)$", "", name.strip())
-    # 全角英数を半角に
-    name = name.translate(str.maketrans(
-        "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ０１２３４５６７８９",
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
-    ))
-    # 記号を除去（ハイフン・アンダースコア・スペース）
+    name = re.sub(r"(さん|氏|くん|ちゃん|様|先生)$", "", name.strip())
+    # よく混ざる接頭語・ノイズを除去
+    name = re.sub(r"^(ゲスト|撮影[_\-\s]*)", "", name)
+    # 記号を除去（ハイフン・アンダースコア・スペース等）
     name = re.sub(r"[_\-\s・：:]+", "", name)
+    # 名前判定に不要な文字を除去
+    name = re.sub(r"[^0-9a-zA-Zぁ-んァ-ヶ一-龯ー]", "", name)
     return name.strip().lower()
 
 
@@ -126,7 +137,7 @@ def _extract_names_from_title(title: str) -> list[str]:
     - "ハオさん：30代前半..."
     """
     names = []
-    title_clean = title.strip()
+    title_clean = unicodedata.normalize("NFKC", title.strip())
 
     # INT番号形式: "INT001_ブンさん"
     match = re.search(r"INT\d+[_\s]+(.+?)(?:さん|氏)?(?:：|:|$)", title_clean)
@@ -145,6 +156,11 @@ def _extract_names_from_title(title: str) -> list[str]:
         if candidate and len(candidate) >= 1:
             names.append(candidate)
 
+    # 「20251123撮影_りょうすけさん...」形式
+    shot_match = re.search(r"(?:^|\D)\d{8}撮影[_\s]*([^\d：:]+?)(?:さん|氏|様|くん|ちゃん)?(?:[：:]|$|\d)", title_clean)
+    if shot_match:
+        names.append(shot_match.group(1).strip())
+
     # 括弧内の別名も候補に追加（例: "ゲスト氏（里芋、トーマス）"）
     paren_match = re.search(r"[（(](.+?)[）)]", title_clean)
     if paren_match:
@@ -155,7 +171,23 @@ def _extract_names_from_title(title: str) -> list[str]:
             if alias and len(alias) >= 2:
                 names.append(alias)
 
-    return names
+    # タイトル先頭セグメントからフォールバック抽出
+    first_segment = re.split(r"[：:|]", title_clean, maxsplit=1)[0].strip()
+    first_segment = re.sub(r"^(?:INT\d+[_\s]+|\d+[._]\s*)", "", first_segment, flags=re.IGNORECASE)
+    first_segment = re.sub(r"^\d{8}撮影[_\s]*", "", first_segment)
+    first_segment = re.sub(r"(さん|氏|くん|ちゃん|様|先生).*$", "", first_segment).strip()
+    if first_segment:
+        names.append(first_segment)
+
+    deduped = []
+    seen = set()
+    for n in names:
+        norm = _normalize_name(n)
+        if not norm or norm in seen:
+            continue
+        seen.add(norm)
+        deduped.append(n.strip())
+    return deduped
 
 
 def _match_guest_name(guest_name: str, sheet_title: str) -> bool:
@@ -197,16 +229,44 @@ def _match_guest_name(guest_name: str, sheet_title: str) -> bool:
         if name_katakana and (name_katakana == tn_hira or name_katakana == tn_kata):
             return True
 
-    # 戦略3: 正規化後の部分一致（タイトル全体に対して、2文字以上）
+    # 戦略3: 候補名同士の部分一致（2文字以上）
+    for title_name in title_names:
+        tn = _normalize_name(title_name)
+        if _is_partial_match(name_normalized, tn):
+            return True
+
+    # 戦略4: 正規化後の部分一致（タイトル全体）
     title_normalized = _normalize_name(sheet_title)
-    if len(name_normalized) >= 2 and name_normalized in title_normalized:
+    if _is_partial_match(name_normalized, title_normalized):
         return True
 
     # ひらがな/カタカナ変換後の部分一致
     title_hira = _to_hiragana(title_normalized)
-    if len(name_hiragana) >= 2 and name_hiragana in title_hira:
+    if _is_partial_match(name_hiragana, title_hira):
         return True
 
+    return False
+
+
+def _is_partial_match(left: str, right: str) -> bool:
+    if not left or not right:
+        return False
+    if left == right:
+        return True
+
+    shorter, longer = (left, right) if len(left) <= len(right) else (right, left)
+    min_len = 2 if re.search(r"[ぁ-んァ-ヶ一-龯]", shorter) else 3
+    if len(shorter) < min_len:
+        return False
+
+    if shorter in longer or longer in shorter:
+        return True
+
+    # スペルゆれ向けの緩やかな類似判定（短すぎる名前には適用しない）
+    if len(shorter) >= 4:
+        ratio = SequenceMatcher(None, shorter, longer).ratio()
+        if ratio >= 0.82:
+            return True
     return False
 
 

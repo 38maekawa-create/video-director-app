@@ -2,7 +2,7 @@ import Foundation
 
 @MainActor
 final class EditorManagementViewModel: ObservableObject {
-    @Published var editors: [Editor] = MockData.editorDirectory
+    @Published var editors: [Editor] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
 
@@ -15,8 +15,7 @@ final class EditorManagementViewModel: ObservableObject {
             editors = try await APIClient.shared.fetchEditors()
             errorMessage = nil
         } catch {
-            editors = MockData.editorDirectory
-            errorMessage = "編集者APIに接続できなかったためモックデータを表示しています"
+            errorMessage = "編集者APIに接続できません: \(error.localizedDescription)"
         }
     }
 }

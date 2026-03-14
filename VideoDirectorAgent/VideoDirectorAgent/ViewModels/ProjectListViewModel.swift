@@ -2,7 +2,7 @@ import Foundation
 
 @MainActor
 final class ProjectListViewModel: ObservableObject {
-    @Published var projects: [VideoProject] = MockData.projects
+    @Published var projects: [VideoProject] = []
     @Published var searchText: String = ""
     @Published var isLoading = false
     @Published var errorMessage: String?
@@ -53,9 +53,13 @@ final class ProjectListViewModel: ObservableObject {
             projects = try await APIClient.shared.fetchProjects()
             errorMessage = nil
         } catch {
-            projects = MockData.projects
-            errorMessage = "API未接続のためモックデータを表示中: \(error.localizedDescription)"
-            print("❌ API Error: \(error)")
+            // 本番運用: API未接続時はエラーを表示し、空リストを維持
+            if projects.isEmpty {
+                errorMessage = "APIサーバーに接続できません。サーバーが起動しているか確認してください。(\(error.localizedDescription))"
+            } else {
+                errorMessage = "データ更新に失敗しました。前回取得データを表示中。(\(error.localizedDescription))"
+            }
+            print("API Error: \(error)")
         }
     }
 }

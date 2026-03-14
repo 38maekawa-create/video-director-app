@@ -1,8 +1,13 @@
-// VideoDirectorAgent WebApp MVP
+// VideoDirectorAgent WebApp — 本番API接続版
 // HTML + CSS + JS のみ。フレームワーク不使用。
+// APIサーバー: localhost:8210 (FastAPI + SQLite)
 
 (function() {
   'use strict';
+
+  // ===== API設定 =====
+  const API_BASE_URL = 'http://localhost:8210';
+  let apiConnected = false;
 
   // ===== 状態管理 =====
   let currentTab = 'home';
@@ -23,11 +28,106 @@
     history: 'videoDirectorAgent.history.v1'
   };
 
+  // ===== API通信レイヤー =====
+  async function apiFetch(path, options = {}) {
+    const url = `${API_BASE_URL}${path}`;
+    const defaults = {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 10000,
+    };
+    const config = { ...defaults, ...options };
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), config.timeout);
+    try {
+      const response = await fetch(url, { ...config, signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (!response.ok) throw new Error(`API ${response.status}: ${response.statusText}`);
+      return await response.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  }
+
+  // APIからプロジェクト一覧を取得し、Webアプリ用のフォーマットに変換
+  function apiProjectToAppFormat(p) {
+    return {
+      id: p.id,
+      videoId: p.id,
+      guestName: p.guest_name,
+      title: p.title,
+      icon: (p.guest_name || '').substring(0, 2) || 'VD',
+      shootDate: p.shoot_date || '',
+      guestAge: p.guest_age,
+      guestOccupation: p.guest_occupation,
+      status: p.status || 'directed',
+      statusLabel: statusToLabel(p.status),
+      unreviewedCount: p.unreviewed_count || 0,
+      qualityScore: p.quality_score,
+      hasUnsentFeedback: p.has_unsent_feedback || false,
+      directionReportUrl: p.direction_report_url,
+      sourceVideo: p.source_video || null,
+      editedVideo: p.edited_video || null,
+      feedbackSummary: p.feedback_summary || null,
+      knowledge: p.knowledge || null,
+      vimeoReview: null,
+      relay: null,
+    };
+  }
+
+  function statusToLabel(status) {
+    const map = {
+      directed: 'ディレクション済み',
+      editing: '編集中',
+      reviewPending: 'レビュー待ち',
+      published: '公開済み',
+    };
+    return map[status] || status || '不明';
+  }
+
+  // APIからフィードバック一覧を取得し、履歴アイテム形式に変換
+  function apiFeedbackToHistoryItem(fb) {
+    return {
+      id: `fb-${fb.id}`,
+      videoId: fb.project_id,
+      projectTitle: fb.project_title || fb.project_id,
+      guestName: fb.guest_name || 'ゲスト未設定',
+      date: (fb.created_at || '').substring(0, 10).replace(/-/g, '/'),
+      timestamp: fb.timestamp_mark || '--:--',
+      rawVoiceText: fb.raw_voice_text || fb.converted_text || '',
+      convertedText: fb.converted_text || fb.raw_voice_text || '',
+      isSent: !!fb.is_sent,
+      editorStatus: fb.editor_status || '未対応',
+      learningEffect: fb.learning_effect || '',
+      reviewMode: 'transformed',
+      syncState: fb.is_sent ? 'synced' : 'pending_sync',
+    };
+  }
+
+  // 接続ステータスバナーを表示
+  function showConnectionStatus(connected, message) {
+    let banner = document.getElementById('api-status-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'api-status-banner';
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:6px 16px;font-size:12px;text-align:center;transition:opacity 0.3s;';
+      document.body.prepend(banner);
+    }
+    banner.style.background = connected ? '#1a3a1a' : '#3a1a1a';
+    banner.style.color = connected ? '#4dd964' : '#ff6b6b';
+    banner.textContent = message;
+    if (connected) {
+      setTimeout(() => { banner.style.opacity = '0'; setTimeout(() => banner.remove(), 300); }, 3000);
+    }
+  }
+
   // ===== 初期化 =====
   document.addEventListener('DOMContentLoaded', init);
 
-  function init() {
-    hydratePersistedState();
+  async function init() {
+    // まずAPIからデータ取得を試みる
+    await loadFromAPI();
     refreshAllProjectSyncSummaries();
     renderHome();
     renderHistoryPage();
@@ -35,6 +135,51 @@
     setupTabBar();
     setupSearchHandlers();
     createRecordingModal();
+  }
+
+  async function loadFromAPI() {
+    try {
+      // プロジェクト取得
+      const apiProjects = await apiFetch('/api/projects');
+      if (Array.isArray(apiProjects) && apiProjects.length > 0) {
+        MockData.projects = apiProjects.map(apiProjectToAppFormat);
+        apiConnected = true;
+      }
+
+      // フィードバック（履歴）取得
+      const apiFeedbacks = await apiFetch('/api/feedbacks');
+      if (Array.isArray(apiFeedbacks)) {
+        MockData.historyItems = apiFeedbacks.map(apiFeedbackToHistoryItem);
+      }
+
+      // ダッシュボードサマリー取得
+      try {
+        const summary = await apiFetch('/api/dashboard/summary');
+        if (summary && summary.total_projects) {
+          MockData._apiDashboardSummary = summary;
+        }
+      } catch (_) { /* ダッシュボードはオプション */ }
+
+      // 品質トレンド取得
+      try {
+        const trend = await apiFetch('/api/dashboard/quality-trend');
+        if (Array.isArray(trend) && trend.length > 0) {
+          MockData.qualityTrend = trend.map((item, idx) => ({
+            label: item.guest_name || `案件${idx + 1}`,
+            score: item.quality_score || 0
+          }));
+        }
+      } catch (_) { /* トレンドはオプション */ }
+
+      showConnectionStatus(true, `API接続成功 — ${MockData.projects.length}件のプロジェクトを取得`);
+      persistAppState();
+
+    } catch (error) {
+      console.warn('API接続失敗。ローカルキャッシュまたはモックデータを使用します:', error);
+      apiConnected = false;
+      hydratePersistedState();
+      showConnectionStatus(false, `API未接続 (${error.message}) — キャッシュデータを表示中`);
+    }
   }
 
   function hydratePersistedState() {
@@ -312,6 +457,22 @@
     MockData.historyItems.unshift(newItem);
     refreshProjectSyncSummary(currentProject);
     persistAppState();
+
+    // APIにもフィードバックを送信（非同期、失敗してもローカル保存は成功扱い）
+    if (apiConnected) {
+      apiFetch(`/api/projects/${encodeURIComponent(currentProject.id)}/feedbacks`, {
+        method: 'POST',
+        body: JSON.stringify({
+          timestamp_mark: newItem.timestamp,
+          raw_voice_text: newItem.rawVoiceText,
+          converted_text: newItem.convertedText,
+          category: inferFeedbackCategory(newItem),
+          priority: 'medium',
+          created_by: 'naoto',
+        }),
+      }).catch(err => console.warn('FB API送信失敗（ローカルには保存済み）:', err));
+    }
+
     recordingTranscript = '';
     recordingInterimTranscript = '';
     recordingError = '';

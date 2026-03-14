@@ -338,7 +338,10 @@ def select_title(project_id: str, body: TitleSelect):
 def list_feedbacks(project_id: str):
     conn = _get_db()
     rows = conn.execute(
-        "SELECT * FROM feedbacks WHERE project_id = ? ORDER BY created_at DESC",
+        "SELECT f.*, p.guest_name, p.title as project_title "
+        "FROM feedbacks f "
+        "LEFT JOIN projects p ON f.project_id = p.id "
+        "WHERE f.project_id = ? ORDER BY f.created_at DESC",
         (project_id,)
     ).fetchall()
     conn.close()
@@ -394,10 +397,15 @@ def create_feedback(project_id: str, fb: FeedbackCreate):
 
 
 @app.get("/api/feedbacks")
-def list_all_feedbacks():
+def list_all_feedbacks(limit: int = 100):
+    """全フィードバック一覧（プロジェクト名・ゲスト名付き）"""
     conn = _get_db()
     rows = conn.execute(
-        "SELECT * FROM feedbacks ORDER BY created_at DESC"
+        "SELECT f.*, p.guest_name, p.title as project_title "
+        "FROM feedbacks f "
+        "LEFT JOIN projects p ON f.project_id = p.id "
+        "ORDER BY f.created_at DESC LIMIT ?",
+        (limit,)
     ).fetchall()
     conn.close()
     return [dict(r) for r in rows]

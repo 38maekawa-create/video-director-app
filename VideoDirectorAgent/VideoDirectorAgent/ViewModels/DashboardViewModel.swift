@@ -11,13 +11,13 @@ final class DashboardViewModel: ObservableObject {
     }
 
     @Published var selectedSection: Section = .quality
-    @Published var summary: DashboardSummary? = MockData.dashboardSummary
-    @Published var trend: [QualityTrendPoint] = MockData.qualityTrend
+    @Published var summary: DashboardSummary?
+    @Published var trend: [QualityTrendPoint] = []
     @Published var categoryScores: [CategoryScore] = MockData.categoryScores
     @Published var suggestions: [ImprovementSuggestion] = MockData.improvementSuggestions
-    @Published var alerts: [QualityAlert] = MockData.alerts
-    @Published var latestAudit: AuditReport? = MockData.latestAudit
-    @Published var auditHistory: [AuditReport] = MockData.auditHistory
+    @Published var alerts: [QualityAlert] = []
+    @Published var latestAudit: AuditReport?
+    @Published var auditHistory: [AuditReport] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
 
@@ -58,12 +58,8 @@ final class DashboardViewModel: ObservableObject {
             auditHistory = fetchedAuditHistory
             alerts = makeAlerts(summary: fetchedSummary, audit: fetchedAudit)
         } catch {
-            summary = MockData.dashboardSummary
-            trend = MockData.qualityTrend
-            latestAudit = MockData.latestAudit
-            auditHistory = MockData.auditHistory
-            alerts = MockData.alerts
-            errorMessage = "API取得に失敗したためモックデータを表示しています"
+            // 本番運用: API失敗時はエラーメッセージを表示、既存データを保持
+            errorMessage = "ダッシュボードAPIに接続できません: \(error.localizedDescription)"
         }
     }
 
@@ -94,6 +90,9 @@ final class DashboardViewModel: ObservableObject {
             QualityAlert(id: UUID(), level: "Medium", message: "滞留案件: \($0)")
         })
 
-        return items.isEmpty ? MockData.alerts : items
+        if items.isEmpty {
+            items.append(QualityAlert(id: UUID(), level: "Low", message: "現在アラートはありません"))
+        }
+        return items
     }
 }

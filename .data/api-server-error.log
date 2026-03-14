@@ -1222,3 +1222,19 @@ INFO:     Finished server process [201]
 INFO:     Started server process [3473]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/integrations/api_server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3473]
+INFO:     Started server process [15552]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/integrations/api_server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [15552]
+INFO:     Started server process [15567]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

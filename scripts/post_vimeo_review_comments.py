@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import argparse
+import email.utils
 import json
 import os
 import sys
@@ -83,6 +84,41 @@ def post_json(url: str, token: str, payload: dict, timeout: int = 20) -> tuple[i
         return resp.status, resp.read().decode('utf-8')
 
 
+def _parse_retry_after(value: str | None) -> float | None:
+    """Retry-Afterヘッダー（秒 or HTTP-date）を秒数に変換する"""
+    if not value:
+        return None
+    raw = value.strip()
+    if not raw:
+        return None
+    try:
+        return max(float(raw), 0.0)
+    except ValueError:
+        pass
+
+    try:
+        retry_dt = email.utils.parsedate_to_datetime(raw)
+        wait_sec = retry_dt.timestamp() - time.time()
+        return max(wait_sec, 0.0)
+    except (ValueError, TypeError, OverflowError):
+        return None
+
+
+def _is_retryable_http_status(status_code: int | None) -> bool:
+    return status_code in RETRYABLE_STATUS_CODES if status_code is not None else False
+
+
+def _build_retryable_http_result(status_code: int, response_text: str, retries: int) -> dict:
+    return {
+        'status': 'failed',
+        'httpStatus': status_code,
+        'response': response_text,
+        'retries': retries,
+        'errorCode': f'http_{status_code}',
+        'retryable': _is_retryable_http_status(status_code),
+    }
+
+
 def post_with_retry(
     url: str,
     token: str,
@@ -109,6 +145,7 @@ def post_with_retry(
                 'httpStatus': status,
                 'response': response_text,
                 'retries': attempt,
+                'retryable': _is_retryable_http_status(status),
             }
             # 成功 or リトライ不要なエラー
             if 200 <= status < 300 or status not in RETRYABLE_STATUS_CODES:
@@ -117,30 +154,24 @@ def post_with_retry(
 
         except urllib.error.HTTPError as exc:
             error_body = exc.read().decode('utf-8', errors='replace')
-            last_error = {
-                'status': 'failed',
-                'httpStatus': exc.code,
-                'response': error_body,
-                'retries': attempt,
-            }
+            last_error = _build_retryable_http_result(exc.code, error_body, attempt)
 
             if exc.code not in RETRYABLE_STATUS_CODES:
                 return last_error
 
             # 429の場合、Retry-Afterヘッダーを確認
             if exc.code == 429:
-                retry_after = exc.headers.get('Retry-After')
-                if retry_after:
-                    try:
-                        backoff = max(float(retry_after), backoff)
-                    except (ValueError, TypeError):
-                        pass
+                retry_after = _parse_retry_after(exc.headers.get('Retry-After'))
+                if retry_after is not None:
+                    backoff = max(retry_after, backoff)
 
         except urllib.error.URLError as exc:
             last_error = {
                 'status': 'failed',
                 'response': f'URLError: {exc}',
                 'retries': attempt,
+                'errorCode': 'network_error',
+                'retryable': True,
             }
 
         except TimeoutError:
@@ -148,6 +179,8 @@ def post_with_retry(
                 'status': 'failed',
                 'response': 'Request timed out',
                 'retries': attempt,
+                'errorCode': 'timeout',
+                'retryable': True,
             }
 
         # リトライ前にバックオフ待機（最後の試行の後は待機しない）
@@ -188,6 +221,29 @@ def load_token() -> str:
     )
 
 
+def _validate_comment(comment: dict) -> tuple[bool, list[str]]:
+    missing = []
+    if not comment.get('feedbackId'):
+        missing.append('feedbackId')
+    if not comment.get('convertedText'):
+        missing.append('convertedText')
+    if comment.get('timestampSeconds') is None:
+        missing.append('timestampSeconds')
+
+    if missing:
+        return False, missing
+
+    try:
+        timestamp_seconds = float(comment['timestampSeconds'])
+    except (ValueError, TypeError):
+        return False, ['timestampSeconds(invalid_number)']
+
+    if timestamp_seconds < 0:
+        return False, ['timestampSeconds(negative)']
+
+    return True, []
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description='Post converted review comments to Vimeo API')
     parser.add_argument('json_path', help='Path to relay request JSON file')
@@ -199,85 +255,115 @@ def main() -> int:
                         help=f'Interval between comments in seconds (default: {COMMENT_INTERVAL})')
     args = parser.parse_args()
 
-    relay_request = load_payload(Path(args.json_path))
-    body = relay_request.get('body') or {}
-    target_video_id = relay_request.get('targetVideoId') or body.get('targetVideoId')
-    comments = body.get('comments') or []
-    if not target_video_id:
-        raise ValueError('targetVideoId is required')
+    try:
+        if args.max_retries < 0:
+            raise ValueError('--max-retries must be >= 0')
+        if args.interval < 0:
+            raise ValueError('--interval must be >= 0')
 
-    endpoint = build_endpoint(target_video_id)
-    plan = []
-    for comment in comments:
-        if not comment.get('feedbackId') or not comment.get('convertedText'):
-            plan.append({'feedbackId': comment.get('feedbackId'), 'status': 'skipped', 'reason': 'missing fields'})
-            continue
-        payload = build_vimeo_payload(comment)
-        plan.append({
-            'feedbackId': comment['feedbackId'],
-            'endpoint': endpoint,
-            'payload': payload,
-        })
+        relay_request = load_payload(Path(args.json_path))
+        body = relay_request.get('body') or {}
+        target_video_id = relay_request.get('targetVideoId') or body.get('targetVideoId')
+        comments = body.get('comments') or []
+        if not target_video_id:
+            raise ValueError('targetVideoId is required')
+        if not isinstance(comments, list):
+            raise ValueError('body.comments must be an array')
 
-    if args.dry_run:
-        dry_payload = {'targetVideoId': target_video_id, 'requests': plan}
-        save_output(args.output, dry_payload)
-        print(json.dumps(dry_payload, ensure_ascii=False, indent=2))
-        return 0
+        endpoint = build_endpoint(target_video_id)
+        plan = []
+        seen_feedback_ids = set()
+        for comment in comments:
+            valid, reasons = _validate_comment(comment)
+            feedback_id = comment.get('feedbackId')
+            if valid and feedback_id in seen_feedback_ids:
+                valid = False
+                reasons = ['duplicate feedbackId']
+            if not valid:
+                plan.append({
+                    'feedbackId': feedback_id,
+                    'status': 'skipped',
+                    'reason': ', '.join(reasons),
+                })
+                continue
 
-    token = load_token()
+            seen_feedback_ids.add(feedback_id)
+            payload = build_vimeo_payload(comment)
+            plan.append({
+                'feedbackId': feedback_id,
+                'endpoint': endpoint,
+                'payload': payload,
+            })
 
-    results = []
-    posted_count = 0
-    failed_count = 0
-    skipped_count = 0
+        if args.dry_run:
+            dry_payload = {'targetVideoId': target_video_id, 'requests': plan}
+            save_output(args.output, dry_payload)
+            print(json.dumps(dry_payload, ensure_ascii=False, indent=2))
+            return 0
 
-    for i, item in enumerate(plan):
-        if item.get('status') == 'skipped':
-            results.append(item)
-            skipped_count += 1
-            continue
+        token = load_token()
 
-        feedback_id = item['feedbackId']
-        print(f"  📤 投稿中 [{i+1}/{len(plan)}]: {feedback_id}", file=sys.stderr)
+        results = []
+        posted_count = 0
+        failed_count = 0
+        skipped_count = 0
+        retryable_failed_count = 0
 
-        result = post_with_retry(
-            item['endpoint'], token, item['payload'],
-            max_retries=args.max_retries,
-        )
-        result['feedbackId'] = feedback_id
+        for i, item in enumerate(plan):
+            if item.get('status') == 'skipped':
+                results.append(item)
+                skipped_count += 1
+                continue
 
-        if result['status'] == 'posted':
-            posted_count += 1
-            print(f"    ✅ 成功 (HTTP {result.get('httpStatus', '?')})", file=sys.stderr)
-        else:
-            failed_count += 1
-            print(f"    ❌ 失敗 (HTTP {result.get('httpStatus', '?')}): "
-                  f"{result.get('response', '')[:100]}", file=sys.stderr)
+            feedback_id = item['feedbackId']
+            print(f"  📤 投稿中 [{i+1}/{len(plan)}]: {feedback_id}", file=sys.stderr)
 
-        results.append(result)
+            result = post_with_retry(
+                item['endpoint'], token, item['payload'],
+                max_retries=args.max_retries,
+            )
+            result['feedbackId'] = feedback_id
 
-        # コメント間のインターバル（レート制限対策、最後の1件は不要）
-        if i < len(plan) - 1 and args.interval > 0:
-            time.sleep(args.interval)
+            if result['status'] == 'posted':
+                posted_count += 1
+                print(f"    ✅ 成功 (HTTP {result.get('httpStatus', '?')})", file=sys.stderr)
+            else:
+                failed_count += 1
+                if result.get('retryable'):
+                    retryable_failed_count += 1
+                print(f"    ❌ 失敗 (HTTP {result.get('httpStatus', '?')}): "
+                      f"{result.get('response', '')[:100]}", file=sys.stderr)
 
-    # サマリー出力
-    print(f"\n📊 投稿結果: {posted_count}件成功 / {failed_count}件失敗 / "
-          f"{skipped_count}件スキップ / 全{len(plan)}件", file=sys.stderr)
+            results.append(result)
 
-    result_payload = {
-        'targetVideoId': target_video_id,
-        'results': results,
-        'summary': {
-            'total': len(plan),
-            'posted': posted_count,
-            'failed': failed_count,
-            'skipped': skipped_count,
-        },
-    }
-    save_output(args.output, result_payload)
-    print(json.dumps(result_payload, ensure_ascii=False, indent=2))
-    return 1 if failed_count > 0 else 0
+            # コメント間のインターバル（レート制限対策、最後の1件は不要）
+            if i < len(plan) - 1 and args.interval > 0:
+                time.sleep(args.interval)
+
+        # サマリー出力
+        print(f"\n📊 投稿結果: {posted_count}件成功 / {failed_count}件失敗 / "
+              f"{skipped_count}件スキップ / 全{len(plan)}件", file=sys.stderr)
+
+        result_payload = {
+            'targetVideoId': target_video_id,
+            'results': results,
+            'summary': {
+                'total': len(plan),
+                'posted': posted_count,
+                'failed': failed_count,
+                'skipped': skipped_count,
+                'retryable_failed': retryable_failed_count,
+                'permanent_failed': max(failed_count - retryable_failed_count, 0),
+            },
+        }
+        save_output(args.output, result_payload)
+        print(json.dumps(result_payload, ensure_ascii=False, indent=2))
+        return 1 if failed_count > 0 else 0
+    except Exception as exc:
+        error_payload = {'status': 'error', 'error': str(exc)}
+        save_output(args.output, error_payload)
+        print(json.dumps(error_payload, ensure_ascii=False), file=sys.stderr)
+        return 1
 
 
 if __name__ == '__main__':

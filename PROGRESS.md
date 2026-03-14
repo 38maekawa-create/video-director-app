@@ -1,10 +1,10 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-14 (実用化3機能実装: FB学習ループ・スプシマッチング改善・Vimeo API実投稿。310テストPASS)
+2026-03-14 (Phase5実運用チューニング: FBエラーハンドリング強化。323テストPASS)
 
 ## 現在の作業状態
-**実用化フェーズ** — FB学習ループ、スプシマッチング精度改善、Vimeo API実投稿の3機能を追加。310テスト全パス。
+**実用化フェーズ** — FB学習ループ、スプシマッチング精度改善、Vimeo API実投稿に加え、Phase5実運用チューニングとしてFBエラーハンドリングを強化。323テスト全パス。
 
 ### 実用化3機能実装（2026-03-14 完了）
 
@@ -322,9 +322,20 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 - `curl http://localhost:8210/api/health` → 接続失敗（ポート8210未待受）
 - `launchctl bootstrap gui/501 .../com.maekawa.video-direction-api.plist` を試行したが `Input/output error` で起動不可
 
+### Phase5実運用チューニング: FBエラーハンドリング強化（2026-03-14 完了）
+- 対象: `scripts/post_vimeo_review_comments.py`
+- `body.comments` の厳密検証を追加（`feedbackId` / `convertedText` / `timestampSeconds` 必須、負値・不正数値をスキップ）
+- 同一リクエスト内の `feedbackId` 重複を検知してスキップ（誤上書き・追跡不能化を防止）
+- 失敗結果に `errorCode` と `retryable` を付与し、再送可能エラーの切り分けを明示
+- 429 `Retry-After` のHTTP-date形式を解釈可能に拡張（秒数指定に加えて日時指定にも対応）
+- CLI引数バリデーション追加（`--max-retries >= 0`, `--interval >= 0`）
+- 例外時のJSONエラー出力を追加（スタックトレース依存を回避）
+- サマリーに `retryable_failed` / `permanent_failed` を追加し、運用時の再送判断を簡易化
+- テスト追加: `tests/test_post_vimeo_review_comments.py`（Retry-After解析、重複/欠損コメント検証）
+- テスト結果: `venv/bin/pytest -q` → `323 passed, 5 warnings`
+
 ## 未完了の作業
 - Mac側 relay adapter の実投稿運用化（本番トークン / ログ運用 / 再送設計）
-- Vimeo API 実コメント投稿
 - 音声FBの実録音 / STT 結果をローカル永続ストレージから外部保存先へ拡張
 - 映像品質学習の本線実装
 

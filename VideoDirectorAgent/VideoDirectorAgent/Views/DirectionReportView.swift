@@ -2,16 +2,12 @@ import SwiftUI
 
 // MARK: - 画面2: ディレクションレポート詳細
 struct DirectionReportView: View {
-    var project: VideoProject?
+    let project: VideoProject
     @State private var selectedTab = 0
     @State private var expandedSections: Set<UUID> = []
     @State private var feedbacks: [FeedbackItem] = []
     @State private var isFeedbackLoading = false
     @State private var showVoiceFeedback = false
-
-    private var displayProject: VideoProject {
-        project ?? MockData.projects.first!
-    }
 
     private let tabTitles = ["概要", "ディレクション", "YouTube素材", "素材", "編集後", "FB・評価", "ナレッジ"]
 
@@ -30,7 +26,7 @@ struct DirectionReportView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .fullScreenCover(isPresented: $showVoiceFeedback) {
-            VoiceFeedbackView(projectId: displayProject.id)
+            VoiceFeedbackView(projectId: project.id)
         }
     }
 
@@ -39,11 +35,11 @@ struct DirectionReportView: View {
             ZStack(alignment: .bottomLeading) {
                 ZStack {
                     LinearGradient(
-                        colors: [displayProject.status.color.opacity(0.3), AppTheme.cardBackground],
+                        colors: [project.status.color.opacity(0.3), AppTheme.cardBackground],
                         startPoint: .topTrailing,
                         endPoint: .bottomLeading
                     )
-                    Image(systemName: displayProject.thumbnailSymbol)
+                    Image(systemName: project.thumbnailSymbol)
                         .font(.system(size: 60))
                         .foregroundStyle(.white.opacity(0.1))
                 }
@@ -59,23 +55,23 @@ struct DirectionReportView: View {
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                Text(displayProject.guestName)
+                Text(project.guestName)
                     .font(AppTheme.heroFont(30))
                     .foregroundStyle(.white)
 
-                Text(displayProject.title)
+                Text(project.title)
                     .font(AppTheme.titleFont(20))
                     .foregroundStyle(AppTheme.textSecondary)
                     .tracking(1)
 
                 HStack(spacing: 16) {
-                    if let age = displayProject.guestAge {
+                    if let age = project.guestAge {
                         Label("\(age)歳", systemImage: "person.fill")
                     }
-                    if let occupation = displayProject.guestOccupation {
+                    if let occupation = project.guestOccupation {
                         Label(occupation, systemImage: "briefcase.fill")
                     }
-                    Label(displayProject.shootDate, systemImage: "calendar")
+                    Label(project.shootDate, systemImage: "calendar")
                 }
                 .font(.caption)
                 .foregroundStyle(AppTheme.textMuted)
@@ -100,7 +96,7 @@ struct DirectionReportView: View {
                         )
                     }
 
-                    if let score = displayProject.qualityScore {
+                    if let score = project.qualityScore {
                         Spacer()
                         VStack(spacing: 2) {
                             Text("\(score)")
@@ -154,7 +150,7 @@ struct DirectionReportView: View {
             case 1:
                 directionReportSection
             case 2:
-                YouTubeAssetsView(projectId: displayProject.id)
+                YouTubeAssetsView(projectId: project.id)
             case 3:
                 sourceVideoSection
             case 4:
@@ -225,20 +221,20 @@ struct DirectionReportView: View {
                 title: "プロジェクト概要",
                 icon: "doc.text.magnifyingglass",
                 items: [
-                    "ゲスト: \(displayProject.guestName)",
-                    displayProject.guestAge.map { "年齢: \($0)歳" } ?? "年齢: 未設定",
-                    displayProject.guestOccupation.map { "職業: \($0)" } ?? "職業: 未設定",
-                    "撮影日: \(displayProject.shootDate)",
-                    "状態: \(displayProject.status.label)",
-                    "品質スコア: \(displayProject.qualityScore.map(String.init) ?? "未算出")"
+                    "ゲスト: \(project.guestName)",
+                    project.guestAge.map { "年齢: \($0)歳" } ?? "年齢: 未設定",
+                    project.guestOccupation.map { "職業: \($0)" } ?? "職業: 未設定",
+                    "撮影日: \(project.shootDate)",
+                    "状態: \(project.status.label)",
+                    "品質スコア: \(project.qualityScore.map(String.init) ?? "未算出")"
                 ]
             )
             overviewCard(
                 title: "進行サマリー",
                 icon: "chart.bar.xaxis",
                 items: [
-                    "未レビュー: \(displayProject.unreviewedCount)件",
-                    "未送信FB: \(displayProject.hasUnsentFeedback ? "あり" : "なし")"
+                    "未レビュー: \(project.unreviewedCount)件",
+                    "未送信FB: \(project.hasUnsentFeedback ? "あり" : "なし")"
                 ]
             )
             pdcaCard
@@ -247,7 +243,7 @@ struct DirectionReportView: View {
 
     private var directionReportSection: some View {
         Group {
-            if let urlString = displayProject.directionReportURL,
+            if let urlString = project.directionReportURL,
                let url = URL(string: urlString) {
                 WebViewRepresentable(url: url)
                     .frame(minHeight: 600)
@@ -268,11 +264,11 @@ struct DirectionReportView: View {
                 title: "撮影素材",
                 icon: "video.badge.waveform",
                 items: [
-                    "ゲスト: \(displayProject.guestName)",
-                    "撮影日: \(displayProject.shootDate)"
+                    "ゲスト: \(project.guestName)",
+                    "撮影日: \(project.shootDate)"
                 ]
             )
-            if let url = displayProject.sourceVideoURL,
+            if let url = project.sourceVideoURL,
                !url.isEmpty,
                let destination = URL(string: url) {
                 Link(destination: destination) {
@@ -300,7 +296,7 @@ struct DirectionReportView: View {
 
     private var editedVideoSection: some View {
         VStack(spacing: 12) {
-            if let url = displayProject.editedVideoURL,
+            if let url = project.editedVideoURL,
                !url.isEmpty,
                let destination = URL(string: url) {
                 overviewCard(
@@ -377,14 +373,14 @@ struct DirectionReportView: View {
                 }
             }
         }
-        .task(id: displayProject.id) {
+        .task(id: project.id) {
             await loadFeedbacks()
         }
     }
 
     private var knowledgeDetailSection: some View {
         VStack(spacing: 12) {
-            if let knowledge = displayProject.knowledge, !knowledge.isEmpty {
+            if let knowledge = project.knowledge, !knowledge.isEmpty {
                 overviewCard(
                     title: "ナレッジハイライト",
                     icon: "lightbulb.fill",
@@ -444,7 +440,7 @@ struct DirectionReportView: View {
 
             HStack(spacing: 12) {
                 pdcaStep("D", "ディレクション", completed: true)
-                pdcaStep("C", "編集", completed: displayProject.editedVideoURL != nil)
+                pdcaStep("C", "編集", completed: project.editedVideoURL != nil)
                 pdcaStep("A", "評価", completed: !feedbacks.isEmpty)
                 pdcaStep("R", "ルール更新", completed: false)
             }
@@ -515,7 +511,7 @@ struct DirectionReportView: View {
         isFeedbackLoading = true
         defer { isFeedbackLoading = false }
         do {
-            feedbacks = try await APIClient.shared.fetchFeedbacks(projectId: displayProject.id)
+            feedbacks = try await APIClient.shared.fetchFeedbacks(projectId: project.id)
         } catch {
             feedbacks = []
         }

@@ -41,7 +41,7 @@ struct RootTabView: View {
                     }
                 case .report:
                     NavigationStack {
-                        DirectionReportView()
+                        ProjectListView(viewModel: ProjectListViewModel())
                     }
                 case .record:
                     // 録音タブ選択時はモーダルを表示

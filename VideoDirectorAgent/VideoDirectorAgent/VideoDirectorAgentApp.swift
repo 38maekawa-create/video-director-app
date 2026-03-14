@@ -3,7 +3,7 @@ import SwiftUI
 @main
 struct VideoDirectorAgentApp: App {
     init() {
-        print("🚀 API Base: http://localhost:8210")
+        print("API Base: \(APIClient.shared.baseURL.absoluteString)")
     }
 
     var body: some Scene {

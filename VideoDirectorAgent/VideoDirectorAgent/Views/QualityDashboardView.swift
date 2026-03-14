@@ -114,8 +114,7 @@ struct QualityDashboardView: View {
     }
 
     private var summaryCard: some View {
-        let summary = viewModel.summary ?? MockData.dashboardSummary
-        return VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Image(systemName: "square.stack.3d.up.fill")
                     .foregroundStyle(AppTheme.accent)
@@ -124,29 +123,34 @@ struct QualityDashboardView: View {
                     .fontWeight(.bold)
                     .foregroundStyle(.white)
             }
+            if let summary = viewModel.summary {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    metricCard("案件数", value: "\(summary.totalProjects)")
+                    metricCard("素材あり", value: "\(summary.withAssets)")
+                    metricCard("平均品質", value: summary.avgQualityScore.map { String(format: "%.1f", $0) } ?? "-")
+                    metricCard("未送信FB", value: "\(summary.unsentFeedbackCount)")
+                }
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                metricCard("案件数", value: "\(summary.totalProjects)")
-                metricCard("素材あり", value: "\(summary.withAssets)")
-                metricCard("平均品質", value: summary.avgQualityScore.map { String(format: "%.1f", $0) } ?? "-")
-                metricCard("未送信FB", value: "\(summary.unsentFeedbackCount)")
-            }
-
-            VStack(alignment: .leading, spacing: 8) {
-                Text("ステータス内訳")
-                    .font(.caption)
-                    .foregroundStyle(AppTheme.textMuted)
-                ForEach(summary.statusCounts.keys.sorted(), id: \.self) { key in
-                    HStack {
-                        Text(statusLabel(for: key))
-                            .font(.caption)
-                            .foregroundStyle(AppTheme.textSecondary)
-                        Spacer()
-                        Text("\(summary.statusCounts[key] ?? 0)")
-                            .font(.caption)
-                            .foregroundStyle(.white)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("ステータス内訳")
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.textMuted)
+                    ForEach(summary.statusCounts.keys.sorted(), id: \.self) { key in
+                        HStack {
+                            Text(statusLabel(for: key))
+                                .font(.caption)
+                                .foregroundStyle(AppTheme.textSecondary)
+                            Spacer()
+                            Text("\(summary.statusCounts[key] ?? 0)")
+                                .font(.caption)
+                                .foregroundStyle(.white)
+                        }
                     }
                 }
+            } else {
+                Text("サマリーデータ未取得")
+                    .font(.caption)
+                    .foregroundStyle(AppTheme.textMuted)
             }
         }
         .padding(16)

@@ -310,6 +310,18 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 - `send_vimeo_relay_package.py` / `post_vimeo_review_comments.py` に `--output` を追加し、結果JSONをファイル保存できるようにした
 - `localStorage` 永続化を追加し、案件状態 / FB履歴 / 同期状態を再読み込み後も保持できるようにした
 
+### API/Swift安定化（2026-03-14）
+- `src/video_direction/reporter/publisher.py` に `_extract_existing_tier_map()` を実装し、`_update_index()` で既存 `index.html` の tier 情報を保持して再生成するよう修正
+- `tests/test_publisher.py` の import エラー解消を含め、`venv/bin/pytest -q` 全件成功（`320 passed, 5 warnings`）
+- Swiftアプリの `MockData` 参照を実運用経路から除去（ViewModel/Viewsのモック初期値・モックフォールバック・ダミー変換ロジックを削除）
+- `APIClient` を `Info.plist` 設定駆動に変更（`APIBaseURL`, `APIActorName` を追加）、送信者名の直書き（`naoto`）を廃止
+- `DirectionReportView` を `project` 必須化し、タブ遷移時のモック依存を排除
+- `com.maekawa.video-direction-api` の launchd 状態確認:
+- `launchctl print gui/501/com.maekawa.video-direction-api` → service not found
+- `launchctl print system/com.maekawa.video-direction-api` → service not found
+- `curl http://localhost:8210/api/health` → 接続失敗（ポート8210未待受）
+- `launchctl bootstrap gui/501 .../com.maekawa.video-direction-api.plist` を試行したが `Input/output error` で起動不可
+
 ## 未完了の作業
 - Mac側 relay adapter の実投稿運用化（本番トークン / ログ運用 / 再送設計）
 - Vimeo API 実コメント投稿

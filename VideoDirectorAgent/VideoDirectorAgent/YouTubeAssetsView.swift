@@ -280,9 +280,8 @@ struct YouTubeAssetsView: View {
             applyLoadedAssets(loaded)
             bannerMessage = nil
         } catch {
-            let fallback = MockData.sampleYouTubeAssets
-            applyLoadedAssets(fallback)
-            bannerMessage = "API未接続のためサンプル素材を表示中"
+            assets = nil
+            bannerMessage = "YouTube素材APIに接続できません: \(error.localizedDescription)"
         }
     }
 
@@ -318,8 +317,7 @@ struct YouTubeAssetsView: View {
         do {
             let latest = try await APIClient.shared.fetchYouTubeAssets(projectId: projectId)
             if let editedBy = latest.lastEditedBy,
-               editedBy != "naoto",
-               editedBy != "なおとさん",
+               editedBy != APIClient.shared.actorName,
                editedBy != lastKnownEditedBy {
                 applyLoadedAssets(latest)
                 showUpdateBanner = true
@@ -344,18 +342,14 @@ struct YouTubeAssetsView: View {
                 projectId: projectId,
                 index: selectedTitleIndex,
                 editedTitle: finalTitle.isEmpty ? nil : finalTitle,
-                by: "naoto"
+                by: APIClient.shared.actorName
             )
             self.assets?.selectedTitleIndex = selectedTitleIndex
             self.assets?.editedTitle = finalTitle.isEmpty ? nil : finalTitle
-            self.assets?.lastEditedBy = "naoto"
+            self.assets?.lastEditedBy = APIClient.shared.actorName
             bannerMessage = "タイトル案を保存しました"
         } catch {
-            bannerMessage = "タイトル保存に失敗しました"
-            if assets.projectId == MockData.sampleYouTubeAssets.projectId {
-                self.assets?.selectedTitleIndex = selectedTitleIndex
-                self.assets?.editedTitle = editedTitle
-            }
+            bannerMessage = "タイトル保存に失敗しました: \(error.localizedDescription)"
         }
     }
 
@@ -364,14 +358,16 @@ struct YouTubeAssetsView: View {
         defer { isSavingDescription = false }
 
         do {
-            try await APIClient.shared.updateDescription(projectId: projectId, edited: descriptionText, by: "naoto")
+            try await APIClient.shared.updateDescription(
+                projectId: projectId,
+                edited: descriptionText,
+                by: APIClient.shared.actorName
+            )
             self.assets?.descriptionEdited = descriptionText
-            self.assets?.lastEditedBy = "naoto"
+            self.assets?.lastEditedBy = APIClient.shared.actorName
             bannerMessage = "概要欄を保存しました"
         } catch {
-            self.assets?.descriptionEdited = descriptionText
-            self.assets?.lastEditedBy = "naoto"
-            bannerMessage = "API未接続のためローカル表示のみ更新しました"
+            bannerMessage = "概要欄保存に失敗しました: \(error.localizedDescription)"
         }
     }
 

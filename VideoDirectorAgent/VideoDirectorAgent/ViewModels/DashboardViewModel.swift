@@ -13,8 +13,8 @@ final class DashboardViewModel: ObservableObject {
     @Published var selectedSection: Section = .quality
     @Published var summary: DashboardSummary?
     @Published var trend: [QualityTrendPoint] = []
-    @Published var categoryScores: [CategoryScore] = MockData.categoryScores
-    @Published var suggestions: [ImprovementSuggestion] = MockData.improvementSuggestions
+    @Published var categoryScores: [CategoryScore] = []
+    @Published var suggestions: [ImprovementSuggestion] = []
     @Published var alerts: [QualityAlert] = []
     @Published var latestAudit: AuditReport?
     @Published var auditHistory: [AuditReport] = []

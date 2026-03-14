@@ -24,7 +24,7 @@ final class VoiceFeedbackViewModel: ObservableObject {
     @Published var sentMessage: String?
     @Published var recordingDuration: TimeInterval = 0
 
-    let markers = MockData.timelineMarkers
+    let markers: [TimelineMarker] = []
 
     private var recordingTimer: Timer?
     private var audioRecorder: AVAudioRecorder?
@@ -154,8 +154,8 @@ final class VoiceFeedbackViewModel: ObservableObject {
                 }
                 flowState = .readyToSend
             } catch {
-                applyMockConversion()
-                sentMessage = "変換APIに接続できなかったため簡易変換を表示しています"
+                flowState = .readyToConvert
+                sentMessage = "変換APIに接続できません: \(error.localizedDescription)"
             }
         }
     }
@@ -168,7 +168,7 @@ final class VoiceFeedbackViewModel: ObservableObject {
                 try await APIClient.shared.createFeedback(
                     projectId: projectId,
                     content: convertedText.isEmpty ? rawTranscript : convertedText,
-                    createdBy: "naoto",
+                    createdBy: APIClient.shared.actorName,
                     timestamp: timestamp,
                     feedbackType: "voice"
                 )
@@ -205,24 +205,4 @@ final class VoiceFeedbackViewModel: ObservableObject {
         }
     }
 
-    private func applyMockConversion() {
-        structuredItems = [
-            .init(
-                id: UUID(),
-                timestamp: "02:18",
-                element: "テロップ",
-                priority: .high,
-                note: "1カット1メッセージに整理し、文字量を約50%削減"
-            ),
-            .init(
-                id: UUID(),
-                timestamp: "02:18-02:40",
-                element: "BGM",
-                priority: .medium,
-                note: "ナレーション帯域を避けるEQ調整 + 全体-2dB"
-            )
-        ]
-        convertedText = "02:18付近はテロップ情報量を削減し、要点を1メッセージずつ提示してください。合わせて02:18-02:40のBGMレベルを2dB下げ、ナレーションの明瞭度を優先してください。"
-        flowState = .readyToSend
-    }
 }

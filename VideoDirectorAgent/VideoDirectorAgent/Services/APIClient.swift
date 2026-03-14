@@ -4,8 +4,8 @@ import Foundation
 final class APIClient: ObservableObject {
     static let shared = APIClient()
 
-    private let baseURL = URL(string: "http://mac-mini-m4.local:8210")!
-    private let fallbackURL = URL(string: "http://localhost:8210")!
+    let baseURL: URL
+    let actorName: String
 
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
@@ -19,7 +19,22 @@ final class APIClient: ObservableObject {
         return encoder
     }()
 
-    private init() {}
+    private init() {
+        guard
+            let value = Bundle.main.object(forInfoDictionaryKey: "APIBaseURL") as? String,
+            let url = URL(string: value)
+        else {
+            fatalError("Info.plist に APIBaseURL が設定されていません")
+        }
+        guard
+            let actor = Bundle.main.object(forInfoDictionaryKey: "APIActorName") as? String,
+            !actor.isEmpty
+        else {
+            fatalError("Info.plist に APIActorName が設定されていません")
+        }
+        baseURL = url
+        actorName = actor
+    }
 
     func fetchProjects() async throws -> [VideoProject] {
         try await request([VideoProject].self, path: "/api/projects")
@@ -116,11 +131,7 @@ final class APIClient: ObservableObject {
         path: String,
         method: String = "GET"
     ) async throws -> T {
-        do {
-            return try await performRequest(baseURL: baseURL, path: path, method: method)
-        } catch {
-            return try await performRequest(baseURL: fallbackURL, path: path, method: method)
-        }
+        try await performRequest(baseURL: baseURL, path: path, method: method)
     }
 
     private func request<T: Decodable, Body: Encodable>(
@@ -129,11 +140,7 @@ final class APIClient: ObservableObject {
         method: String,
         body: Body
     ) async throws -> T {
-        do {
-            return try await performRequest(baseURL: baseURL, path: path, method: method, body: body)
-        } catch {
-            return try await performRequest(baseURL: fallbackURL, path: path, method: method, body: body)
-        }
+        try await performRequest(baseURL: baseURL, path: path, method: method, body: body)
     }
 
     private func performRequest<T: Decodable>(

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 テロップ強調・色変え・画角変更のタイミング指示をタイムライン形式で生成する。
 LLM（Claude Sonnet）を使って文脈分析 → タイムライン形式の指示を生成。
+FB学習ループ: FeedbackLearnerのルールを自動反映してディレクション品質を向上させる。
 """
 
 import os
@@ -29,14 +30,23 @@ class DirectionTimeline:
     """演出ディレクション全体"""
     entries: list = field(default_factory=list)  # List[DirectionEntry]
     llm_analysis: str = ""  # LLMによる追加分析（あれば）
+    applied_rules: list = field(default_factory=list)  # 適用されたFB学習ルール
 
 
 def generate_directions(
     video_data: VideoData,
     classification: ClassificationResult,
     income_eval: IncomeEvaluation,
+    feedback_learner=None,
 ) -> DirectionTimeline:
-    """ルールベースで演出ディレクションを生成する"""
+    """ルールベースで演出ディレクションを生成する
+
+    Args:
+        video_data: 動画データ
+        classification: ゲスト分類結果
+        income_eval: 年収演出判断結果
+        feedback_learner: FeedbackLearnerインスタンス（FB学習ルール反映用、Noneなら無視）
+    """
     entries = []
 
     for highlight in video_data.highlights:
@@ -44,6 +54,14 @@ def generate_directions(
             highlight, classification, income_eval
         )
         entries.extend(highlight_entries)
+
+    # FB学習ルールの適用
+    applied_rules = []
+    if feedback_learner is not None:
+        fb_entries, applied_rules = _apply_learned_rules(
+            video_data, classification, income_eval, feedback_learner
+        )
+        entries.extend(fb_entries)
 
     # タイムスタンプ順にソート
     entries.sort(key=lambda e: _timestamp_to_seconds(e.timestamp))
@@ -55,7 +73,7 @@ def generate_directions(
     except Exception:
         pass
 
-    return DirectionTimeline(entries=entries, llm_analysis=llm_analysis)
+    return DirectionTimeline(entries=entries, llm_analysis=llm_analysis, applied_rules=applied_rules)
 
 
 def _generate_for_highlight(
@@ -173,6 +191,119 @@ def _timestamp_to_seconds(ts: str) -> int:
     elif len(parts) == 3:
         return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
     return 0
+
+
+def _apply_learned_rules(
+    video_data: VideoData,
+    classification: ClassificationResult,
+    income_eval: IncomeEvaluation,
+    feedback_learner,
+) -> tuple[list[DirectionEntry], list]:
+    """FB学習ルールに基づく追加ディレクションを生成
+
+    FeedbackLearnerから有効なルールを取得し、各ハイライトシーンに
+    該当するルールがあれば追加の演出指示を生成する。
+
+    Returns:
+        (追加エントリ一覧, 適用されたルールのリスト)
+    """
+    entries = []
+    applied_rules = []
+
+    active_rules = feedback_learner.get_active_rules()
+    if not active_rules:
+        return entries, applied_rules
+
+    # カテゴリ → ディレクションタイプのマッピング
+    category_to_direction = {
+        "cutting": "composite",
+        "color": "color",
+        "telop": "telop",
+        "bgm": "composite",
+        "camera": "camera",
+        "composition": "camera",
+        "tempo": "composite",
+        "general": "composite",
+    }
+
+    for rule in active_rules:
+        rule_applied = False
+        direction_type = category_to_direction.get(rule.category, "composite")
+
+        for highlight in video_data.highlights:
+            # ルールのカテゴリとハイライトの内容を照合
+            if _rule_matches_highlight(rule, highlight):
+                entries.append(DirectionEntry(
+                    timestamp=highlight.timestamp,
+                    direction_type=direction_type,
+                    instruction=f"[FB学習] {rule.rule_text}",
+                    reason=f"FB学習ルール適用（{rule.id}、優先度: {rule.priority}）",
+                    priority=rule.priority,
+                ))
+                rule_applied = True
+
+        if rule_applied:
+            applied_rules.append({
+                "rule_id": rule.id,
+                "rule_text": rule.rule_text,
+                "category": rule.category,
+                "priority": rule.priority,
+            })
+            # ルールの適用回数を更新
+            rule.applied_count += 1
+
+    # ルール適用回数を永続化
+    if applied_rules:
+        try:
+            feedback_learner._save()
+        except Exception:
+            pass
+
+    return entries, applied_rules
+
+
+def _rule_matches_highlight(rule, highlight) -> bool:
+    """ルールがハイライトシーンに適用可能か判定
+
+    ルールのカテゴリとハイライトのカテゴリ・テキスト内容を照合する。
+    """
+    rule_text_lower = rule.rule_text.lower()
+    highlight_text_lower = (highlight.text or "").lower()
+    highlight_category_lower = (highlight.category or "").lower()
+
+    # ルールのカテゴリに関連するキーワードがハイライトに含まれるか
+    category_keywords = {
+        "cutting": ["カット", "切り", "繋ぎ", "トランジション"],
+        "color": ["色", "カラー", "明る", "暗"],
+        "telop": ["テロップ", "字幕", "テキスト", "文字"],
+        "bgm": ["bgm", "音楽", "se", "効果音"],
+        "camera": ["カメラ", "アングル", "画角", "ズーム"],
+        "composition": ["構図", "レイアウト", "配置"],
+        "tempo": ["テンポ", "リズム", "スピード", "間"],
+    }
+
+    # カテゴリマッチ: ルールのカテゴリに関連するハイライトカテゴリ
+    category_map = {
+        "cutting": ["パンチライン", "実績数字"],
+        "color": ["実績数字", "パンチライン"],
+        "telop": ["実績数字", "パンチライン", "属性紹介"],
+        "bgm": ["メッセージ", "TEKO価値"],
+        "camera": ["パンチライン", "TEKO価値", "メッセージ"],
+        "composition": ["属性紹介", "TEKO価値"],
+        "tempo": ["パンチライン", "メッセージ"],
+    }
+
+    matching_categories = category_map.get(rule.category, [])
+    if highlight.category in matching_categories:
+        return True
+
+    # テキストベースのマッチング: ルールテキスト内のキーワードがハイライトに含まれるか
+    keywords = category_keywords.get(rule.category, [])
+    for kw in keywords:
+        if kw.lower() in highlight_text_lower:
+            return True
+
+    return False
 
 
 def _llm_analyze(

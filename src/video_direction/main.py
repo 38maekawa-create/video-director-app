@@ -47,6 +47,7 @@ from .knowledge.loader import KnowledgeLoader
 from .reporter.html_generator import generate_direction_html
 from .reporter.publisher import publish_direction_page
 from .integrations.sheets_manager import SheetsManager
+from .tracker.feedback_learner import FeedbackLearner
 
 
 def process_single_file(
@@ -91,8 +92,20 @@ def process_single_file(
     target_result = label_targets(video_data)
     print(f"  🎯 ターゲット: 1層{target_result.balance.tier1_count}件 / 2層{target_result.balance.tier2_count}件 / 両層{target_result.balance.both_count}件")
 
-    direction_timeline = generate_directions(video_data, classification, income_eval)
-    print(f"  🎬 演出指示: {len(direction_timeline.entries)}件")
+    # FB学習ルールの読み込みと適用
+    feedback_learner = None
+    try:
+        feedback_learner = FeedbackLearner()
+    except Exception:
+        pass
+
+    direction_timeline = generate_directions(
+        video_data, classification, income_eval,
+        feedback_learner=feedback_learner,
+    )
+    fb_rule_count = len(direction_timeline.applied_rules)
+    fb_suffix = f"（うちFB学習: {fb_rule_count}ルール適用）" if fb_rule_count > 0 else ""
+    print(f"  🎬 演出指示: {len(direction_timeline.entries)}件{fb_suffix}")
 
     # Step 2.5: YouTube素材生成（サムネ指示書・タイトル案・概要欄）
     thumbnail_design = None

@@ -1190,3 +1190,19 @@ INFO:     Finished server process [91428]
 INFO:     Started server process [91600]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/integrations/sheets_manager.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [91600]
+INFO:     Started server process [92740]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'scripts/post_vimeo_review_comments.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [92740]
+INFO:     Started server process [93262]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

@@ -97,36 +97,130 @@ class SheetsManager:
         ]
 
 
+def _normalize_name(name: str) -> str:
+    """名前を正規化（敬称除去・全角半角統一・括弧内情報除去・記号除去）"""
+    if not name:
+        return ""
+    # 括弧内の情報を除去（例: "ゲスト氏（里芋、トーマス）" → "ゲスト氏"）
+    name = re.sub(r"[（(].+?[）)]", "", name)
+    # 敬称を除去（末尾の「さん」「氏」「くん」「ちゃん」）
+    name = re.sub(r"(さん|氏|くん|ちゃん|様)$", "", name.strip())
+    # 全角英数を半角に
+    name = name.translate(str.maketrans(
+        "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ０１２３４５６７８９",
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+    ))
+    # 記号を除去（ハイフン・アンダースコア・スペース）
+    name = re.sub(r"[_\-\s・：:]+", "", name)
+    return name.strip().lower()
+
+
+def _extract_names_from_title(title: str) -> list[str]:
+    """スプシタイトルからゲスト名の候補を複数抽出する
+
+    B列のフォーマット例:
+    - "INT001_ブンさん"
+    - "53.izuさん"
+    - "コテツさん：31歳製造業..."
+    - "ゲスト氏（里芋、トーマス）さん：..."
+    - "ハオさん：30代前半..."
+    """
+    names = []
+    title_clean = title.strip()
+
+    # INT番号形式: "INT001_ブンさん"
+    match = re.search(r"INT\d+[_\s]+(.+?)(?:さん|氏)?(?:：|:|$)", title_clean)
+    if match:
+        names.append(match.group(1).strip())
+
+    # 番号+名前形式: "53.izuさん", "53_izuさん"
+    num_match = re.search(r"^\d+[._]\s*(.+?)(?:さん|氏)?(?:：|:|$)", title_clean)
+    if num_match:
+        names.append(num_match.group(1).strip())
+
+    # 先頭の名前抽出（括弧・敬称・属性の前まで）
+    head_match = re.match(r"(?:INT\d+[_\s]+|\d+[._]\s*)?(.+?)(?:さん|氏)?(?:：|:|[\d０-９])", title_clean)
+    if head_match:
+        candidate = head_match.group(1).strip()
+        if candidate and len(candidate) >= 1:
+            names.append(candidate)
+
+    # 括弧内の別名も候補に追加（例: "ゲスト氏（里芋、トーマス）"）
+    paren_match = re.search(r"[（(](.+?)[）)]", title_clean)
+    if paren_match:
+        paren_content = paren_match.group(1)
+        # カンマ・読点で分割して各名前を候補に
+        for alias in re.split(r"[、,]", paren_content):
+            alias = alias.strip()
+            if alias and len(alias) >= 2:
+                names.append(alias)
+
+    return names
+
+
 def _match_guest_name(guest_name: str, sheet_title: str) -> bool:
     """ゲスト名がスプシのタイトル（B列）とマッチするか判定
 
     B列の例: "INT001_ブンさん", "INT015_Izuさん"
     guest_name: "Izu", "ブン", etc.
+
+    マッチング戦略:
+    1. 正規化後の完全一致
+    2. スプシタイトルから複数名前候補を抽出 → 完全一致
+    3. 正規化後の部分一致（2文字以上）
+    4. ひらがな/カタカナ変換後のマッチ
     """
     if not sheet_title or not guest_name:
         return False
 
-    # 「さん」を除去して比較
-    name_clean = guest_name.rstrip("さん").strip()
-    title_clean = sheet_title.strip()
+    name_normalized = _normalize_name(guest_name)
+    if not name_normalized:
+        return False
 
-    # INT番号の後のゲスト名を抽出
-    match = re.search(r"INT\d+[_\s]+(.+?)(?:さん)?$", title_clean)
-    if match:
-        title_name = match.group(1).strip()
-        if name_clean.lower() == title_name.lower():
+    # スプシタイトルから名前候補を抽出
+    title_names = _extract_names_from_title(sheet_title)
+
+    # 戦略1: 正規化後の完全一致
+    for title_name in title_names:
+        if _normalize_name(title_name) == name_normalized:
             return True
 
-    # 番号+名前形式（例: "53.izuさん"）
-    num_match = re.search(r"\d+[._]\s*(.+?)(?:さん)?$", title_clean)
-    if num_match:
-        title_name = num_match.group(1).strip()
-        if name_clean.lower() == title_name.lower():
+    # 戦略2: ひらがな↔カタカナ変換後の完全一致
+    name_hiragana = _to_hiragana(name_normalized)
+    name_katakana = _to_katakana(name_normalized)
+    for title_name in title_names:
+        tn = _normalize_name(title_name)
+        tn_hira = _to_hiragana(tn)
+        tn_kata = _to_katakana(tn)
+        if name_hiragana and (name_hiragana == tn_hira or name_hiragana == tn_kata):
+            return True
+        if name_katakana and (name_katakana == tn_hira or name_katakana == tn_kata):
             return True
 
-    # 部分一致（ゲスト名がタイトルに含まれる、大文字小文字無視）
-    # 1文字の場合は誤マッチ防止のためスキップ
-    if name_clean and len(name_clean) >= 2 and name_clean.lower() in title_clean.lower():
+    # 戦略3: 正規化後の部分一致（タイトル全体に対して、2文字以上）
+    title_normalized = _normalize_name(sheet_title)
+    if len(name_normalized) >= 2 and name_normalized in title_normalized:
+        return True
+
+    # ひらがな/カタカナ変換後の部分一致
+    title_hira = _to_hiragana(title_normalized)
+    if len(name_hiragana) >= 2 and name_hiragana in title_hira:
         return True
 
     return False
+
+
+def _to_hiragana(text: str) -> str:
+    """カタカナをひらがなに変換"""
+    return "".join(
+        chr(ord(c) - 0x60) if "\u30A1" <= c <= "\u30F6" else c
+        for c in text
+    )
+
+
+def _to_katakana(text: str) -> str:
+    """ひらがなをカタカナに変換"""
+    return "".join(
+        chr(ord(c) + 0x60) if "\u3041" <= c <= "\u3096" else c
+        for c in text
+    )

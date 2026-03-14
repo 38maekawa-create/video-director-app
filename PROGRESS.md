@@ -1,10 +1,36 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-13 04:30 (Phase 3-4 全機能Python実装完了・API 30+エンドポイント稼働・270テストPASS)
+2026-03-14 (実用化3機能実装: FB学習ループ・スプシマッチング改善・Vimeo API実投稿。310テストPASS)
 
 ## 現在の作業状態
-**全28機能のPython実装完了** — Phase 1-4全機能のバックエンド実装が完了。APIサーバー30+エンドポイント稼働中。Swift側はCodex CLIが新画面実装中。
+**実用化フェーズ** — FB学習ループ、スプシマッチング精度改善、Vimeo API実投稿の3機能を追加。310テスト全パス。
+
+### 実用化3機能実装（2026-03-14 完了）
+
+#### 1. FB学習ループ実装
+- `feedback_learner.py` の学習ルールを `direction_generator.py` に自動反映する仕組みを構築
+- `generate_directions()` に `feedback_learner` 引数を追加（後方互換: Noneならスキップ）
+- `_apply_learned_rules()`: 有効ルールを取得し、各ハイライトシーンとのカテゴリ/キーワード照合でマッチしたルールを追加ディレクションとして生成
+- `_rule_matches_highlight()`: カテゴリマッピング + テキストベースの2段階マッチング
+- `DirectionTimeline` に `applied_rules` フィールドを追加（適用されたルールの追跡）
+- `main.py` で `FeedbackLearner` を自動読み込み・パイプラインに統合
+
+#### 2. スプシマッチング精度改善（50% → 目標83%+）
+- `_normalize_name()`: unicodedata.normalize("NFKC")、括弧除去、敬称除去（さん/氏/くん/ちゃん/様/先生）、ゲスト/撮影プレフィクス除去
+- `_extract_names_from_title()`: INT番号形式、番号+名前形式、撮影日形式、括弧内別名、先頭セグメントの5パターンからの名前候補抽出
+- `_match_guest_name()`: 正規化完全一致 → ひらがな/カタカナ変換一致 → 候補名部分一致 → タイトル全体部分一致 → SequenceMatcher類似度の5段階マッチング
+- `_is_partial_match()`: 日本語2文字/英語3文字の最小長ガード + SequenceMatcherによるスペル揺れ対応（0.82閾値）
+- `_to_hiragana()` / `_to_katakana()`: ひらがな↔カタカナ相互変換
+
+#### 3. Vimeo API実投稿（リトライ・エラーハンドリング強化）
+- `post_with_retry()`: 指数バックオフ（初期1秒、倍率2.0）、最大3回リトライ
+- 429（レート制限）対応: Retry-Afterヘッダー尊重
+- リトライ対象ステータス: 429, 500, 502, 503, 504
+- `load_token()`: 環境変数 → `~/.config/maekawa/api-keys.env` フォールバック
+- コメント間インターバル（デフォルト0.5秒、--intervalで調整可能）
+- 投稿結果サマリー（posted/failed/skipped件数）
+- `--max-retries` / `--interval` CLIオプション追加
 
 ### Phase 3-4 全機能実装（2026-03-13 Python側完了）
 

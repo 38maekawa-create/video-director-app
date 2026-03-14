@@ -1206,3 +1206,11 @@ INFO:     Finished server process [92740]
 INFO:     Started server process [93262]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/tracker/feedback_learner.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [93262]
+INFO:     Started server process [201]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

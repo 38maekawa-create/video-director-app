@@ -1,5 +1,7 @@
 """人間フィードバック学習: FB蓄積→ディレクションルール自動反映"""
 import json
+import re
+from difflib import SequenceMatcher
 from pathlib import Path
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
@@ -140,18 +142,35 @@ class FeedbackLearner:
         return "general"
 
     def _is_similar(self, content: str, pattern: str) -> bool:
-        """簡易類似度チェック（キーワード重複率）"""
-        content_words = set(content.split())
-        pattern_words = set(pattern.split())
-        if not pattern_words:
+        """類似度チェック（日本語文を考慮したトークン + 文字列類似度）"""
+        content_norm = _normalize_text(content)
+        pattern_norm = _normalize_text(pattern)
+        if not content_norm or not pattern_norm:
             return False
-        overlap = len(content_words & pattern_words)
-        return overlap / len(pattern_words) > 0.3
+        if content_norm == pattern_norm:
+            return True
+
+        # 長文の包含は同一意図として扱う
+        if len(content_norm) >= 8 and (
+            content_norm in pattern_norm or pattern_norm in content_norm
+        ):
+            return True
+
+        content_tokens = _tokenize_for_similarity(content_norm)
+        pattern_tokens = _tokenize_for_similarity(pattern_norm)
+        if content_tokens and pattern_tokens:
+            overlap = len(content_tokens & pattern_tokens)
+            jaccard = overlap / max(1, len(content_tokens | pattern_tokens))
+            if jaccard >= 0.35:
+                return True
+
+        ratio = SequenceMatcher(None, content_norm, pattern_norm).ratio()
+        return ratio >= 0.72
 
     def _extract_pattern(self, content: str) -> str:
         """FBからパターン（要点）を抽出"""
         # 長文の場合は最初の100文字
-        return content[:100].strip()
+        return _normalize_text(content)[:100].strip()
 
     def _generate_rules(self):
         """高確信度パターンからルールを自動生成"""
@@ -198,3 +217,24 @@ class FeedbackLearner:
             "category_distribution": dict(category_counts),
             "top_categories": category_counts.most_common(3),
         }
+
+
+def _normalize_text(text: str) -> str:
+    if not text:
+        return ""
+    text = text.strip().lower()
+    text = re.sub(r"\s+", " ", text)
+    # 文意に不要な記号を除去
+    text = re.sub(r"[「」『』【】\[\]（）()、。.,!！?？:：;；/\\\-]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _tokenize_for_similarity(text: str) -> set[str]:
+    if not text:
+        return set()
+    tokens = {w for w in text.split(" ") if len(w) >= 2}
+    dense = text.replace(" ", "")
+    # 日本語文で空白がないケース向けに2-gramを追加
+    if len(dense) >= 2:
+        tokens.update(dense[i:i + 2] for i in range(len(dense) - 1))
+    return tokens

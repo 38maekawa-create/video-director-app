@@ -348,7 +348,7 @@ def list_feedbacks(project_id: str):
 @app.post("/api/projects/{project_id}/feedbacks")
 def create_feedback(project_id: str, fb: FeedbackCreate):
     conn = _get_db()
-    conn.execute(
+    cursor = conn.execute(
         """INSERT INTO feedbacks (project_id, timestamp_mark, raw_voice_text,
            converted_text, category, priority, created_by)
            VALUES (?, ?, ?, ?, ?, ?, ?)""",
@@ -363,7 +363,34 @@ def create_feedback(project_id: str, fb: FeedbackCreate):
     )
     conn.commit()
     conn.close()
-    return {"status": "created", "project_id": project_id}
+
+    # FB学習ループ: 保存されたFBを学習データとして取り込む
+    learned = False
+    learned_patterns = 0
+    content = (fb.converted_text or fb.raw_voice_text or "").strip()
+    if content:
+        learner = _get_feedback_learner()
+        if learner:
+            try:
+                feedback_id = f"fb_{cursor.lastrowid}" if cursor.lastrowid else f"fb_{project_id}"
+                patterns = learner.ingest_feedback(
+                    feedback_id=feedback_id,
+                    content=content,
+                    category=fb.category,
+                    created_by=fb.created_by,
+                )
+                learned = True
+                learned_patterns = len(patterns)
+            except Exception:
+                # 学習はベストエフォート。FB保存自体は成功扱いにする
+                pass
+
+    return {
+        "status": "created",
+        "project_id": project_id,
+        "learning_applied": learned,
+        "learned_patterns": learned_patterns,
+    }
 
 
 @app.get("/api/feedbacks")

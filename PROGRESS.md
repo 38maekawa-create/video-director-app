@@ -1,10 +1,10 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-14 (Phase5実運用チューニング: FBエラーハンドリング追加強化 + Vimeo連携テスト拡充。330テストPASS)
+2026-03-14 (Phase5実運用チューニング: Mac側relay adapter実投稿運用化 + Vimeo連携テスト拡充。334テストPASS)
 
 ## 現在の作業状態
-**実用化フェーズ** — FB学習ループ、スプシマッチング精度改善、Vimeo API実投稿に加え、Phase5実運用チューニングとしてFBエラーハンドリングを追加強化。Vimeo relay連携テストを拡充。330テスト全パス。
+**実用化フェーズ** — FB学習ループ、スプシマッチング精度改善、Vimeo API実投稿に加え、Phase5実運用チューニングとしてMac側relay adapterの本番運用要素（トークン管理/ログ運用/再送キュー）を実装。334テスト全パス。
 
 ### 実用化3機能実装（2026-03-14 完了）
 
@@ -340,16 +340,27 @@ Phase 2の全9機能を実装完了。250テスト全パス。
 - 既存テスト拡張: `tests/test_post_vimeo_review_comments.py`（非objectコメント、非有限数値の検証）
 - テスト結果: `venv/bin/pytest -q` → `330 passed, 5 warnings`
 
+### Phase5実運用チューニング: Mac側 relay adapter 実投稿運用化（2026-03-14 完了）
+- 対象: `scripts/mock_vimeo_relay_server.py`
+- relay認証トークンの読込を強化（環境変数 `VIMEO_RELAY_TOKEN` → `~/.config/maekawa/api-keys.env` フォールバック）
+- `dry_run/post` モードでトークン未設定時は起動時エラー化し、本番運用時のデフォルトトークン混入を防止
+- ログ保存を日付階層化（`runs/relay_logs/YYYYMMDD/`）し、`requestId` 付きログファイルを自動生成
+- 投稿失敗のうち `retryable=true` のみを再送キューとして保存（`runs/relay_logs/retry_queue/YYYYMMDD/`）
+- APIレスポンスに `requestId` / `logFile` / `retryQueueFile` / `retryQueueCount` を追加し、運用追跡と再送判断を容易化
+- Vimeo relay連携テスト拡充:
+  - `tests/test_vimeo_relay_integration.py` にトークンフォールバック・再送キュー抽出・ログ保存テストを追加
+- テスト結果: `venv/bin/pytest -q` → `334 passed, 5 warnings`
+
 ## 未完了の作業
-- Mac側 relay adapter の実投稿運用化（本番トークン / ログ運用 / 再送設計）
 - 音声FBの実録音 / STT 結果をローカル永続ストレージから外部保存先へ拡張
 - 映像品質学習の本線実装
 
 ## 次にやるべき作業（優先順位付き）
-1. **XcodeにApple ID登録** — Xcode > Settings > Accounts でApple ID追加（なおとさんの操作が必要）
-2. **iPhone実機ビルド+テスト** — Apple ID登録後、自動署名で実機ビルド→動作確認
-3. **TestFlight配布** — Archive → App Store Connect → TestFlight配布
-4. **スプシマッチング精度改善** — 15/30 → 目標25/30以上
+1. **音声FB/STTの外部保存拡張** — ローカル`localStorage`以外（API/DB/クラウド）への保存先実装
+2. **映像品質学習の本線実装** — FB学習ループの運用データ投入と評価ルール精度改善
+3. **XcodeにApple ID登録** — Xcode > Settings > Accounts でApple ID追加（なおとさんの操作が必要）
+4. **iPhone実機ビルド+テスト** — Apple ID登録後、自動署名で実機ビルド→動作確認
+5. **TestFlight配布** — Archive → App Store Connect → TestFlight配布
 
 ## 既知の問題・課題
 1. **層cの該当者0件**: 現在のデータセット30件に自営業家系の該当者がいない。追加データで検証が必要

@@ -50,3 +50,105 @@ def test_run_downstream_dry_run_success(monkeypatch, tmp_path):
     assert payload["ok"] is True
     assert payload["mode"] == "dry_run"
     assert payload["downstream"]["targetVideoId"] == "vimeo-001"
+
+
+def test_load_relay_token_from_env_file(monkeypatch, tmp_path):
+    monkeypatch.delenv("VIMEO_RELAY_TOKEN", raising=False)
+    fake_home = tmp_path / "home"
+    env_dir = fake_home / ".config" / "maekawa"
+    env_dir.mkdir(parents=True)
+    (env_dir / "api-keys.env").write_text("VIMEO_RELAY_TOKEN=file-token\n", encoding="utf-8")
+    monkeypatch.setattr(MODULE.Path, "home", lambda: fake_home)
+
+    token = MODULE.load_relay_token("post")
+    assert token == "file-token"
+
+
+def test_load_relay_token_raises_in_post_mode(monkeypatch, tmp_path):
+    monkeypatch.delenv("VIMEO_RELAY_TOKEN", raising=False)
+    fake_home = tmp_path / "home"
+    monkeypatch.setattr(MODULE.Path, "home", lambda: fake_home)
+
+    try:
+        MODULE.load_relay_token("post")
+    except ValueError as exc:
+        assert "VIMEO_RELAY_TOKEN is required" in str(exc)
+    else:
+        raise AssertionError("ValueError was not raised")
+
+
+def test_extract_retry_queue_items_collects_only_retryable_failed():
+    payload = {
+        "body": {
+            "comments": [
+                {"feedbackId": "fb-1", "convertedText": "retry me"},
+                {"feedbackId": "fb-2", "convertedText": "skip me"},
+            ]
+        }
+    }
+    response_payload = {
+        "mode": "post",
+        "downstream": {
+            "results": [
+                {"feedbackId": "fb-1", "status": "failed", "retryable": True, "errorCode": "network_error"},
+                {"feedbackId": "fb-2", "status": "failed", "retryable": False, "errorCode": "http_400"},
+                {"feedbackId": "fb-3", "status": "posted"},
+            ]
+        },
+    }
+
+    items = MODULE.extract_retry_queue_items(payload, response_payload)
+    assert len(items) == 1
+    assert items[0]["feedbackId"] == "fb-1"
+    assert items[0]["comment"]["convertedText"] == "retry me"
+
+
+def test_persist_request_log_and_retry_queue(tmp_path):
+    payload = {
+        "projectId": "proj-001",
+        "videoId": "video-001",
+        "targetVideoId": "vimeo-001",
+        "body": {
+            "comments": [{"feedbackId": "fb-1", "timestampSeconds": 10, "convertedText": "text"}]
+        },
+    }
+    response_payload = {
+        "mode": "post",
+        "downstream": {
+            "results": [
+                {
+                    "feedbackId": "fb-1",
+                    "status": "failed",
+                    "retryable": True,
+                    "errorCode": "network_error",
+                    "response": "timeout",
+                }
+            ]
+        },
+    }
+
+    queue_file = MODULE.persist_retry_queue(
+        tmp_path,
+        payload,
+        response_payload,
+        project_id="proj-001",
+        video_id="video-001",
+        target_video_id="vimeo-001",
+    )
+    assert queue_file is not None
+    assert queue_file.exists()
+    queue_data = json.loads(queue_file.read_text(encoding="utf-8"))
+    assert len(queue_data["items"]) == 1
+    assert queue_data["items"][0]["feedbackId"] == "fb-1"
+
+    log_file = MODULE.persist_request_log(
+        tmp_path,
+        payload,
+        response_payload,
+        mode="post",
+        project_id="proj-001",
+        request_id="req123",
+    )
+    assert log_file.exists()
+    log_data = json.loads(log_file.read_text(encoding="utf-8"))
+    assert log_data["requestId"] == "req123"

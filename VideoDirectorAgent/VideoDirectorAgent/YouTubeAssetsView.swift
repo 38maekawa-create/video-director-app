@@ -366,9 +366,7 @@ struct YouTubeAssetsView: View {
             self.assets?.lastEditedBy = "naoto"
             bannerMessage = "概要欄を保存しました"
         } catch {
-            self.assets?.descriptionEdited = descriptionText
-            self.assets?.lastEditedBy = "naoto"
-            bannerMessage = "API未接続のためローカル表示のみ更新しました"
+            bannerMessage = "概要欄保存に失敗しました: \(error.localizedDescription)"
         }
     }
 

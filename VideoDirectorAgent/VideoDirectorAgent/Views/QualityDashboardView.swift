@@ -239,22 +239,30 @@ struct QualityDashboardView: View {
             }
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                ForEach(viewModel.categoryScores) { cat in
-                    VStack(spacing: 10) {
-                        Image(systemName: cat.icon)
-                            .font(.system(size: 24))
-                            .foregroundStyle(scoreColor(cat.score))
-                        Text("\(cat.score)")
-                            .font(.system(size: 28, weight: .heavy, design: .rounded))
-                            .foregroundStyle(scoreColor(cat.score))
-                        Text(cat.category)
-                            .font(.caption)
-                            .foregroundStyle(AppTheme.textMuted)
+                if viewModel.categoryScores.isEmpty {
+                    Text("カテゴリデータがまだありません")
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.textMuted)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(14)
+                } else {
+                    ForEach(viewModel.categoryScores) { cat in
+                        VStack(spacing: 10) {
+                            Image(systemName: cat.icon)
+                                .font(.system(size: 24))
+                                .foregroundStyle(scoreColor(cat.score))
+                            Text("\(cat.score)")
+                                .font(.system(size: 28, weight: .heavy, design: .rounded))
+                                .foregroundStyle(scoreColor(cat.score))
+                            Text(cat.category)
+                                .font(.caption)
+                                .foregroundStyle(AppTheme.textMuted)
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity)
+                        .background(AppTheme.cardBackgroundLight)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
-                    .padding(16)
-                    .frame(maxWidth: .infinity)
-                    .background(AppTheme.cardBackgroundLight)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
             }
         }
@@ -274,30 +282,40 @@ struct QualityDashboardView: View {
                     .foregroundStyle(.white)
             }
 
-            ForEach(viewModel.suggestions) { suggestion in
-                HStack(alignment: .top, spacing: 12) {
-                    Text(suggestion.priority.rawValue)
-                        .font(.caption2)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.white)
-                        .frame(width: 24, height: 24)
-                        .background(suggestion.priority.color)
-                        .clipShape(Circle())
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(suggestion.category)
-                            .font(.caption)
+            if viewModel.suggestions.isEmpty {
+                Text("改善提案データは未取得です")
+                    .font(.caption)
+                    .foregroundStyle(AppTheme.textMuted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(12)
+                    .background(AppTheme.cardBackgroundLight)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            } else {
+                ForEach(viewModel.suggestions) { suggestion in
+                    HStack(alignment: .top, spacing: 12) {
+                        Text(suggestion.priority.rawValue)
+                            .font(.caption2)
                             .fontWeight(.bold)
-                            .foregroundStyle(AppTheme.accent)
-                        Text(suggestion.suggestion)
-                            .font(.caption)
-                            .foregroundStyle(AppTheme.textSecondary)
+                            .foregroundStyle(.white)
+                            .frame(width: 24, height: 24)
+                            .background(suggestion.priority.color)
+                            .clipShape(Circle())
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(suggestion.category)
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(AppTheme.accent)
+                            Text(suggestion.suggestion)
+                                .font(.caption)
+                                .foregroundStyle(AppTheme.textSecondary)
+                        }
                     }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(AppTheme.cardBackgroundLight)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
-                .padding(12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(AppTheme.cardBackgroundLight)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
             }
         }
         .padding(16)

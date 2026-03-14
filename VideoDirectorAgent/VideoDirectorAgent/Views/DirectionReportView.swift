@@ -11,12 +11,12 @@ struct DirectionReportView: View {
 
     private var displayProject: VideoProject {
         if let project { return project }
-        // 本番: projectがnilの場合はプレースホルダーを返す
+        // 本番: project未選択時は非操作状態の表示にする
         return VideoProject(
-            id: "placeholder",
-            guestName: "読み込み中...",
-            title: "プロジェクト未選択",
-            shootDate: "",
+            id: "",
+            guestName: "案件未選択",
+            title: "プロジェクト一覧から案件を選択してください",
+            shootDate: "-",
             status: .directed
         )
     }
@@ -162,7 +162,15 @@ struct DirectionReportView: View {
             case 1:
                 directionReportSection
             case 2:
-                YouTubeAssetsView(projectId: displayProject.id)
+                if displayProject.id.isEmpty {
+                    overviewCard(
+                        title: "YouTube素材",
+                        icon: "doc.text.image",
+                        items: ["案件未選択のため、YouTube素材は表示できません。"]
+                    )
+                } else {
+                    YouTubeAssetsView(projectId: displayProject.id)
+                }
             case 3:
                 sourceVideoSection
             case 4:
@@ -502,6 +510,8 @@ struct DirectionReportView: View {
                 .background(AppTheme.accent)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             }
+            .disabled(displayProject.id.isEmpty)
+            .opacity(displayProject.id.isEmpty ? 0.5 : 1.0)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -520,6 +530,10 @@ struct DirectionReportView: View {
     }
 
     private func loadFeedbacks() async {
+        guard !displayProject.id.isEmpty else {
+            feedbacks = []
+            return
+        }
         isFeedbackLoading = true
         defer { isFeedbackLoading = false }
         do {

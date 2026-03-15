@@ -1,11 +1,24 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-16 Build 19統合完了 — P1/P2全タスク3台Mac並列完了・統合
-<!-- authored: T1/副官A/バティ/2026-03-16 [なおとさん指示: P1一気にやりきる + 空きモデルにP2投入] -->
+2026-03-16 トラッキング実データ投入 + localhost全修正 + 3Mac同期完了
+<!-- authored: T1/副官A/バティ/2026-03-16 -->
 
 ## 現在の作業状態
-**Build 19: P1全完了 + P2全完了 → TestFlight提出中**
+**Build 19完了 + トラッキング実データ10本投入（PIVOT 5 + 楽街 5）+ 3Mac同期済み**
+
+### 2026-03-16 セッション2 完了タスク
+
+| # | タスク | 状態 |
+|---|--------|------|
+| 1 | VimeoReviewViewModel.swift localhost修正 | ✅ APIClient.shared.baseURL使用に変更 |
+| 2 | 撮影日shoot_date API側全件確認 | ✅ 大阪7名+けー+ゆりか+さくら全件正確 |
+| 3 | さくらさん撮影日確定 | ✅ 2025/12/13で確定（なおとさん回答） |
+| 4 | PIVOT 5本 + 楽街 5本トラッキング登録・分析 | ✅ メタデータ分析completed |
+| 5 | yt-dlpパス修正（video_tracker.py + video_analyzer.py） | ✅ Python 3.9ユーザーインストールパスへのフォールバック追加 |
+| 6 | Mac2/Mac3 git同期 | ✅ 3台とも40335ccに統一 |
+| 7 | テストダミーデータ削除 | ✅ tracking_index.jsonからtest123を除去 |
+| 8 | テスト全件確認 | ✅ 626件全PASS |
 
 ### 今回のセッションで完了したタスク（3台Mac並列実行）
 
@@ -360,10 +373,10 @@ xcodebuild -exportArchive -archivePath ./build/*.xcarchive \
 
 ## 次にやるべき作業（優先順位付き）
 
-### [P0-BLOCKED] Vimeo API本番投稿（要なおとさん承認）
-- **前提条件**: `~/.config/maekawa/api-keys.env` に `VIMEO_ACCESS_TOKEN` を設定
+### [解除済み] Vimeo API本番投稿
+- ✅ `VIMEO_ACCESS_TOKEN` 設定済み（疎通確認OK: /users/149351040）
 - 実行コマンド: `python3 scripts/post_vimeo_review_comments.py relay.json --execute`
-- 疎通確認: `VIMEO_ACCESS_TOKEN` 設定後に `--dry-run` モードで `/videos/{id}/comments` エンドポイントへの到達確認
+- なおとさんの投稿承認が出れば即実行可能
 
 ### [P1] 音声FB→Vimeoレビュー連携（T-039）
 - 音声フィードバック録音 → STT → Vimeoタイムコードにマッピング
@@ -385,8 +398,9 @@ xcodebuild -exportArchive -archivePath ./build/*.xcarchive \
 - TestFlight配布フローの整理
 
 ### [P3] 映像トラッキング+学習ループ
-- FB学習ループの運用データ投入
-- 評価ルール精度改善
+- ~~FB学習ループの運用データ投入~~ ✅ PIVOT 5本 + 楽街 5本を投入済み
+- 評価ルール精度改善（実データで検証可能になった）
+- 映像ファイルダウンロード→cv2フレーム分析（カット割り・色彩・シーンチェンジ）は未実施
 
 ---
 
@@ -394,11 +408,11 @@ xcodebuild -exportArchive -archivePath ./build/*.xcarchive \
 
 | # | 問題 | 状態 |
 |---|------|------|
-| 1 | YouTubeAssetsViewModel.swiftのbaseURLがlocalhost:8210ハードコード | 未修正（APIClient.sharedを使うべき） |
+| 1 | ~~YouTubeAssetsViewModel.swiftのbaseURLがlocalhost:8210ハードコード~~ | ✅ 修正済み（localhost残存なし） |
 | 2 | feedbacksテーブルが空（0件） | 正常。録音機能からFB投入後にデータが蓄積される |
 | 3 | xcodebuild署名: `CODE_SIGN_STYLE=Automatic`ではなく手動指定が必要 | TT2DA7H5NJ + "Apple Development" で解決済み |
 | 4 | 層cの該当者0件: 現データセット29件に自営業家系なし | 追加データで検証必要 |
-| 5 | さくらさんのshoot_date未確認 | タイトル「202512オフ会」のため大阪2/28組かどうか不明。現在2025/12/13のまま。なおとさんに要確認 |
+| 5 | ~~さくらさんのshoot_date未確認~~ | ✅ 2025/12/13で確定（なおとさん回答 2026-03-16） |
 
 ---
 

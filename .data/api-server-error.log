@@ -1249,3 +1249,15 @@ INFO:     Started reloader process [17171] using StatReload
 INFO:     Started server process [17175]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+INFO:     Will watch for changes in these directories: ['/Users/maekawanaoto/AI開発10']
+INFO:     Uvicorn running on http://0.0.0.0:8210 (Press CTRL+C to quit)
+INFO:     Started reloader process [88799] using StatReload
+INFO:     Started server process [88833]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Will watch for changes in these directories: ['/Users/maekawanaoto/AI開発10']
+INFO:     Uvicorn running on http://0.0.0.0:8210 (Press CTRL+C to quit)
+INFO:     Started reloader process [88927] using StatReload
+INFO:     Started server process [88931]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

@@ -143,3 +143,13 @@ INFO:     127.0.0.1:52461 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52473 - "GET /api/feedbacks HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52485 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52514 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62744 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62745 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62744 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56325 - "GET /api/v1/dashboard/summary HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56363 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56395 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56409 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     100.110.206.6:56414 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56422 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
+INFO:     100.113.28.70:60624 - "GET /api/projects HTTP/1.1" 200 OK

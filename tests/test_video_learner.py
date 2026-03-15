@@ -304,3 +304,76 @@ class TestGetInsights:
         insights = self.learner.get_insights()
         assert insights["total_patterns"] == 1
         assert "cutting" in insights["category_distribution"]
+
+
+# ────────────────────────────────────────────────
+# VideoLearner — composition / learnable_patterns / strengths
+# ────────────────────────────────────────────────
+
+class TestLearnNewFields:
+    def setup_method(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.learner = VideoLearner(data_dir=self.tmp)
+
+    def test_compositionからパターンを学習する(self):
+        patterns = self.learner.learn_from_analysis(
+            video_id="v_comp",
+            analysis_result={"composition": "問題提起→解決型の構成"},
+        )
+        comp_patterns = [p for p in patterns if p.category == "composition"]
+        assert len(comp_patterns) == 1
+        assert "問題提起" in comp_patterns[0].pattern
+
+    def test_learnable_patternsから学習する(self):
+        patterns = self.learner.learn_from_analysis(
+            video_id="v_learn",
+            analysis_result={
+                "learnable_patterns": ["オープニングで視聴者の疑問を提示"],
+            },
+        )
+        technique_patterns = [p for p in patterns if p.category == "technique"]
+        assert len(technique_patterns) >= 1
+        assert any("[応用]" in p.pattern for p in technique_patterns)
+
+    def test_strengthsから学習する(self):
+        patterns = self.learner.learn_from_analysis(
+            video_id="v_str",
+            analysis_result={
+                "strengths": ["テンポの緩急が秀逸"],
+            },
+        )
+        technique_patterns = [p for p in patterns if p.category == "technique"]
+        assert any("[参考]" in p.pattern for p in technique_patterns)
+
+    def test_メタデータ由来の汎用タグは学習しない(self):
+        """「ショート動画（60秒以内）」や「タグ: xxx」は学習対象外"""
+        patterns = self.learner.learn_from_analysis(
+            video_id="v_meta",
+            analysis_result={
+                "key_techniques": [
+                    "ショート動画（60秒以内）",
+                    "タグ: 投資, 不動産",
+                    "実践的なテクニック",
+                ],
+            },
+        )
+        # メタデータ由来は除外、実践的なテクニックのみ
+        assert len(patterns) == 1
+        assert "実践的" in patterns[0].pattern
+
+    def test_閾値調整で2件重複で確信度が上がる(self):
+        """source_count/3.0 なので2件重複でconfidence=2/3≈0.67"""
+        self.learner.learn_from_analysis(
+            video_id="v_a",
+            analysis_result={"cutting_style": "高速カット MTV風 テンポ重視の編集"},
+        )
+        self.learner.learn_from_analysis(
+            video_id="v_b",
+            analysis_result={"cutting_style": "高速カット MTV風 テンポ重視の編集"},
+        )
+        patterns = self.learner.get_patterns(category="cutting")
+        assert len(patterns) == 1
+        # 2件で confidence = 2/3 ≈ 0.67 > 0.4 → ルール生成対象
+        assert patterns[0].confidence >= 0.6
+        rules = self.learner.get_active_rules(category="cutting")
+        assert len(rules) >= 1

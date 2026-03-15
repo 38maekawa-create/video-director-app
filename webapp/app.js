@@ -708,6 +708,18 @@
     if (tab === 'frame-eval-detail') {
       renderFrameEvalDetailPage();
     }
+    if (tab === 'pdca') {
+      renderPDCAPage();
+    }
+    if (tab === 'audit') {
+      renderAuditPage();
+    }
+    if (tab === 'editors') {
+      renderEditorsPage();
+    }
+    if (tab === 'notifications') {
+      renderNotificationsPage();
+    }
   }
 
   // ===== 録音モーダル（MediaRecorder API + Vimeo連携） =====
@@ -1953,7 +1965,11 @@
       { id: 'audio-eval', icon: 'AE', label: '音声品質評価', desc: 'LUFS・ピーク・無音検出' },
       { id: 'knowledge-browse', icon: 'KN', label: 'ナレッジページ', desc: '166ページ全文検索' },
       { id: 'fb-learning', icon: 'FL', label: 'FB学習詳細', desc: 'パターン・ルール一覧' },
-      { id: 'frame-eval-detail', icon: 'FE', label: 'フレーム評価詳細', desc: '評価履歴・カテゴリ別' }
+      { id: 'frame-eval-detail', icon: 'FE', label: 'フレーム評価詳細', desc: '評価履歴・カテゴリ別' },
+      { id: 'pdca', icon: 'PD', label: 'PDCA品質改善', desc: 'Plan→Do→Check→Act' },
+      { id: 'audit', icon: 'AU', label: '監査ループ', desc: '自動監査・履歴確認' },
+      { id: 'editors', icon: 'ED', label: '編集者管理', desc: '編集者・引き継ぎ管理' },
+      { id: 'notifications', icon: 'NT', label: '通知設定', desc: '通知チャネル設定' }
     ];
 
     overlay.innerHTML = '<div class="tools-menu-content">' +

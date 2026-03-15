@@ -145,6 +145,137 @@ class TestVideoAnalyzerAnalyze:
 
     def test_存在しないvideo_pathは無視される(self):
         # _analyze_from_video は存在するファイルのみ実行
-        result = self.analyzer.analyze(video_path="/no/such/file.mp4")
+        result = self.analyzer.analyze(video_path="/no/such/file.mp4", use_llm=False)
         # エラーにならず結果が返ること
         assert result is not None
+
+    def test_use_llm_falseでLLM分析をスキップ(self):
+        transcript = "A: テスト発言\nB: 返答です"
+        result = self.analyzer.analyze(
+            transcript=transcript, title="テスト", use_llm=False,
+        )
+        assert result.llm_analysis == ""
+        # ルールベース分析は実行される
+        assert result.tempo != ""
+
+    def test_titleとchannel_nameを渡せる(self):
+        result = self.analyzer.analyze(
+            title="テスト動画タイトル",
+            channel_name="テストch",
+            duration_seconds=600.0,
+            use_llm=False,
+        )
+        assert result is not None
+
+
+# ────────────────────────────────────────────────
+# VideoAnalyzer — スコア算出
+# ────────────────────────────────────────────────
+
+class TestVideoAnalyzerScore:
+    def setup_method(self):
+        tmp = Path(tempfile.mkdtemp())
+        self.analyzer = VideoAnalyzer(cache_dir=tmp)
+
+    def test_空の分析結果はスコア0(self):
+        result = VideoAnalysisResult(video_id="empty")
+        score = self.analyzer._calculate_score(result)
+        assert score == 0.0
+
+    def test_充実した分析結果は高スコア(self):
+        result = VideoAnalysisResult(
+            video_id="rich",
+            cutting_style="高速カット",
+            color_grading="暖色系",
+            tempo="テンポが速い",
+            composition="問題提起→解決型",
+            summary="テスト",
+            key_techniques=["テクA", "テクB", "テクC"],
+            llm_analysis="LLM分析テキスト",
+            learnable_patterns=["パターン1", "パターン2"],
+        )
+        score = self.analyzer._calculate_score(result)
+        assert score >= 0.7
+
+    def test_スコアは0_1の範囲(self):
+        result = VideoAnalysisResult(
+            video_id="max",
+            cutting_style="あ", color_grading="い", tempo="う",
+            composition="え", summary="お", llm_analysis="か",
+            key_techniques=["a", "b", "c", "d", "e"],
+            learnable_patterns=["x", "y", "z"],
+        )
+        score = self.analyzer._calculate_score(result)
+        assert 0.0 <= score <= 1.0
+
+
+# ────────────────────────────────────────────────
+# VideoAnalyzer — サマリー生成
+# ────────────────────────────────────────────────
+
+class TestVideoAnalyzerSummary:
+    def test_空の結果でもサマリーが生成される(self):
+        result = VideoAnalysisResult(video_id="empty")
+        summary = VideoAnalyzer._generate_summary(result)
+        assert summary == "分析データなし"
+
+    def test_分析データがあればサマリーに含まれる(self):
+        result = VideoAnalysisResult(
+            video_id="test", tempo="テンポが速い — 頻繁な切替",
+            cutting_style="高速カット — MTV風",
+        )
+        summary = VideoAnalyzer._generate_summary(result)
+        assert "テンポが速い" in summary
+        assert "高速カット" in summary
+
+
+# ────────────────────────────────────────────────
+# VideoAnalyzer — LLM JSON抽出
+# ────────────────────────────────────────────────
+
+class TestExtractJson:
+    def test_純粋なJSONをパースできる(self):
+        text = '{"cutting_style": "高速カット", "tempo": "速い"}'
+        result = VideoAnalyzer._extract_json(text)
+        assert result is not None
+        assert result["cutting_style"] == "高速カット"
+
+    def test_コードブロック内のJSONをパースできる(self):
+        text = '```json\n{"cutting_style": "標準"}\n```'
+        result = VideoAnalyzer._extract_json(text)
+        assert result is not None
+        assert result["cutting_style"] == "標準"
+
+    def test_前後にテキストがあってもJSONを抽出できる(self):
+        text = '分析結果:\n{"tempo": "ゆっくり"}\n以上です。'
+        result = VideoAnalyzer._extract_json(text)
+        assert result is not None
+        assert result["tempo"] == "ゆっくり"
+
+    def test_JSONがない場合はNoneを返す(self):
+        result = VideoAnalyzer._extract_json("JSONではないテキスト")
+        assert result is None
+
+
+# ────────────────────────────────────────────────
+# VideoAnalyzer — 新フィールド
+# ────────────────────────────────────────────────
+
+class TestVideoAnalysisResultNewFields:
+    def test_新フィールドのデフォルト値(self):
+        r = VideoAnalysisResult(video_id="new")
+        assert r.llm_analysis == ""
+        assert r.strengths == []
+        assert r.weaknesses == []
+        assert r.learnable_patterns == []
+
+    def test_新フィールドに値を設定できる(self):
+        r = VideoAnalysisResult(
+            video_id="new",
+            llm_analysis="LLM分析結果",
+            strengths=["強み1"],
+            weaknesses=["弱み1"],
+            learnable_patterns=["パターン1"],
+        )
+        assert r.llm_analysis == "LLM分析結果"
+        assert len(r.strengths) == 1

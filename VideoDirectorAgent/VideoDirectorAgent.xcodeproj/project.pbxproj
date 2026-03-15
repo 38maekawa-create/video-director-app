@@ -35,6 +35,14 @@
 		A10000010000000000000031 /* VimeoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000031 /* VimeoPlayerView.swift */; };
 		A10000010000000000000032 /* VimeoTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000032 /* VimeoTimelineView.swift */; };
 		A10000010000000000000033 /* VimeoReviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000033 /* VimeoReviewViewModel.swift */; };
+		A10000010000000000000040 /* E2EPipelineViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000040 /* E2EPipelineViewModel.swift */; };
+		A10000010000000000000041 /* TelopCheckViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000041 /* TelopCheckViewModel.swift */; };
+		A10000010000000000000042 /* AudioEvaluationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000042 /* AudioEvaluationViewModel.swift */; };
+		A10000010000000000000043 /* KnowledgePagesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000043 /* KnowledgePagesViewModel.swift */; };
+		A10000010000000000000044 /* E2EPipelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000044 /* E2EPipelineView.swift */; };
+		A10000010000000000000045 /* TelopCheckView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000045 /* TelopCheckView.swift */; };
+		A10000010000000000000046 /* AudioEvaluationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000046 /* AudioEvaluationView.swift */; };
+		A10000010000000000000047 /* KnowledgePagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000047 /* KnowledgePagesView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -68,6 +76,14 @@
 		A20000010000000000000031 /* VimeoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimeoPlayerView.swift; sourceTree = "<group>"; };
 		A20000010000000000000032 /* VimeoTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimeoTimelineView.swift; sourceTree = "<group>"; };
 		A20000010000000000000033 /* VimeoReviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimeoReviewViewModel.swift; sourceTree = "<group>"; };
+		A20000010000000000000040 /* E2EPipelineViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = E2EPipelineViewModel.swift; sourceTree = "<group>"; };
+		A20000010000000000000041 /* TelopCheckViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelopCheckViewModel.swift; sourceTree = "<group>"; };
+		A20000010000000000000042 /* AudioEvaluationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEvaluationViewModel.swift; sourceTree = "<group>"; };
+		A20000010000000000000043 /* KnowledgePagesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgePagesViewModel.swift; sourceTree = "<group>"; };
+		A20000010000000000000044 /* E2EPipelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = E2EPipelineView.swift; sourceTree = "<group>"; };
+		A20000010000000000000045 /* TelopCheckView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelopCheckView.swift; sourceTree = "<group>"; };
+		A20000010000000000000046 /* AudioEvaluationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEvaluationView.swift; sourceTree = "<group>"; };
+		A20000010000000000000047 /* KnowledgePagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgePagesView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,6 +147,10 @@
 				A20000010000000000000014 /* EditorManagementViewModel.swift */,
 				A20000010000000000000015 /* VideoTrackingViewModel.swift */,
 				A20000010000000000000033 /* VimeoReviewViewModel.swift */,
+				A20000010000000000000040 /* E2EPipelineViewModel.swift */,
+				A20000010000000000000041 /* TelopCheckViewModel.swift */,
+				A20000010000000000000042 /* AudioEvaluationViewModel.swift */,
+				A20000010000000000000043 /* KnowledgePagesViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -153,6 +173,10 @@
 				A20000010000000000000021 /* EditFeedbackView.swift */,
 				A20000010000000000000031 /* VimeoPlayerView.swift */,
 				A20000010000000000000032 /* VimeoTimelineView.swift */,
+				A20000010000000000000044 /* E2EPipelineView.swift */,
+				A20000010000000000000045 /* TelopCheckView.swift */,
+				A20000010000000000000046 /* AudioEvaluationView.swift */,
+				A20000010000000000000047 /* KnowledgePagesView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -261,6 +285,14 @@
 				A10000010000000000000031 /* VimeoPlayerView.swift in Sources */,
 				A10000010000000000000032 /* VimeoTimelineView.swift in Sources */,
 				A10000010000000000000033 /* VimeoReviewViewModel.swift in Sources */,
+				A10000010000000000000040 /* E2EPipelineViewModel.swift in Sources */,
+				A10000010000000000000041 /* TelopCheckViewModel.swift in Sources */,
+				A10000010000000000000042 /* AudioEvaluationViewModel.swift in Sources */,
+				A10000010000000000000043 /* KnowledgePagesViewModel.swift in Sources */,
+				A10000010000000000000044 /* E2EPipelineView.swift in Sources */,
+				A10000010000000000000045 /* TelopCheckView.swift in Sources */,
+				A10000010000000000000046 /* AudioEvaluationView.swift in Sources */,
+				A10000010000000000000047 /* KnowledgePagesView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

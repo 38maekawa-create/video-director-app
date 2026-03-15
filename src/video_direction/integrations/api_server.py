@@ -1713,56 +1713,55 @@ class FeedbackConvertRequest(BaseModel):
 
 @app.post("/api/feedback/convert")
 def convert_feedback(body: FeedbackConvertRequest):
-    """音声テキストをプロのディレクション指示に変換"""
-    # Claude APIで変換（APIキーがない場合は簡易変換）
+    """音声テキストをプロのディレクション指示に変換（カテゴリ別専門プロンプト使用）"""
+    from ..analyzer.feedback_converter import (
+        build_system_prompt,
+        build_conversion_prompt,
+        classify_feedback_category,
+    )
+
     raw = body.raw_text
+    # カテゴリ自動検出
+    category = classify_feedback_category(raw)
+
     try:
         import anthropic
+        import re
+
         client = anthropic.Anthropic()
+        system_prompt = build_system_prompt(category)
+        user_prompt = build_conversion_prompt(raw, category)
+
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=1024,
-            messages=[{
-                "role": "user",
-                "content": f"""以下の音声フィードバックを、映像編集者向けのプロフェッショナルなディレクション指示に変換してください。
-
-音声テキスト:
-{raw}
-
-以下のJSON形式で出力:
-{{
-  "converted_text": "変換後のプロの指示テキスト",
-  "structured_items": [
-    {{
-      "id": "1",
-      "timestamp": "該当タイムスタンプ（推定）",
-      "element": "対象要素（テロップ/カット/BGM/カメラ等）",
-      "instruction": "具体的な指示",
-      "priority": "high/medium/low"
-    }}
-  ]
-}}"""
-            }]
+            max_tokens=2048,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_prompt}],
         )
-        import re
         text = response.content[0].text
         # JSONブロックを抽出
         json_match = re.search(r'\{[\s\S]*\}', text)
         if json_match:
             result = json.loads(json_match.group())
+            # カテゴリ情報を付与
+            result["detected_category"] = category
             return result
     except (ImportError, Exception):
         pass
 
-    # フォールバック: 簡易変換
+    # フォールバック: 簡易変換（LLM不使用）
     return {
         "converted_text": f"【ディレクション指示】\n{raw}\n\n※ 上記の音声フィードバックを確認し、該当箇所を修正してください。",
+        "detected_category": category,
         "structured_items": [{
             "id": "1",
             "timestamp": "00:00",
             "element": "全般",
             "instruction": raw[:200],
             "priority": "medium",
+            "reason": "音声FBの自動分類結果に基づく",
+            "reference_url": None,
+            "reference_note": None,
         }],
     }
 
@@ -2521,6 +2520,15 @@ def convert_feedback_enhanced(body: FeedbackConvertEnhancedRequest):
                 pass
 
     # LLM変換
+    # カテゴリ別専門プロンプトを使用
+    from ..analyzer.feedback_converter import (
+        build_system_prompt,
+        build_conversion_prompt,
+        classify_feedback_category,
+    )
+
+    category = classify_feedback_category(raw)
+
     try:
         import anthropic
         import os
@@ -2537,52 +2545,39 @@ def convert_feedback_enhanced(body: FeedbackConvertEnhancedRequest):
 
         if api_key:
             client = anthropic.Anthropic(api_key=api_key)
-            prompt = f"""以下の音声フィードバックを、映像編集者向けのプロフェッショナルなディレクション指示に変換してください。
-{learned_rules_text}{tracking_refs_text}
-
-音声テキスト:
-{raw}
-
-以下のJSON形式で出力:
-{{
-  "converted_text": "変換後のプロの指示テキスト",
-  "structured_items": [
-    {{
-      "id": "1",
-      "timestamp": "該当タイムスタンプ（推定）",
-      "element": "対象要素（テロップ/カット/BGM/カメラ等）",
-      "instruction": "具体的な指示",
-      "priority": "high/medium/low",
-      "reference_url": "参考映像のURL（あれば）",
-      "reference_note": "参考映像の該当箇所の説明（あれば）"
-    }}
-  ]
-}}"""
+            system_prompt = build_system_prompt(category)
+            user_prompt = build_conversion_prompt(
+                raw, category, learned_rules_text, tracking_refs_text
+            )
 
             response = client.messages.create(
                 model="claude-sonnet-4-20250514",
-                max_tokens=1500,
-                messages=[{"role": "user", "content": prompt}],
+                max_tokens=2048,
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_prompt}],
             )
             text = response.content[0].text
             json_match = re.search(r'\{[\s\S]*\}', text)
             if json_match:
                 result = json.loads(json_match.group())
+                result["detected_category"] = category
                 result["tracking_references"] = tracking_references
                 result["learning_rules_applied"] = bool(learned_rules_text)
                 return result
     except Exception:
         pass
 
-    # フォールバック: 簡易変換
+    # フォールバック: 簡易変換（LLM不使用）
     return {
         "converted_text": f"【ディレクション指示】\n{raw}\n\n※ 上記の音声フィードバックを確認し、該当箇所を修正してください。",
+        "detected_category": category,
         "structured_items": [{
             "id": "1",
             "timestamp": "00:00",
             "element": "全般",
             "instruction": raw[:200],
             "priority": "medium",
+            "reason": "音声FBの自動分類結果に基づく",
             "reference_url": None,
             "reference_note": None,
         }],

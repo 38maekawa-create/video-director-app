@@ -161,3 +161,48 @@ struct VimeoPlayerView: UIViewRepresentable {
         }
     }
 }
+
+// MARK: - シンプル埋め込みプレイヤー（編集後タブ等で使用、バインド不要版）
+/// 再生位置のバインドが不要なシンプルなVimeo埋め込みプレイヤー
+struct VimeoEmbedPlayerView: UIViewRepresentable {
+    let videoId: String
+
+    func makeUIView(context: Context) -> WKWebView {
+        let config = WKWebViewConfiguration()
+        config.allowsInlineMediaPlayback = true
+        config.mediaTypesRequiringUserActionForPlayback = []
+
+        let webView = WKWebView(frame: .zero, configuration: config)
+        webView.scrollView.isScrollEnabled = false
+        webView.backgroundColor = .black
+        webView.isOpaque = false
+
+        let html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { background: #000; }
+          .container { position: relative; width: 100%; padding-bottom: 56.25%; }
+          iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        </style>
+        </head>
+        <body>
+        <div class="container">
+          <iframe src="https://player.vimeo.com/video/\(videoId)?title=0&byline=0&portrait=0&color=1694F5"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowfullscreen></iframe>
+        </div>
+        </body>
+        </html>
+        """
+        webView.loadHTMLString(html, baseURL: URL(string: "https://vimeo.com"))
+        return webView
+    }
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        // 静的表示のため更新不要
+    }
+}

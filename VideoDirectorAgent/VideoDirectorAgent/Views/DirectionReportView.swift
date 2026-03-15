@@ -1,4 +1,64 @@
 import SwiftUI
+import WebKit
+
+// MARK: - YouTube埋め込みプレイヤー
+struct YouTubePlayerView: UIViewRepresentable {
+    let videoURL: String
+
+    func makeUIView(context: Context) -> WKWebView {
+        let config = WKWebViewConfiguration()
+        config.allowsInlineMediaPlayback = true
+        config.mediaTypesRequiringUserActionForPlayback = []
+        let webView = WKWebView(frame: .zero, configuration: config)
+        webView.scrollView.isScrollEnabled = false
+        webView.isOpaque = false
+        webView.backgroundColor = .clear
+        return webView
+    }
+
+    func updateUIView(_ webView: WKWebView, context: Context) {
+        guard let videoId = extractYouTubeVideoId(from: videoURL) else { return }
+        let embedHTML = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+        <style>
+            body { margin: 0; padding: 0; background: #000; }
+            .container { position: relative; width: 100%; padding-bottom: 56.25%; }
+            iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+        </style>
+        </head>
+        <body>
+        <div class="container">
+            <iframe src="https://www.youtube.com/embed/\(videoId)?playsinline=1&rel=0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+        </div>
+        </body>
+        </html>
+        """
+        webView.loadHTMLString(embedHTML, baseURL: nil)
+    }
+
+    private func extractYouTubeVideoId(from url: String) -> String? {
+        // https://www.youtube.com/watch?v=XXXX
+        if let range = url.range(of: "v=") {
+            let start = range.upperBound
+            let remaining = String(url[start...])
+            return String(remaining.prefix(while: { $0 != "&" && $0 != "#" }))
+        }
+        // https://youtu.be/XXXX
+        if url.contains("youtu.be/") {
+            if let range = url.range(of: "youtu.be/") {
+                let start = range.upperBound
+                let remaining = String(url[start...])
+                return String(remaining.prefix(while: { $0 != "?" && $0 != "#" }))
+            }
+        }
+        return nil
+    }
+}
 
 // MARK: - 画面2: ディレクションレポート詳細
 struct DirectionReportView: View {
@@ -160,7 +220,7 @@ struct DirectionReportView: View {
             case 6:
                 knowledgeDetailSection
             case 7:
-                VimeoReviewTabView(projectId: project.id)
+                VimeoReviewTabView(projectId: project.id, editedVideoURL: project.editedVideoURL)
             default:
                 EmptyView()
             }
@@ -260,6 +320,11 @@ struct DirectionReportView: View {
         }
     }
 
+    /// YouTube URLかどうかを判定
+    private func isYouTubeURL(_ url: String) -> Bool {
+        url.contains("youtube.com/watch") || url.contains("youtu.be/")
+    }
+
     private var sourceVideoSection: some View {
         VStack(spacing: 12) {
             overviewCard(
@@ -271,26 +336,51 @@ struct DirectionReportView: View {
                 ]
             )
             if let url = project.sourceVideoURL,
-               !url.isEmpty,
-               let destination = URL(string: url) {
-                Link(destination: destination) {
-                    HStack {
-                        Image(systemName: "play.rectangle.fill")
-                        Text("素材動画を開く（Vimeo）")
+               !url.isEmpty {
+                if isYouTubeURL(url) {
+                    // YouTube: アプリ内埋め込み再生
+                    VStack(spacing: 8) {
+                        YouTubePlayerView(videoURL: url)
+                            .frame(height: 220)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                        if let destination = URL(string: url) {
+                            Link(destination: destination) {
+                                HStack {
+                                    Image(systemName: "play.rectangle.fill")
+                                    Text("素材動画を再生（YouTube）")
+                                }
+                                .font(.subheadline)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(Color(hex: 0xFF0000))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                        }
                     }
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Color(hex: 0x1AB7EA))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                } else if let destination = URL(string: url) {
+                    // Vimeo等: 外部リンクで開く
+                    Link(destination: destination) {
+                        HStack {
+                            Image(systemName: "play.rectangle.fill")
+                            Text("素材動画を開く（Vimeo）")
+                        }
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color(hex: 0x1AB7EA))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
                 }
             } else {
                 overviewCard(
                     title: "素材動画",
-                    icon: "exclamationmark.triangle",
-                    items: ["素材動画URLが未登録です"]
+                    icon: "link.badge.plus",
+                    items: ["AI開発5と連携して自動登録できます"]
                 )
             }
         }
@@ -299,25 +389,35 @@ struct DirectionReportView: View {
     private var editedVideoSection: some View {
         VStack(spacing: 12) {
             if let url = project.editedVideoURL,
-               !url.isEmpty,
-               let destination = URL(string: url) {
+               !url.isEmpty {
                 overviewCard(
                     title: "編集後動画",
                     icon: "sparkles.rectangle.stack",
                     items: ["編集完了。レビュー可能な状態です。"]
                 )
-                Link(destination: destination) {
-                    HStack {
-                        Image(systemName: "play.rectangle.fill")
-                        Text("編集後動画を開く")
+
+                // Vimeo埋め込み再生
+                if let videoId = VimeoURLParser.extractVideoId(from: url) {
+                    VimeoEmbedPlayerView(videoId: videoId)
+                        .frame(height: 220)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+
+                // 外部リンクボタン（Vimeoで直接開く）
+                if let destination = URL(string: url) {
+                    Link(destination: destination) {
+                        HStack {
+                            Image(systemName: "arrow.up.right.square")
+                            Text("Vimeoで開く")
+                        }
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color(hex: 0x1AB7EA))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(AppTheme.statusComplete)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
             } else {
                 overviewCard(

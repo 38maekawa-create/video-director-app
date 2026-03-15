@@ -52,6 +52,7 @@ def init_db():
             edited_video TEXT,       -- JSON
             feedback_summary TEXT,   -- JSON
             knowledge TEXT,          -- JSON
+            category TEXT,           -- プロジェクトカテゴリ: teko_member / teko_realestate / NULL
             created_at TEXT DEFAULT (datetime('now')),
             updated_at TEXT DEFAULT (datetime('now'))
         );
@@ -87,6 +88,13 @@ def init_db():
         );
     """)
     conn.commit()
+
+    # categoryカラムのマイグレーション（既存DBへの追加対応）
+    columns = [row[1] for row in conn.execute("PRAGMA table_info(projects)").fetchall()]
+    if "category" not in columns:
+        conn.execute("ALTER TABLE projects ADD COLUMN category TEXT")
+        conn.commit()
+
     conn.close()
 
 
@@ -106,6 +114,12 @@ class ProjectCreate(BaseModel):
     edited_video: Optional[dict] = None
     feedback_summary: Optional[dict] = None
     knowledge: Optional[dict] = None
+    category: Optional[str] = None
+
+
+class CategoryUpdate(BaseModel):
+    """カテゴリ更新リクエスト"""
+    category: Optional[str] = None  # teko_member / teko_realestate / null(未分類)
 
 
 class YouTubeAssetsUpsert(BaseModel):
@@ -186,11 +200,23 @@ def repair_known_shoot_dates():
 # --- プロジェクト ---
 
 @app.get("/api/projects")
-def list_projects():
+def list_projects(category: Optional[str] = None):
+    """プロジェクト一覧を取得する。categoryパラメータでフィルタ可能。"""
     conn = _get_db()
-    rows = conn.execute(
-        "SELECT * FROM projects ORDER BY shoot_date DESC"
-    ).fetchall()
+    if category:
+        if category == "uncategorized":
+            rows = conn.execute(
+                "SELECT * FROM projects WHERE category IS NULL ORDER BY shoot_date DESC"
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM projects WHERE category = ? ORDER BY shoot_date DESC",
+                (category,),
+            ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT * FROM projects ORDER BY shoot_date DESC"
+        ).fetchall()
     conn.close()
     result = []
     for r in rows:
@@ -233,8 +259,8 @@ def create_project(project: ProjectCreate):
         conn.execute(
             """INSERT INTO projects (id, guest_name, title, status, shoot_date,
                guest_age, guest_occupation, quality_score, direction_report_url,
-               source_video, edited_video, feedback_summary, knowledge)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+               source_video, edited_video, feedback_summary, knowledge, category)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 project.id, project.guest_name, project.title, project.status,
                 project.shoot_date, project.guest_age, project.guest_occupation,
@@ -243,6 +269,7 @@ def create_project(project: ProjectCreate):
                 json.dumps(project.edited_video) if project.edited_video else None,
                 json.dumps(project.feedback_summary) if project.feedback_summary else None,
                 json.dumps(project.knowledge) if project.knowledge else None,
+                project.category,
             )
         )
         conn.commit()
@@ -261,7 +288,7 @@ def update_project(project_id: str, project: ProjectCreate):
     conn.execute(
         """UPDATE projects SET guest_name=?, title=?, status=?, shoot_date=?,
            guest_age=?, guest_occupation=?, quality_score=?, direction_report_url=?,
-           source_video=?, edited_video=?, feedback_summary=?, knowledge=?, updated_at=?
+           source_video=?, edited_video=?, feedback_summary=?, knowledge=?, category=?, updated_at=?
            WHERE id=?""",
         (
             project.guest_name, project.title, project.status, project.shoot_date,
@@ -271,12 +298,73 @@ def update_project(project_id: str, project: ProjectCreate):
             json.dumps(project.edited_video) if project.edited_video else None,
             json.dumps(project.feedback_summary) if project.feedback_summary else None,
             json.dumps(project.knowledge) if project.knowledge else None,
-            now, project_id,
+            project.category, now, project_id,
         )
     )
     conn.commit()
     conn.close()
     return {"status": "updated", "id": project_id}
+
+
+# --- カテゴリ ---
+
+@app.put("/api/v1/projects/{project_id}/category")
+def update_project_category(project_id: str, body: CategoryUpdate):
+    """プロジェクトのカテゴリを変更する"""
+    # カテゴリ値のバリデーション
+    valid_categories = ("teko_member", "teko_realestate", None)
+    if body.category not in valid_categories:
+        raise HTTPException(400, f"Invalid category. Must be one of: {valid_categories}")
+
+    conn = _get_db()
+    row = conn.execute("SELECT id FROM projects WHERE id = ?", (project_id,)).fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(404, "Project not found")
+
+    now = datetime.now(timezone.utc).isoformat()
+    conn.execute(
+        "UPDATE projects SET category = ?, updated_at = ? WHERE id = ?",
+        (body.category, now, project_id),
+    )
+    conn.commit()
+    conn.close()
+    return {"status": "updated", "id": project_id, "category": body.category}
+
+
+@app.get("/api/v1/projects/by-category/{category}")
+def get_projects_by_category(category: str):
+    """カテゴリ別プロジェクト一覧を取得する"""
+    valid_categories = ("teko_member", "teko_realestate", "uncategorized")
+    if category not in valid_categories:
+        raise HTTPException(400, f"Invalid category. Must be one of: {valid_categories}")
+
+    conn = _get_db()
+    if category == "uncategorized":
+        rows = conn.execute(
+            "SELECT * FROM projects WHERE category IS NULL ORDER BY shoot_date DESC"
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT * FROM projects WHERE category = ? ORDER BY shoot_date DESC",
+            (category,),
+        ).fetchall()
+    conn.close()
+
+    result = []
+    for r in rows:
+        d = dict(r)
+        for bool_field in ("has_unsent_feedback",):
+            if bool_field in d:
+                d[bool_field] = bool(d[bool_field])
+        for json_field in ("feedback_summary", "knowledge"):
+            if d.get(json_field):
+                try:
+                    d[json_field] = json.loads(d[json_field])
+                except (json.JSONDecodeError, TypeError):
+                    pass
+        result.append(d)
+    return result
 
 
 # --- YouTube素材 ---
@@ -2721,6 +2809,67 @@ def get_guest_knowledge(guest_name: str):
         "total": len(results),
         "pages": results,
     }
+
+
+# --- 素材動画連携（AI開発5） ---
+
+class SourceVideoScanRequest(BaseModel):
+    dry_run: bool = True
+
+
+@app.post("/api/v1/source-videos/scan")
+def scan_source_videos(req: SourceVideoScanRequest):
+    """AI開発5のナレッジファイルをスキャンし、素材動画URLを自動登録する"""
+    from .source_video_linker import SourceVideoLinker
+    linker = SourceVideoLinker(db_path=DB_PATH)
+    result = linker.scan_and_link(dry_run=req.dry_run)
+    return {
+        "dry_run": req.dry_run,
+        "linked": [
+            {
+                "project_id": c.project_id,
+                "guest_name": c.project_guest_name,
+                "youtube_url": c.youtube_url,
+                "match_score": c.match_score,
+                "reason": c.reason,
+                "quality": c.quality,
+            }
+            for c in result.linked
+        ],
+        "skipped_existing": [
+            {
+                "project_id": c.project_id,
+                "guest_name": c.project_guest_name,
+                "youtube_url": c.youtube_url,
+            }
+            for c in result.skipped_existing
+        ],
+        "skipped_no_audio": [
+            {
+                "project_id": c.project_id,
+                "guest_name": c.project_guest_name,
+                "transcript_method": c.transcript_method,
+            }
+            for c in result.skipped_no_audio
+        ],
+        "skipped_no_match": len(result.skipped_no_match),
+        "errors": result.errors,
+        "summary": {
+            "total_linked": len(result.linked),
+            "total_skipped_existing": len(result.skipped_existing),
+            "total_skipped_no_audio": len(result.skipped_no_audio),
+            "total_skipped_no_match": len(result.skipped_no_match),
+            "total_errors": len(result.errors),
+        },
+    }
+
+
+@app.get("/api/v1/source-videos/status")
+def source_videos_status():
+    """素材動画連携の状況サマリーを返す"""
+    from .source_video_linker import SourceVideoLinker
+    linker = SourceVideoLinker(db_path=DB_PATH)
+    return linker.get_status()
 
 
 # --- ヘルスチェック ---

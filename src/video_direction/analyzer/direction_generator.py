@@ -44,6 +44,7 @@ def generate_directions(
     income_eval: IncomeEvaluation,
     feedback_learner=None,
     video_learner=None,
+    project_category: str | None = None,
 ) -> DirectionTimeline:
     """ルールベースで演出ディレクションを生成する
 
@@ -53,6 +54,18 @@ def generate_directions(
         income_eval: 年収演出判断結果
         feedback_learner: FeedbackLearnerインスタンス（FB学習ルール反映用、Noneなら無視）
         video_learner: VideoLearnerインスタンス（映像トラッキング学習ルール反映用、Noneなら無視）
+        project_category: プロジェクトカテゴリ（teko_member / teko_realestate / None）
+            カテゴリに応じてディレクションのトーン・演出指示を分岐する（将来拡張ポイント）
+
+    将来拡張:
+        project_category == "teko_realestate" の場合:
+            - 不動産データ（物件価格・利回り等）の数字テロップを優先的に強調
+            - 投資実績・CF関連のパンチラインを重視
+            - テロップカラーをゴールド系に統一
+        project_category == "teko_member" の場合:
+            - ゲストの人柄・ストーリー寄りの演出
+            - 転職・年収アップのストーリーラインを強調
+            - テロップカラーをブランドカラー系に統一
     """
     entries = []
 

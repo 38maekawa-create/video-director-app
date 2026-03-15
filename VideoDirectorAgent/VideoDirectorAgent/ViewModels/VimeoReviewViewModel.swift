@@ -21,8 +21,8 @@ final class VimeoReviewViewModel: ObservableObject {
 
     /// シーク先タイムコード（VimeoPlayerView へ伝播）
     @Published var seekTarget: TimeInterval?
-    /// Vimeo動画ID
-    @Published var vimeoVideoId: String = MockData.sampleVimeoVideoId
+    /// Vimeo動画ID（VimeoReviewTabViewからeditedVideoURLベースで設定される）
+    @Published var vimeoVideoId: String = ""
 
     private var baseURL: String { APIClient.shared.baseURL.absoluteString }
 

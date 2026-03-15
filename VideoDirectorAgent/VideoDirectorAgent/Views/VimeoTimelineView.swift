@@ -214,18 +214,46 @@ private struct FeedbackDetailSheet: View {
 /// VimeoプレイヤーとタイムラインFBを組み合わせて表示
 struct VimeoReviewTabView: View {
     let projectId: String
+    /// Vimeo URL（project.editedVideoURL）
+    var editedVideoURL: String? = nil
     @StateObject private var viewModel = VimeoReviewViewModel()
+    @State private var reviewComment: String = ""
+    @State private var reviewComments: [ReviewComment] = []
+
+    /// Vimeo URLからvideo_idを抽出するヘルパー
+    private var vimeoVideoId: String? {
+        VimeoURLParser.extractVideoId(from: editedVideoURL)
+    }
 
     var body: some View {
         VStack(spacing: 16) {
-            // Vimeoプレイヤー
-            VimeoPlayerView(
-                videoId: viewModel.vimeoVideoId,
-                currentTime: $viewModel.currentTime,
-                isPlaying: $viewModel.isPlaying
-            )
-            .frame(height: 220)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            // Vimeo動画埋め込み再生
+            if let videoId = vimeoVideoId {
+                VimeoPlayerView(
+                    videoId: videoId,
+                    currentTime: $viewModel.currentTime,
+                    isPlaying: $viewModel.isPlaying
+                )
+                .frame(height: 220)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else {
+                // 動画未登録時のプレースホルダー
+                VStack(spacing: 12) {
+                    Image(systemName: "play.slash.fill")
+                        .font(.system(size: 40))
+                        .foregroundStyle(AppTheme.textMuted)
+                    Text("編集後動画がまだアップロードされていません")
+                        .font(AppTheme.bodyFont(14))
+                        .foregroundStyle(AppTheme.textMuted)
+                    Text("Vimeoにアップロード後、ここで再生・レビューできます")
+                        .font(AppTheme.bodyFont(12))
+                        .foregroundStyle(AppTheme.textMuted.opacity(0.7))
+                }
+                .frame(height: 220)
+                .frame(maxWidth: .infinity)
+                .background(AppTheme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
 
             // タイムライン
             if !viewModel.feedbacks.isEmpty {
@@ -238,38 +266,150 @@ struct VimeoReviewTabView: View {
                 .frame(height: 60)
             }
 
-            // FB一覧
-            VStack(spacing: 8) {
-                ForEach(viewModel.feedbacks) { fb in
+            // レビューコメント入力エリア
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Image(systemName: "bubble.left.and.bubble.right")
+                        .foregroundStyle(AppTheme.accent)
+                    Text("レビューコメント")
+                        .font(AppTheme.sectionFont(16))
+                        .foregroundStyle(.white)
+                }
+
+                TextEditor(text: $reviewComment)
+                    .font(AppTheme.bodyFont(14))
+                    .foregroundStyle(.white)
+                    .scrollContentBackground(.hidden)
+                    .frame(minHeight: 80, maxHeight: 120)
+                    .padding(10)
+                    .background(AppTheme.cardBackgroundLight)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(AppTheme.textMuted.opacity(0.3), lineWidth: 1)
+                    )
+
+                HStack {
+                    if viewModel.currentTime > 0 {
+                        Text("タイムコード: \(formatTimestamp(viewModel.currentTime))")
+                            .font(AppTheme.bodyFont(12))
+                            .foregroundStyle(AppTheme.accent)
+                    }
+                    Spacer()
                     Button {
-                        viewModel.seek(to: fb.timestampMark)
+                        submitComment()
                     } label: {
-                        HStack(spacing: 12) {
-                            Text(fb.timestampString)
-                                .font(AppTheme.labelFont(14))
-                                .foregroundStyle(AppTheme.accent)
-                                .frame(width: 50, alignment: .leading)
+                        HStack(spacing: 6) {
+                            Image(systemName: "paperplane.fill")
+                            Text("送信")
+                        }
+                        .font(AppTheme.labelFont(14))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(reviewComment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AppTheme.textMuted : AppTheme.accent)
+                        .clipShape(Capsule())
+                    }
+                    .disabled(reviewComment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+            .padding(14)
+            .background(AppTheme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                            Circle()
-                                .fill(fb.priority.color)
-                                .frame(width: 8, height: 8)
+            // コメント一覧
+            if !reviewComments.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "text.bubble")
+                            .foregroundStyle(AppTheme.accent)
+                        Text("コメント履歴")
+                            .font(AppTheme.sectionFont(16))
+                            .foregroundStyle(.white)
+                        Spacer()
+                        Text("\(reviewComments.count)件")
+                            .font(AppTheme.bodyFont(12))
+                            .foregroundStyle(AppTheme.textMuted)
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.top, 14)
 
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(fb.element)
-                                    .font(AppTheme.labelFont(13))
-                                    .foregroundStyle(AppTheme.textSecondary)
-                                Text(fb.note)
-                                    .font(AppTheme.bodyFont(12))
+                    ForEach(reviewComments) { comment in
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                if let ts = comment.timestamp {
+                                    Text(ts)
+                                        .font(AppTheme.labelFont(12))
+                                        .foregroundStyle(AppTheme.accent)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(AppTheme.accent.opacity(0.15))
+                                        .clipShape(Capsule())
+                                }
+                                Spacer()
+                                Text(comment.createdAt)
+                                    .font(.caption2)
                                     .foregroundStyle(AppTheme.textMuted)
-                                    .lineLimit(2)
                             }
-                            Spacer()
+                            Text(comment.content)
+                                .font(AppTheme.bodyFont(14))
+                                .foregroundStyle(AppTheme.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                         .padding(12)
-                        .background(AppTheme.cardBackground)
+                        .background(AppTheme.cardBackgroundLight)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .padding(.horizontal, 14)
                     }
-                    .buttonStyle(.plain)
+                    .padding(.bottom, 14)
+                }
+                .background(AppTheme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+
+            // FB一覧（タイムコード付きフィードバック）
+            if !viewModel.feedbacks.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "clock.badge.exclamationmark")
+                            .foregroundStyle(AppTheme.accent)
+                        Text("タイムコード付きFB")
+                            .font(AppTheme.sectionFont(16))
+                            .foregroundStyle(.white)
+                    }
+                    .padding(.horizontal, 4)
+
+                    ForEach(viewModel.feedbacks) { fb in
+                        Button {
+                            viewModel.seek(to: fb.timestampMark)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Text(fb.timestampString)
+                                    .font(AppTheme.labelFont(14))
+                                    .foregroundStyle(AppTheme.accent)
+                                    .frame(width: 50, alignment: .leading)
+
+                                Circle()
+                                    .fill(fb.priority.color)
+                                    .frame(width: 8, height: 8)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(fb.element)
+                                        .font(AppTheme.labelFont(13))
+                                        .foregroundStyle(AppTheme.textSecondary)
+                                    Text(fb.note)
+                                        .font(AppTheme.bodyFont(12))
+                                        .foregroundStyle(AppTheme.textMuted)
+                                        .lineLimit(2)
+                                }
+                                Spacer()
+                            }
+                            .padding(12)
+                            .background(AppTheme.cardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
 
@@ -286,9 +426,74 @@ struct VimeoReviewTabView: View {
                     .padding(.vertical, 40)
             }
         }
-        .padding(.horizontal, 16)
         .task {
+            // editedVideoURLからvideo_idを設定
+            if let videoId = vimeoVideoId {
+                viewModel.vimeoVideoId = videoId
+            }
             await viewModel.loadFeedbacks(projectId: projectId)
         }
+    }
+
+    /// コメント送信
+    private func submitComment() {
+        let trimmed = reviewComment.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        let timestamp: String? = viewModel.currentTime > 0 ? formatTimestamp(viewModel.currentTime) : nil
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy/MM/dd HH:mm"
+        let now = formatter.string(from: Date())
+
+        let comment = ReviewComment(
+            id: UUID(),
+            content: trimmed,
+            timestamp: timestamp,
+            createdAt: now
+        )
+        reviewComments.insert(comment, at: 0)
+        reviewComment = ""
+    }
+
+    /// 秒数をMM:SS形式に変換
+    private func formatTimestamp(_ seconds: TimeInterval) -> String {
+        let m = Int(seconds) / 60
+        let s = Int(seconds) % 60
+        return String(format: "%02d:%02d", m, s)
+    }
+}
+
+/// レビューコメントモデル
+struct ReviewComment: Identifiable {
+    let id: UUID
+    let content: String
+    let timestamp: String?
+    let createdAt: String
+}
+
+/// Vimeo URLからvideo_idを抽出するユーティリティ
+enum VimeoURLParser {
+    /// https://vimeo.com/1145126331 → "1145126331"
+    /// https://player.vimeo.com/video/1145126331 → "1145126331"
+    static func extractVideoId(from urlString: String?) -> String? {
+        guard let urlString = urlString,
+              !urlString.isEmpty,
+              let url = URL(string: urlString),
+              let host = url.host else { return nil }
+
+        // vimeo.com/12345 形式
+        if host.contains("vimeo.com") {
+            let pathComponents = url.pathComponents.filter { $0 != "/" }
+            // player.vimeo.com/video/12345 形式
+            if pathComponents.first == "video", pathComponents.count >= 2 {
+                let videoId = pathComponents[1]
+                if videoId.allSatisfy(\.isNumber) { return videoId }
+            }
+            // vimeo.com/12345 形式
+            if let last = pathComponents.last, last.allSatisfy(\.isNumber) {
+                return last
+            }
+        }
+        return nil
     }
 }

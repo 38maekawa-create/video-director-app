@@ -11,7 +11,7 @@ enum MockData {
             hasUnsentFeedback: true,
             directionReportURL: "https://example.com/report/satoimo",
             sourceVideoURL: "https://vimeo.com/100000001",
-            editedVideoURL: "https://vimeo.com/100000002",
+            editedVideoURL: "https://vimeo.com/1145126331",
             knowledge: "02:18 テロップ情報量が多い\n05:01 Bロールのテンポ改善余地あり"
         ),
         .init(
@@ -44,7 +44,7 @@ enum MockData {
             hasUnsentFeedback: false,
             directionReportURL: nil,
             sourceVideoURL: nil,
-            editedVideoURL: "https://vimeo.com/100000004",
+            editedVideoURL: "https://vimeo.com/1145126331",
             knowledge: "全体テンポ良好"
         ),
         .init(
@@ -55,7 +55,7 @@ enum MockData {
             hasUnsentFeedback: false,
             directionReportURL: nil,
             sourceVideoURL: "https://vimeo.com/100000005",
-            editedVideoURL: "https://vimeo.com/100000006",
+            editedVideoURL: "https://vimeo.com/1145126331",
             knowledge: "実績数字の見せ方が強い"
         )
     ]
@@ -387,7 +387,8 @@ https://teko-lp.com/
     ]
 
     // MARK: - Vimeoタイムラインモックデータ
-    static let sampleVimeoVideoId = "76979871"
+    // 実データのVimeo URLパターンに合わせた動画ID（例: https://vimeo.com/1145126331）
+    static let sampleVimeoVideoId = "1145126331"
 
     static let vimeoFeedbacks: [VimeoFeedbackItem] = [
         .init(

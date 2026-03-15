@@ -101,6 +101,34 @@ struct VideoProject: Identifiable, Codable, Hashable {
     let sourceVideoURL: String?
     let editedVideoURL: String?
     let knowledge: String?
+    let category: String?
+
+    /// カテゴリの表示名
+    var categoryDisplayName: String {
+        switch category {
+        case "teko_member": return "TEKOメンバー対談"
+        case "teko_realestate": return "TEKO不動産対談"
+        default: return "その他"
+        }
+    }
+
+    /// カテゴリのアイコン（SF Symbols）
+    var categoryIcon: String {
+        switch category {
+        case "teko_member": return "person.2.fill"
+        case "teko_realestate": return "building.2.fill"
+        default: return "questionmark.folder.fill"
+        }
+    }
+
+    /// カテゴリのアクセントカラー
+    var categoryColor: Color {
+        switch category {
+        case "teko_member": return Color(hex: 0x4A90D9)      // ブルー
+        case "teko_realestate": return Color(hex: 0xE5A023)   // ゴールド
+        default: return AppTheme.textMuted
+        }
+    }
 
     init(
         id: String,
@@ -117,7 +145,8 @@ struct VideoProject: Identifiable, Codable, Hashable {
         directionReportURL: String? = nil,
         sourceVideoURL: String? = nil,
         editedVideoURL: String? = nil,
-        knowledge: String? = nil
+        knowledge: String? = nil,
+        category: String? = nil
     ) {
         self.id = id
         self.guestName = guestName
@@ -134,6 +163,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         self.sourceVideoURL = sourceVideoURL
         self.editedVideoURL = editedVideoURL
         self.knowledge = knowledge
+        self.category = category
     }
 
     enum CodingKeys: String, CodingKey {
@@ -152,6 +182,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         case sourceVideoURL
         case editedVideoURL
         case knowledge
+        case category
         // デコード専用キー（APIレスポンスのネスト構造を展開するため）
         case sourceVideo
         case editedVideo
@@ -175,6 +206,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         try container.encodeIfPresent(sourceVideoURL, forKey: .sourceVideoURL)
         try container.encodeIfPresent(editedVideoURL, forKey: .editedVideoURL)
         try container.encodeIfPresent(knowledge, forKey: .knowledge)
+        try container.encodeIfPresent(category, forKey: .category)
     }
 
     init(from decoder: Decoder) throws {

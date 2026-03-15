@@ -44,20 +44,61 @@ struct FlowLayout: Layout {
     }
 }
 
-// MARK: - トラッキング動画詳細画面（YouTube埋め込み再生）
+// MARK: - トラッキング動画詳細画面（サムネイル + YouTubeで開く）
 struct TrackingVideoDetailView: View {
     let video: TrackedVideo
     @State private var linkCopied = false
 
+    /// YouTubeサムネイルURL（動画IDから生成）
+    private var thumbnailURL: URL? {
+        guard let videoId = extractVideoId(from: video.url) else { return nil }
+        return URL(string: "https://img.youtube.com/vi/\(videoId)/maxresdefault.jpg")
+    }
+
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 16) {
-                // YouTube埋め込みプレイヤー（16:9アスペクト比）
-                GeometryReader { geo in
-                    TrackingYouTubePlayerView(videoURL: video.url)
-                        .frame(width: geo.size.width, height: geo.size.width * 9.0 / 16.0)
+                // YouTubeサムネイル + 再生ボタンオーバーレイ（埋め込み制限動画でも表示可能）
+                ZStack {
+                    if let thumbURL = thumbnailURL {
+                        AsyncImage(url: thumbURL) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(16.0 / 9.0, contentMode: .fit)
+                            case .failure:
+                                // maxresdefaultが存在しない場合のフォールバック
+                                AsyncImage(url: URL(string: thumbnailURL!.absoluteString.replacingOccurrences(of: "maxresdefault", with: "hqdefault"))) { fallbackPhase in
+                                    if case .success(let img) = fallbackPhase {
+                                        img.resizable().aspectRatio(16.0 / 9.0, contentMode: .fit)
+                                    } else {
+                                        thumbnailPlaceholder
+                                    }
+                                }
+                            default:
+                                thumbnailPlaceholder
+                            }
+                        }
+                    } else {
+                        thumbnailPlaceholder
+                    }
+
+                    // 再生ボタンオーバーレイ
+                    if let url = URL(string: video.url) {
+                        Link(destination: url) {
+                            Circle()
+                                .fill(.black.opacity(0.6))
+                                .frame(width: 64, height: 64)
+                                .overlay(
+                                    Image(systemName: "play.fill")
+                                        .font(.title)
+                                        .foregroundStyle(.white)
+                                        .offset(x: 2)
+                                )
+                        }
+                    }
                 }
-                .aspectRatio(16.0 / 9.0, contentMode: .fit)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
 
                 // タイトル + チャンネル
@@ -243,9 +284,37 @@ struct TrackingVideoDetailView: View {
         default: return AppTheme.textMuted
         }
     }
+
+    /// サムネイルプレースホルダー（画像ロード中・失敗時）
+    private var thumbnailPlaceholder: some View {
+        Rectangle()
+            .fill(AppTheme.cardBackground)
+            .aspectRatio(16.0 / 9.0, contentMode: .fit)
+            .overlay(
+                Image(systemName: "play.rectangle.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(AppTheme.textMuted)
+            )
+    }
+
+    /// YouTube URLから動画IDを抽出
+    private func extractVideoId(from url: String) -> String? {
+        if let range = url.range(of: "v=") {
+            let start = range.upperBound
+            let remaining = String(url[start...])
+            return String(remaining.prefix(while: { $0 != "&" && $0 != "#" }))
+        }
+        if url.contains("youtu.be/"),
+           let range = url.range(of: "youtu.be/") {
+            let start = range.upperBound
+            let remaining = String(url[start...])
+            return String(remaining.prefix(while: { $0 != "?" && $0 != "#" }))
+        }
+        return nil
+    }
 }
 
-// MARK: - トラッキング用YouTube埋め込みプレイヤー
+// MARK: - トラッキング用YouTube埋め込みプレイヤー（フォールバック用に残す）
 struct TrackingYouTubePlayerView: UIViewRepresentable {
     let videoURL: String
 

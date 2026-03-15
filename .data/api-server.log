@@ -656,3 +656,14 @@ INFO:     100.113.28.70:49172 - "GET /api/feedbacks?limit=50 HTTP/1.1" 200 OK
 INFO:     100.113.28.70:60043 - "GET /api/projects/p-20251213-%E9%9B%AA%E6%A3%AE%E3%82%86%E3%81%8D%E3%82%82%E3%82%8A/youtube-assets HTTP/1.1" 200 OK
 INFO:     100.113.28.70:54578 - "GET /api/v1/projects/p-20251213-%E9%9B%AA%E6%A3%AE%E3%82%86%E3%81%8D%E3%82%82%E3%82%8A/source-videos HTTP/1.1" 200 OK
 INFO:     100.113.28.70:54578 - "GET /api/projects/p-20251213-%E9%9B%AA%E6%A3%AE%E3%82%86%E3%81%8D%E3%82%82%E3%82%8A/feedbacks HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62714 - "GET /api/projects/p-20251213-PAY/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.113.28.70:61161 - "GET /api/v1/projects/p-20251213-PAY/source-videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:61161 - "GET /api/projects/p-20251213-PAY/feedbacks HTTP/1.1" 200 OK
+INFO:     100.113.28.70:59062 - "GET /api/v1/projects/p-20251213-PAY/feedbacks-with-timecodes HTTP/1.1" 404 Not Found
+INFO:     100.113.28.70:58777 - "GET /api/v1/projects/p-20251213-PAY/before-after HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58778 - "GET /api/v1/projects/p-20251213-PAY/transcript-diff HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65476 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65477 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65478 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65476 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65476 - "GET /api/learning/summary HTTP/1.1" 200 OK

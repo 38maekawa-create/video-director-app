@@ -44,6 +44,7 @@
 		A10000010000000000000099 /* SourceVideosSubTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000099 /* SourceVideosSubTabView.swift */; };
 		A10000010000000000000046 /* AudioEvaluationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000046 /* AudioEvaluationView.swift */; };
 		A10000010000000000000047 /* KnowledgePagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000047 /* KnowledgePagesView.swift */; };
+		A10000010000000000000100 /* BeforeAfterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000100 /* BeforeAfterView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -86,6 +87,7 @@
 		A20000010000000000000099 /* SourceVideosSubTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceVideosSubTabView.swift; sourceTree = "<group>"; };
 		A20000010000000000000046 /* AudioEvaluationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEvaluationView.swift; sourceTree = "<group>"; };
 		A20000010000000000000047 /* KnowledgePagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgePagesView.swift; sourceTree = "<group>"; };
+		A20000010000000000000100 /* BeforeAfterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeforeAfterView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -180,6 +182,7 @@
 				A20000010000000000000099 /* SourceVideosSubTabView.swift */,
 				A20000010000000000000046 /* AudioEvaluationView.swift */,
 				A20000010000000000000047 /* KnowledgePagesView.swift */,
+				A20000010000000000000100 /* BeforeAfterView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -297,6 +300,7 @@
 				A10000010000000000000099 /* SourceVideosSubTabView.swift in Sources */,
 				A10000010000000000000046 /* AudioEvaluationView.swift in Sources */,
 				A10000010000000000000047 /* KnowledgePagesView.swift in Sources */,
+				A10000010000000000000100 /* BeforeAfterView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

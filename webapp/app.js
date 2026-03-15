@@ -344,6 +344,8 @@
     tabs.push('レビュー');
     // フレーム評価タブ（追加: C-1）
     tabs.push('フレーム評価');
+    // ビフォーアフタータブ
+    tabs.push('B/A比較');
 
     const container = document.getElementById('report-tabs');
     container.innerHTML = tabs.map((t, i) => `
@@ -375,6 +377,9 @@
         } else if (tabName === 'フレーム評価') {
           // フレーム評価タブ（C-1）
           renderFrameEvaluation(currentProject);
+        } else if (tabName === 'B/A比較') {
+          // ビフォーアフタータブ
+          renderBeforeAfter(currentProject);
         } else {
           renderReportSection(parseInt(btn.dataset.index));
         }
@@ -433,7 +438,7 @@
 
     const encodedFilename = encodeURIComponent(filename);
     container.innerHTML = `
-      <div class="knowledge-viewer">
+      <div class="knowledge-viewer" style="position:relative;">
         <div class="knowledge-header">
           <span class="knowledge-header-icon">KN</span>
           <span class="knowledge-header-title">動画ナレッジページ</span>
@@ -446,11 +451,22 @@
             title="動画ナレッジページ"
           ></iframe>
         </div>
+        <button class="kb-floating-mic-btn" id="kb-inline-mic-btn" title="音声フィードバック">
+          <svg viewBox="0 0 24 24" fill="white" width="28" height="28"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+        </button>
         <a href="knowledge-pages/${encodedFilename}" target="_blank" class="knowledge-open-btn">
           別タブで開く ↗
         </a>
       </div>
     `;
+
+    // ナレッジページ内フローティングマイクボタンのイベント
+    var inlineMicBtn = document.getElementById('kb-inline-mic-btn');
+    if (inlineMicBtn) {
+      inlineMicBtn.addEventListener('click', function() {
+        showRecordingModal(true);
+      });
+    }
   }
 
   // ===== 下部固定アクションバー =====
@@ -3083,7 +3099,20 @@
     modal.style.display = 'flex';
 
     if (filename) {
-      modalBody.innerHTML = '<iframe src="knowledge-pages/' + encodeURIComponent(filename) + '" class="kb-iframe" sandbox="allow-same-origin"></iframe>';
+      modalBody.innerHTML = '<div style="position:relative;height:100%;">' +
+        '<iframe src="knowledge-pages/' + encodeURIComponent(filename) + '" class="kb-iframe" sandbox="allow-same-origin"></iframe>' +
+        '<button class="kb-floating-mic-btn" id="kb-modal-mic-btn" title="音声フィードバック">' +
+          '<svg viewBox="0 0 24 24" fill="white" width="28" height="28"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>' +
+        '</button>' +
+      '</div>';
+
+      // モーダル内マイクボタンのイベント
+      var modalMicBtn = document.getElementById('kb-modal-mic-btn');
+      if (modalMicBtn) {
+        modalMicBtn.addEventListener('click', function() {
+          showRecordingModal(true);
+        });
+      }
     } else {
       modalBody.innerHTML = '<div class="ef-empty">コンテンツを読み込めません</div>';
     }
@@ -3856,6 +3885,182 @@
   function escapeAttr(str) {
     if (!str) return '';
     return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  // ===== ビフォーアフター比較 =====
+  function renderBeforeAfter(project) {
+    const container = document.getElementById('report-sections');
+    container.innerHTML = `
+      <div class="ba-loading" style="text-align:center;padding:40px;">
+        <div style="color:var(--accent);font-size:24px;">⏳</div>
+        <div style="color:var(--text-muted);margin-top:8px;">データを読み込み中...</div>
+      </div>
+    `;
+
+    // 両APIを並列取得
+    Promise.all([
+      fetch('http://localhost:8210/api/v1/projects/' + encodeURIComponent(project.id) + '/before-after')
+        .then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('http://localhost:8210/api/v1/projects/' + encodeURIComponent(project.id) + '/transcript-diff')
+        .then(r => r.ok ? r.json() : null).catch(() => null)
+    ]).then(([baData, tdData]) => {
+      renderBeforeAfterContent(container, baData, tdData);
+    });
+  }
+
+  function renderBeforeAfterContent(container, baData, tdData) {
+    if (!baData) {
+      container.innerHTML = `
+        <div class="ba-error" style="text-align:center;padding:40px;color:var(--text-muted);">
+          データの取得に失敗しました
+        </div>
+      `;
+      return;
+    }
+
+    // 比較モード切替
+    let mode = 0; // 0: 素材 vs 編集後, 1: 編集後 vs FB後
+
+    function render() {
+      const sourceVideos = baData.source_videos || [];
+      const editedVideo = baData.edited_video;
+      const fbRevised = baData.fb_revised_video;
+      const highlights = baData.diff_highlights || [];
+
+      container.innerHTML = `
+        <div class="ba-container">
+          <!-- モード切替 -->
+          <div class="ba-mode-selector">
+            <button class="ba-mode-btn ${mode === 0 ? 'active' : ''}" data-mode="0">素材 vs 編集後</button>
+            <button class="ba-mode-btn ${mode === 1 ? 'active' : ''}" data-mode="1">編集後 vs FB後</button>
+          </div>
+
+          <!-- 動画比較 (左右2カラム / モバイル上下) -->
+          <div class="ba-video-grid">
+            <div class="ba-video-panel">
+              <div class="ba-panel-label">
+                <span class="ba-dot" style="background:#4A90D9"></span>
+                ${mode === 0 ? '素材（YouTube）' : '編集後 v1（Vimeo）'}
+              </div>
+              <div class="ba-iframe-wrap">
+                ${mode === 0
+                  ? (sourceVideos.length > 0
+                    ? '<iframe src="' + escapeAttr(sourceVideos[0].embed_url) + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+                    : '<div class="ba-placeholder">素材動画が未登録です</div>')
+                  : (editedVideo && editedVideo.embed_url
+                    ? '<iframe src="' + escapeAttr(editedVideo.embed_url) + '" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>'
+                    : '<div class="ba-placeholder">編集後動画が未登録です</div>')}
+              </div>
+            </div>
+            <div class="ba-video-panel">
+              <div class="ba-panel-label">
+                <span class="ba-dot" style="background:var(--accent)"></span>
+                ${mode === 0 ? '編集後（Vimeo）' : 'FB後 v2（Vimeo）'}
+              </div>
+              <div class="ba-iframe-wrap">
+                ${mode === 0
+                  ? (editedVideo && editedVideo.embed_url
+                    ? '<iframe src="' + escapeAttr(editedVideo.embed_url) + '" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>'
+                    : '<div class="ba-placeholder">編集後動画が未登録です</div>')
+                  : (fbRevised && fbRevised.embed_url
+                    ? '<iframe src="' + escapeAttr(fbRevised.embed_url) + '" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>'
+                    : '<div class="ba-placeholder">FB後再編集版はまだありません</div>')}
+              </div>
+            </div>
+          </div>
+
+          <!-- FBタイムスタンプ一覧 -->
+          ${highlights.length > 0 ? `
+            <div class="ba-highlights">
+              <div class="ba-section-header">
+                <span style="color:var(--accent)">⏱</span> FBタイムスタンプ
+                <span class="ba-count">${highlights.length}件</span>
+              </div>
+              ${highlights.map(h => `
+                <div class="ba-highlight-row">
+                  <span class="ba-timestamp">${escapeHTML(h.timestamp || '')}</span>
+                  <span class="ba-hl-text">${escapeHTML(h.text || '')}</span>
+                  ${h.priority ? `<span class="ba-priority ba-priority-${h.priority}">${escapeHTML(h.priority)}</span>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <!-- 文字起こしdiff -->
+          ${renderTranscriptDiff(tdData)}
+        </div>
+      `;
+
+      // モード切替ハンドラ
+      container.querySelectorAll('.ba-mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          mode = parseInt(btn.dataset.mode);
+          render();
+        });
+      });
+
+      // 文字起こし折りたたみ
+      const toggle = container.querySelector('.ba-transcript-toggle');
+      const body = container.querySelector('.ba-transcript-body');
+      if (toggle && body) {
+        toggle.addEventListener('click', () => {
+          body.classList.toggle('collapsed');
+          toggle.querySelector('.ba-chevron').textContent = body.classList.contains('collapsed') ? '▼' : '▲';
+        });
+      }
+    }
+
+    render();
+  }
+
+  function renderTranscriptDiff(tdData) {
+    if (!tdData || tdData.status !== 'ok') {
+      const msg = (tdData && tdData.message) ? escapeHTML(tdData.message) : '文字起こしデータがありません';
+      return `
+        <div class="ba-transcript">
+          <div class="ba-section-header ba-transcript-toggle" style="cursor:pointer;">
+            <span style="color:var(--accent)">📄</span> 文字起こし比較
+            <span class="ba-chevron">▼</span>
+          </div>
+          <div class="ba-transcript-body collapsed">
+            <div style="padding:16px;color:var(--text-muted);font-size:13px;">${msg}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    const segments = tdData.segments || [];
+    const hlCount = tdData.highlight_count || 0;
+    const plCount = tdData.punchline_count || 0;
+
+    return `
+      <div class="ba-transcript">
+        <div class="ba-section-header ba-transcript-toggle" style="cursor:pointer;">
+          <span style="color:var(--accent)">📄</span> 文字起こし比較
+          <span class="ba-stats">
+            ${hlCount > 0 ? `<span class="ba-stat-badge ba-stat-hl">HL ${hlCount}</span>` : ''}
+            ${plCount > 0 ? `<span class="ba-stat-badge ba-stat-pl">PL ${plCount}</span>` : ''}
+          </span>
+          <span class="ba-chevron">▼</span>
+        </div>
+        <div class="ba-transcript-body collapsed">
+          <div class="ba-legend">
+            <span class="ba-legend-item"><span class="ba-legend-box" style="background:var(--text-secondary)"></span>通常</span>
+            <span class="ba-legend-item"><span class="ba-legend-box" style="background:rgba(128,128,128,0.4)"></span>カット</span>
+            <span class="ba-legend-item"><span class="ba-legend-box" style="background:var(--accent)"></span>FB修正</span>
+            <span class="ba-legend-item"><span class="ba-legend-box" style="background:#FFD700"></span>パンチライン</span>
+          </div>
+          <div class="ba-segments">
+            ${segments.map(s => `
+              <div class="ba-segment ba-segment-${s.status}">
+                <span class="ba-line-num">${s.line_number}</span>
+                <span class="ba-seg-text">${escapeHTML(s.text)}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
   }
 
 })();

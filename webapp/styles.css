@@ -641,6 +641,45 @@ html, body {
   border-top: 1px solid rgba(128, 128, 128, 0.15);
 }
 
+/* フローティングマイクボタン（ナレッジページ内音声FB用） */
+.kb-floating-mic-btn {
+  position: absolute;
+  bottom: 60px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #E50914;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.kb-floating-mic-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(229, 9, 20, 0.5), 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+.kb-floating-mic-btn:active {
+  transform: scale(0.95);
+}
+.kb-floating-mic-btn svg {
+  width: 28px;
+  height: 28px;
+  fill: white;
+}
+/* 録音中のパルスアニメーション */
+.kb-floating-mic-btn.recording {
+  animation: kb-mic-pulse 1s ease-in-out infinite;
+}
+@keyframes kb-mic-pulse {
+  0%, 100% { background: #E50914; box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4); }
+  50% { background: #B71C1C; box-shadow: 0 4px 20px rgba(229, 9, 20, 0.7); }
+}
+
 .knowledge-open-btn:active {
   opacity: 0.7;
 }
@@ -4527,4 +4566,257 @@ html, body {
 
 .sv-add-error {
   color: var(--accent);
+}
+
+/* ===== ビフォーアフター比較 ===== */
+.ba-container {
+  padding: 16px;
+}
+
+.ba-mode-selector {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #333;
+}
+
+.ba-mode-btn {
+  flex: 1;
+  padding: 10px 8px;
+  background: var(--card);
+  color: var(--text-muted);
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ba-mode-btn.active {
+  background: var(--accent);
+  color: white;
+}
+
+.ba-video-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .ba-video-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ba-video-panel {
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--card);
+}
+
+.ba-panel-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.ba-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.ba-iframe-wrap {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  background: #000;
+}
+
+.ba-iframe-wrap iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.ba-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* FBタイムスタンプ */
+.ba-highlights {
+  margin-bottom: 16px;
+}
+
+.ba-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  padding: 12px 0;
+}
+
+.ba-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.ba-highlight-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--card);
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+
+.ba-timestamp {
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--accent);
+  min-width: 50px;
+}
+
+.ba-hl-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.ba-priority {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  color: white;
+  white-space: nowrap;
+}
+
+.ba-priority-high { background: var(--accent); }
+.ba-priority-medium { background: var(--status-editing); }
+.ba-priority-low { background: var(--text-muted); }
+
+/* 文字起こしdiff */
+.ba-transcript {
+  margin-top: 8px;
+}
+
+.ba-transcript-toggle {
+  cursor: pointer;
+}
+
+.ba-chevron {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.ba-stats {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.ba-stat-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 8px;
+  color: white;
+}
+
+.ba-stat-hl { background: var(--accent); }
+.ba-stat-pl { background: #FFD700; color: #000; }
+
+.ba-transcript-body.collapsed {
+  display: none;
+}
+
+.ba-legend {
+  display: flex;
+  gap: 16px;
+  padding: 8px 0;
+  flex-wrap: wrap;
+}
+
+.ba-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.ba-legend-box {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.ba-segments {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.ba-segment {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+  align-items: flex-start;
+}
+
+.ba-line-num {
+  font-family: monospace;
+  font-size: 9px;
+  color: rgba(128,128,128,0.5);
+  min-width: 30px;
+  text-align: right;
+}
+
+.ba-seg-text {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ba-segment-unused .ba-seg-text {
+  color: rgba(128,128,128,0.4);
+}
+
+.ba-segment-highlight .ba-seg-text {
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}
+
+.ba-segment-punchline .ba-seg-text {
+  color: #FFD700;
+  background: rgba(255,215,0,0.1);
+  padding: 0 4px;
+  border-radius: 2px;
 }

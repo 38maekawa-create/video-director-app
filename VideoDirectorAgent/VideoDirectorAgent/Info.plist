@@ -28,6 +28,8 @@
     <dict>
         <key>NSAllowsLocalNetworking</key>
         <true/>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
         <key>NSExceptionDomains</key>
         <dict>
             <key>localhost</key>
@@ -36,6 +38,11 @@
                 <true/>
             </dict>
             <key>mac-mini-m4.local</key>
+            <dict>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <true/>
+            </dict>
+            <key>100.110.206.6</key>
             <dict>
                 <key>NSExceptionAllowsInsecureHTTPLoads</key>
                 <true/>

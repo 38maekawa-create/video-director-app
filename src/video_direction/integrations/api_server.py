@@ -887,6 +887,151 @@ def run_frame_evaluation(project_id: str, body: FrameEvaluationRequest = FrameEv
     return response
 
 
+# --- 音声品質評価 (C-3) ---
+
+class AudioEvaluationRequest(BaseModel):
+    """音声品質評価リクエスト"""
+    video_path: Optional[str] = None  # 動画/音声ファイルパス（ローカル）
+    use_ffmpeg: bool = True  # ffmpegを使った実解析を行うか
+
+
+def _get_audio_evaluator():
+    """音声品質評価モジュールの取得"""
+    try:
+        from src.video_direction.analyzer.audio_evaluator import AudioEvaluator
+        return AudioEvaluator()
+    except ImportError:
+        return None
+
+
+@app.get("/api/v1/projects/{project_id}/audio-evaluation")
+def get_audio_evaluation(project_id: str):
+    """プロジェクトの音声品質評価結果を取得する（キャッシュ済み結果）
+
+    まだ評価が実行されていない場合は空の結果を返す。
+    """
+    evaluator = _get_audio_evaluator()
+    if not evaluator:
+        return {
+            "project_id": project_id,
+            "status": "unavailable",
+            "message": "音声品質評価モジュールが利用できません",
+            "evaluation": {},
+        }
+
+    # キャッシュされた評価結果を読み込む
+    cache_path = Path.home() / "AI開発10" / ".data" / "audio_evaluations" / f"{project_id}.json"
+    if cache_path.exists():
+        data = json.loads(cache_path.read_text())
+        return data
+
+    return {
+        "project_id": project_id,
+        "status": "not_evaluated",
+        "message": "音声品質評価がまだ実行されていません。POSTで評価を実行してください。",
+        "evaluation": {},
+    }
+
+
+@app.post("/api/v1/projects/{project_id}/audio-evaluation")
+def run_audio_evaluation(project_id: str, body: AudioEvaluationRequest = AudioEvaluationRequest()):
+    """プロジェクトの音声品質評価を実行する
+
+    動画ファイルパスが指定されていればffmpegによる実測評価を行い、
+    なければ文字起こしデータベースの推定評価を行う。
+    """
+    evaluator = _get_audio_evaluator()
+    if not evaluator:
+        raise HTTPException(500, "音声品質評価モジュールが利用できません")
+
+    # プロジェクト取得
+    conn = _get_db()
+    row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(404, "Project not found")
+
+    project_data = dict(row)
+
+    # AI開発5コネクタからVideoDataを構築（簡易版）
+    video_data = None
+    try:
+        from src.video_direction.integrations.ai_dev5_connector import VideoData, HighlightScene
+        # knowledgeフィールドからハイライト情報を復元
+        highlights = []
+        knowledge_json = project_data.get("knowledge")
+        if knowledge_json:
+            try:
+                knowledge = json.loads(knowledge_json) if isinstance(knowledge_json, str) else knowledge_json
+                for h in knowledge.get("highlights", []):
+                    highlights.append(HighlightScene(
+                        timestamp=h.get("timestamp", "00:00"),
+                        speaker=h.get("speaker", ""),
+                        text=h.get("text", ""),
+                        category=h.get("category", ""),
+                    ))
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        video_data = VideoData(
+            title=project_data.get("title", ""),
+            speakers=project_data.get("guest_name", ""),
+            highlights=highlights,
+        )
+    except ImportError:
+        pass  # video_data=None のまま進む（AudioEvaluator側で空データ処理）
+
+    # 音声品質評価の実行
+    video_path = body.video_path or ""
+
+    if body.use_ffmpeg and video_path:
+        # ffmpegによる実測評価
+        result_dict = evaluator.evaluate_overall(video_path, video_data)
+    else:
+        # 文字起こしベースの推定評価
+        from dataclasses import asdict
+        from src.video_direction.analyzer.audio_evaluator import evaluate_audio
+        if video_data:
+            result = evaluate_audio(video_data, use_ffmpeg=False)
+            result_dict = asdict(result)
+            result_dict["stats"] = {}
+        else:
+            result_dict = {
+                "overall_score": 0,
+                "grade": "D",
+                "axis_scores": [],
+                "issues": [],
+                "analysis_method": "unavailable",
+                "is_estimated": True,
+                "stats": {},
+            }
+
+    # レスポンス構築
+    response = {
+        "project_id": project_id,
+        "status": "completed",
+        "evaluated_at": datetime.now(timezone.utc).isoformat(),
+        "overall_score": result_dict.get("overall_score", 0),
+        "grade": result_dict.get("grade", "D"),
+        "analysis_method": result_dict.get("analysis_method", "unknown"),
+        "is_estimated": result_dict.get("is_estimated", True),
+        "has_ffmpeg": evaluator.has_ffmpeg,
+        "axis_scores": result_dict.get("axis_scores", []),
+        "issues": result_dict.get("issues", []),
+        "stats": result_dict.get("stats", {}),
+        "error_count": result_dict.get("error_count", 0),
+        "warning_count": result_dict.get("warning_count", 0),
+    }
+
+    # 結果をキャッシュに保存
+    cache_dir = Path.home() / "AI開発10" / ".data" / "audio_evaluations"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / f"{project_id}.json"
+    cache_path.write_text(json.dumps(response, ensure_ascii=False, indent=2))
+
+    return response
+
+
 # --- 映像学習インサイト (NEW-6/7) ---
 
 def _get_feedback_learner():
@@ -1622,6 +1767,606 @@ def generate_edit_feedback(project_id: str, body: EditFeedbackRequest):
         pass
 
     return _compute_edit_feedback(project_row, body)
+
+
+# --- ディレクション生成 (E2E統合) ---
+
+
+class GenerateDirectionRequest(BaseModel):
+    """ディレクション生成リクエスト"""
+    use_llm: bool = True  # LLM分析を使うか
+
+
+@app.post("/api/v1/projects/{project_id}/generate-direction")
+def generate_direction(project_id: str, body: GenerateDirectionRequest = GenerateDirectionRequest()):
+    """FB学習ルール+映像学習インサイトを統合してディレクションを生成する
+
+    1. プロジェクトのknowledgeフィールドからVideoDataを構築
+    2. FB学習ルール（feedback_learner）を取得
+    3. 映像学習ルール（video_learner）を取得
+    4. トラッキング映像のインサイト（参考URL+タイムスタンプ）を取得
+    5. direction_generator.generate_directions() を呼び出し
+    6. 結果にトラッキング映像の参考URLを付与
+    """
+    # プロジェクト取得
+    conn = _get_db()
+    row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(404, "Project not found")
+
+    project_data = dict(row)
+
+    # VideoDataを構築
+    try:
+        from src.video_direction.integrations.ai_dev5_connector import VideoData, HighlightScene
+        from src.video_direction.analyzer.guest_classifier import ClassificationResult
+        from src.video_direction.analyzer.income_evaluator import IncomeEvaluation
+        from src.video_direction.analyzer.direction_generator import (
+            generate_directions,
+            get_learning_context,
+        )
+    except ImportError as e:
+        raise HTTPException(500, f"必要なモジュールのimportに失敗: {e}")
+
+    # knowledgeフィールドからハイライト復元
+    highlights = []
+    knowledge_json = project_data.get("knowledge")
+    if knowledge_json:
+        try:
+            knowledge = json.loads(knowledge_json) if isinstance(knowledge_json, str) else knowledge_json
+            for h in knowledge.get("highlights", []):
+                highlights.append(HighlightScene(
+                    timestamp=h.get("timestamp", "00:00"),
+                    speaker=h.get("speaker", ""),
+                    text=h.get("text", ""),
+                    category=h.get("category", ""),
+                ))
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    video_data = VideoData(
+        title=project_data.get("title", ""),
+        speakers=project_data.get("guest_name", ""),
+        highlights=highlights,
+    )
+
+    # ゲスト分類（簡易デフォルト）
+    classification = ClassificationResult(
+        tier="c",
+        tier_label="一般層",
+        confidence=0.5,
+    )
+
+    # 年収演出（簡易デフォルト）
+    income_eval = IncomeEvaluation(
+        should_emphasize=False,
+        emphasis_reason="デフォルト（情報不足）",
+    )
+
+    # learnerインスタンス取得
+    feedback_learner = _get_feedback_learner()
+    video_learner = _get_video_learner()
+
+    # ディレクション生成
+    try:
+        timeline = generate_directions(
+            video_data=video_data,
+            classification=classification,
+            income_eval=income_eval,
+            feedback_learner=feedback_learner,
+            video_learner=video_learner,
+        )
+    except Exception as e:
+        raise HTTPException(500, f"ディレクション生成エラー: {e}")
+
+    # 学習コンテキスト取得
+    learning_ctx = get_learning_context(
+        feedback_learner=feedback_learner,
+        video_learner=video_learner,
+    )
+
+    # トラッキング映像の参考URL+タイムスタンプを収集
+    tracking_references = []
+    tracker = _get_video_tracker()
+    if tracker:
+        try:
+            for video in tracker.list_videos(status="completed"):
+                if video.analysis_result:
+                    tracking_references.append({
+                        "video_id": video.id,
+                        "url": video.url,
+                        "title": video.title,
+                        "channel": video.channel_name,
+                        "analysis": video.analysis_result,
+                    })
+        except Exception:
+            pass
+
+    # VideoLearnerのパターンからexample_urlsを収集
+    video_reference_urls = []
+    if video_learner:
+        try:
+            for pattern in video_learner.get_patterns(min_confidence=0.3):
+                for url in pattern.example_urls:
+                    video_reference_urls.append({
+                        "url": url,
+                        "pattern": pattern.pattern,
+                        "category": pattern.category,
+                        "confidence": pattern.confidence,
+                    })
+        except Exception:
+            pass
+
+    # DirectionTimelineをJSONシリアライズ
+    from dataclasses import asdict
+    entries_list = []
+    for entry in timeline.entries:
+        entries_list.append(asdict(entry))
+
+    return {
+        "project_id": project_id,
+        "direction_timeline": {
+            "entries": entries_list,
+            "llm_analysis": timeline.llm_analysis,
+            "applied_rules": timeline.applied_rules,
+        },
+        "learning_context": learning_ctx,
+        "tracking_references": tracking_references,
+        "video_reference_urls": video_reference_urls,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+# --- E2Eパイプライン ---
+
+
+class E2EPipelineRequest(BaseModel):
+    """E2Eパイプラインリクエスト"""
+    vimeo_video_id: Optional[str] = None  # Vimeo動画ID（投稿先）
+    dry_run: bool = True  # Vimeo投稿をdry_runにするか
+    use_llm: bool = True  # LLM分析を使うか
+
+
+@app.post("/api/v1/projects/{project_id}/e2e-pipeline")
+def run_e2e_pipeline(project_id: str, body: E2EPipelineRequest = E2EPipelineRequest()):
+    """E2Eパイプライン: FB入力→FB学習→映像学習→ディレクション生成→Vimeo投稿
+
+    統合フロー全体を1回のAPI呼び出しで実行する:
+    1. プロジェクトのFB一覧取得
+    2. FB学習ルール確認
+    3. 映像学習インサイト取得（トラッキング映像の参考URL+タイムスタンプ含む）
+    4. ディレクション生成（LLMで美しい言い回しに変換）
+    5. Vimeoレビューコメント投稿（dry_runオプション付き）
+    """
+    pipeline_steps = {}
+    errors = []
+
+    # --- Step 1: プロジェクトとFB一覧取得 ---
+    conn = _get_db()
+    project_row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+    if not project_row:
+        conn.close()
+        raise HTTPException(404, "Project not found")
+
+    fb_rows = conn.execute(
+        "SELECT * FROM feedbacks WHERE project_id = ? ORDER BY created_at DESC",
+        (project_id,)
+    ).fetchall()
+    conn.close()
+
+    project_data = dict(project_row)
+    feedbacks = [dict(r) for r in fb_rows]
+    pipeline_steps["step1_feedbacks"] = {
+        "status": "ok",
+        "feedback_count": len(feedbacks),
+        "project_title": project_data.get("title", ""),
+        "guest_name": project_data.get("guest_name", ""),
+    }
+
+    # --- Step 2: FB学習ルール確認 ---
+    feedback_learner = _get_feedback_learner()
+    fb_learning = {}
+    if feedback_learner:
+        try:
+            fb_learning = feedback_learner.get_insights()
+            pipeline_steps["step2_fb_learning"] = {
+                "status": "ok",
+                "insights": fb_learning,
+            }
+        except Exception as e:
+            pipeline_steps["step2_fb_learning"] = {"status": "error", "error": str(e)}
+            errors.append(f"FB学習ルール取得エラー: {e}")
+    else:
+        pipeline_steps["step2_fb_learning"] = {"status": "unavailable"}
+
+    # --- Step 3: 映像学習インサイト取得 ---
+    video_learner = _get_video_learner()
+    video_learning = {}
+    tracking_references = []
+
+    if video_learner:
+        try:
+            video_learning = video_learner.get_insights()
+            pipeline_steps["step3_video_learning"] = {
+                "status": "ok",
+                "insights": video_learning,
+            }
+        except Exception as e:
+            pipeline_steps["step3_video_learning"] = {"status": "error", "error": str(e)}
+            errors.append(f"映像学習インサイト取得エラー: {e}")
+    else:
+        pipeline_steps["step3_video_learning"] = {"status": "unavailable"}
+
+    # トラッキング映像の参考URL+タイムスタンプ
+    tracker = _get_video_tracker()
+    if tracker:
+        try:
+            for video in tracker.list_videos(status="completed"):
+                if video.analysis_result:
+                    tracking_references.append({
+                        "video_id": video.id,
+                        "url": video.url,
+                        "title": video.title,
+                        "channel": video.channel_name,
+                        "analysis": video.analysis_result,
+                    })
+        except Exception:
+            pass
+
+    # VideoLearnerのパターンからexample_urls収集
+    video_reference_urls = []
+    if video_learner:
+        try:
+            for pattern in video_learner.get_patterns(min_confidence=0.3):
+                for url in pattern.example_urls:
+                    video_reference_urls.append({
+                        "url": url,
+                        "pattern": pattern.pattern,
+                        "category": pattern.category,
+                        "confidence": pattern.confidence,
+                    })
+        except Exception:
+            pass
+
+    # --- Step 4: ディレクション生成 ---
+    direction_result = None
+    try:
+        from src.video_direction.integrations.ai_dev5_connector import VideoData, HighlightScene
+        from src.video_direction.analyzer.guest_classifier import ClassificationResult
+        from src.video_direction.analyzer.income_evaluator import IncomeEvaluation
+        from src.video_direction.analyzer.direction_generator import (
+            generate_directions,
+            get_learning_context,
+        )
+
+        # knowledgeからハイライト復元
+        highlights = []
+        knowledge_json = project_data.get("knowledge")
+        if knowledge_json:
+            try:
+                knowledge = json.loads(knowledge_json) if isinstance(knowledge_json, str) else knowledge_json
+                for h in knowledge.get("highlights", []):
+                    highlights.append(HighlightScene(
+                        timestamp=h.get("timestamp", "00:00"),
+                        speaker=h.get("speaker", ""),
+                        text=h.get("text", ""),
+                        category=h.get("category", ""),
+                    ))
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        video_data = VideoData(
+            title=project_data.get("title", ""),
+            speakers=project_data.get("guest_name", ""),
+            highlights=highlights,
+        )
+
+        classification = ClassificationResult(tier="c", tier_label="一般層", confidence=0.5)
+        income_eval = IncomeEvaluation(should_emphasize=False, emphasis_reason="デフォルト")
+
+        timeline = generate_directions(
+            video_data=video_data,
+            classification=classification,
+            income_eval=income_eval,
+            feedback_learner=feedback_learner,
+            video_learner=video_learner,
+        )
+
+        learning_ctx = get_learning_context(
+            feedback_learner=feedback_learner,
+            video_learner=video_learner,
+        )
+
+        from dataclasses import asdict
+        entries_list = [asdict(entry) for entry in timeline.entries]
+
+        direction_result = {
+            "entries": entries_list,
+            "llm_analysis": timeline.llm_analysis,
+            "applied_rules": timeline.applied_rules,
+        }
+
+        pipeline_steps["step4_direction"] = {
+            "status": "ok",
+            "entry_count": len(entries_list),
+            "has_llm_analysis": bool(timeline.llm_analysis),
+            "applied_rule_count": len(timeline.applied_rules),
+            "learning_context": learning_ctx,
+        }
+
+    except Exception as e:
+        pipeline_steps["step4_direction"] = {"status": "error", "error": str(e)}
+        errors.append(f"ディレクション生成エラー: {e}")
+
+    # --- Step 5: Vimeoレビューコメント投稿 ---
+    vimeo_result = None
+    if body.vimeo_video_id and direction_result and direction_result.get("entries"):
+        try:
+            # ディレクションエントリからVimeoコメントを構築
+            vimeo_comments = []
+            for entry in direction_result["entries"]:
+                vimeo_comments.append(VimeoCommentItem(
+                    timecode=entry["timestamp"],
+                    text=entry["instruction"],
+                    priority=entry.get("priority", "medium"),
+                    feedback_id=None,
+                ))
+
+            vimeo_request = VimeoPostReviewRequest(
+                vimeo_video_id=body.vimeo_video_id,
+                comments=vimeo_comments,
+            )
+
+            # 既存のpost_vimeo_review関数を呼び出す
+            vimeo_result = post_vimeo_review(body=vimeo_request, dry_run=body.dry_run)
+            pipeline_steps["step5_vimeo"] = {
+                "status": "ok",
+                "mode": "dry_run" if body.dry_run else "execute",
+                "comment_count": len(vimeo_comments),
+            }
+        except Exception as e:
+            pipeline_steps["step5_vimeo"] = {"status": "error", "error": str(e)}
+            errors.append(f"Vimeo投稿エラー: {e}")
+    else:
+        skip_reason = []
+        if not body.vimeo_video_id:
+            skip_reason.append("vimeo_video_idが未指定")
+        if not direction_result:
+            skip_reason.append("ディレクション生成に失敗")
+        elif not direction_result.get("entries"):
+            skip_reason.append("ディレクションエントリが空")
+        pipeline_steps["step5_vimeo"] = {
+            "status": "skipped",
+            "reason": "、".join(skip_reason),
+        }
+
+    return {
+        "project_id": project_id,
+        "pipeline_steps": pipeline_steps,
+        "direction_timeline": direction_result,
+        "tracking_references": tracking_references,
+        "video_reference_urls": video_reference_urls,
+        "vimeo_result": vimeo_result,
+        "errors": errors,
+        "success": len(errors) == 0,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+# --- FB→LLM変換の強化版 ---
+
+
+class FeedbackConvertEnhancedRequest(BaseModel):
+    """FB変換強化版リクエスト"""
+    raw_text: str
+    project_id: str
+    use_learning_rules: bool = True  # FB学習ルールを参照するか
+    include_tracking_references: bool = True  # トラッキング映像の参考事例を含めるか
+
+
+@app.post("/api/v1/feedback/convert-enhanced")
+def convert_feedback_enhanced(body: FeedbackConvertEnhancedRequest):
+    """FB→LLM変換の強化版: FB学習ルール+トラッキング映像参考事例を統合
+
+    既存の /api/feedback/convert を拡張:
+    - FB学習ルールを参照して具体的な指示に変換
+    - トラッキング映像から参考事例をURL+タイムスタンプ付きで引用
+    """
+    raw = body.raw_text
+
+    # FB学習ルールを収集
+    learned_rules_text = ""
+    if body.use_learning_rules:
+        fl = _get_feedback_learner()
+        if fl:
+            try:
+                active_rules = fl.get_active_rules()
+                if active_rules:
+                    rules_lines = [f"- [{r.category}] {r.rule_text} (優先度: {r.priority})" for r in active_rules[:10]]
+                    learned_rules_text = "\n\n## 過去のフィードバックから学習した演出ルール:\n" + "\n".join(rules_lines)
+            except Exception:
+                pass
+
+    # トラッキング映像の参考事例を収集
+    tracking_refs_text = ""
+    tracking_references = []
+    if body.include_tracking_references:
+        # VideoLearnerからパターン+URL
+        vl = _get_video_learner()
+        if vl:
+            try:
+                for pattern in vl.get_patterns(min_confidence=0.3):
+                    for url in pattern.example_urls:
+                        tracking_references.append({
+                            "url": url,
+                            "pattern": pattern.pattern,
+                            "category": pattern.category,
+                            "confidence": pattern.confidence,
+                        })
+                if tracking_references:
+                    refs_lines = [f"- {r['url']} （{r['category']}: {r['pattern']}）" for r in tracking_references[:5]]
+                    tracking_refs_text = "\n\n## 参考映像事例（トラッキング映像から）:\n" + "\n".join(refs_lines)
+            except Exception:
+                pass
+
+        # VideoTrackerから完了済み映像
+        tracker = _get_video_tracker()
+        if tracker:
+            try:
+                for video in tracker.list_videos(status="completed"):
+                    if video.analysis_result:
+                        tracking_references.append({
+                            "url": video.url,
+                            "title": video.title,
+                            "channel": video.channel_name,
+                            "category": "analyzed_video",
+                            "analysis": video.analysis_result,
+                        })
+            except Exception:
+                pass
+
+    # LLM変換
+    try:
+        import anthropic
+        import os
+        import re
+
+        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        if not api_key:
+            env_file = Path.home() / ".config" / "maekawa" / "api-keys.env"
+            if env_file.exists():
+                for line in env_file.read_text().split("\n"):
+                    if line.startswith("ANTHROPIC_API_KEY="):
+                        api_key = line.split("=", 1)[1].strip()
+                        break
+
+        if api_key:
+            client = anthropic.Anthropic(api_key=api_key)
+            prompt = f"""以下の音声フィードバックを、映像編集者向けのプロフェッショナルなディレクション指示に変換してください。
+{learned_rules_text}{tracking_refs_text}
+
+音声テキスト:
+{raw}
+
+以下のJSON形式で出力:
+{{
+  "converted_text": "変換後のプロの指示テキスト",
+  "structured_items": [
+    {{
+      "id": "1",
+      "timestamp": "該当タイムスタンプ（推定）",
+      "element": "対象要素（テロップ/カット/BGM/カメラ等）",
+      "instruction": "具体的な指示",
+      "priority": "high/medium/low",
+      "reference_url": "参考映像のURL（あれば）",
+      "reference_note": "参考映像の該当箇所の説明（あれば）"
+    }}
+  ]
+}}"""
+
+            response = client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=1500,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            text = response.content[0].text
+            json_match = re.search(r'\{[\s\S]*\}', text)
+            if json_match:
+                result = json.loads(json_match.group())
+                result["tracking_references"] = tracking_references
+                result["learning_rules_applied"] = bool(learned_rules_text)
+                return result
+    except Exception:
+        pass
+
+    # フォールバック: 簡易変換
+    return {
+        "converted_text": f"【ディレクション指示】\n{raw}\n\n※ 上記の音声フィードバックを確認し、該当箇所を修正してください。",
+        "structured_items": [{
+            "id": "1",
+            "timestamp": "00:00",
+            "element": "全般",
+            "instruction": raw[:200],
+            "priority": "medium",
+            "reference_url": None,
+            "reference_note": None,
+        }],
+        "tracking_references": tracking_references,
+        "learning_rules_applied": bool(learned_rules_text),
+    }
+
+
+# --- ナレッジページ連携（KP-1: AI開発5 動画ナレッジページ統合） ---
+
+from .knowledge_pages import KnowledgePageIntegration
+
+_knowledge = KnowledgePageIntegration()
+
+
+@app.get("/api/v1/knowledge/pages")
+def list_knowledge_pages(limit: int = 50, offset: int = 0):
+    """ナレッジページ一覧を返す"""
+    pages = _knowledge.list_pages()
+    total = len(pages)
+    return {
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "pages": pages[offset:offset + limit],
+    }
+
+
+@app.get("/api/v1/knowledge/pages/{page_id}")
+def get_knowledge_page(page_id: str, format: str = "meta"):
+    """個別のナレッジページを返す
+
+    Args:
+        page_id: ページID（拡張子なしのファイル名）
+        format: "meta"（メタ情報のみ）, "html"（HTML全文）, "text"（テキスト抽出）
+    """
+    if format == "html":
+        html = _knowledge.get_page_content(page_id)
+        if html is None:
+            raise HTTPException(status_code=404, detail=f"Knowledge page not found: {page_id}")
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse(content=html)
+
+    if format == "text":
+        text = _knowledge.get_page_text(page_id)
+        if text is None:
+            raise HTTPException(status_code=404, detail=f"Knowledge page not found: {page_id}")
+        return {"id": page_id, "text": text}
+
+    # デフォルト: メタ情報
+    meta = _knowledge.get_page_meta(page_id)
+    if meta is None:
+        raise HTTPException(status_code=404, detail=f"Knowledge page not found: {page_id}")
+    return meta
+
+
+@app.get("/api/v1/knowledge/search")
+def search_knowledge_pages(q: str, limit: int = 20):
+    """ナレッジ内を全文検索"""
+    if not q or len(q.strip()) == 0:
+        raise HTTPException(status_code=400, detail="Search query 'q' is required")
+    results = _knowledge.search_knowledge(q.strip())
+    return {
+        "query": q,
+        "total": len(results),
+        "results": results[:limit],
+    }
+
+
+@app.get("/api/v1/knowledge/guest/{guest_name}")
+def get_guest_knowledge(guest_name: str):
+    """特定ゲストに関連するナレッジ一覧"""
+    results = _knowledge.get_guest_knowledge(guest_name)
+    return {
+        "guest_name": guest_name,
+        "total": len(results),
+        "pages": results,
+    }
 
 
 # --- ヘルスチェック ---

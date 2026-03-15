@@ -563,7 +563,25 @@ def analyze_audio_with_ffmpeg(audio_path: str) -> dict:
     except Exception as e:
         logger.warning("astats 測定エラー: %s", e)
 
-    # Step 4: ダイナミックレンジ計算
+    # Step 4: silencedetect で無音区間を検出
+    try:
+        silence_data = _run_silencedetect(audio_path)
+        if silence_data:
+            result["silence_ranges"] = silence_data.get("silence_ranges", [])
+            result["total_silence_duration"] = silence_data.get("total_silence_duration", 0.0)
+            result["silence_count"] = silence_data.get("silence_count", 0)
+    except Exception as e:
+        logger.warning("silencedetect 実行エラー: %s", e)
+
+    # Step 5: volumedetect でフレームごとの音量変化を検出
+    try:
+        volume_data = _run_volumedetect(audio_path)
+        if volume_data:
+            result.update(volume_data)
+    except Exception as e:
+        logger.warning("volumedetect 実行エラー: %s", e)
+
+    # Step 6: ダイナミックレンジ計算
     if "rms_peak" in result and "rms_level" in result:
         # ダイナミックレンジ = ピーク - 平均RMS の近似
         result["dynamic_range"] = round(
@@ -1005,4 +1023,345 @@ def _detect_ffmpeg_issues(ffmpeg_data: dict) -> list:
             suggestion="ノイズリダクション処理を推奨",
         ))
 
+    # 無音区間が長すぎる
+    silence_ranges = ffmpeg_data.get("silence_ranges", [])
+    for sr in silence_ranges:
+        silence_duration = sr.get("duration", 0.0)
+        if silence_duration > 10.0:
+            issues.append(AudioIssue(
+                timestamp=_seconds_to_timestamp(int(sr.get("start", 0))),
+                issue_type="clarity",
+                severity="error",
+                description=f"無音区間 {silence_duration:.1f}秒: 非常に長い無音",
+                suggestion="編集ミスの可能性。該当区間を確認してください",
+            ))
+        elif silence_duration > 5.0:
+            issues.append(AudioIssue(
+                timestamp=_seconds_to_timestamp(int(sr.get("start", 0))),
+                issue_type="clarity",
+                severity="warning",
+                description=f"無音区間 {silence_duration:.1f}秒: 長すぎる無音が検出",
+                suggestion="無音区間のカットまたはBGM挿入を検討",
+            ))
+
+    # 急激な音量変化
+    volume_changes = ffmpeg_data.get("sudden_volume_changes", [])
+    for vc in volume_changes:
+        issues.append(AudioIssue(
+            timestamp=_seconds_to_timestamp(int(vc.get("time", 0))),
+            issue_type="volume",
+            severity="warning",
+            description=f"急激な音量変化 {vc.get('change_db', 0):.1f}dB: {_seconds_to_timestamp(int(vc.get('time', 0)))}付近",
+            suggestion="音量トランジションの滑らか化を推奨",
+        ))
+
     return issues
+
+
+def _run_silencedetect(audio_path: str, noise_threshold: float = -50.0, min_duration: float = 2.0) -> dict:
+    """ffmpeg silencedetect フィルタで無音区間を検出する
+
+    Args:
+        audio_path: 音声/動画ファイルパス
+        noise_threshold: 無音と判定するノイズ閾値（dB）
+        min_duration: 無音と判定する最小区間長（秒）
+
+    Returns:
+        dict: 無音区間情報
+            - silence_ranges: [{"start": float, "end": float, "duration": float}, ...]
+            - total_silence_duration: float（全無音区間の合計秒数）
+            - silence_count: int（無音区間の数）
+    """
+    if not HAS_FFMPEG or not os.path.isfile(audio_path):
+        return {}
+
+    cmd = [
+        "ffmpeg",
+        "-i", audio_path,
+        "-af", f"silencedetect=noise={noise_threshold}dB:d={min_duration}",
+        "-f", "null",
+        "-",
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+    if proc.returncode != 0:
+        logger.warning("silencedetect 失敗 (returncode=%d)", proc.returncode)
+        return {}
+
+    stderr = proc.stderr
+    silence_ranges = []
+
+    # silencedetect の出力を解析
+    # 形式: [silencedetect @ 0x...] silence_start: 1.234
+    #        [silencedetect @ 0x...] silence_end: 5.678 | silence_duration: 4.444
+    start_pattern = re.compile(r"silence_start:\s*([\d.]+)")
+    end_pattern = re.compile(r"silence_end:\s*([\d.]+)\s*\|\s*silence_duration:\s*([\d.]+)")
+
+    current_start = None
+    for line in stderr.split("\n"):
+        start_match = start_pattern.search(line)
+        if start_match:
+            current_start = float(start_match.group(1))
+            continue
+
+        end_match = end_pattern.search(line)
+        if end_match and current_start is not None:
+            silence_end = float(end_match.group(1))
+            silence_dur = float(end_match.group(2))
+            silence_ranges.append({
+                "start": current_start,
+                "end": silence_end,
+                "duration": silence_dur,
+            })
+            current_start = None
+
+    total_duration = sum(sr["duration"] for sr in silence_ranges)
+
+    return {
+        "silence_ranges": silence_ranges,
+        "total_silence_duration": round(total_duration, 2),
+        "silence_count": len(silence_ranges),
+    }
+
+
+def _run_volumedetect(audio_path: str) -> dict:
+    """ffmpeg volumedetect フィルタで音量統計と急激な音量変化を検出する
+
+    Args:
+        audio_path: 音声/動画ファイルパス
+
+    Returns:
+        dict: 音量統計情報
+            - mean_volume: float（平均音量 dB）
+            - max_volume: float（最大音量 dB）
+            - histogram_data: list（音量ヒストグラム）
+            - sudden_volume_changes: list[dict]（急激な音量変化ポイント）
+    """
+    if not HAS_FFMPEG or not os.path.isfile(audio_path):
+        return {}
+
+    # volumedetect で全体の統計
+    cmd = [
+        "ffmpeg",
+        "-i", audio_path,
+        "-af", "volumedetect",
+        "-f", "null",
+        "-",
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+    if proc.returncode != 0:
+        logger.warning("volumedetect 失敗 (returncode=%d)", proc.returncode)
+        return {}
+
+    stderr = proc.stderr
+    result = {}
+
+    # mean_volume, max_volume を抽出
+    mean_match = re.search(r"mean_volume:\s*([-\d.]+)\s*dB", stderr)
+    if mean_match:
+        result["mean_volume"] = float(mean_match.group(1))
+
+    max_match = re.search(r"max_volume:\s*([-\d.]+)\s*dB", stderr)
+    if max_match:
+        result["max_volume"] = float(max_match.group(1))
+
+    # 急激な音量変化を検出するためにフレームごとのRMS値を取得
+    # astats の出力から既に取得済みの場合はここでは追加分析のみ
+    sudden_changes = _detect_sudden_volume_changes(audio_path)
+    if sudden_changes:
+        result["sudden_volume_changes"] = sudden_changes
+
+    return result
+
+
+# 急激な音量変化を検出する閾値（dB）
+SUDDEN_VOLUME_CHANGE_THRESHOLD = 15.0
+
+
+def _detect_sudden_volume_changes(
+    audio_path: str,
+    threshold_db: float = SUDDEN_VOLUME_CHANGE_THRESHOLD,
+    window_seconds: float = 1.0,
+) -> list:
+    """短時間での急激な音量変化を検出する
+
+    1秒間隔のRMS値を比較し、閾値以上の変化があった地点を返す。
+
+    Args:
+        audio_path: 音声/動画ファイルパス
+        threshold_db: 変化量の閾値（dB）
+        window_seconds: 比較ウィンドウ（秒）
+
+    Returns:
+        list[dict]: [{"time": float, "change_db": float, "direction": "up"/"down"}, ...]
+    """
+    if not HAS_FFMPEG or not os.path.isfile(audio_path):
+        return []
+
+    # ebur128 フィルタで1秒間隔のラウドネスを取得
+    cmd = [
+        "ffmpeg",
+        "-i", audio_path,
+        "-af", "ebur128=peak=true:framelog=verbose",
+        "-f", "null",
+        "-",
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+    if proc.returncode != 0:
+        return []
+
+    stderr = proc.stderr
+
+    # ebur128 のモーメンタリーラウドネス値を抽出
+    # 形式: [Parsed_ebur128_0 @ ...] t: 1.0     TARGET:-23 LUFS     M: -20.5 S: -22.1 ...
+    momentary_pattern = re.compile(r"t:\s*([\d.]+)\s+.*?M:\s*([-\d.]+)")
+    measurements = []
+
+    for line in stderr.split("\n"):
+        m = momentary_pattern.search(line)
+        if m:
+            try:
+                t = float(m.group(1))
+                loudness = float(m.group(2))
+                if loudness > -150.0:  # -inf を除外
+                    measurements.append((t, loudness))
+            except ValueError:
+                pass
+
+    # 急激な変化を検出
+    changes = []
+    for i in range(1, len(measurements)):
+        prev_t, prev_l = measurements[i - 1]
+        curr_t, curr_l = measurements[i]
+
+        if curr_t - prev_t > window_seconds * 2:
+            continue  # 間隔が開きすぎている場合はスキップ
+
+        change = curr_l - prev_l
+        if abs(change) >= threshold_db:
+            changes.append({
+                "time": curr_t,
+                "change_db": round(change, 1),
+                "direction": "up" if change > 0 else "down",
+            })
+
+    return changes
+
+
+# === AudioEvaluator クラス（C-3公開インターフェース） ===
+
+class AudioEvaluator:
+    """音声品質自動評価
+
+    ffmpegを使って動画の音声品質を自動評価する。
+    BGM/SE/ナレーションのバランス、音量レベル、ノイズ検出を行う。
+
+    使い方:
+        evaluator = AudioEvaluator()
+        result = evaluator.evaluate_overall("/path/to/video.mp4")
+    """
+
+    def __init__(self):
+        """初期化。ffmpegの存在を確認する"""
+        self.has_ffmpeg = HAS_FFMPEG
+        self.has_ffprobe = HAS_FFPROBE
+        if not self.has_ffmpeg:
+            logger.warning(
+                "ffmpegが見つかりません。音声品質の実測評価は利用できません。"
+                "brew install ffmpeg でインストールしてください。"
+            )
+
+    def extract_audio_stats(self, video_path: str) -> dict:
+        """ffmpegで音声統計情報を抽出する
+
+        Args:
+            video_path: 動画/音声ファイルパス
+
+        Returns:
+            dict: 音声統計情報
+                - loudness_lufs: 平均音量（LUFS）
+                - true_peak: ピーク音量（dBTP）
+                - dynamic_range: ダイナミックレンジ（dB）
+                - rms_level: RMS平均レベル（dB）
+                - rms_peak: RMSピーク（dB）
+                - mean_volume: 平均音量（dB, volumedetect）
+                - max_volume: 最大音量（dB, volumedetect）
+                - sample_rate: サンプルレート（Hz）
+                - channels: チャンネル数
+                - codec_name: コーデック名
+                - duration: 音声長（秒）
+                - silence_ranges: 無音区間リスト
+                - total_silence_duration: 全無音合計（秒）
+                - silence_count: 無音区間数
+                - sudden_volume_changes: 急激な音量変化リスト
+                - noise_floor_estimate: ノイズフロア推定値（dB）
+        """
+        return analyze_audio_with_ffmpeg(video_path)
+
+    def detect_audio_issues(self, stats: dict) -> list:
+        """音声品質の問題を検出する
+
+        extract_audio_stats() の結果を受け取り、問題リストを返す。
+
+        Args:
+            stats: extract_audio_stats()の結果辞書
+
+        Returns:
+            list[dict]: 問題リスト。各要素は以下のキーを持つ:
+                - timestamp: 問題箇所のタイムスタンプ
+                - issue_type: "volume"/"noise"/"clarity"/"balance"
+                - severity: "error"/"warning"/"info"
+                - description: 問題の説明
+                - suggestion: 改善提案
+        """
+        issues = _detect_ffmpeg_issues(stats)
+        return [
+            {
+                "timestamp": i.timestamp,
+                "issue_type": i.issue_type,
+                "severity": i.severity,
+                "description": i.description,
+                "suggestion": i.suggestion,
+            }
+            for i in issues
+        ]
+
+    def evaluate_overall(self, video_path: str, video_data: Optional[VideoData] = None) -> dict:
+        """総合的な音声品質スコアを算出する
+
+        ffmpegが利用可能でファイルが存在する場合はffmpegによる実測評価、
+        そうでない場合は文字起こしベースの推定評価を行う。
+
+        Args:
+            video_path: 動画/音声ファイルパス
+            video_data: VideoData（文字起こし情報。Noneの場合は空データで処理）
+
+        Returns:
+            dict: 評価結果
+                - overall_score: 総合スコア（0-100）
+                - grade: グレード（S/A/B/C/D）
+                - axis_scores: 各軸スコアリスト
+                - issues: 検出された問題リスト
+                - analysis_method: "ffmpeg_analysis" / "transcript_based"
+                - is_estimated: 推定値かどうか
+                - stats: ffmpegの生データ（ffmpeg解析時のみ）
+        """
+        from dataclasses import asdict
+
+        if video_data is None:
+            video_data = VideoData(
+                title="",
+                speakers="",
+                highlights=[],
+            )
+
+        use_ffmpeg = self.has_ffmpeg and os.path.isfile(video_path)
+        result = evaluate_audio(video_data, audio_path=video_path, use_ffmpeg=use_ffmpeg)
+        result_dict = asdict(result)
+
+        # ffmpegの生データも追加
+        if use_ffmpeg:
+            result_dict["stats"] = analyze_audio_with_ffmpeg(video_path)
+        else:
+            result_dict["stats"] = {}
+
+        return result_dict

@@ -404,12 +404,20 @@ final class APIClient: ObservableObject {
 
     // クエリパラメータ付きパスを正しくURLに変換するヘルパー
     // URL.appending(path:) はクエリ文字列の ? を %3F にエンコードしてしまうため
+    // 日本語を含むパス（プロジェクトID等）もパーセントエンコーディングで対応
     private func buildURL(base: URL, path: String) -> URL {
-        guard let url = URL(string: base.absoluteString + path) else {
-            // フォールバック: 従来の方式
-            return base.appending(path: path)
+        let fullString = base.absoluteString + path
+        // まず直接URLを試みる
+        if let url = URL(string: fullString) {
+            return url
         }
-        return url
+        // 日本語等の非ASCII文字をパーセントエンコーディング
+        if let encoded = fullString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+           let url = URL(string: encoded) {
+            return url
+        }
+        // 最終フォールバック
+        return base.appending(path: path)
     }
 }
 

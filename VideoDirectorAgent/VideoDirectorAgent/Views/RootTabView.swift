@@ -7,6 +7,7 @@ struct RootTabView: View {
     @StateObject private var voiceFeedbackVM = VoiceFeedbackViewModel()
     @StateObject private var projectListVM = ProjectListViewModel()
     @StateObject private var dashboardVM = DashboardViewModel()
+    @StateObject private var feedbackHistoryVM = FeedbackHistoryViewModel()
 
     enum Tab: Int, CaseIterable {
         case home, report, record, history, quality
@@ -43,7 +44,7 @@ struct RootTabView: View {
                     }
                 case .report:
                     NavigationStack {
-                        ReportListView()
+                        ReportListView(viewModel: projectListVM)
                     }
                 case .record:
                     // 録音タブ選択時はモーダルを表示（homeをバックに表示）
@@ -52,7 +53,7 @@ struct RootTabView: View {
                     }
                 case .history:
                     NavigationStack {
-                        FeedbackHistoryView()
+                        FeedbackHistoryView(viewModel: feedbackHistoryVM)
                     }
                 case .quality:
                     NavigationStack {

@@ -2,11 +2,9 @@ import SwiftUI
 
 // MARK: - 画面4: FB履歴（タイムライン表示・日付グループ化）
 struct FeedbackHistoryView: View {
+    @ObservedObject var viewModel: FeedbackHistoryViewModel
     @State private var filterMode: HistoryFilter = .all
     @State private var searchText = ""
-    @State private var items: [FeedbackHistoryItem] = []
-    @State private var isLoading = false
-    @State private var errorMessage: String?
 
     enum HistoryFilter: String, CaseIterable {
         case all = "すべて"
@@ -23,7 +21,7 @@ struct FeedbackHistoryView: View {
     }
 
     private var filteredItems: [FeedbackHistoryItem] {
-        var filtered = items
+        var filtered = viewModel.items
 
         // フィルタ
         switch filterMode {
@@ -85,11 +83,11 @@ struct FeedbackHistoryView: View {
             // タイムライン
             ScrollView(.vertical, showsIndicators: false) {
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                    if isLoading {
+                    if viewModel.isLoading {
                         ProgressView()
                             .tint(AppTheme.accent)
                             .padding(.vertical, 24)
-                    } else if items.isEmpty && errorMessage == nil {
+                    } else if viewModel.items.isEmpty && viewModel.errorMessage == nil {
                         // フィードバックがまだない場合の空状態UI
                         VStack(spacing: 16) {
                             Image(systemName: "bubble.left.and.bubble.right")
@@ -105,9 +103,9 @@ struct FeedbackHistoryView: View {
                         }
                         .padding(.vertical, 60)
                     }
-                    ForEach(groupedItems, id: \.0) { date, items in
+                    ForEach(groupedItems, id: \.0) { date, sectionItems in
                         Section {
-                            ForEach(items) { item in
+                            ForEach(sectionItems) { item in
                                 feedbackCard(item)
                                     .padding(.horizontal, 16)
                                     .padding(.bottom, 12)
@@ -124,10 +122,10 @@ struct FeedbackHistoryView: View {
         .navigationTitle("フィードバック履歴")
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            await loadFeedbacks()
+            await viewModel.loadIfNeeded()
         }
         .refreshable {
-            await loadFeedbacks(forceRefresh: true)
+            await viewModel.load(forceRefresh: true)
         }
         .toolbar {
             ToolbarItem(placement: .principal) {
@@ -137,7 +135,7 @@ struct FeedbackHistoryView: View {
             }
         }
         .safeAreaInset(edge: .top) {
-            if let errorMessage {
+            if let errorMessage = viewModel.errorMessage {
                 Text(errorMessage)
                     .font(.caption)
                     .foregroundStyle(AppTheme.textSecondary)
@@ -255,41 +253,5 @@ struct FeedbackHistoryView: View {
         .padding(16)
         .background(AppTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    private func loadFeedbacks(forceRefresh: Bool = false) async {
-        if !forceRefresh, isLoading { return }
-        isLoading = true
-        defer { isLoading = false }
-
-        do {
-            let fetched = try await APIClient.shared.fetchAllFeedbacks()
-            items = fetched.map(makeHistoryItem)
-            errorMessage = nil
-        } catch {
-            errorMessage = "履歴APIに接続できません: \(error.localizedDescription)"
-        }
-    }
-
-    private func makeHistoryItem(from item: FeedbackItem) -> FeedbackHistoryItem {
-        FeedbackHistoryItem(
-            id: UUID(),
-            projectTitle: item.projectTitle ?? item.projectId,
-            guestName: item.guestName ?? "ゲスト未設定",
-            date: groupedDate(from: item.createdAt),
-            timestamp: item.timestamp ?? "--:--",
-            rawVoiceText: item.rawVoiceText ?? item.content,
-            convertedText: item.convertedText ?? item.content,
-            isSent: item.isSent,
-            editorStatus: item.isSent ? "送信済み" : "未送信",
-            learningEffect: item.feedbackType == "voice" ? "音声FB" : ""
-        )
-    }
-
-    private func groupedDate(from value: String) -> String {
-        if value.count >= 10 {
-            return String(value.prefix(10)).replacingOccurrences(of: "-", with: "/")
-        }
-        return value.isEmpty ? "日付不明" : value
     }
 }

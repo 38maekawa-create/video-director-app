@@ -2,7 +2,7 @@ import SwiftUI
 
 /// レポートタブ: 全プロジェクトを縦リストで表示し、各プロジェクトの詳細に遷移
 struct ReportListView: View {
-    @StateObject private var viewModel = ProjectListViewModel()
+    @ObservedObject var viewModel: ProjectListViewModel
     @State private var searchText = ""
 
     var body: some View {

@@ -852,6 +852,47 @@ enum JSONValue: Codable {
     }
 }
 
+// MARK: - 品質ダッシュボード統計モデル（P2: 実データ連動）
+
+/// グレード分布1件（グレードラベル + 件数）
+struct GradeDistEntry: Identifiable {
+    let id = UUID()
+    let grade: String
+    let count: Int
+
+    /// グレードに対応するAppTheme準拠カラー
+    var color: Color {
+        switch grade {
+        case "A+", "A": return AppTheme.statusComplete
+        case "B+", "B": return Color(hex: 0x4A90D9)
+        case "C": return Color(hex: 0xF5A623)
+        default: return AppTheme.accent
+        }
+    }
+}
+
+/// `/api/v1/dashboard/quality` レスポンス
+struct QualityStats: Codable {
+    let totalScored: Int
+    let totalUnscored: Int
+    let averageScore: Double?
+    let gradeDistribution: [String: Int]
+    let recentTrend: [QualityTrendItem]
+    let improvementDelta: Double?
+
+    /// gradeDistribution をUIに使いやすい順序付き配列に変換
+    var sortedGradeEntries: [GradeDistEntry] {
+        let order = ["A+", "A", "B+", "B", "C", "D", "E"]
+        return order.map { GradeDistEntry(grade: $0, count: gradeDistribution[$0] ?? 0) }
+    }
+
+    /// 改善傾向ラベル（+/-付き文字列）
+    var deltaLabel: String {
+        guard let d = improvementDelta else { return "-" }
+        return d >= 0 ? String(format: "+%.1f", d) : String(format: "%.1f", d)
+    }
+}
+
 // MARK: - 編集後フィードバックモデル（P1: Before/After差分）
 
 /// APIリクエストボディ（編集済み動画のメタデータ）

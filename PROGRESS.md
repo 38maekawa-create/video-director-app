@@ -1,10 +1,65 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-15 （TASK_PRACTICAL_VIMEO.md実施 — Vimeo API実投稿準備完了）
-<!-- authored: T1/副官A/バティ/2026-03-15 [なおとさん指示: 映像エージェント実用化] -->
+2026-03-16 （TASK_P1_BEFORE_AFTER.md実施 — Before/After連携 iOS UI + APIエンドポイント完成）
+<!-- authored: Claude Code/2026-03-16 [なおとさん指示: P1一気にやりきる] -->
 
 ## 現在の作業状態
+**P1完了: Before/After連携（編集後フィードバック）iOS UI + APIエンドポイント実装済み**
+
+---
+
+### TASK_P1_BEFORE_AFTER.md 実施結果（2026-03-16）
+
+**実施内容: 4ファイル変更・2ファイル新規作成・22テスト全PASS**
+
+#### 1. APIエンドポイント追加（`src/video_direction/integrations/api_server.py`）
+- `POST /api/v1/projects/{project_id}/edit-feedback` を追加
+- 受け取るパラメータ: `duration_seconds`, `original_duration_seconds`, `included_timestamps`, `excluded_timestamps`, `telop_texts`, `scene_order`, `editor_name`, `stage`
+- レスポンス: `quality_score`, `grade`, `content_feedback[]`, `telop_check`, `highlight_check`, `direction_adherence`, `summary`
+- 評価ロジック: ①テンポ（圧縮率）②構成力（シーン順序）③内容密度（ハイライト採用率）
+- evaluatorモジュールが利用可能な場合は優先使用、fallback実装あり
+
+#### 2. iOS Swiftモデル追加（`VideoDirectorAgent/Models/Models.swift`）
+- `EditFeedbackRequestBody` — POSTリクエストボディ
+- `ContentFeedbackEntry` — コンテンツFB1件（severityColor/categoryColor/categoryLabel 含む）
+- `TelopCheckSummary` — テロップチェック結果
+- `HighlightCheckSummary` — ハイライト採用率
+- `DirectionAdherenceSummary` — ディレクション準拠度
+- `EditFeedbackResponse` — 全体レスポンス（gradeColor/scoreProgress 含む）
+
+#### 3. APIClientメソッド追加（`VideoDirectorAgent/Services/APIClient.swift`）
+- `fetchEditFeedback(projectId:body:)` — デフォルト引数付きで空ボディでも動作
+
+#### 4. iOS UI新規作成（`VideoDirectorAgent/Views/EditFeedbackView.swift`）★新規
+- Netflix風デザイン（AppTheme準拠）
+- グレードバッジ（A+/A/B+/B/C/D/E）＋スコアゲージ
+- ハイライト採用率バー（採用/カット の視覚的比較）
+- テロップチェック結果（エラー数・警告数バッジ）
+- コンテンツFBカード（severity別カラーバー、category別ラベル）
+- ディレクション準拠度（データあり/なし両対応）
+- 編集済み動画メタデータ入力フォーム（シート表示）
+- 再生成ボタン
+
+#### 5. project.pbxproj 登録済み
+- Build file ID: `A10000010000000000000021`
+- File ref ID: `A20000010000000000000021`
+- Views グループ・Sources フェーズ両方に追加
+
+#### 6. テスト追加（`tests/test_edit_feedback_api.py`）
+- 22件全PASS
+- `TestGradeFromScore` (9件): 境界値含む全グレード変換テスト
+- `TestComputeEditFeedback` (7件): 計算ロジック・レスポンス構造テスト
+- `TestEditFeedbackEndpoint` (5件): APIエンドポイント統合テスト（200/404確認）
+
+#### ビルド確認
+- Xcode.app が Mac server にインストールされていないため xcodebuild は実行不可
+- `swiftc -typecheck` で確認: iOS専用API（`keyboardType` 等）はmacOS SDKで「unavailable」エラーが出るが、これは既存ビューも同様で iOS ビルドでは正常
+- Pythonテスト: 22件全PASS ✅
+
+---
+
+## 前回（2026-03-15）の作業状態
 **iOS UI完了 → Vimeo API実投稿準備完了（dry-runまで）→ 次は本番投稿承認待ち**
 
 ### TASK_PRACTICAL_VIMEO.md 実施結果（2026-03-15）

@@ -18,6 +18,7 @@ final class DashboardViewModel: ObservableObject {
     @Published var alerts: [QualityAlert] = []
     @Published var latestAudit: AuditReport?
     @Published var auditHistory: [AuditReport] = []
+    @Published var qualityStats: QualityStats?
     @Published var isLoading = false
     @Published var errorMessage: String?
     private var hasLoaded = false

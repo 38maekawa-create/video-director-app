@@ -510,6 +510,82 @@ def quality_trend():
     return [dict(r) for r in rows]
 
 
+def _grade_from_score_100(score: int) -> str:
+    """0-100スケールのスコアをグレードに変換（品質ダッシュボード用）"""
+    if score >= 90:
+        return "A+"
+    elif score >= 80:
+        return "A"
+    elif score >= 70:
+        return "B+"
+    elif score >= 60:
+        return "B"
+    elif score >= 50:
+        return "C"
+    elif score >= 40:
+        return "D"
+    return "E"
+
+
+@app.get("/api/v1/dashboard/quality")
+def quality_dashboard_stats():
+    """品質ダッシュボード統計（グレード分布・カテゴリ別平均・改善傾向）
+
+    プロジェクト全体の品質スコアを集計し、グレード分布・平均・推移を返す。
+    iOS品質ダッシュボードの実データ連動に使用する。
+    """
+    conn = _get_db()
+
+    # 全プロジェクトのスコア取得
+    all_rows = conn.execute(
+        "SELECT guest_name, shoot_date, quality_score FROM projects ORDER BY shoot_date ASC"
+    ).fetchall()
+
+    scored_rows = [r for r in all_rows if r["quality_score"] is not None]
+    unscored_count = len(all_rows) - len(scored_rows)
+
+    # グレード分布を集計
+    grade_order = ["A+", "A", "B+", "B", "C", "D", "E"]
+    grade_distribution: dict[str, int] = {g: 0 for g in grade_order}
+    for row in scored_rows:
+        g = _grade_from_score_100(row["quality_score"])
+        grade_distribution[g] += 1
+
+    # 平均スコア
+    avg_score = None
+    if scored_rows:
+        avg_score = round(sum(r["quality_score"] for r in scored_rows) / len(scored_rows), 1)
+
+    # 直近5件のトレンド（shoot_date降順で取得後反転）
+    recent_rows = conn.execute(
+        "SELECT guest_name, shoot_date, quality_score FROM projects "
+        "WHERE quality_score IS NOT NULL ORDER BY shoot_date DESC LIMIT 5"
+    ).fetchall()
+    recent_trend = [dict(r) for r in reversed(recent_rows)]
+
+    # 改善傾向: 直近3件の平均 vs その前3件の平均
+    improvement_delta = None
+    if len(scored_rows) >= 6:
+        recent3 = [r["quality_score"] for r in scored_rows[-3:]]
+        prev3 = [r["quality_score"] for r in scored_rows[-6:-3]]
+        improvement_delta = round(sum(recent3) / 3 - sum(prev3) / 3, 1)
+    elif len(scored_rows) >= 2:
+        improvement_delta = round(
+            scored_rows[-1]["quality_score"] - scored_rows[0]["quality_score"], 1
+        )
+
+    conn.close()
+
+    return {
+        "total_scored": len(scored_rows),
+        "total_unscored": unscored_count,
+        "average_score": avg_score,
+        "grade_distribution": grade_distribution,
+        "recent_trend": recent_trend,
+        "improvement_delta": improvement_delta,
+    }
+
+
 # --- 編集者管理 (NEW-8) ---
 
 def _get_editor_manager():

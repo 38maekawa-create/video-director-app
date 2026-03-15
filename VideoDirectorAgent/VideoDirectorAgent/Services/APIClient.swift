@@ -100,6 +100,11 @@ final class APIClient: ObservableObject {
         try await request([AuditReport].self, path: "/api/audit/history")
     }
 
+    /// 品質ダッシュボード統計（グレード分布・改善傾向）を取得
+    func fetchQualityStats() async throws -> QualityStats {
+        try await request(QualityStats.self, path: "/api/v1/dashboard/quality")
+    }
+
     /// 編集後フィードバックを取得（Before/After差分分析）
     func fetchEditFeedback(
         projectId: String,

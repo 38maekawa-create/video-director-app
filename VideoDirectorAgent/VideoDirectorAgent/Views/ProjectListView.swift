@@ -4,21 +4,19 @@ import SwiftUI
 struct ProjectListView: View {
     @ObservedObject var viewModel: ProjectListViewModel
     @State private var searchText = ""
-    @State private var navigationPath = NavigationPath()
+    @State private var selectedProject: VideoProject?
 
     var body: some View {
-        NavigationStack(path: $navigationPath) {
+        NavigationStack {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 0) {
                     // ヒーローバナー
                     if let hero = viewModel.heroProject {
-                        Button {
-                            navigationPath.append(hero)
-                        } label: {
-                            heroSection(hero)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
+                        heroSection(hero)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                selectedProject = hero
+                            }
                     }
 
                     // 検索バー
@@ -75,6 +73,25 @@ struct ProjectListView: View {
             }
             .navigationDestination(for: VideoProject.self) { project in
                 DirectionReportView(project: project)
+            }
+        }
+        // タップで詳細画面をフルスクリーン表示（横ScrollView内のタップ問題回避）
+        .fullScreenCover(item: $selectedProject) { project in
+            NavigationStack {
+                DirectionReportView(project: project)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button {
+                                selectedProject = nil
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "chevron.left")
+                                    Text("戻る")
+                                }
+                                .foregroundStyle(AppTheme.accent)
+                            }
+                        }
+                    }
             }
         }
     }
@@ -199,13 +216,11 @@ struct ProjectListView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(projects) { project in
-                        Button {
-                            navigationPath.append(project)
-                        } label: {
-                            projectCard(project)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
+                        projectCard(project)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                selectedProject = project
+                            }
                     }
                 }
                 .padding(.horizontal, 16)
@@ -217,47 +232,46 @@ struct ProjectListView: View {
     private func projectCard(_ project: VideoProject) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             // サムネイル
-            ZStack(alignment: .bottomLeading) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(
-                            LinearGradient(
-                                colors: [AppTheme.cardBackground, project.status.color.opacity(0.2)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(
+                        LinearGradient(
+                            colors: [AppTheme.cardBackground, project.status.color.opacity(0.2)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
                         )
+                    )
 
-                    Image(systemName: project.thumbnailSymbol)
-                        .font(.system(size: 32))
-                        .foregroundStyle(.white.opacity(0.3))
-                }
-                .frame(width: 150, height: 100)
+                Image(systemName: project.thumbnailSymbol)
+                    .font(.system(size: 32))
+                    .foregroundStyle(.white.opacity(0.3))
 
                 // プログレスバー（スコア表示）
                 if let score = project.qualityScore {
-                    GeometryReader { geo in
-                        VStack {
-                            Spacer()
-                            Rectangle()
-                                .fill(AppTheme.accent)
-                                .frame(width: geo.size.width * CGFloat(score) / 100.0, height: 3)
-                        }
+                    VStack {
+                        Spacer()
+                        Rectangle()
+                            .fill(AppTheme.accent)
+                            .frame(height: 3)
+                            .frame(
+                                width: 150 * CGFloat(score) / 100.0,
+                                alignment: .leading
+                            )
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(width: 150, height: 100)
-                    .allowsHitTesting(false)
                 }
-
+            }
+            .frame(width: 150, height: 100)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(alignment: .topTrailing) {
                 // 未送信バッジ
                 if project.hasUnsentFeedback {
                     Circle()
                         .fill(AppTheme.accent)
                         .frame(width: 10, height: 10)
-                        .offset(x: 138, y: -88)
-                        .allowsHitTesting(false)
+                        .offset(x: -4, y: 4)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 8))
 
             // タイトル＋情報
             Text(project.guestName)

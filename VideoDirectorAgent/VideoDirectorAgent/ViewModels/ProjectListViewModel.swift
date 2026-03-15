@@ -1,5 +1,27 @@
 import Foundation
 
+private enum ShootDateParser {
+    static let formats: [DateFormatter] = {
+        ["yyyy/MM/dd", "yyyy-MM-dd"].map { format in
+            let formatter = DateFormatter()
+            formatter.calendar = Calendar(identifier: .gregorian)
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.timeZone = TimeZone(secondsFromGMT: 0)
+            formatter.dateFormat = format
+            return formatter
+        }
+    }()
+
+    static func parse(_ value: String) -> Date? {
+        for formatter in formats {
+            if let date = formatter.date(from: value) {
+                return date
+            }
+        }
+        return nil
+    }
+}
+
 @MainActor
 final class ProjectListViewModel: ObservableObject {
     @Published var projects: [VideoProject] = []
@@ -9,7 +31,6 @@ final class ProjectListViewModel: ObservableObject {
 
     private var hasLoaded = false
 
-    // フィルタ済みプロジェクト
     var filteredProjects: [VideoProject] {
         if searchText.isEmpty { return projects }
         return projects.filter {
@@ -19,17 +40,14 @@ final class ProjectListViewModel: ObservableObject {
         }
     }
 
-    // 最近のFBがあるプロジェクト
     var recentFeedbackProjects: [VideoProject] {
         projects.filter { $0.unreviewedCount > 0 }
     }
 
-    // 要対応（未送信FBあり）
     var actionRequiredProjects: [VideoProject] {
         projects.filter { $0.hasUnsentFeedback }
     }
 
-    // ヒーロープロジェクト（最新）
     var heroProject: VideoProject? {
         projects.first
     }
@@ -50,15 +68,28 @@ final class ProjectListViewModel: ObservableObject {
 
         do {
             let fetched = try await APIClient.shared.fetchProjects()
-            // 撮影日の新しい順にソート
-            projects = fetched.sorted { $0.shootDate > $1.shootDate }
+            projects = fetched.sorted { lhs, rhs in
+                let leftDate = ShootDateParser.parse(lhs.shootDate)
+                let rightDate = ShootDateParser.parse(rhs.shootDate)
+
+                switch (leftDate, rightDate) {
+                case let (l?, r?):
+                    if l != r { return l > r }
+                case (_?, nil):
+                    return true
+                case (nil, _?):
+                    return false
+                case (nil, nil):
+                    break
+                }
+
+                return lhs.shootDate > rhs.shootDate
+            }
             errorMessage = nil
         } catch {
-            // 本番運用: API未接続時はエラーを表示
             if projects.isEmpty {
                 errorMessage = "APIサーバーに接続できません。(\(error.localizedDescription))"
             }
-            // データが既にある場合はエラー表示しない（前回データをそのまま表示）
             print("API Error: \(error)")
         }
     }

@@ -153,6 +153,34 @@ app.add_middleware(
 @app.on_event("startup")
 def startup():
     init_db()
+    repair_known_shoot_dates()
+
+
+def repair_known_shoot_dates():
+    """既知の誤投入データを起動時に補正する。"""
+    conn = _get_db()
+    conn.execute(
+        """UPDATE projects
+           SET shoot_date = ?, updated_at = ?
+           WHERE shoot_date = ?
+             AND (title LIKE ? OR guest_name IN (?, ?, ?, ?, ?, ?, ?, ?))""",
+        (
+            "2026/02/28",
+            datetime.now(timezone.utc).isoformat(),
+            "2026/01/01",
+            "%2月28日 大阪%",
+            "コテさん",
+            "kosさん",
+            "メンイチさん",
+            "さといも・トーマスさん",
+            "ハオさん",
+            "けーさん",
+            "さくらさん",
+            "ゆりかさん",
+        ),
+    )
+    conn.commit()
+    conn.close()
 
 
 # --- プロジェクト ---

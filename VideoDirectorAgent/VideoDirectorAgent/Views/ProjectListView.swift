@@ -1,77 +1,95 @@
 import SwiftUI
+import UIKit
 
 // MARK: - 画面1: プロジェクト一覧（ホーム）— Netflix風
 struct ProjectListView: View {
     @ObservedObject var viewModel: ProjectListViewModel
     @State private var searchText = ""
+    @State private var selectedProject: VideoProject?
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 0) {
-                // ヒーローバナー
-                if let hero = viewModel.heroProject {
-                    heroSection(hero)
-                }
-
-                // 検索バー
-                searchBar
-
-                // カルーセルセクション群
-                VStack(spacing: 24) {
-                    // 最近のフィードバック
-                    if !viewModel.recentFeedbackProjects.isEmpty {
-                        carouselSection(
-                            title: "最近のフィードバック",
-                            icon: "bubble.left.fill",
-                            projects: viewModel.recentFeedbackProjects
-                        )
+        NavigationStack {
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
+                    if let hero = viewModel.heroProject {
+                        heroSection(hero)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                selectedProject = hero
+                            }
                     }
 
-                    // 要対応
-                    if !viewModel.actionRequiredProjects.isEmpty {
+                    searchBar
+
+                    VStack(spacing: 24) {
+                        if !viewModel.recentFeedbackProjects.isEmpty {
+                            carouselSection(
+                                title: "最近のフィードバック",
+                                icon: "bubble.left.fill",
+                                projects: viewModel.recentFeedbackProjects
+                            )
+                        }
+
+                        if !viewModel.actionRequiredProjects.isEmpty {
+                            carouselSection(
+                                title: "要対応",
+                                icon: "exclamationmark.triangle.fill",
+                                projects: viewModel.actionRequiredProjects
+                            )
+                        }
+
                         carouselSection(
-                            title: "要対応",
-                            icon: "exclamationmark.triangle.fill",
-                            projects: viewModel.actionRequiredProjects
+                            title: "全プロジェクト",
+                            icon: "film.stack.fill",
+                            projects: viewModel.filteredProjects
                         )
                     }
-
-                    // 全プロジェクト
-                    carouselSection(
-                        title: "全プロジェクト",
-                        icon: "film.stack.fill",
-                        projects: viewModel.filteredProjects
-                    )
+                    .padding(.bottom, 32)
                 }
-                .padding(.bottom, 32)
+            }
+            .background(AppTheme.background.ignoresSafeArea())
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("VIDEO DIRECTOR")
+                        .font(AppTheme.heroFont(20))
+                        .foregroundStyle(AppTheme.accent)
+                        .tracking(4)
+                }
+            }
+            .refreshable {
+                await viewModel.refresh()
+            }
+            .task {
+                await viewModel.loadProjectsIfNeeded()
+            }
+            .onChange(of: searchText) { _, newValue in
+                viewModel.searchText = newValue
             }
         }
-        .background(AppTheme.background.ignoresSafeArea())
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text("VIDEO DIRECTOR")
-                    .font(AppTheme.heroFont(20))
-                    .foregroundStyle(AppTheme.accent)
-                    .tracking(4)
+        .fullScreenCover(item: $selectedProject) { project in
+            NavigationStack {
+                DirectionReportView(project: project)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button {
+                                selectedProject = nil
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "chevron.left")
+                                    Text("戻る")
+                                }
+                                .foregroundStyle(AppTheme.accent)
+                            }
+                        }
+                    }
             }
-        }
-        .refreshable {
-            await viewModel.refresh()
-        }
-        .task {
-            await viewModel.loadProjectsIfNeeded()
-        }
-        .onChange(of: searchText) { _, newValue in
-            viewModel.searchText = newValue
         }
     }
 
-    // MARK: - ヒーローバナー
     @ViewBuilder
     private func heroSection(_ project: VideoProject) -> some View {
         ZStack(alignment: .bottomLeading) {
-            // 背景グラデーション（サムネイル代替）
             ZStack {
                 LinearGradient(
                     colors: [AppTheme.accent.opacity(0.3), AppTheme.cardBackground],
@@ -85,7 +103,6 @@ struct ProjectListView: View {
             }
             .frame(height: 280)
 
-            // 下部グラデーション（テキスト読みやすさ確保）
             LinearGradient(
                 colors: [.clear, AppTheme.background],
                 startPoint: .top,
@@ -94,7 +111,6 @@ struct ProjectListView: View {
             .frame(height: 160)
             .frame(maxHeight: .infinity, alignment: .bottom)
 
-            // テキストオーバーレイ
             VStack(alignment: .leading, spacing: 8) {
                 Text("最新プロジェクト")
                     .font(AppTheme.labelFont(11))
@@ -131,7 +147,6 @@ struct ProjectListView: View {
                 .font(.caption)
                 .foregroundStyle(AppTheme.textMuted)
 
-                // ステータスバッジ
                 HStack(spacing: 8) {
                     statusBadge(project.status)
                     if project.unreviewedCount > 0 {
@@ -151,7 +166,6 @@ struct ProjectListView: View {
         }
     }
 
-    // MARK: - 検索バー
     private var searchBar: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
@@ -167,7 +181,6 @@ struct ProjectListView: View {
         .padding(.vertical, 12)
     }
 
-    // MARK: - カルーセルセクション
     @ViewBuilder
     private func carouselSection(title: String, icon: String, projects: [VideoProject]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -184,67 +197,73 @@ struct ProjectListView: View {
             }
             .padding(.horizontal, 16)
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(projects) { project in
-                        NavigationLink {
-                            DirectionReportView(project: project)
-                        } label: {
-                            projectCard(project)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(.horizontal, 16)
+            ProjectCarouselScrollView(projects: projects) { project in
+                selectedProject = project
             }
+            .frame(height: 170)
         }
     }
 
-    // MARK: - プロジェクトカード（Netflix風サムネイル）
-    private func projectCard(_ project: VideoProject) -> some View {
+    private func statusBadge(_ status: ProjectStatus) -> some View {
+        Text(status.label)
+            .font(.caption)
+            .fontWeight(.medium)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(status.color.opacity(0.3))
+            .clipShape(Capsule())
+            .overlay(
+                Capsule()
+                    .strokeBorder(status.color.opacity(0.5), lineWidth: 1)
+            )
+    }
+}
+
+private struct ProjectCarouselCard: View {
+    let project: VideoProject
+
+    var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // サムネイル
-            ZStack(alignment: .bottomLeading) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(
-                            LinearGradient(
-                                colors: [AppTheme.cardBackground, project.status.color.opacity(0.2)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(
+                        LinearGradient(
+                            colors: [AppTheme.cardBackground, project.status.color.opacity(0.2)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
                         )
+                    )
 
-                    Image(systemName: project.thumbnailSymbol)
-                        .font(.system(size: 32))
-                        .foregroundStyle(.white.opacity(0.3))
-                }
-                .frame(width: 150, height: 100)
+                Image(systemName: project.thumbnailSymbol)
+                    .font(.system(size: 32))
+                    .foregroundStyle(.white.opacity(0.3))
 
-                // プログレスバー（スコア表示）
                 if let score = project.qualityScore {
-                    GeometryReader { geo in
-                        VStack {
-                            Spacer()
-                            Rectangle()
-                                .fill(AppTheme.accent)
-                                .frame(width: geo.size.width * CGFloat(score) / 100.0, height: 3)
-                        }
+                    VStack {
+                        Spacer()
+                        Rectangle()
+                            .fill(AppTheme.accent)
+                            .frame(height: 3)
+                            .frame(
+                                width: 150 * CGFloat(score) / 100.0,
+                                alignment: .leading
+                            )
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(width: 150, height: 100)
                 }
-
-                // 未送信バッジ
+            }
+            .frame(width: 150, height: 100)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(alignment: .topTrailing) {
                 if project.hasUnsentFeedback {
                     Circle()
                         .fill(AppTheme.accent)
                         .frame(width: 10, height: 10)
-                        .offset(x: 138, y: -88)
+                        .offset(x: -4, y: 4)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 8))
 
-            // タイトル＋情報
             Text(project.guestName)
                 .font(.system(size: 14, weight: .bold, design: .serif))
                 .tracking(1.5)
@@ -262,22 +281,133 @@ struct ProjectListView: View {
                 .font(.caption2)
                 .foregroundStyle(AppTheme.textMuted)
         }
-        .frame(width: 150)
+        .frame(width: 150, height: 170, alignment: .top)
+    }
+}
+
+private struct ProjectCarouselScrollView: UIViewRepresentable {
+    let projects: [VideoProject]
+    let onSelect: (VideoProject) -> Void
+
+    func makeUIView(context: Context) -> CarouselScrollView {
+        let scrollView = CarouselScrollView()
+        scrollView.configure(projects: projects, onSelect: onSelect)
+        return scrollView
     }
 
-    // MARK: - ステータスバッジ
-    private func statusBadge(_ status: ProjectStatus) -> some View {
-        Text(status.label)
-            .font(.caption)
-            .fontWeight(.medium)
-            .foregroundStyle(.white)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(status.color.opacity(0.3))
-            .clipShape(Capsule())
-            .overlay(
-                Capsule()
-                    .strokeBorder(status.color.opacity(0.5), lineWidth: 1)
-            )
+    func updateUIView(_ uiView: CarouselScrollView, context: Context) {
+        uiView.configure(projects: projects, onSelect: onSelect)
+    }
+}
+
+private final class CarouselScrollView: UIScrollView {
+    private let stackView = UIStackView()
+    private var contentSignature = ""
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+
+        delaysContentTouches = false
+        canCancelContentTouches = true
+        showsHorizontalScrollIndicator = false
+        showsVerticalScrollIndicator = false
+        alwaysBounceHorizontal = true
+        alwaysBounceVertical = false
+        isDirectionalLockEnabled = true
+        backgroundColor = .clear
+
+        stackView.axis = .horizontal
+        stackView.alignment = .top
+        stackView.spacing = 12
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+
+        addSubview(stackView)
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: contentLayoutGuide.leadingAnchor, constant: 16),
+            stackView.trailingAnchor.constraint(equalTo: contentLayoutGuide.trailingAnchor, constant: -16),
+            stackView.topAnchor.constraint(equalTo: contentLayoutGuide.topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: contentLayoutGuide.bottomAnchor),
+            stackView.heightAnchor.constraint(equalTo: frameLayoutGuide.heightAnchor),
+        ])
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func touchesShouldCancel(in view: UIView) -> Bool {
+        true
+    }
+
+    func configure(projects: [VideoProject], onSelect: @escaping (VideoProject) -> Void) {
+        let newSignature = projects.map { project in
+            [
+                project.id,
+                project.guestName,
+                project.shootDate,
+                project.guestOccupation ?? "",
+                String(project.unreviewedCount),
+                String(project.hasUnsentFeedback),
+                String(project.qualityScore ?? -1),
+            ].joined(separator: "|")
+        }.joined(separator: ",")
+        guard newSignature != contentSignature || stackView.arrangedSubviews.isEmpty else { return }
+
+        contentSignature = newSignature
+        stackView.arrangedSubviews.forEach { view in
+            stackView.removeArrangedSubview(view)
+            view.removeFromSuperview()
+        }
+
+        for project in projects {
+            let cardView = CarouselCardButton(project: project, onSelect: onSelect)
+            stackView.addArrangedSubview(cardView)
+            NSLayoutConstraint.activate([
+                cardView.widthAnchor.constraint(equalToConstant: 150),
+                cardView.heightAnchor.constraint(equalToConstant: 170),
+            ])
+        }
+    }
+}
+
+private final class CarouselCardButton: UIControl {
+    private let hostingController: UIHostingController<ProjectCarouselCard>
+    private let project: VideoProject
+    private let onSelect: (VideoProject) -> Void
+
+    init(project: VideoProject, onSelect: @escaping (VideoProject) -> Void) {
+        self.project = project
+        self.onSelect = onSelect
+        hostingController = UIHostingController(rootView: ProjectCarouselCard(project: project))
+        super.init(frame: .zero)
+
+        translatesAutoresizingMaskIntoConstraints = false
+        backgroundColor = .clear
+
+        let hostedView = hostingController.view!
+        hostedView.translatesAutoresizingMaskIntoConstraints = false
+        hostedView.backgroundColor = .clear
+        hostedView.isUserInteractionEnabled = false
+
+        addSubview(hostedView)
+        NSLayoutConstraint.activate([
+            hostedView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            hostedView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            hostedView.topAnchor.constraint(equalTo: topAnchor),
+            hostedView.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
+
+        addTarget(self, action: #selector(handleTap), for: .touchUpInside)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    @objc
+    private func handleTap() {
+        onSelect(project)
     }
 }

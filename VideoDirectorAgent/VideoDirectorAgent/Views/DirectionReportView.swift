@@ -372,11 +372,14 @@ struct DirectionReportView: View {
                     items: ["編集完了。レビュー可能な状態です。"]
                 )
 
-                // Vimeo埋め込み再生
+                // Vimeo埋め込み再生（16:9アスペクト比）
                 if let videoId = VimeoURLParser.extractVideoId(from: url) {
-                    VimeoEmbedPlayerView(videoId: videoId)
-                        .frame(height: 220)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    GeometryReader { geo in
+                        VimeoEmbedPlayerView(videoId: videoId)
+                            .frame(width: geo.size.width, height: geo.size.width * 9.0 / 16.0)
+                    }
+                    .aspectRatio(16.0 / 9.0, contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
 
                 // 外部リンクボタン（Vimeoで直接開く）

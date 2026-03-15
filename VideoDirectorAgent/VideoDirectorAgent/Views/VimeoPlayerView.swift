@@ -184,8 +184,8 @@ struct VimeoEmbedPlayerView: UIViewRepresentable {
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { background: #000; }
-          .container { position: relative; width: 100%; padding-bottom: 56.25%; }
+          body { background: #000; overflow: hidden; }
+          .container { position: relative; width: 100%; padding-bottom: 56.25%; overflow: hidden; }
           iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
         </style>
         </head>

@@ -52,10 +52,13 @@ struct TrackingVideoDetailView: View {
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 16) {
-                // YouTube埋め込みプレイヤー
-                TrackingYouTubePlayerView(videoURL: video.url)
-                    .frame(height: 220)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                // YouTube埋め込みプレイヤー（16:9アスペクト比）
+                GeometryReader { geo in
+                    TrackingYouTubePlayerView(videoURL: video.url)
+                        .frame(width: geo.size.width, height: geo.size.width * 9.0 / 16.0)
+                }
+                .aspectRatio(16.0 / 9.0, contentMode: .fit)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
 
                 // タイトル + チャンネル
                 VStack(alignment: .leading, spacing: 8) {
@@ -279,7 +282,7 @@ struct TrackingYouTubePlayerView: UIViewRepresentable {
         </body>
         </html>
         """
-        webView.loadHTMLString(embedHTML, baseURL: nil)
+        webView.loadHTMLString(embedHTML, baseURL: URL(string: "https://www.youtube.com"))
     }
 
     private func extractVideoId(from url: String) -> String? {

@@ -498,6 +498,11 @@ def sync_categories_from_sheet():
         guest_name = proj["guest_name"] or ""
         title = proj["title"] or ""
 
+        # テストゲスト除外: カテゴリ決定の前に最初にチェック
+        if guest_name and "テスト" in guest_name:
+            skipped.append({"id": proj_id, "guest_name": guest_name, "reason": "test_guest"})
+            continue
+
         # 多段階マッチング: 精度の高い方法から順に試す
         matched_category = None
         db_norm = _normalize_name(guest_name)
@@ -547,15 +552,13 @@ def sync_categories_from_sheet():
                         matched_category = cat
                         break
 
-        # ステージ5: MEMBER_MASTER.jsonのdefault_categoryフォールバック
-        # スプシからカテゴリが取れなかった場合、メンバーマスタの既定カテゴリを使用
-        if matched_category is None and guest_name:
-            matched_category = _get_member_default_category(guest_name)
-
-        # テストゲスト除外: ゲスト名に「テスト」を含むプロジェクトはスキップ
-        if guest_name and "テスト" in guest_name:
-            skipped.append({"id": proj_id, "guest_name": guest_name, "reason": "test_guest"})
-            continue
+        # ステージ5: MEMBER_MASTER.jsonのdefault_categoryフォールバック/オーバーライド
+        # スプシからカテゴリが取れなかった場合のフォールバック、
+        # または MEMBER_MASTER に明示的なdefault_categoryがある場合はオーバーライド
+        if guest_name:
+            member_category = _get_member_default_category(guest_name)
+            if member_category is not None:
+                matched_category = member_category
 
         if matched_category is not None:
             conn.execute(

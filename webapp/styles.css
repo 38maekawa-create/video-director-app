@@ -3656,6 +3656,551 @@ html, body {
   white-space: nowrap;
 }
 
+/* ===== PDCA品質改善画面 ===== */
+
+.pdca-loading, .audit-loading, .editors-loading, .notif-loading {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px 16px;
+  font-size: 14px;
+}
+
+.pdca-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 0 16px;
+  margin-bottom: 20px;
+}
+
+.pdca-summary-card {
+  background: var(--card-light);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+}
+
+.pdca-summary-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.pdca-val-green { color: var(--status-complete); }
+.pdca-val-yellow { color: var(--status-editing); }
+.pdca-val-red { color: var(--accent); }
+
+.pdca-summary-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.pdca-states-list {
+  padding: 0 16px;
+}
+
+.pdca-state-card {
+  background: var(--card-light);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.pdca-state-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.pdca-state-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pdca-state-phase {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(229, 9, 20, 0.15);
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+
+.pdca-step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 10px;
+}
+
+.pdca-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 40px;
+}
+
+.pdca-step-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s;
+}
+
+.pdca-step-active .pdca-step-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(229, 9, 20, 0.5);
+}
+
+.pdca-step-done .pdca-step-dot {
+  background: var(--status-complete);
+  border-color: var(--status-complete);
+}
+
+.pdca-step-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.pdca-step-active .pdca-step-label {
+  color: var(--accent);
+}
+
+.pdca-step-done .pdca-step-label {
+  color: var(--status-complete);
+}
+
+.pdca-step-line {
+  width: 24px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 2px;
+  margin-bottom: 18px;
+}
+
+.pdca-step-line-done {
+  background: var(--status-complete);
+}
+
+.pdca-state-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.pdca-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px 16px;
+  font-size: 14px;
+}
+
+/* ===== 監査ループ画面 ===== */
+
+.audit-action-bar {
+  padding: 0 16px;
+  margin-bottom: 20px;
+}
+
+.audit-run-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.audit-run-btn:active {
+  opacity: 0.8;
+}
+
+.audit-run-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.audit-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 0 16px;
+  margin-bottom: 10px;
+}
+
+.audit-latest-card {
+  background: var(--card-light);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 16px;
+  margin: 0 16px 20px;
+}
+
+.audit-latest-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.audit-latest-date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.audit-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.audit-status-pass {
+  color: var(--status-complete);
+  background: rgba(76, 175, 80, 0.15);
+}
+
+.audit-status-fail {
+  color: var(--accent);
+  background: rgba(229, 9, 20, 0.15);
+}
+
+.audit-latest-score {
+  font-size: 16px;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.audit-latest-score strong {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.audit-issues-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.audit-issues-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.audit-issues-list li {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.audit-history-list {
+  padding: 0 16px;
+}
+
+.audit-history-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card-light);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.audit-history-date {
+  font-size: 12px;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.audit-history-score {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-right: 12px;
+}
+
+.audit-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 30px 16px;
+  font-size: 14px;
+}
+
+/* ===== 編集者管理画面 ===== */
+
+.editors-form-section {
+  padding: 0 16px;
+  margin-bottom: 20px;
+}
+
+.editors-form-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.editors-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editors-input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--card-light);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.editors-input:focus {
+  border-color: var(--accent);
+}
+
+.editors-add-btn {
+  padding: 12px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.editors-add-btn:active { opacity: 0.8; }
+.editors-add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.editors-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 0 16px;
+  margin-bottom: 10px;
+}
+
+.editors-grid {
+  padding: 0 16px;
+}
+
+.editors-card {
+  background: var(--card-light);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 10px;
+}
+
+.editors-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.editors-card-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.editors-card-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+
+.editors-card-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.editors-skill-tag {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: rgba(229, 9, 20, 0.1);
+  border: 1px solid rgba(229, 9, 20, 0.2);
+  padding: 3px 10px;
+  border-radius: 8px;
+}
+
+.editors-handover-btn {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.editors-handover-btn:active {
+  background: rgba(229, 9, 20, 0.15);
+}
+
+.editors-handover-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.editors-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 30px 16px;
+  font-size: 14px;
+}
+
+/* ===== 通知設定画面 ===== */
+
+.notif-toggles {
+  padding: 0 16px;
+  margin-bottom: 20px;
+}
+
+.notif-toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.notif-toggle-row:last-child {
+  border-bottom: none;
+}
+
+.notif-toggle-info {
+  flex: 1;
+}
+
+.notif-toggle-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.notif-toggle-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* トグルスイッチ */
+.notif-switch {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.notif-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.notif-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 28px;
+  transition: background 0.3s;
+}
+
+.notif-switch-slider::before {
+  content: '';
+  position: absolute;
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.notif-switch input:checked + .notif-switch-slider {
+  background: var(--accent);
+}
+
+.notif-switch input:checked + .notif-switch-slider::before {
+  transform: translateX(20px);
+}
+
+.notif-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 16px;
+}
+
+.notif-save-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.notif-save-btn:active { opacity: 0.8; }
+.notif-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.notif-test-btn {
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.notif-test-btn:active {
+  background: rgba(229, 9, 20, 0.15);
+}
+
+.notif-test-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* ===== タブバー: ツールボタン追加対応 ===== */
 
 #tab-bar .tab-btn {
@@ -3688,5 +4233,15 @@ html, body {
   .kb-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pdca-summary-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .editors-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 }

@@ -2943,6 +2943,464 @@
     container.innerHTML = html;
   }
 
+  // ===================================================================
+  // 画面14: PDCA品質改善
+  // ===================================================================
+
+  function renderPDCAPage() {
+    var content = document.getElementById('pdca-content');
+    content.innerHTML = '<button class="back-btn" id="pdca-back">\u2190 ツール</button>' +
+      '<div class="pdca-loading">読み込み中...</div>';
+
+    document.getElementById('pdca-back').addEventListener('click', function() {
+      renderToolsMenu();
+    });
+
+    // サマリーとステート情報を並列取得
+    var summaryData = null;
+    var statesData = null;
+    var loaded = 0;
+
+    function renderPDCAContent() {
+      loaded++;
+      if (loaded < 2) return;
+
+      var html = '';
+
+      // サマリーカード
+      if (summaryData) {
+        html += '<div class="pdca-summary-grid">' +
+          '<div class="pdca-summary-card">' +
+            '<div class="pdca-summary-value">' + (summaryData.total_projects || 0) + '</div>' +
+            '<div class="pdca-summary-label">総プロジェクト</div>' +
+          '</div>' +
+          '<div class="pdca-summary-card">' +
+            '<div class="pdca-summary-value pdca-val-green">' + (summaryData.completed || 0) + '</div>' +
+            '<div class="pdca-summary-label">完了</div>' +
+          '</div>' +
+          '<div class="pdca-summary-card">' +
+            '<div class="pdca-summary-value pdca-val-yellow">' + (summaryData.in_progress || 0) + '</div>' +
+            '<div class="pdca-summary-label">進行中</div>' +
+          '</div>' +
+          '<div class="pdca-summary-card">' +
+            '<div class="pdca-summary-value pdca-val-red">' + (summaryData.issues || 0) + '</div>' +
+            '<div class="pdca-summary-label">要対応</div>' +
+          '</div>' +
+        '</div>';
+      }
+
+      // PDCAステート一覧
+      var phases = ['Plan', 'Do', 'Check', 'Act'];
+      if (statesData && statesData.length > 0) {
+        html += '<div class="pdca-states-list">';
+        statesData.forEach(function(item) {
+          var currentPhase = item.current_phase || item.phase || 'Plan';
+          var currentIdx = phases.indexOf(currentPhase);
+          if (currentIdx < 0) currentIdx = 0;
+
+          html += '<div class="pdca-state-card">' +
+            '<div class="pdca-state-header">' +
+              '<div class="pdca-state-name">' + escapeHTML(item.project_name || item.name || '不明') + '</div>' +
+              '<div class="pdca-state-phase">' + escapeHTML(currentPhase) + '</div>' +
+            '</div>' +
+            '<div class="pdca-step-indicator">';
+          phases.forEach(function(phase, idx) {
+            var cls = 'pdca-step';
+            if (idx < currentIdx) cls += ' pdca-step-done';
+            if (idx === currentIdx) cls += ' pdca-step-active';
+            html += '<div class="' + cls + '">' +
+              '<div class="pdca-step-dot"></div>' +
+              '<div class="pdca-step-label">' + phase + '</div>' +
+            '</div>';
+            if (idx < phases.length - 1) {
+              html += '<div class="pdca-step-line' + (idx < currentIdx ? ' pdca-step-line-done' : '') + '"></div>';
+            }
+          });
+          html += '</div>';
+
+          if (item.note || item.description) {
+            html += '<div class="pdca-state-note">' + escapeHTML(item.note || item.description) + '</div>';
+          }
+          html += '</div>';
+        });
+        html += '</div>';
+      } else {
+        html += '<div class="pdca-empty">PDCAデータがありません</div>';
+      }
+
+      content.innerHTML = '<button class="back-btn" id="pdca-back2">\u2190 ツール</button>' + html;
+      document.getElementById('pdca-back2').addEventListener('click', function() {
+        renderToolsMenu();
+      });
+    }
+
+    // API呼び出し: サマリー
+    fetch('/api/pdca/summary')
+      .then(function(r) { return r.json(); })
+      .then(function(data) { summaryData = data; renderPDCAContent(); })
+      .catch(function() { summaryData = { total_projects: 0, completed: 0, in_progress: 0, issues: 0 }; renderPDCAContent(); });
+
+    // API呼び出し: ステート一覧
+    fetch('/api/pdca/states')
+      .then(function(r) { return r.json(); })
+      .then(function(data) { statesData = Array.isArray(data) ? data : (data.states || []); renderPDCAContent(); })
+      .catch(function() { statesData = []; renderPDCAContent(); });
+  }
+
+  // ===================================================================
+  // 画面15: 監査ループ
+  // ===================================================================
+
+  function renderAuditPage() {
+    var content = document.getElementById('audit-content');
+    content.innerHTML = '<button class="back-btn" id="audit-back">\u2190 ツール</button>' +
+      '<div class="audit-loading">読み込み中...</div>';
+
+    document.getElementById('audit-back').addEventListener('click', function() {
+      renderToolsMenu();
+    });
+
+    var latestData = null;
+    var historyData = null;
+    var loaded = 0;
+
+    function renderAuditContent() {
+      loaded++;
+      if (loaded < 2) return;
+
+      var html = '';
+
+      // 手動監査実行ボタン
+      html += '<div class="audit-action-bar">' +
+        '<button class="audit-run-btn" id="audit-run-btn">手動監査実行</button>' +
+      '</div>';
+
+      // 最新監査レポート
+      html += '<div class="audit-section-title">最新監査レポート</div>';
+      if (latestData && latestData.id) {
+        var statusCls = latestData.status === 'pass' ? 'audit-status-pass' : 'audit-status-fail';
+        html += '<div class="audit-latest-card">' +
+          '<div class="audit-latest-header">' +
+            '<div class="audit-latest-date">' + escapeHTML(latestData.date || latestData.created_at || '') + '</div>' +
+            '<div class="audit-status ' + statusCls + '">' + escapeHTML(latestData.status || '不明') + '</div>' +
+          '</div>' +
+          '<div class="audit-latest-score">スコア: <strong>' + (latestData.score || 0) + '</strong> / 100</div>';
+        if (latestData.issues && latestData.issues.length > 0) {
+          html += '<div class="audit-issues-title">検出事項</div><ul class="audit-issues-list">';
+          latestData.issues.forEach(function(issue) {
+            html += '<li>' + escapeHTML(typeof issue === 'string' ? issue : (issue.message || issue.description || '')) + '</li>';
+          });
+          html += '</ul>';
+        }
+        html += '</div>';
+      } else {
+        html += '<div class="audit-empty">最新の監査データがありません</div>';
+      }
+
+      // 監査履歴
+      html += '<div class="audit-section-title">監査履歴（直近10件）</div>';
+      if (historyData && historyData.length > 0) {
+        html += '<div class="audit-history-list">';
+        historyData.slice(0, 10).forEach(function(h) {
+          var hStatusCls = h.status === 'pass' ? 'audit-status-pass' : 'audit-status-fail';
+          html += '<div class="audit-history-card">' +
+            '<div class="audit-history-date">' + escapeHTML(h.date || h.created_at || '') + '</div>' +
+            '<div class="audit-history-score">' + (h.score || 0) + '</div>' +
+            '<div class="audit-status ' + hStatusCls + '">' + escapeHTML(h.status || '') + '</div>' +
+          '</div>';
+        });
+        html += '</div>';
+      } else {
+        html += '<div class="audit-empty">監査履歴がありません</div>';
+      }
+
+      content.innerHTML = '<button class="back-btn" id="audit-back2">\u2190 ツール</button>' + html;
+      document.getElementById('audit-back2').addEventListener('click', function() {
+        renderToolsMenu();
+      });
+
+      // 手動監査実行ボタンのイベント
+      var runBtn = document.getElementById('audit-run-btn');
+      if (runBtn) {
+        runBtn.addEventListener('click', function() {
+          runBtn.disabled = true;
+          runBtn.textContent = '監査実行中...';
+          fetch('/api/audit/run', { method: 'POST' })
+            .then(function(r) { return r.json(); })
+            .then(function(result) {
+              runBtn.disabled = false;
+              runBtn.textContent = '手動監査実行';
+              // 監査完了後に画面リフレッシュ
+              renderAuditPage();
+            })
+            .catch(function() {
+              runBtn.disabled = false;
+              runBtn.textContent = '手動監査実行';
+              alert('監査実行に失敗しました');
+            });
+        });
+      }
+    }
+
+    // API呼び出し: 最新監査
+    fetch('/api/audit/latest')
+      .then(function(r) { return r.json(); })
+      .then(function(data) { latestData = data; renderAuditContent(); })
+      .catch(function() { latestData = {}; renderAuditContent(); });
+
+    // API呼び出し: 監査履歴
+    fetch('/api/audit/history')
+      .then(function(r) { return r.json(); })
+      .then(function(data) { historyData = Array.isArray(data) ? data : (data.history || []); renderAuditContent(); })
+      .catch(function() { historyData = []; renderAuditContent(); });
+  }
+
+  // ===================================================================
+  // 画面16: 編集者管理
+  // ===================================================================
+
+  function renderEditorsPage() {
+    var content = document.getElementById('editors-content');
+    content.innerHTML = '<button class="back-btn" id="editors-back">\u2190 ツール</button>' +
+      '<div class="editors-loading">読み込み中...</div>';
+
+    document.getElementById('editors-back').addEventListener('click', function() {
+      renderToolsMenu();
+    });
+
+    fetch('/api/editors')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var editors = Array.isArray(data) ? data : (data.editors || []);
+        renderEditorsContent(editors);
+      })
+      .catch(function() {
+        renderEditorsContent([]);
+      });
+
+    function renderEditorsContent(editors) {
+      var html = '<button class="back-btn" id="editors-back2">\u2190 ツール</button>';
+
+      // 新規編集者登録フォーム
+      html += '<div class="editors-form-section">' +
+        '<div class="editors-form-title">新規編集者登録</div>' +
+        '<div class="editors-form">' +
+          '<input type="text" class="editors-input" id="editor-name" placeholder="名前">' +
+          '<input type="text" class="editors-input" id="editor-skills" placeholder="スキル（カンマ区切り）">' +
+          '<button class="editors-add-btn" id="editor-add-btn">登録</button>' +
+        '</div>' +
+      '</div>';
+
+      // 編集者一覧
+      html += '<div class="editors-section-title">編集者一覧</div>';
+      if (editors.length > 0) {
+        html += '<div class="editors-grid">';
+        editors.forEach(function(ed) {
+          var skills = ed.skills || [];
+          if (typeof skills === 'string') skills = skills.split(',');
+          html += '<div class="editors-card">' +
+            '<div class="editors-card-header">' +
+              '<div class="editors-card-name">' + escapeHTML(ed.name || '不明') + '</div>' +
+              '<div class="editors-card-count">' + (ed.project_count || ed.projects || 0) + '件</div>' +
+            '</div>' +
+            '<div class="editors-card-skills">';
+          skills.forEach(function(s) {
+            html += '<span class="editors-skill-tag">' + escapeHTML(s.trim()) + '</span>';
+          });
+          html += '</div>' +
+            '<button class="editors-handover-btn" data-eid="' + escapeAttr(ed.id || ed.editor_id || '') + '">引き継ぎパッケージ生成</button>' +
+          '</div>';
+        });
+        html += '</div>';
+      } else {
+        html += '<div class="editors-empty">編集者が登録されていません</div>';
+      }
+
+      content.innerHTML = html;
+
+      // 戻るボタン
+      document.getElementById('editors-back2').addEventListener('click', function() {
+        renderToolsMenu();
+      });
+
+      // 新規登録ボタン
+      document.getElementById('editor-add-btn').addEventListener('click', function() {
+        var nameVal = document.getElementById('editor-name').value.trim();
+        var skillsVal = document.getElementById('editor-skills').value.trim();
+        if (!nameVal) { alert('名前を入力してください'); return; }
+
+        var btn = document.getElementById('editor-add-btn');
+        btn.disabled = true;
+        btn.textContent = '登録中...';
+
+        fetch('/api/editors', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: nameVal, skills: skillsVal.split(',').map(function(s) { return s.trim(); }) })
+        })
+          .then(function(r) { return r.json(); })
+          .then(function() {
+            btn.disabled = false;
+            btn.textContent = '登録';
+            renderEditorsPage(); // リフレッシュ
+          })
+          .catch(function() {
+            btn.disabled = false;
+            btn.textContent = '登録';
+            alert('登録に失敗しました');
+          });
+      });
+
+      // 引き継ぎパッケージ生成ボタン
+      content.querySelectorAll('.editors-handover-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var eid = btn.dataset.eid;
+          btn.disabled = true;
+          btn.textContent = '生成中...';
+          fetch('/api/editors/' + eid + '/handover')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+              btn.disabled = false;
+              btn.textContent = '引き継ぎパッケージ生成';
+              alert('引き継ぎパッケージを生成しました: ' + (data.path || data.url || 'OK'));
+            })
+            .catch(function() {
+              btn.disabled = false;
+              btn.textContent = '引き継ぎパッケージ生成';
+              alert('生成に失敗しました');
+            });
+        });
+      });
+    }
+  }
+
+  // ===================================================================
+  // 画面17: 通知設定
+  // ===================================================================
+
+  function renderNotificationsPage() {
+    var content = document.getElementById('notifications-content');
+    content.innerHTML = '<button class="back-btn" id="notif-back">\u2190 ツール</button>' +
+      '<div class="notif-loading">読み込み中...</div>';
+
+    document.getElementById('notif-back').addEventListener('click', function() {
+      renderToolsMenu();
+    });
+
+    fetch('/api/notifications/config')
+      .then(function(r) { return r.json(); })
+      .then(function(config) {
+        renderNotifContent(config);
+      })
+      .catch(function() {
+        // デフォルト設定でレンダリング
+        renderNotifContent({
+          slack_enabled: false,
+          email_enabled: false,
+          line_enabled: false,
+          on_complete: true,
+          on_error: true,
+          on_review: true,
+          daily_digest: false
+        });
+      });
+
+    function renderNotifContent(config) {
+      var toggles = [
+        { key: 'slack_enabled', label: 'Slack通知', desc: 'Slackチャネルに通知' },
+        { key: 'email_enabled', label: 'メール通知', desc: 'メールで通知' },
+        { key: 'line_enabled', label: 'LINE通知', desc: 'LINEに通知' },
+        { key: 'on_complete', label: '完了時通知', desc: '処理完了時に通知する' },
+        { key: 'on_error', label: 'エラー時通知', desc: 'エラー発生時に通知する' },
+        { key: 'on_review', label: 'レビュー時通知', desc: 'レビュー待ち時に通知する' },
+        { key: 'daily_digest', label: 'デイリーダイジェスト', desc: '1日のサマリーを送信' }
+      ];
+
+      var html = '<button class="back-btn" id="notif-back2">\u2190 ツール</button>';
+
+      html += '<div class="notif-toggles">';
+      toggles.forEach(function(t) {
+        var checked = config[t.key] ? 'checked' : '';
+        html += '<div class="notif-toggle-row">' +
+          '<div class="notif-toggle-info">' +
+            '<div class="notif-toggle-label">' + t.label + '</div>' +
+            '<div class="notif-toggle-desc">' + t.desc + '</div>' +
+          '</div>' +
+          '<label class="notif-switch">' +
+            '<input type="checkbox" data-key="' + t.key + '" ' + checked + '>' +
+            '<span class="notif-switch-slider"></span>' +
+          '</label>' +
+        '</div>';
+      });
+      html += '</div>';
+
+      // アクションボタン
+      html += '<div class="notif-actions">' +
+        '<button class="notif-save-btn" id="notif-save-btn">設定を保存</button>' +
+        '<button class="notif-test-btn" id="notif-test-btn">テスト通知送信</button>' +
+      '</div>';
+
+      content.innerHTML = html;
+
+      // 戻るボタン
+      document.getElementById('notif-back2').addEventListener('click', function() {
+        renderToolsMenu();
+      });
+
+      // 保存ボタン
+      document.getElementById('notif-save-btn').addEventListener('click', function() {
+        var newConfig = {};
+        content.querySelectorAll('.notif-switch input[type="checkbox"]').forEach(function(cb) {
+          newConfig[cb.dataset.key] = cb.checked;
+        });
+
+        var btn = document.getElementById('notif-save-btn');
+        btn.disabled = true;
+        btn.textContent = '保存中...';
+
+        fetch('/api/notifications/config', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newConfig)
+        })
+          .then(function(r) { return r.json(); })
+          .then(function() {
+            btn.disabled = false;
+            btn.textContent = '設定を保存';
+            // 保存成功フィードバック
+            btn.textContent = '保存しました ✓';
+            setTimeout(function() { btn.textContent = '設定を保存'; }, 2000);
+          })
+          .catch(function() {
+            btn.disabled = false;
+            btn.textContent = '設定を保存';
+            alert('設定の保存に失敗しました');
+          });
+      });
+
+      // テスト通知ボタン
+      document.getElementById('notif-test-btn').addEventListener('click', function() {
+        var btn = document.getElementById('notif-test-btn');
+        btn.disabled = true;
+        btn.textContent = '送信中...';
+
+        fetch('/api/notifications/test', { method: 'POST' })
+          .then(function(r) { return r.json(); })
+          .then(function() {
+            btn.disabled = false;
+            btn.textContent = 'テスト通知送信';
+            btn.textContent = '送信しました ✓';
+            setTimeout(function() { btn.textContent = 'テスト通知送信'; }, 2000);
+          })
+          .catch(function() {
+            btn.disabled = false;
+            btn.textContent = 'テスト通知送信';
+            alert('テスト通知の送信に失敗しました');
+          });
+      });
+    }
+  }
+
   // HTML文字列エスケープ
   function escapeHTML(str) {
     if (!str) return '';

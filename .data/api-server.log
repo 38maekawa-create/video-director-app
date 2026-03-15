@@ -303,3 +303,4 @@ INFO:     100.113.28.70:55639 - "GET /api/audit/latest HTTP/1.1" 200 OK
 INFO:     100.113.28.70:55640 - "GET /api/learning/summary HTTP/1.1" 200 OK
 INFO:     100.113.28.70:55639 - "GET /api/audit/history HTTP/1.1" 200 OK
 INFO:     100.113.28.70:55639 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
+INFO:     100.113.28.70:50802 - "GET /api/projects/p-20260101-%E3%82%B3%E3%83%86%E3%83%84/youtube-assets HTTP/1.1" 200 OK

@@ -1,11 +1,30 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-16 E2Eパイプライン統合 + C-2/C-3/KP-1 並列実装中
+2026-03-16 iOS UI 4画面追加完了（E2E/テロップ/音声/ナレッジ）
 <!-- authored: T1/副官A/バティ/2026-03-16 -->
 
 ## 現在の作業状態
-**E2Eパイプライン統合（音声FB→LLM変換→トラッキング引用→Vimeo自動投稿）+ 未実装機能3件を4エージェント並列実装中**
+**iOS UI 4画面追加完了（E2Eパイプライン・テロップチェック・音声品質評価・ナレッジページ）+ バックエンド4機能の並列実装中**
+
+### 2026-03-16 セッション6 完了タスク
+
+| # | タスク | 状態 |
+|---|--------|------|
+| 1 | iOS UI: E2Eパイプライン画面 | ✅ 品質ダッシュボード > ツールタブに統合 |
+| 2 | iOS UI: テロップチェック画面 | ✅ 品質ダッシュボード > ツールタブに統合 |
+| 3 | iOS UI: 音声品質評価画面 | ✅ 品質ダッシュボード > ツールタブに統合 |
+| 4 | iOS UI: ナレッジページ画面 | ✅ ホーム画面ツールバーの本アイコンからアクセス |
+| 5 | Xcode pbxproj 8ファイル登録 | ✅ BUILD SUCCEEDED |
+
+**新規作成ファイル（8件）:**
+- ViewModels: E2EPipelineViewModel, TelopCheckViewModel, AudioEvaluationViewModel, KnowledgePagesViewModel
+- Views: E2EPipelineView, TelopCheckView, AudioEvaluationView, KnowledgePagesView
+
+**変更ファイル（6件）:**
+- Models.swift（16モデル追加）, APIClient.swift（10メソッド+performLongRequest追加）
+- DashboardViewModel.swift（.toolsセクション追加）, QualityDashboardView.swift（ツールセクション統合）
+- RootTabView.swift（ナレッジページモーダル追加）, ProjectListView.swift（本アイコンボタン追加）
 
 ### 2026-03-16 セッション5 実装中タスク
 

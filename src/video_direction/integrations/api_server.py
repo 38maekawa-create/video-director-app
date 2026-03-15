@@ -589,6 +589,71 @@ def quality_dashboard_stats():
     }
 
 
+# --- 品質統計（強化版） ---
+
+def _get_quality_stats_calculator():
+    """QualityStatsCalculatorのシングルトン取得（遅延初期化）"""
+    if not hasattr(_get_quality_stats_calculator, "_instance"):
+        from ..analyzer.quality_stats import QualityStatsCalculator
+        _get_quality_stats_calculator._instance = QualityStatsCalculator(
+            db_path=DB_PATH,
+        )
+    return _get_quality_stats_calculator._instance
+
+
+@app.get("/api/v1/dashboard/quality/full")
+def quality_full_stats():
+    """品質統計の全体結果を一括取得（強化版）
+
+    プロジェクト別トレンド、カテゴリ別問題頻度、編集者別品質傾向、
+    FB学習ルール効果測定、改善率統計、月別平均を含む。
+    """
+    calc = _get_quality_stats_calculator()
+    return calc.get_full_stats()
+
+
+@app.get("/api/v1/dashboard/quality/project-trends")
+def quality_project_trends(limit: int = 20):
+    """プロジェクト別の品質スコアトレンド（時系列）"""
+    calc = _get_quality_stats_calculator()
+    return calc.get_project_trends(limit=limit)
+
+
+@app.get("/api/v1/dashboard/quality/category-ranking")
+def quality_category_ranking(limit: int = 10):
+    """カテゴリ別の問題頻度ランキング"""
+    calc = _get_quality_stats_calculator()
+    return calc.get_category_problem_ranking(limit=limit)
+
+
+@app.get("/api/v1/dashboard/quality/editor-profiles")
+def quality_editor_profiles():
+    """編集者別の品質傾向"""
+    calc = _get_quality_stats_calculator()
+    return calc.get_editor_quality_profiles()
+
+
+@app.get("/api/v1/dashboard/quality/learning-effects")
+def quality_learning_effects():
+    """FB学習ルールの適用効果測定"""
+    calc = _get_quality_stats_calculator()
+    return calc.get_learning_rule_effects()
+
+
+@app.get("/api/v1/dashboard/quality/improvement")
+def quality_improvement_stats():
+    """改善率の統計（前半/後半の比較、ベスト/ワーストスコア等）"""
+    calc = _get_quality_stats_calculator()
+    return calc.get_improvement_stats()
+
+
+@app.get("/api/v1/dashboard/quality/monthly")
+def quality_monthly_averages():
+    """月別の平均品質スコア推移"""
+    calc = _get_quality_stats_calculator()
+    return calc.get_monthly_averages()
+
+
 # --- 編集者管理 (NEW-8) ---
 
 def _get_editor_manager():

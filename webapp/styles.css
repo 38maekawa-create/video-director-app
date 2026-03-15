@@ -4804,8 +4804,25 @@ html, body {
   line-height: 1.5;
 }
 
+.ba-segment-unused {
+  background: rgba(255, 107, 53, 0.12);
+  border-radius: 4px;
+  padding: 1px 4px;
+}
 .ba-segment-unused .ba-seg-text {
-  color: rgba(128,128,128,0.4);
+  color: #FF6B35;
+}
+.ba-segment-unused .ba-seg-text::before {
+  content: "CUT ";
+  font-size: 8px;
+  font-weight: bold;
+  font-family: monospace;
+  background: #FF6B35;
+  color: white;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-right: 4px;
+  vertical-align: middle;
 }
 
 .ba-segment-highlight .ba-seg-text {

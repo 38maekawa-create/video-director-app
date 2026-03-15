@@ -372,7 +372,7 @@ struct BeforeAfterView: View {
     private var transcriptLegend: some View {
         HStack(spacing: 16) {
             legendItem(color: AppTheme.textSecondary, label: "通常")
-            legendItem(color: AppTheme.textMuted.opacity(0.4), label: "カット")
+            legendItem(color: Color(hex: 0xFF6B35), label: "カット")
             legendItem(color: AppTheme.accent, label: "FB修正")
             legendItem(color: Color(hex: 0xFFD700), label: "パンチライン")
         }
@@ -403,15 +403,31 @@ struct BeforeAfterView: View {
                         .frame(width: 30, alignment: .trailing)
 
                     // テキスト本文
-                    Text(segment.text)
-                        .font(.system(size: 12))
-                        .foregroundStyle(textColor(for: segment))
-                        .underline(segment.status == "highlight", color: AppTheme.accent)
-                        .background(
-                            segment.status == "punchline"
-                                ? Color(hex: 0xFFD700).opacity(0.15)
+                    HStack(spacing: 4) {
+                        if segment.status == "unused" {
+                            Text("CUT")
+                                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 1)
+                                .background(Color(hex: 0xFF6B35))
+                                .clipShape(RoundedRectangle(cornerRadius: 3))
+                        }
+                        Text(segment.text)
+                            .font(.system(size: 12))
+                            .foregroundStyle(textColor(for: segment))
+                            .underline(segment.status == "highlight", color: AppTheme.accent)
+                    }
+                    .padding(.vertical, 2)
+                    .padding(.horizontal, segment.status == "unused" ? 4 : 0)
+                    .background(
+                        segment.status == "punchline"
+                            ? Color(hex: 0xFFD700).opacity(0.15)
+                            : segment.status == "unused"
+                                ? Color(hex: 0xFF6B35).opacity(0.12)
                                 : Color.clear
-                        )
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 4))
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 2)
@@ -426,8 +442,10 @@ struct BeforeAfterView: View {
             return Color(hex: 0xFFD700)
         case "highlight":
             return AppTheme.textSecondary
+        case "unused":
+            return Color(hex: 0xFF6B35)
         default:
-            return AppTheme.textMuted.opacity(0.5)
+            return .white
         }
     }
 

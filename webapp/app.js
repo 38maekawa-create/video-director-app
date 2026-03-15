@@ -4046,7 +4046,7 @@
         <div class="ba-transcript-body collapsed">
           <div class="ba-legend">
             <span class="ba-legend-item"><span class="ba-legend-box" style="background:var(--text-secondary)"></span>通常</span>
-            <span class="ba-legend-item"><span class="ba-legend-box" style="background:rgba(128,128,128,0.4)"></span>カット</span>
+            <span class="ba-legend-item"><span class="ba-legend-box" style="background:#FF6B35"></span>カット</span>
             <span class="ba-legend-item"><span class="ba-legend-box" style="background:var(--accent)"></span>FB修正</span>
             <span class="ba-legend-item"><span class="ba-legend-box" style="background:#FFD700"></span>パンチライン</span>
           </div>

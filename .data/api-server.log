@@ -434,3 +434,20 @@ INFO:     100.113.28.70:50573 - "GET /api/tracking/videos HTTP/1.1" 200 OK
 INFO:     100.113.28.70:50573 - "GET /api/tracking/insights HTTP/1.1" 200 OK
 INFO:     100.113.28.70:50572 - "GET /api/learning/summary HTTP/1.1" 200 OK
 INFO:     100.113.28.70:50571 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:54177 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57667 - "GET /api/feedbacks?limit=50 HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57668 - "GET /api/feedbacks?limit=50 HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57668 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57669 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57670 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57668 - "GET /api/dashboard/quality-trend HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57668 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57668 - "GET /api/audit/history HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57669 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57668 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57668 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61464 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     100.113.28.70:50824 - "GET /api/v1/projects/p-20251213-%E9%9B%AA%E6%A3%AE%E3%82%86%E3%81%8D%E3%82%82%E3%82%8A/feedbacks-with-timecodes HTTP/1.1" 404 Not Found
+INFO:     100.110.206.6:61484 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61487 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61489 - "GET /api/tracking/videos?status=completed HTTP/1.1" 200 OK

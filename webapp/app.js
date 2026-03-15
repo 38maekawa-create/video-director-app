@@ -684,6 +684,31 @@
     if (tab === 'tracking') {
       renderTrackingPage();
     }
+
+    // ツールタブ: ツールメニュー表示
+    if (tab === 'tools') {
+      renderToolsMenu();
+    }
+
+    // 各ツール画面の遅延初期化
+    if (tab === 'e2e-pipeline') {
+      renderE2EPipelinePage();
+    }
+    if (tab === 'telop-check') {
+      renderTelopCheckPage();
+    }
+    if (tab === 'audio-eval') {
+      renderAudioEvalPage();
+    }
+    if (tab === 'knowledge-browse') {
+      renderKnowledgeBrowsePage();
+    }
+    if (tab === 'fb-learning') {
+      renderFBLearningPage();
+    }
+    if (tab === 'frame-eval-detail') {
+      renderFrameEvalDetailPage();
+    }
   }
 
   // ===== 録音モーダル（MediaRecorder API + Vimeo連携） =====

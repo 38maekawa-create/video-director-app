@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/Users/maekawanaoto/AI開発10/scripts/sync_vimeo_edited_videos.py", line 218, in <module>
+    run_sync(dry_run=dry)
+  File "/Users/maekawanaoto/AI開発10/scripts/sync_vimeo_edited_videos.py", line 140, in run_sync
+    videos = fetch_vimeo_videos(token)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/maekawanaoto/AI開発10/scripts/sync_vimeo_edited_videos.py", line 47, in fetch_vimeo_videos
+    result = subprocess.run(
+             ^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 2116, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 1253, in _check_timeout
+    raise TimeoutExpired(
+subprocess.TimeoutExpired: Command '['curl', '-s', '-H', 'Authorization: bearer 15ee3dc7bf7c533d55be07afdee0ef9d', 'https://api.vimeo.com/me/videos?per_page=100&sort=date&direction=desc&page=1']' timed out after 30 seconds

@@ -2089,3 +2089,586 @@ html, body {
   color: var(--text-secondary);
   line-height: 1.5;
 }
+
+/* ===== 録音モーダル拡張（音声FB→Vimeo連携） ===== */
+
+.rec-modal-content {
+  max-width: 340px;
+  width: 90%;
+}
+
+.rec-timer {
+  font-family: monospace;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+}
+
+.rec-result-area {
+  margin-top: 20px;
+  text-align: left;
+  background: var(--card);
+  border-radius: 12px;
+  padding: 16px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.rec-result-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--status-complete);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.rec-convert-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.rec-convert-btn:active {
+  opacity: 0.8;
+}
+
+.rec-converting {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 12px;
+}
+
+.rec-raw-label, .rec-conv-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  margin-top: 8px;
+}
+
+.rec-raw-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding: 8px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.rec-conv-text {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  padding: 8px;
+  background: rgba(70, 211, 105, 0.08);
+  border-radius: 6px;
+  border-left: 3px solid var(--status-complete);
+}
+
+.rec-error {
+  font-size: 13px;
+  color: var(--accent);
+  text-align: center;
+  padding: 12px;
+}
+
+.rec-post-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.rec-dryrun-toggle {
+  margin-bottom: 10px;
+}
+
+.rec-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.rec-toggle-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.rec-toggle-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.rec-post-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: var(--status-directed);
+  border: none;
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rec-post-btn:active {
+  opacity: 0.8;
+}
+
+.rec-post-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.rec-post-status {
+  font-size: 12px;
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.rec-post-success {
+  color: var(--status-complete);
+  background: rgba(70, 211, 105, 0.1);
+}
+
+.rec-post-error {
+  color: var(--accent);
+  background: rgba(229, 9, 20, 0.1);
+}
+
+/* ===== 学習ルール詳細UI（NEW-6, NEW-7） ===== */
+
+.learn-rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.learn-rule-card {
+  background: var(--card-light);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.learn-rule-head {
+  margin-bottom: 6px;
+}
+
+.learn-rule-cat-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: rgba(229, 9, 20, 0.2);
+  padding: 2px 8px;
+  border-radius: 50px;
+  border: 1px solid rgba(229, 9, 20, 0.3);
+}
+
+.learn-rule-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.learn-rule-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.learn-conf-bar-wrap {
+  flex: 1;
+}
+
+.learn-conf-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.learn-conf-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.1);
+  overflow: hidden;
+}
+
+.learn-conf-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.learn-apply-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* パターン一覧 */
+.learn-patterns-header, .learn-techniques-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-top: 16px;
+  margin-bottom: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.learn-patterns-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.learn-pattern-item {
+  background: var(--card-light);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.learn-pattern-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.learn-pattern-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.learn-pattern-freq {
+  font-size: 10px;
+  color: var(--status-editing);
+  font-weight: 700;
+}
+
+.learn-pattern-cat {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.06);
+  padding: 2px 6px;
+  border-radius: 50px;
+}
+
+/* ディレクション反映ビジュアライゼーション */
+.learn-impact-section {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.learn-impact-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--status-complete);
+  margin-bottom: 10px;
+}
+
+.learn-impact-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.learn-impact-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.learn-impact-name {
+  font-size: 11px;
+  color: var(--text-muted);
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.learn-impact-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+
+.learn-impact-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--status-complete);
+  transition: width 0.6s ease;
+}
+
+.learn-impact-val {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 700;
+  min-width: 24px;
+  text-align: right;
+}
+
+/* テクニック一覧（NEW-7） */
+.learn-techniques-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.learn-tech-card {
+  background: var(--card-light);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.learn-tech-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.learn-tech-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.learn-tech-source {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 6px 8px;
+  background: rgba(229, 9, 20, 0.08);
+  border-radius: 6px;
+  border-left: 2px solid var(--accent);
+}
+
+.learn-tech-source-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #000;
+  font-size: 8px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.learn-tech-source-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* ===== フレーム画像マルチモデル評価（C-1） ===== */
+
+.frame-eval-wrap {
+  padding-bottom: 40px;
+}
+
+.frame-eval-fallback {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.frame-eval-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(229, 9, 20, 0.15);
+  color: var(--accent);
+  font-size: 18px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.frame-eval-empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.frame-eval-empty-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.frame-eval-overall {
+  text-align: center;
+  background: var(--card);
+  border-radius: 12px;
+  margin: 6px 16px;
+  padding: 24px 16px;
+}
+
+.frame-eval-overall-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-stretch: condensed;
+  margin-bottom: 4px;
+}
+
+.frame-eval-overall-score {
+  font-size: 56px;
+  font-weight: 800;
+  line-height: 1;
+  margin: 8px 0;
+  font-stretch: condensed;
+}
+
+.frame-eval-summary {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  text-align: left;
+}
+
+.frame-eval-card {
+  background: var(--card);
+  border-radius: 12px;
+  margin: 6px 16px;
+  padding: 16px;
+}
+
+.frame-eval-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.frame-eval-frame-num {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.frame-eval-frame-score {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.frame-eval-models {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.frame-eval-model-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card-light);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.frame-eval-model-name {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.frame-eval-model-score {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.frame-eval-sub-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+
+.frame-eval-issues {
+  margin-bottom: 10px;
+}
+
+.frame-eval-issue-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.frame-eval-issue-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.frame-eval-issue-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.frame-eval-suggestions {
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.frame-eval-sug-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.frame-eval-sug-arrow {
+  color: var(--status-complete);
+  font-size: 12px;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.frame-eval-sug-text {
+  font-size: 12px;
+  color: var(--status-complete);
+  line-height: 1.5;
+}

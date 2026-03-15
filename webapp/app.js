@@ -1248,102 +1248,6 @@
     });
   }
 
-  function renderTrackingContent(container, videos, summary) {
-    var html = '';
-
-    // 学習状況サマリー
-    if (summary) {
-      var fbLearning = summary.feedback_learning || summary.feedbackLearning || {};
-      var vidLearning = summary.video_learning || summary.videoLearning || {};
-
-      html += '<div class="tk-section">' +
-        '<div class="tk-section-title">\u5b66\u7fd2\u72b6\u6cc1</div>' +
-        '<div class="tk-stats-row">' +
-          tkStatCard('FB\u5b66\u7fd2', fbLearning.total_patterns || fbLearning.totalPatterns || 0, fbLearning.active_rules || fbLearning.activeRules || 0, null) +
-          tkStatCard('\u6620\u50cf\u5b66\u7fd2', vidLearning.total_patterns || vidLearning.totalPatterns || 0, vidLearning.active_rules || vidLearning.activeRules || 0, vidLearning.total_source_videos || vidLearning.totalSourceVideos || null) +
-        '</div>';
-
-      // カテゴリ分布
-      var catDist = (vidLearning.category_distribution || vidLearning.categoryDistribution);
-      if (catDist && Object.keys(catDist).length > 0) {
-        html += '<div class="tk-cat-dist">' +
-          '<div class="tk-cat-label">\u30ab\u30c6\u30b4\u30ea\u5206\u5e03</div>' +
-          '<div class="tk-cat-tags">';
-
-        var catLabels = { cutting: '\u30ab\u30c3\u30c8', color: '\u8272\u5f69', tempo: '\u30c6\u30f3\u30dd', technique: '\u30c6\u30af\u30cb\u30c3\u30af', composition: '\u69cb\u56f3', telop: '\u30c6\u30ed\u30c3\u30d7', bgm: 'BGM', camera: '\u30ab\u30e1\u30e9', general: '\u5168\u822c' };
-        var catColors = { cutting: '#E50914', color: '#F5A623', tempo: '#4A90D9', technique: '#46D369', composition: '#9B59B6' };
-
-        var sorted = Object.entries(catDist).sort(function(a, b) { return b[1] - a[1]; });
-        sorted.forEach(function(entry) {
-          var key = entry[0], val = entry[1];
-          var lbl = catLabels[key] || key;
-          var clr = catColors[key] || '#808080';
-          html += '<span class="tk-cat-tag" style="background: ' + clr + '">' + lbl + ' ' + val + '</span>';
-        });
-
-        html += '</div></div>';
-      }
-
-      html += '</div>';
-    }
-
-    // トラッキング動画一覧
-    html += '<div class="tk-section">' +
-      '<div class="tk-section-title">\u30c8\u30e9\u30c3\u30ad\u30f3\u30b0\u4e2d\u306e\u52d5\u753b</div>';
-
-    if (videos.length > 0) {
-      videos.forEach(function(video) {
-        var title = video.title || '\u7121\u984c';
-        var channel = video.channel_name || video.channelName || '\u30c1\u30e3\u30f3\u30cd\u30eb\u672a\u8a2d\u5b9a';
-        var status = video.analysis_status || video.analysisStatus || 'pending';
-        var statusLbl = status === 'completed' ? '\u5206\u6790\u5b8c\u4e86' : status === 'analyzing' ? '\u5206\u6790\u4e2d' : '\u5f85\u6a5f\u4e2d';
-        var statusClr = status === 'completed' ? 'var(--status-complete)' : status === 'analyzing' ? 'var(--status-editing)' : 'var(--text-muted)';
-
-        var analysis = video.analysis_result || video.analysisResult || null;
-
-        html += '<div class="tk-video-card">' +
-          '<div class="tk-video-header">' +
-            '<div class="tk-video-info">' +
-              '<div class="tk-video-title">' + escapeHTML(title) + '</div>' +
-              '<div class="tk-video-channel">' + escapeHTML(channel) + '</div>' +
-            '</div>' +
-            '<span class="tk-video-status" style="background: ' + statusClr + '">' + statusLbl + '</span>' +
-          '</div>';
-
-        if (analysis) {
-          var details = [
-            ['\u7dcf\u5408', analysis.overall_score || analysis.overallScore ? (analysis.overall_score || analysis.overallScore).toFixed(0) : '-'],
-            ['\u69cb\u56f3', analysis.composition || '-'],
-            ['\u30c6\u30f3\u30dd', analysis.tempo || '-'],
-            ['\u30ab\u30c3\u30c8', analysis.cutting_style || analysis.cuttingStyle || '-'],
-            ['\u8272\u5f69', analysis.color_grading || analysis.colorGrading || '-']
-          ];
-          details.forEach(function(d) {
-            html += '<div class="tk-detail-row"><span class="tk-detail-label">' + d[0] + '</span><span class="tk-detail-val">' + escapeHTML(String(d[1])) + '</span></div>';
-          });
-
-          var techniques = analysis.key_techniques || analysis.keyTechniques || [];
-          if (techniques.length > 0) {
-            html += '<div class="tk-techniques">' +
-              '<div class="tk-techniques-label">\u62bd\u51fa\u30c6\u30af\u30cb\u30c3\u30af</div>';
-            techniques.forEach(function(t) {
-              html += '<div class="tk-technique-item">\u30fb' + escapeHTML(t) + '</div>';
-            });
-            html += '</div>';
-          }
-        }
-
-        html += '</div>';
-      });
-    } else {
-      html += '<div class="ef-empty">\u30c8\u30e9\u30c3\u30ad\u30f3\u30b0\u4e2d\u306e\u52d5\u753b\u306f\u3042\u308a\u307e\u305b\u3093</div>';
-    }
-
-    html += '</div>';
-
-    container.innerHTML = html;
-  }
-
   function tkStatCard(title, patterns, rules, videos) {
     var html = '<div class="tk-stat-card">' +
       '<div class="tk-stat-title">' + title + '</div>' +
@@ -1621,6 +1525,381 @@
     try { ok = document.execCommand('copy'); } catch (e) {}
     document.body.removeChild(ta);
     callback(ok);
+  }
+
+  // ===================================================================
+  // トラッキングページ: 学習詳細表示（NEW-6: FB学習, NEW-7: 映像学習）
+  // ===================================================================
+
+  // トラッキングページを詳細版に拡張
+  function renderTrackingContent(container, videos, summary) {
+    var html = '';
+
+    // 学習状況サマリー（既存を維持）
+    if (summary) {
+      var fbLearning = summary.feedback_learning || summary.feedbackLearning || {};
+      var vidLearning = summary.video_learning || summary.videoLearning || {};
+
+      html += '<div class="tk-section">' +
+        '<div class="tk-section-title">\u5b66\u7fd2\u72b6\u6cc1</div>' +
+        '<div class="tk-stats-row">' +
+          tkStatCard('FB\u5b66\u7fd2', fbLearning.total_patterns || fbLearning.totalPatterns || 0, fbLearning.active_rules || fbLearning.activeRules || 0, null) +
+          tkStatCard('\u6620\u50cf\u5b66\u7fd2', vidLearning.total_patterns || vidLearning.totalPatterns || 0, vidLearning.active_rules || vidLearning.activeRules || 0, vidLearning.total_source_videos || vidLearning.totalSourceVideos || null) +
+        '</div>';
+
+      // カテゴリ分布
+      var catDist = (vidLearning.category_distribution || vidLearning.categoryDistribution);
+      if (catDist && Object.keys(catDist).length > 0) {
+        html += '<div class="tk-cat-dist">' +
+          '<div class="tk-cat-label">\u30ab\u30c6\u30b4\u30ea\u5206\u5e03</div>' +
+          '<div class="tk-cat-tags">';
+
+        var catLabels = { cutting: '\u30ab\u30c3\u30c8', color: '\u8272\u5f69', tempo: '\u30c6\u30f3\u30dd', technique: '\u30c6\u30af\u30cb\u30c3\u30af', composition: '\u69cb\u56f3', telop: '\u30c6\u30ed\u30c3\u30d7', bgm: 'BGM', camera: '\u30ab\u30e1\u30e9', general: '\u5168\u822c' };
+        var catColors = { cutting: '#E50914', color: '#F5A623', tempo: '#4A90D9', technique: '#46D369', composition: '#9B59B6' };
+
+        var sorted = Object.entries(catDist).sort(function(a, b) { return b[1] - a[1]; });
+        sorted.forEach(function(entry) {
+          var key = entry[0], val = entry[1];
+          var lbl = catLabels[key] || key;
+          var clr = catColors[key] || '#808080';
+          html += '<span class="tk-cat-tag" style="background: ' + clr + '">' + lbl + ' ' + val + '</span>';
+        });
+
+        html += '</div></div>';
+      }
+
+      html += '</div>';
+
+      // ===== NEW-6: FB学習ルール詳細 =====
+      var fbRules = fbLearning.rules || fbLearning.learned_rules || [];
+      var fbPatterns = fbLearning.patterns || fbLearning.detected_patterns || [];
+
+      html += '<div class="tk-section">' +
+        '<div class="tk-section-title">FB\u5b66\u7fd2\u30eb\u30fc\u30eb\u8a73\u7d30</div>';
+
+      if (fbRules.length > 0) {
+        html += '<div class="learn-rules-list">';
+        fbRules.forEach(function(rule) {
+          var conf = rule.confidence || rule.score || 0;
+          var confPct = Math.round(conf * 100);
+          var applyCount = rule.apply_count || rule.applyCount || rule.applications || 0;
+          var ruleText = rule.text || rule.rule || rule.description || '';
+          var confColor = confPct >= 80 ? 'var(--status-complete)' : confPct >= 50 ? 'var(--status-editing)' : 'var(--accent)';
+
+          html += '<div class="learn-rule-card">' +
+            '<div class="learn-rule-text">' + escapeHTML(ruleText) + '</div>' +
+            '<div class="learn-rule-meta">' +
+              '<div class="learn-conf-bar-wrap">' +
+                '<div class="learn-conf-label">\u78ba\u4fe1\u5ea6 ' + confPct + '%</div>' +
+                '<div class="learn-conf-bar"><div class="learn-conf-fill" style="width:' + confPct + '%;background:' + confColor + '"></div></div>' +
+              '</div>' +
+              '<div class="learn-apply-count">\u9069\u7528 ' + applyCount + '\u56de</div>' +
+            '</div>' +
+          '</div>';
+        });
+        html += '</div>';
+      } else {
+        html += '<div class="ef-empty">FB\u5b66\u7fd2\u30eb\u30fc\u30eb\u304c\u307e\u3060\u3042\u308a\u307e\u305b\u3093</div>';
+      }
+
+      // FB学習パターン一覧
+      if (fbPatterns.length > 0) {
+        html += '<div class="learn-patterns-header">\u691c\u51fa\u30d1\u30bf\u30fc\u30f3</div>' +
+          '<div class="learn-patterns-list">';
+        fbPatterns.forEach(function(pat) {
+          var freq = pat.frequency || pat.count || 0;
+          var catTag = pat.category || pat.type || '\u5168\u822c';
+          var patText = pat.pattern || pat.text || pat.description || '';
+
+          html += '<div class="learn-pattern-item">' +
+            '<div class="learn-pattern-text">' + escapeHTML(patText) + '</div>' +
+            '<div class="learn-pattern-meta">' +
+              '<span class="learn-pattern-freq">\u51fa\u73fe ' + freq + '\u56de</span>' +
+              '<span class="learn-pattern-cat">' + escapeHTML(catTag) + '</span>' +
+            '</div>' +
+          '</div>';
+        });
+        html += '</div>';
+      }
+
+      // FB学習→ディレクション反映ビジュアライゼーション
+      var fbImpact = fbLearning.direction_impact || fbLearning.directionImpact || null;
+      if (fbImpact) {
+        html += '<div class="learn-impact-section">' +
+          '<div class="learn-impact-title">\u5b66\u7fd2\u306e\u30c7\u30a3\u30ec\u30af\u30b7\u30e7\u30f3\u53cd\u6620</div>' +
+          renderImpactVisualization(fbImpact) +
+        '</div>';
+      }
+
+      html += '</div>';
+
+      // ===== NEW-7: VideoLearner 映像学習ルール詳細 =====
+      var vidRules = vidLearning.rules || vidLearning.learned_rules || [];
+      var vidTechniques = vidLearning.extracted_techniques || vidLearning.extractedTechniques || [];
+
+      html += '<div class="tk-section">' +
+        '<div class="tk-section-title">\u6620\u50cf\u5b66\u7fd2\u30eb\u30fc\u30eb\u8a73\u7d30</div>';
+
+      if (vidRules.length > 0) {
+        html += '<div class="learn-rules-list">';
+        vidRules.forEach(function(rule) {
+          var conf = rule.confidence || rule.score || 0;
+          var confPct = Math.round(conf * 100);
+          var cat = rule.category || '\u5168\u822c';
+          var ruleText = rule.text || rule.rule || rule.description || '';
+          var confColor = confPct >= 80 ? 'var(--status-complete)' : confPct >= 50 ? 'var(--status-editing)' : 'var(--accent)';
+
+          html += '<div class="learn-rule-card">' +
+            '<div class="learn-rule-head">' +
+              '<span class="learn-rule-cat-tag">' + escapeHTML(cat) + '</span>' +
+            '</div>' +
+            '<div class="learn-rule-text">' + escapeHTML(ruleText) + '</div>' +
+            '<div class="learn-rule-meta">' +
+              '<div class="learn-conf-bar-wrap">' +
+                '<div class="learn-conf-label">\u78ba\u4fe1\u5ea6 ' + confPct + '%</div>' +
+                '<div class="learn-conf-bar"><div class="learn-conf-fill" style="width:' + confPct + '%;background:' + confColor + '"></div></div>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        });
+        html += '</div>';
+      } else {
+        html += '<div class="ef-empty">\u6620\u50cf\u5b66\u7fd2\u30eb\u30fc\u30eb\u304c\u307e\u3060\u3042\u308a\u307e\u305b\u3093</div>';
+      }
+
+      // 外部映像テクニック一覧
+      if (vidTechniques.length > 0) {
+        html += '<div class="learn-techniques-header">\u62bd\u51fa\u30c6\u30af\u30cb\u30c3\u30af\u4e00\u89a7</div>' +
+          '<div class="learn-techniques-list">';
+        vidTechniques.forEach(function(tech) {
+          var techName = tech.name || tech.technique || '';
+          var source = tech.source_video || tech.sourceVideo || '';
+          var timestamp = tech.timestamp || tech.time || '';
+          var desc = tech.description || '';
+
+          html += '<div class="learn-tech-card">' +
+            '<div class="learn-tech-name">' + escapeHTML(techName) + '</div>' +
+            (desc ? '<div class="learn-tech-desc">' + escapeHTML(desc) + '</div>' : '') +
+            (source ? '<div class="learn-tech-source">' +
+              '<span class="learn-tech-source-icon">VD</span>' +
+              '<span class="learn-tech-source-text">' + escapeHTML(source) +
+                (timestamp ? ' (' + escapeHTML(timestamp) + ')' : '') +
+              '</span>' +
+            '</div>' : '') +
+          '</div>';
+        });
+        html += '</div>';
+      }
+
+      html += '</div>';
+    }
+
+    // トラッキング動画一覧（既存と同じ構造を維持）
+    html += '<div class="tk-section">' +
+      '<div class="tk-section-title">\u30c8\u30e9\u30c3\u30ad\u30f3\u30b0\u4e2d\u306e\u52d5\u753b</div>';
+
+    if (videos.length > 0) {
+      videos.forEach(function(video) {
+        var title = video.title || '\u7121\u984c';
+        var channel = video.channel_name || video.channelName || '\u30c1\u30e3\u30f3\u30cd\u30eb\u672a\u8a2d\u5b9a';
+        var status = video.analysis_status || video.analysisStatus || 'pending';
+        var statusLbl = status === 'completed' ? '\u5206\u6790\u5b8c\u4e86' : status === 'analyzing' ? '\u5206\u6790\u4e2d' : '\u5f85\u6a5f\u4e2d';
+        var statusClr = status === 'completed' ? 'var(--status-complete)' : status === 'analyzing' ? 'var(--status-editing)' : 'var(--text-muted)';
+
+        var analysis = video.analysis_result || video.analysisResult || null;
+
+        html += '<div class="tk-video-card">' +
+          '<div class="tk-video-header">' +
+            '<div class="tk-video-info">' +
+              '<div class="tk-video-title">' + escapeHTML(title) + '</div>' +
+              '<div class="tk-video-channel">' + escapeHTML(channel) + '</div>' +
+            '</div>' +
+            '<span class="tk-video-status" style="background: ' + statusClr + '">' + statusLbl + '</span>' +
+          '</div>';
+
+        if (analysis) {
+          var details = [
+            ['\u7dcf\u5408', analysis.overall_score || analysis.overallScore ? (analysis.overall_score || analysis.overallScore).toFixed(0) : '-'],
+            ['\u69cb\u56f3', analysis.composition || '-'],
+            ['\u30c6\u30f3\u30dd', analysis.tempo || '-'],
+            ['\u30ab\u30c3\u30c8', analysis.cutting_style || analysis.cuttingStyle || '-'],
+            ['\u8272\u5f69', analysis.color_grading || analysis.colorGrading || '-']
+          ];
+          details.forEach(function(d) {
+            html += '<div class="tk-detail-row"><span class="tk-detail-label">' + d[0] + '</span><span class="tk-detail-val">' + escapeHTML(String(d[1])) + '</span></div>';
+          });
+
+          var techniques = analysis.key_techniques || analysis.keyTechniques || [];
+          if (techniques.length > 0) {
+            html += '<div class="tk-techniques">' +
+              '<div class="tk-techniques-label">\u62bd\u51fa\u30c6\u30af\u30cb\u30c3\u30af</div>';
+            techniques.forEach(function(t) {
+              html += '<div class="tk-technique-item">\u30fb' + escapeHTML(t) + '</div>';
+            });
+            html += '</div>';
+          }
+        }
+
+        html += '</div>';
+      });
+    } else {
+      html += '<div class="ef-empty">\u30c8\u30e9\u30c3\u30ad\u30f3\u30b0\u4e2d\u306e\u52d5\u753b\u306f\u3042\u308a\u307e\u305b\u3093</div>';
+    }
+
+    html += '</div>';
+
+    container.innerHTML = html;
+  }
+
+  // FB学習→ディレクション反映のビジュアライゼーション
+  function renderImpactVisualization(impact) {
+    var areas = impact.areas || impact.categories || [];
+    if (!areas.length && typeof impact === 'object') {
+      // オブジェクト形式の場合
+      areas = Object.entries(impact).map(function(e) {
+        return { name: e[0], score: e[1] };
+      });
+    }
+    if (!areas.length) return '<div class="ef-empty">\u53cd\u6620\u30c7\u30fc\u30bf\u306a\u3057</div>';
+
+    var maxScore = Math.max.apply(null, areas.map(function(a) { return a.score || a.value || 0; }));
+    if (maxScore === 0) maxScore = 1;
+
+    var html = '<div class="learn-impact-bars">';
+    areas.forEach(function(area) {
+      var name = area.name || area.category || '';
+      var score = area.score || area.value || 0;
+      var pct = Math.round((score / maxScore) * 100);
+      html += '<div class="learn-impact-row">' +
+        '<span class="learn-impact-name">' + escapeHTML(name) + '</span>' +
+        '<div class="learn-impact-bar"><div class="learn-impact-fill" style="width:' + pct + '%"></div></div>' +
+        '<span class="learn-impact-val">' + score + '</span>' +
+      '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  // ===================================================================
+  // フレーム画像マルチモデル評価（C-1）
+  // ===================================================================
+
+  function renderFrameEvaluation(project) {
+    var container = document.getElementById('report-sections');
+    if (!project) {
+      container.innerHTML = '<div class="ef-empty">\u30d7\u30ed\u30b8\u30a7\u30af\u30c8\u304c\u9078\u629e\u3055\u308c\u3066\u3044\u307e\u305b\u3093</div>';
+      return;
+    }
+
+    container.innerHTML = '<div class="ef-loading"><div class="yt-loading-text">\u30d5\u30ec\u30fc\u30e0\u8a55\u4fa1\u30c7\u30fc\u30bf\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...</div></div>';
+
+    fetch('http://localhost:8210/api/v1/projects/' + encodeURIComponent(project.id) + '/frame-evaluation')
+      .then(function(r) {
+        if (!r.ok) throw new Error('not found');
+        return r.json();
+      })
+      .then(function(data) {
+        container.innerHTML = buildFrameEvaluationHTML(data);
+      })
+      .catch(function() {
+        container.innerHTML = '<div class="frame-eval-fallback">' +
+          '<div class="frame-eval-empty-icon">FE</div>' +
+          '<div class="frame-eval-empty-title">\u30d5\u30ec\u30fc\u30e0\u8a55\u4fa1\u672a\u5b9f\u65bd</div>' +
+          '<div class="frame-eval-empty-sub">\u3053\u306e\u30d7\u30ed\u30b8\u30a7\u30af\u30c8\u306e\u30d5\u30ec\u30fc\u30e0\u8a55\u4fa1\u306f\u307e\u3060\u5b9f\u884c\u3055\u308c\u3066\u3044\u307e\u305b\u3093\u3002<br>\u54c1\u8cea\u30c0\u30c3\u30b7\u30e5\u30dc\u30fc\u30c9\u304b\u3089\u8a55\u4fa1\u3092\u958b\u59cb\u3067\u304d\u307e\u3059\u3002</div>' +
+        '</div>';
+      });
+  }
+
+  function buildFrameEvaluationHTML(data) {
+    var frames = data.frames || data.evaluations || [];
+    var overallScore = data.overall_score || data.overallScore || null;
+    var summary = data.summary || '';
+
+    var html = '<div class="frame-eval-wrap">';
+
+    // 総合スコア
+    if (overallScore !== null) {
+      var sColor = scoreColor(overallScore);
+      var sClass = scoreClass(overallScore);
+      html += '<div class="frame-eval-overall">' +
+        '<div class="frame-eval-overall-label">\u30d5\u30ec\u30fc\u30e0\u7dcf\u5408\u8a55\u4fa1</div>' +
+        '<div class="frame-eval-overall-score ' + sClass + '" style="color:' + sColor + '">' + overallScore + '</div>' +
+        (summary ? '<div class="frame-eval-summary">' + escapeHTML(summary) + '</div>' : '') +
+      '</div>';
+    }
+
+    // 各フレーム評価
+    if (frames.length > 0) {
+      frames.forEach(function(frame, idx) {
+        var frameScore = frame.score || frame.overall_score || 0;
+        var fColor = scoreColor(frameScore);
+        var fClass = scoreClass(frameScore);
+        var timestamp = frame.timestamp || frame.time || '';
+        var tsStr = typeof timestamp === 'number' ? formatTimestamp(timestamp) : (timestamp || '');
+        var issues = frame.issues || frame.findings || [];
+        var suggestions = frame.suggestions || frame.improvements || [];
+        var models = frame.models || frame.model_scores || [];
+
+        html += '<div class="frame-eval-card">' +
+          '<div class="frame-eval-card-header">' +
+            '<div class="frame-eval-frame-num">\u30d5\u30ec\u30fc\u30e0 #' + (idx + 1) + (tsStr ? ' (' + tsStr + ')' : '') + '</div>' +
+            '<div class="frame-eval-frame-score ' + fClass + '" style="color:' + fColor + '">' + frameScore + '</div>' +
+          '</div>';
+
+        // モデル別スコア
+        if (models.length > 0) {
+          html += '<div class="frame-eval-models">';
+          models.forEach(function(m) {
+            var mName = m.model || m.name || '';
+            var mScore = m.score || 0;
+            var mColor = scoreColor(mScore);
+            html += '<div class="frame-eval-model-item">' +
+              '<span class="frame-eval-model-name">' + escapeHTML(mName) + '</span>' +
+              '<span class="frame-eval-model-score" style="color:' + mColor + '">' + mScore + '</span>' +
+            '</div>';
+          });
+          html += '</div>';
+        }
+
+        // 指摘事項
+        if (issues.length > 0) {
+          html += '<div class="frame-eval-issues">' +
+            '<div class="frame-eval-sub-label">\u6307\u6458\u4e8b\u9805</div>';
+          issues.forEach(function(issue) {
+            var issueText = typeof issue === 'string' ? issue : (issue.text || issue.message || issue.description || '');
+            var severity = typeof issue === 'object' ? (issue.severity || 'info') : 'info';
+            var sevColor = severity === 'high' || severity === 'critical' ? 'var(--accent)' :
+                           severity === 'medium' ? 'var(--status-editing)' : 'var(--status-directed)';
+            html += '<div class="frame-eval-issue-item">' +
+              '<div class="frame-eval-issue-dot" style="background:' + sevColor + '"></div>' +
+              '<div class="frame-eval-issue-text">' + escapeHTML(issueText) + '</div>' +
+            '</div>';
+          });
+          html += '</div>';
+        }
+
+        // 改善提案
+        if (suggestions.length > 0) {
+          html += '<div class="frame-eval-suggestions">' +
+            '<div class="frame-eval-sub-label">\u6539\u5584\u63d0\u6848</div>';
+          suggestions.forEach(function(sug) {
+            var sugText = typeof sug === 'string' ? sug : (sug.text || sug.suggestion || sug.description || '');
+            html += '<div class="frame-eval-sug-item">' +
+              '<span class="frame-eval-sug-arrow">\u2192</span>' +
+              '<span class="frame-eval-sug-text">' + escapeHTML(sugText) + '</span>' +
+            '</div>';
+          });
+          html += '</div>';
+        }
+
+        html += '</div>';
+      });
+    } else {
+      html += '<div class="ef-empty">\u30d5\u30ec\u30fc\u30e0\u8a55\u4fa1\u30c7\u30fc\u30bf\u304c\u3042\u308a\u307e\u305b\u3093</div>';
+    }
+
+    html += '</div>';
+    return html;
   }
 
   // HTML文字列エスケープ

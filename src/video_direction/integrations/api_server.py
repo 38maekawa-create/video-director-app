@@ -897,6 +897,183 @@ def check_all_remote_macs():
     return proc.check_all_macs()
 
 
+# --- Vimeoレビューコメント投稿 ---
+
+class VimeoCommentItem(BaseModel):
+    """個別のVimeoコメント"""
+    timecode: str  # "MM:SS" 形式のタイムコード
+    text: str  # コメント本文
+    priority: str = "medium"  # high/medium/low
+    feedback_id: Optional[str] = None  # 元のフィードバックID
+
+
+class VimeoPostReviewRequest(BaseModel):
+    """Vimeoレビューコメント投稿リクエスト"""
+    vimeo_video_id: str
+    comments: list[VimeoCommentItem]
+
+
+def _timecode_to_seconds(timecode: str) -> float:
+    """タイムコード文字列を秒数に変換する。
+
+    対応フォーマット: "MM:SS", "HH:MM:SS", "SS", 数値そのまま
+    """
+    timecode = timecode.strip()
+    parts = timecode.split(":")
+    try:
+        if len(parts) == 3:
+            # HH:MM:SS
+            return float(parts[0]) * 3600 + float(parts[1]) * 60 + float(parts[2])
+        elif len(parts) == 2:
+            # MM:SS
+            return float(parts[0]) * 60 + float(parts[1])
+        else:
+            # 秒数そのまま
+            return float(timecode)
+    except (ValueError, TypeError):
+        return 0.0
+
+
+def _priority_to_japanese(priority: str) -> str:
+    """英語の優先度を日本語に変換"""
+    mapping = {"high": "高", "medium": "中", "low": "低"}
+    return mapping.get(priority.lower(), "中")
+
+
+def _build_vimeo_comment_payload(comment: VimeoCommentItem) -> dict:
+    """VimeoCommentItemからVimeo API投稿用ペイロードを構築する。
+
+    post_vimeo_review_comments.pyのbuild_comment_text/build_vimeo_payloadと
+    同じロジックを使用。タイムコードモードはデフォルトembed_text。
+    """
+    import os
+
+    # 優先度プレフィックス
+    priority_prefix = {
+        "高": "🔴【優先度: 高】",
+        "中": "🟡【優先度: 中】",
+        "低": "🟢【優先度: 低】",
+    }
+    jp_priority = _priority_to_japanese(comment.priority)
+    prefix = priority_prefix.get(jp_priority, "")
+    body = f"{prefix} {comment.text}" if prefix else comment.text
+
+    mode = os.getenv("VIMEO_TIMECODE_MODE", "embed_text").strip()
+    timestamp_seconds = _timecode_to_seconds(comment.timecode)
+
+    if mode == "embed_text":
+        text = f"[{comment.timecode}] {body}"
+    elif mode == "body_field":
+        field_name = os.getenv("VIMEO_TIMECODE_FIELD", "timecode").strip() or "timecode"
+        return {"text": body, field_name: timestamp_seconds}
+    elif mode == "skip":
+        text = body
+    else:
+        text = f"[{comment.timecode}] {body}"
+
+    return {"text": text}
+
+
+@app.post("/api/v1/vimeo/post-review")
+def post_vimeo_review(body: VimeoPostReviewRequest, dry_run: bool = True):
+    """Vimeoレビューコメントを投稿する。
+
+    dry_run=True（デフォルト）: 投稿計画のみ返す。Vimeo APIには送信しない。
+    dry_run=False: 実際にVimeo APIへコメントを投稿する。
+    """
+    import os
+    import sys
+
+    # スクリプトのパスを追加してimportできるようにする
+    scripts_dir = Path.home() / "AI開発10" / "scripts"
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+
+    target_video_id = body.vimeo_video_id
+    comments = body.comments
+
+    if not target_video_id:
+        raise HTTPException(400, "vimeo_video_id is required")
+    if not comments:
+        raise HTTPException(400, "comments list is empty")
+
+    # コメントごとにVimeo APIペイロードを構築
+    plan = []
+    for i, comment in enumerate(comments):
+        payload = _build_vimeo_comment_payload(comment)
+        timestamp_seconds = _timecode_to_seconds(comment.timecode)
+        plan.append({
+            "index": i,
+            "feedbackId": comment.feedback_id or f"comment_{i}",
+            "timecode": comment.timecode,
+            "timestampSeconds": timestamp_seconds,
+            "priority": comment.priority,
+            "vimeoPayload": payload,
+        })
+
+    if dry_run:
+        # dry-runモード: 投稿計画のみ返す
+        return {
+            "mode": "dry_run",
+            "targetVideoId": target_video_id,
+            "commentCount": len(plan),
+            "plan": plan,
+        }
+
+    # 本番投稿モード: post_vimeo_review_comments.pyのロジックを使用
+    try:
+        from post_vimeo_review_comments import (
+            load_token,
+            build_endpoint,
+            post_with_retry,
+            COMMENT_INTERVAL,
+        )
+    except ImportError:
+        raise HTTPException(
+            500,
+            "post_vimeo_review_comments モジュールが見つかりません。"
+            "scripts/post_vimeo_review_comments.py を確認してください。"
+        )
+
+    try:
+        token = load_token()
+    except ValueError as e:
+        raise HTTPException(500, str(e))
+
+    endpoint = build_endpoint(target_video_id)
+    results = []
+    posted_count = 0
+    failed_count = 0
+
+    for i, item in enumerate(plan):
+        result = post_with_retry(endpoint, token, item["vimeoPayload"])
+        result["feedbackId"] = item["feedbackId"]
+        result["timecode"] = item["timecode"]
+
+        if result.get("status") == "posted":
+            posted_count += 1
+        else:
+            failed_count += 1
+
+        results.append(result)
+
+        # コメント間のインターバル（レート制限対策）
+        if i < len(plan) - 1:
+            import time
+            time.sleep(COMMENT_INTERVAL)
+
+    return {
+        "mode": "execute",
+        "targetVideoId": target_video_id,
+        "results": results,
+        "summary": {
+            "total": len(plan),
+            "posted": posted_count,
+            "failed": failed_count,
+        },
+    }
+
+
 # --- フィードバック変換 (音声→プロ指示) ---
 
 class FeedbackConvertRequest(BaseModel):

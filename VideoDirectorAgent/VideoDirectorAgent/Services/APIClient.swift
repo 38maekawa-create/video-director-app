@@ -105,6 +105,26 @@ final class APIClient: ObservableObject {
         return try await request(FeedbackConvertResponse.self, path: "/api/feedback/convert", method: "POST", body: body)
     }
 
+    // MARK: - Vimeoレビューコメント投稿
+
+    func postVimeoReviewComments(
+        vimeoVideoId: String,
+        comments: [VimeoCommentPayload],
+        dryRun: Bool = true
+    ) async throws -> VimeoPostReviewResponse {
+        let body = VimeoPostReviewRequest(
+            vimeoVideoId: vimeoVideoId,
+            comments: comments
+        )
+        let dryRunParam = dryRun ? "true" : "false"
+        return try await request(
+            VimeoPostReviewResponse.self,
+            path: "/api/v1/vimeo/post-review?dry_run=\(dryRunParam)",
+            method: "POST",
+            body: body
+        )
+    }
+
     func createFeedback(
         projectId: String,
         content: String,

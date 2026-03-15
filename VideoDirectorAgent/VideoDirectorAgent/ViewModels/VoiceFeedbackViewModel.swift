@@ -23,6 +23,9 @@ final class VoiceFeedbackViewModel: ObservableObject {
     @Published var sendDestination: SendDestination = .vimeo
     @Published var sentMessage: String?
     @Published var recordingDuration: TimeInterval = 0
+    @Published var vimeoVideoId: String = ""
+    @Published var vimeoPostResult: VimeoPostReviewResponse?
+    @Published var isPostingToVimeo: Bool = false
 
     let markers: [TimelineMarker] = []
 
@@ -180,6 +183,81 @@ final class VoiceFeedbackViewModel: ObservableObject {
         }
     }
 
+    /// Vimeoレビューコメントとして投稿する（dry-runモード対応）
+    /// STT結果 + タイムスタンプを構造化してAPIエンドポイントに送信
+    func sendToVimeoReview(dryRun: Bool = true) {
+        guard !vimeoVideoId.isEmpty else {
+            sentMessage = "Vimeo動画IDが未設定です"
+            return
+        }
+        guard !convertedText.isEmpty || !rawTranscript.isEmpty else {
+            sentMessage = "送信するコメントがありません"
+            return
+        }
+
+        isPostingToVimeo = true
+        sentMessage = nil
+
+        Task {
+            do {
+                // structuredItemsがある場合はそれぞれをコメントとして投稿
+                // ない場合はconvertedText全体を1つのコメントとして投稿
+                let comments: [VimeoCommentPayload]
+
+                if !structuredItems.isEmpty {
+                    comments = structuredItems.map { item in
+                        VimeoCommentPayload(
+                            timecode: item.timestamp,
+                            text: item.note.isEmpty ? item.element : "\(item.element): \(item.note)",
+                            priority: item.priority.rawValue == "高" ? "high" : (item.priority.rawValue == "低" ? "low" : "medium"),
+                            feedbackId: nil
+                        )
+                    }
+                } else {
+                    let timecode = String(
+                        format: "%02d:%02d",
+                        Int(selectedTime) / 60,
+                        Int(selectedTime) % 60
+                    )
+                    let text = convertedText.isEmpty ? rawTranscript : convertedText
+                    comments = [
+                        VimeoCommentPayload(
+                            timecode: timecode,
+                            text: text,
+                            priority: "medium",
+                            feedbackId: nil
+                        )
+                    ]
+                }
+
+                let response = try await APIClient.shared.postVimeoReviewComments(
+                    vimeoVideoId: vimeoVideoId,
+                    comments: comments,
+                    dryRun: dryRun
+                )
+
+                vimeoPostResult = response
+                isPostingToVimeo = false
+
+                if response.mode == "dry_run" {
+                    sentMessage = "Vimeo投稿プレビュー: \(response.commentCount ?? comments.count)件のコメント"
+                } else {
+                    let posted = response.summary?.posted ?? 0
+                    let failed = response.summary?.failed ?? 0
+                    if failed == 0 {
+                        sentMessage = "Vimeoに\(posted)件のコメントを投稿しました"
+                        flowState = .sent
+                    } else {
+                        sentMessage = "Vimeo投稿: \(posted)件成功 / \(failed)件失敗"
+                    }
+                }
+            } catch {
+                isPostingToVimeo = false
+                sentMessage = "Vimeo投稿エラー: \(error.localizedDescription)"
+            }
+        }
+    }
+
     func resetFlow() {
         recordingTimer?.invalidate()
         recordingTimer = nil
@@ -192,6 +270,8 @@ final class VoiceFeedbackViewModel: ObservableObject {
         structuredItems = []
         sentMessage = nil
         recordingDuration = 0
+        vimeoPostResult = nil
+        isPostingToVimeo = false
     }
 
     private func feedbackPriority(from value: String) -> FeedbackPriority {

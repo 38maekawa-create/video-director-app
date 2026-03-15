@@ -793,6 +793,71 @@ struct FeedbackConvertResponse: Codable {
     let structuredItems: [StructuredFeedbackItem]
 }
 
+// MARK: - Vimeoレビューコメント投稿モデル
+
+struct VimeoCommentPayload: Encodable {
+    let timecode: String
+    let text: String
+    let priority: String
+    let feedbackId: String?
+
+    enum CodingKeys: String, CodingKey {
+        case timecode
+        case text
+        case priority
+        case feedbackId
+    }
+}
+
+struct VimeoPostReviewRequest: Encodable {
+    let vimeoVideoId: String
+    let comments: [VimeoCommentPayload]
+}
+
+struct VimeoReviewPlanItem: Codable {
+    let index: Int
+    let feedbackId: String
+    let timecode: String
+    let timestampSeconds: Double
+    let priority: String
+    let vimeoPayload: [String: String]?
+
+    // vimeoPayloadは動的キーのため柔軟にデコード
+    enum CodingKeys: String, CodingKey {
+        case index
+        case feedbackId
+        case timecode
+        case timestampSeconds
+        case priority
+        case vimeoPayload
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        index = try container.decode(Int.self, forKey: .index)
+        feedbackId = try container.decode(String.self, forKey: .feedbackId)
+        timecode = try container.decode(String.self, forKey: .timecode)
+        timestampSeconds = try container.decode(Double.self, forKey: .timestampSeconds)
+        priority = try container.decode(String.self, forKey: .priority)
+        // vimeoPayloadはString値のみ想定。デコード失敗時はnilにフォールバック
+        vimeoPayload = try? container.decodeIfPresent([String: String].self, forKey: .vimeoPayload)
+    }
+}
+
+struct VimeoPostReviewResponse: Codable {
+    let mode: String
+    let targetVideoId: String
+    let commentCount: Int?
+    let plan: [VimeoReviewPlanItem]?
+    let summary: VimeoPostSummary?
+
+    struct VimeoPostSummary: Codable {
+        let total: Int
+        let posted: Int?
+        let failed: Int?
+    }
+}
+
 enum JSONValue: Codable {
     case string(String)
     case number(Double)

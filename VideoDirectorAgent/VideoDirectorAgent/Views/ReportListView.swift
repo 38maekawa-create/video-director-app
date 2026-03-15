@@ -48,10 +48,12 @@ struct ReportListView: View {
     }
 
     private var filteredProjects: [VideoProject] {
+        // viewModel.projectsは既にshootDate降順ソート済み
         if searchText.isEmpty { return viewModel.projects }
         return viewModel.projects.filter {
             $0.guestName.localizedCaseInsensitiveContains(searchText) ||
-            $0.title.localizedCaseInsensitiveContains(searchText)
+            $0.title.localizedCaseInsensitiveContains(searchText) ||
+            $0.shootDate.contains(searchText)
         }
     }
 

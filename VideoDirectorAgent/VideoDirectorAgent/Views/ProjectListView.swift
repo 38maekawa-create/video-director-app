@@ -1,4 +1,40 @@
 import SwiftUI
+import UIKit
+
+// MARK: - UIScrollViewのdelaysContentTouches無効化ヘルパー
+// SwiftUIのScrollView内でButtonタップが効かない問題を解決する
+// UIViewRepresentableを使って親UIScrollViewを見つけ、delaysContentTouchesをfalseにする
+struct ScrollViewTouchFix: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: .zero)
+        view.isUserInteractionEnabled = false
+        view.backgroundColor = .clear
+        // ビューが配置された後に親ScrollViewを探す
+        DispatchQueue.main.async {
+            disableDelaysContentTouches(in: view)
+        }
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        // 更新時にも再設定（画面遷移から戻った時など）
+        DispatchQueue.main.async {
+            disableDelaysContentTouches(in: uiView)
+        }
+    }
+
+    private func disableDelaysContentTouches(in view: UIView) {
+        var current: UIView? = view
+        while let v = current {
+            if let scrollView = v as? UIScrollView {
+                scrollView.delaysContentTouches = false
+                scrollView.canCancelContentTouches = true
+                return
+            }
+            current = v.superview
+        }
+    }
+}
 
 // MARK: - 画面1: プロジェクト一覧（ホーム）— Netflix風
 struct ProjectListView: View {
@@ -70,9 +106,6 @@ struct ProjectListView: View {
             }
             .onChange(of: searchText) { _, newValue in
                 viewModel.searchText = newValue
-            }
-            .navigationDestination(for: VideoProject.self) { project in
-                DirectionReportView(project: project)
             }
         }
         // タップで詳細画面をフルスクリーン表示（横ScrollView内のタップ問題回避）
@@ -220,6 +253,7 @@ struct ProjectListView: View {
                     }
                 }
                 .padding(.horizontal, 16)
+                .background(ScrollViewTouchFix())
             }
         }
     }
@@ -279,17 +313,19 @@ struct ProjectListView: View {
                     .foregroundStyle(.white)
                     .lineLimit(1)
 
-                // 職業（ない場合も高さを確保して位置ズレ防止）
-                Text(project.guestOccupation ?? " ")
-                    .font(.caption2)
-                    .foregroundStyle(project.guestOccupation != nil ? AppTheme.textSecondary : .clear)
-                    .lineLimit(1)
+                // 職業
+                if let occupation = project.guestOccupation, !occupation.isEmpty {
+                    Text(occupation)
+                        .font(.caption2)
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .lineLimit(1)
+                }
 
                 Text(project.shootDate)
                     .font(.caption2)
                     .foregroundStyle(AppTheme.textMuted)
             }
-            .frame(width: 150, alignment: .top)
+            .frame(width: 150, height: 170, alignment: .top)
             .contentShape(Rectangle())
         }
         .buttonStyle(ProjectCardButtonStyle())

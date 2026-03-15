@@ -13,6 +13,7 @@
 		A10000010000000000000004 /* ProjectListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* ProjectListViewModel.swift */; };
 		A10000010000000000000005 /* VoiceFeedbackViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* VoiceFeedbackViewModel.swift */; };
 		A10000010000000000000006 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* DashboardViewModel.swift */; };
+		A10000010000000000000020 /* FeedbackHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000020 /* FeedbackHistoryViewModel.swift */; };
 		A10000010000000000000007 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007 /* RootTabView.swift */; };
 		A10000010000000000000008 /* ProjectListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000008 /* ProjectListView.swift */; };
 		A10000010000000000000009 /* DirectionReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000009 /* DirectionReportView.swift */; };
@@ -39,6 +40,7 @@
 		A20000010000000000000004 /* ProjectListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectListViewModel.swift; sourceTree = "<group>"; };
 		A20000010000000000000005 /* VoiceFeedbackViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceFeedbackViewModel.swift; sourceTree = "<group>"; };
 		A20000010000000000000006 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
+		A20000010000000000000020 /* FeedbackHistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackHistoryViewModel.swift; sourceTree = "<group>"; };
 		A20000010000000000000007 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		A20000010000000000000008 /* ProjectListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectListView.swift; sourceTree = "<group>"; };
 		A20000010000000000000009 /* DirectionReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionReportView.swift; sourceTree = "<group>"; };
@@ -117,6 +119,7 @@
 				A20000010000000000000004 /* ProjectListViewModel.swift */,
 				A20000010000000000000005 /* VoiceFeedbackViewModel.swift */,
 				A20000010000000000000006 /* DashboardViewModel.swift */,
+				A20000010000000000000020 /* FeedbackHistoryViewModel.swift */,
 				A20000010000000000000014 /* EditorManagementViewModel.swift */,
 				A20000010000000000000015 /* VideoTrackingViewModel.swift */,
 			);
@@ -226,6 +229,7 @@
 				A10000010000000000000004 /* ProjectListViewModel.swift in Sources */,
 				A10000010000000000000005 /* VoiceFeedbackViewModel.swift in Sources */,
 				A10000010000000000000006 /* DashboardViewModel.swift in Sources */,
+				A10000010000000000000020 /* FeedbackHistoryViewModel.swift in Sources */,
 				A10000010000000000000012 /* EditorManagementViewModel.swift in Sources */,
 				A10000010000000000000013 /* VideoTrackingViewModel.swift in Sources */,
 				A10000010000000000000007 /* RootTabView.swift in Sources */,
@@ -301,7 +305,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = TT2DA7H5NJ;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = VideoDirectorAgent/Info.plist;
@@ -326,7 +330,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = TT2DA7H5NJ;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = VideoDirectorAgent/Info.plist;

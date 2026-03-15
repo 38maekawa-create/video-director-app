@@ -1,21 +1,6 @@
 {
   "videos": [
     {
-      "id": "https://youtube.com/watch?v=test123",
-      "url": "https://youtube.com/watch?v=test123",
-      "title": "https://youtube.com/watch?v=test123",
-      "channel_name": "",
-      "thumbnail_url": "",
-      "duration_seconds": 0.0,
-      "analysis_status": "pending",
-      "analysis_result": null,
-      "tags": [
-        "参考"
-      ],
-      "created_at": "2026-03-13T03:03:15.128899",
-      "updated_at": "2026-03-13T03:03:15.128931"
-    },
-    {
       "id": "FY1ozxiOoyY",
       "url": "https://www.youtube.com/watch?v=FY1ozxiOoyY",
       "title": "【侍ジャパン敗退】勝敗を分けた３つの要因／マイアミで現地取材／伊藤大海の球速に異変／ベネズエラ先頭出塁率は78%／隅田vsガルシアの配球／今大会の課題と収穫／種市の牽制悪送球／大谷の先頭打者HR",

@@ -222,10 +222,7 @@ struct ProjectListView: View {
     }
 
     // MARK: - カードボタン（横ScrollView内タップ対応）
-    // Button/onTapGestureはネストされたScrollView内で動作しないため、
-    // DragGesture(minimumDistance:0)を使い、指の移動が少ない場合をタップと判定する
-    @State private var pressedProjectId: String?
-
+    // TODO: タップ問題はCodexで修正予定
     private func cardButton(_ project: VideoProject) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             // サムネイル
@@ -291,27 +288,9 @@ struct ProjectListView: View {
         }
         .frame(width: 150, height: 170, alignment: .top)
         .contentShape(Rectangle())
-        .opacity(pressedProjectId == project.id ? 0.6 : 1.0)
-        .scaleEffect(pressedProjectId == project.id ? 0.95 : 1.0)
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in
-                    if pressedProjectId != project.id {
-                        withAnimation(.easeInOut(duration: 0.1)) {
-                            pressedProjectId = project.id
-                        }
-                    }
-                }
-                .onEnded { value in
-                    withAnimation(.easeInOut(duration: 0.1)) {
-                        pressedProjectId = nil
-                    }
-                    // 移動距離が小さければタップとして処理
-                    if abs(value.translation.width) < 15 && abs(value.translation.height) < 15 {
-                        selectedProject = project
-                    }
-                }
-        )
+        .onTapGesture {
+            selectedProject = project
+        }
     }
 
     // MARK: - ステータスバッジ

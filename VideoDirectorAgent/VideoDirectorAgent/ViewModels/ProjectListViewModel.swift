@@ -41,8 +41,7 @@ final class ProjectListViewModel: ObservableObject {
     }
 
     func refresh() async {
-        hasLoaded = false
-        await loadProjectsIfNeeded()
+        await loadProjects()
     }
 
     func loadProjects() async {
@@ -53,12 +52,11 @@ final class ProjectListViewModel: ObservableObject {
             projects = try await APIClient.shared.fetchProjects()
             errorMessage = nil
         } catch {
-            // 本番運用: API未接続時はエラーを表示し、空リストを維持
+            // 本番運用: API未接続時はエラーを表示
             if projects.isEmpty {
-                errorMessage = "APIサーバーに接続できません。サーバーが起動しているか確認してください。(\(error.localizedDescription))"
-            } else {
-                errorMessage = "データ更新に失敗しました。前回取得データを表示中。(\(error.localizedDescription))"
+                errorMessage = "APIサーバーに接続できません。(\(error.localizedDescription))"
             }
+            // データが既にある場合はエラー表示しない（前回データをそのまま表示）
             print("API Error: \(error)")
         }
     }

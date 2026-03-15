@@ -7,7 +7,15 @@ struct ReportListView: View {
 
     var body: some View {
         List {
-            if viewModel.isLoading {
+            // エラーメッセージ（データがある場合はバナー表示のみ）
+            if let error = viewModel.errorMessage {
+                Text(error)
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .font(.caption)
+                    .listRowBackground(Color(hex: 0x2A1717))
+            }
+
+            if viewModel.isLoading && filteredProjects.isEmpty {
                 HStack {
                     Spacer()
                     ProgressView("読み込み中...")
@@ -15,11 +23,6 @@ struct ReportListView: View {
                     Spacer()
                 }
                 .listRowBackground(AppTheme.cardBackground)
-            } else if let error = viewModel.errorMessage {
-                Text(error)
-                    .foregroundStyle(.red)
-                    .font(.caption)
-                    .listRowBackground(AppTheme.cardBackground)
             } else {
                 ForEach(filteredProjects) { project in
                     NavigationLink {

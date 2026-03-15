@@ -25,7 +25,10 @@ final class FeedbackHistoryViewModel: ObservableObject {
             errorMessage = nil
             hasLoaded = true
         } catch {
-            errorMessage = "履歴APIに接続できません: \(error.localizedDescription)"
+            // 初回ロード失敗時のみエラー表示（データがある or 0件正常なら非表示）
+            if !hasLoaded {
+                errorMessage = "履歴APIに接続できません: \(error.localizedDescription)"
+            }
         }
     }
 

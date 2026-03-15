@@ -4,9 +4,9 @@
 2026-03-15（テスト実行・品質確認: 524件全PASS）
 
 ## 現在の作業状態
-**待機中（Mac mini M4でのTestFlight配布実行待ち）**
+**待機中（Mac1（hime）でのTestFlight配布実行待ち）**
 
-全開発フェーズ完了。Python 524テスト全PASS。iOSアプリビルド成功。TestFlight配布に必要なスクリプト・設定は全て用意済み。Mac mini M4 での手動実行ステップのみ残存。
+全開発フェーズ完了。Python 524テスト全PASS。iOSアプリビルド成功。TestFlight配布に必要なスクリプト・設定は全て用意済み。Mac1（hime）での手動実行ステップのみ残存。
 
 ### テスト実行結果（2026-03-15 最新）
 - **総テスト件数: 524件 全PASS（所要時間: 約23秒）**
@@ -35,13 +35,13 @@
 
 ## 次にやるべき作業（優先順位付き）
 
-### [P0] TestFlight配布実行（Mac mini M4で）
+### [P0] TestFlight配布実行（Mac1（hime）で）
 
 **前提条件（なおとさん操作）**:
 1. App-Specific Password 発行
    - https://appleid.apple.com → セキュリティ → App-Specific Password
-   - Mac mini M4 で: `echo 'xxxx-xxxx-xxxx-xxxx' > ~/.config/maekawa/asc-password`
-2. Xcode > Settings > Accounts に `7010mae@gmail.com` を登録
+   - Mac1（hime）で: `echo 'xxxx-xxxx-xxxx-xxxx' > ~/.config/maekawa/asc-password`
+2. Apple IDはXcodeに登録済み（`7010mae@gmail.com`）
 3. App Store Connect でアプリ未登録なら登録
    - Bundle ID: `com.maekawa.VideoDirectorAgent` / 主言語: 日本語 / カテゴリ: ユーティリティ
 
@@ -64,8 +64,8 @@ cd ~/AI開発10
 
 | # | 問題 | 状態 |
 |---|------|------|
-| 1 | 実機ビルド: XcodeにApple ID未登録のためProvisioning Profile自動生成不可 | TestFlight配布時に解消 |
-| 2 | launchd API起動失敗: `curl http://localhost:8210/api/health` 接続不可（Mac miniで要確認） | 未解決 |
+| 1 | 実機ビルド: Provisioning Profile自動生成 | Apple IDはXcodeに登録済み（解消済み） |
+| 2 | launchd API起動: `curl http://localhost:8210/api/health` | 正常応答確認済み（PID:17171で稼働中・解消済み） |
 | 3 | 層cの該当者0件: 現データセット30件に自営業家系なし | 追加データで検証必要 |
 | 4 | スプシマッチング精度: 30件中15件マッチ（50%） | ゲスト名正規化実装済み、スプシ側未登録が主因 |
 | 5 | Python 3.9 EOL警告: google-auth, urllib3が警告出力 | 低優先度 |
@@ -95,7 +95,7 @@ cd ~/AI開発10
 - `VideoDirectorAgent/ExportOptions.plist` 作成
 - Bundle ID: `com.maekawa.VideoDirectorAgent` / Team ID: `TT2DA7H5NJ`
 - CFBundleVersion: ハードコード→ `$(CURRENT_PROJECT_VERSION)` に修正済み
-- **Xcodeは Mac mini M4 のみに導入のため、スクリプト実行は Mac mini M4 で行う**
+- **Xcodeは Mac1（hime）に導入済み。スクリプト実行は Mac1（hime）で行う**
 
 ### Phase 5 実用化チューニング（2026-03-14）
 - FBエラーハンドリング強化（`post_vimeo_review_comments.py`）

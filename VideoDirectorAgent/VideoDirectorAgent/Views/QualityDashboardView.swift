@@ -3,8 +3,13 @@ import SwiftUI
 struct QualityDashboardView: View {
     @StateObject private var editorViewModel = EditorManagementViewModel()
     @StateObject private var trackingViewModel = VideoTrackingViewModel()
+    @StateObject private var e2ePipelineVM = E2EPipelineViewModel()
+    @StateObject private var telopCheckVM = TelopCheckViewModel()
+    @StateObject private var audioEvalVM = AudioEvaluationViewModel()
     @ObservedObject var viewModel: DashboardViewModel
     @State private var showNotificationSettings = false
+    /// ツールセクション内のプロジェクト一覧取得用
+    @State private var toolProjects: [VideoProject] = []
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -27,6 +32,8 @@ struct QualityDashboardView: View {
                     VideoTrackingView(viewModel: trackingViewModel)
                 case .editors:
                     EditorManagementView(viewModel: editorViewModel)
+                case .tools:
+                    toolsSection
                 }
             }
             .padding(.horizontal, 16)
@@ -577,6 +584,30 @@ struct QualityDashboardView: View {
             .padding(.vertical, 10)
             .background(Color(hex: 0x2A1717))
             .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    // MARK: - ツールセクション（E2E / テロップ / 音声評価）
+    private var toolsSection: some View {
+        VStack(spacing: 20) {
+            // E2Eパイプライン
+            E2EPipelineView(viewModel: e2ePipelineVM, projects: toolProjects)
+
+            // テロップチェック
+            TelopCheckView(viewModel: telopCheckVM, projects: toolProjects)
+
+            // 音声品質評価
+            AudioEvaluationView(viewModel: audioEvalVM, projects: toolProjects)
+        }
+        .task {
+            // ツールセクション表示時にプロジェクト一覧を取得
+            if toolProjects.isEmpty {
+                do {
+                    toolProjects = try await APIClient.shared.fetchProjects()
+                } catch {
+                    print("ツール用プロジェクト取得エラー: \(error)")
+                }
+            }
+        }
     }
 
     private func loadAllIfNeeded() async {

@@ -651,6 +651,10 @@
           showRecordingModal(true);
           return;
         }
+        if (tab === 'tools') {
+          renderToolsMenu();
+          return;
+        }
         navigateTo(tab);
       });
     });
@@ -683,11 +687,6 @@
     // トラッキングタブ: 遅延初期化（タブ選択時にAPI呼び出し）
     if (tab === 'tracking') {
       renderTrackingPage();
-    }
-
-    // ツールタブ: ツールメニュー表示
-    if (tab === 'tools') {
-      renderToolsMenu();
     }
 
     // 各ツール画面の遅延初期化
@@ -2033,7 +2032,7 @@
       '<div class="e2e-result" id="e2e-result" style="display:none;"></div>';
 
     document.getElementById('e2e-back').addEventListener('click', function() {
-      navigateTo('tools');
+      renderToolsMenu();
     });
 
     document.getElementById('e2e-run-btn').addEventListener('click', function() {
@@ -2186,7 +2185,7 @@
       '<div id="tc-result" style="display:none;"></div>';
 
     document.getElementById('tc-back').addEventListener('click', function() {
-      navigateTo('tools');
+      renderToolsMenu();
     });
 
     // 入力モード切替
@@ -2334,7 +2333,7 @@
       '<div id="ae-result" style="display:none;"></div>';
 
     document.getElementById('ae-back').addEventListener('click', function() {
-      navigateTo('tools');
+      renderToolsMenu();
     });
 
     document.getElementById('ae-run-btn').addEventListener('click', function() {
@@ -2474,7 +2473,7 @@
       '</div>';
 
     document.getElementById('kb-back').addEventListener('click', function() {
-      navigateTo('tools');
+      renderToolsMenu();
     });
 
     document.getElementById('kb-modal-close').addEventListener('click', function() {
@@ -2642,7 +2641,7 @@
       '<div class="ef-loading"><div class="yt-loading-text">FB学習データを読み込み中...</div></div>';
 
     document.getElementById('fbl-back').addEventListener('click', function() {
-      navigateTo('tools');
+      renderToolsMenu();
     });
 
     // 並列でAPI呼び出し
@@ -2755,7 +2754,7 @@
     container.innerHTML = html;
 
     document.getElementById('fbl-back2').addEventListener('click', function() {
-      navigateTo('tools');
+      renderToolsMenu();
     });
   }
 
@@ -2783,7 +2782,7 @@
       '<div id="fed-result" style="display:none;"></div>';
 
     document.getElementById('fed-back').addEventListener('click', function() {
-      navigateTo('tools');
+      renderToolsMenu();
     });
 
     document.getElementById('fed-run-btn').addEventListener('click', function() {

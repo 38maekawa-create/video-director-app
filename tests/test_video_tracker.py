@@ -199,3 +199,148 @@ class TestFetchMetadataFallback:
         with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("yt-dlp", 30)):
             meta = self.tracker._fetch_metadata("https://example.com/timeout")
         assert meta["id"] == "https://example.com/timeout"
+
+
+# ────────────────────────────────────────────────
+# VideoTracker — バッチ登録
+# ────────────────────────────────────────────────
+
+class TestVideoTrackerBatch:
+    def setup_method(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.tracker = VideoTracker(data_dir=self.tmp)
+
+    def _mock_fetch(self, url):
+        # URLからIDを抽出
+        vid = url.split("=")[-1] if "=" in url else url[-5:]
+        return {"id": vid, "title": f"動画_{vid}", "channel": "テストch", "duration": 300.0}
+
+    def test_バッチ登録で複数動画を一括追加できる(self):
+        urls = [
+            "https://example.com/watch?v=aaa",
+            "https://example.com/watch?v=bbb",
+            "https://example.com/watch?v=ccc",
+        ]
+        with patch.object(self.tracker, "_fetch_metadata", side_effect=self._mock_fetch):
+            results = self.tracker.add_videos_batch(urls, tags=["テスト"])
+        assert len(results) == 3
+        assert len(self.tracker.list_videos()) == 3
+
+    def test_バッチ登録でタグが全動画に付与される(self):
+        urls = ["https://example.com/watch?v=x1", "https://example.com/watch?v=x2"]
+        with patch.object(self.tracker, "_fetch_metadata", side_effect=self._mock_fetch):
+            results = self.tracker.add_videos_batch(urls, tags=["共通タグ"])
+        assert all("共通タグ" in v.tags for v in results)
+
+    def test_バッチ登録で1件失敗しても他は成功する(self):
+        def _flaky_fetch(url):
+            if "bad" in url:
+                raise Exception("取得失敗")
+            return self._mock_fetch(url)
+
+        urls = [
+            "https://example.com/watch?v=ok1",
+            "https://example.com/watch?v=bad",
+            "https://example.com/watch?v=ok2",
+        ]
+        with patch.object(self.tracker, "_fetch_metadata", side_effect=_flaky_fetch):
+            results = self.tracker.add_videos_batch(urls)
+        # 3件返される（1件はerrorステータス）
+        assert len(results) == 3
+        errors = [r for r in results if r.analysis_status == "error"]
+        assert len(errors) == 1
+
+
+# ────────────────────────────────────────────────
+# VideoTracker — 新フィールド
+# ────────────────────────────────────────────────
+
+class TestTrackedVideoNewFields:
+    def test_新フィールドのデフォルト値(self):
+        v = TrackedVideo(id="v_new", url="https://example.com", title="新規")
+        assert v.view_count == 0
+        assert v.upload_date == ""
+        assert v.description == ""
+        assert v.transcript == ""
+
+    def test_transcriptを設定できる(self):
+        v = TrackedVideo(id="v_tr", url="https://example.com", title="字幕テスト")
+        v.transcript = "話者A: テスト発言\n話者B: 返答"
+        assert "話者A" in v.transcript
+
+
+# ────────────────────────────────────────────────
+# VideoTracker — VTT/SRTパース
+# ────────────────────────────────────────────────
+
+class TestSubtitleParsing:
+    def test_VTTパースでテキスト部分のみ抽出(self):
+        vtt = """WEBVTT
+
+00:00:01.000 --> 00:00:03.000
+こんにちは
+
+00:00:04.000 --> 00:00:06.000
+テストです
+"""
+        result = VideoTracker._parse_vtt(vtt)
+        assert "こんにちは" in result
+        assert "テストです" in result
+        assert "-->" not in result
+        assert "WEBVTT" not in result
+
+    def test_VTTパースでHTMLタグを除去(self):
+        vtt = """WEBVTT
+
+00:00:01.000 --> 00:00:03.000
+<b>太字</b>テキスト
+"""
+        result = VideoTracker._parse_vtt(vtt)
+        assert "<b>" not in result
+        assert "太字テキスト" in result
+
+    def test_SRTパースでテキスト部分のみ抽出(self):
+        srt = """1
+00:00:01,000 --> 00:00:03,000
+最初の字幕
+
+2
+00:00:04,000 --> 00:00:06,000
+二番目の字幕
+"""
+        result = VideoTracker._parse_srt(srt)
+        assert "最初の字幕" in result
+        assert "二番目の字幕" in result
+        assert "-->" not in result
+
+
+# ────────────────────────────────────────────────
+# VideoTracker — ステータスサマリー
+# ────────────────────────────────────────────────
+
+class TestStatusSummary:
+    def setup_method(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.tracker = VideoTracker(data_dir=self.tmp)
+        # テストデータ追加
+        for i, status in enumerate(["pending", "completed", "completed"]):
+            v = TrackedVideo(
+                id=f"v{i}", url=f"https://example.com/{i}",
+                title=f"動画{i}", channel_name="テストch",
+                analysis_status=status, tags=["タグA"],
+            )
+            self.tracker._videos[v.id] = v
+
+    def test_サマリーが正しい件数を返す(self):
+        summary = self.tracker.get_status_summary()
+        assert summary["total_videos"] == 3
+        assert summary["status_counts"]["pending"] == 1
+        assert summary["status_counts"]["completed"] == 2
+
+    def test_チャンネル一覧が含まれる(self):
+        summary = self.tracker.get_status_summary()
+        assert "テストch" in summary["channels"]
+
+    def test_タグ一覧が含まれる(self):
+        summary = self.tracker.get_status_summary()
+        assert "タグA" in summary["tags"]

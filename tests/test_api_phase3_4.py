@@ -52,8 +52,12 @@ class MockTrackedVideo:
     channel_name: str = "テストチャンネル"
     thumbnail_url: str = ""
     duration_seconds: float = 120.0
+    view_count: int = 0
+    upload_date: str = ""
+    description: str = ""
     analysis_status: str = "pending"
     analysis_result: Optional[dict] = None
+    transcript: str = ""
     tags: list = field(default_factory=list)
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now().isoformat())
@@ -72,6 +76,10 @@ class MockVideoAnalysisResult:
     summary: str = "テスト分析結果"
     frame_count: int = 100
     avg_scene_duration: float = 5.0
+    llm_analysis: str = ""
+    strengths: list = field(default_factory=list)
+    weaknesses: list = field(default_factory=list)
+    learnable_patterns: list = field(default_factory=list)
 
 
 @dataclass
@@ -406,18 +414,24 @@ class TestRemoveTrackingVideo:
 class TestAnalyzeTrackingVideo:
     """POST /api/tracking/videos/{id}/analyze — 映像分析"""
 
+    @patch("src.video_direction.integrations.api_server._get_video_learner")
     @patch("src.video_direction.integrations.api_server._get_video_analyzer")
     @patch("src.video_direction.integrations.api_server._get_video_tracker")
-    def test_映像分析_正常(self, mock_tracker, mock_analyzer):
+    def test_映像分析_正常(self, mock_tracker, mock_analyzer, mock_learner):
         tracker = MagicMock()
         video = MockTrackedVideo(id="v1", url="https://youtube.com/test")
         tracker.get_video.return_value = video
+        tracker.fetch_transcript.return_value = ""
         mock_tracker.return_value = tracker
 
         analyzer = MagicMock()
         result = MockVideoAnalysisResult(video_id="v1", overall_score=82.0)
         analyzer.analyze.return_value = result
         mock_analyzer.return_value = analyzer
+
+        learner = MagicMock()
+        learner.learn_from_analysis.return_value = []
+        mock_learner.return_value = learner
 
         client = _make_client()
         resp = client.post("/api/tracking/videos/v1/analyze")
@@ -427,6 +441,7 @@ class TestAnalyzeTrackingVideo:
         assert data["overall_score"] == 82.0
         assert "composition" in data
         assert "tempo" in data
+        assert "learned_patterns_count" in data
 
     @patch("src.video_direction.integrations.api_server._get_video_analyzer")
     @patch("src.video_direction.integrations.api_server._get_video_tracker")

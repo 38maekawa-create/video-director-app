@@ -6,6 +6,7 @@ final class DashboardViewModel: ObservableObject {
         case quality = "品質"
         case tracking = "トラッキング"
         case editors = "編集者"
+        case tools = "ツール"
 
         var id: String { rawValue }
     }

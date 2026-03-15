@@ -4,10 +4,12 @@ import SwiftUI
 struct RootTabView: View {
     @State private var selectedTab: Tab = .home
     @State private var showRecordingModal = false
+    @State private var showKnowledgePages = false
     @StateObject private var voiceFeedbackVM = VoiceFeedbackViewModel()
     @StateObject private var projectListVM = ProjectListViewModel()
     @StateObject private var dashboardVM = DashboardViewModel()
     @StateObject private var feedbackHistoryVM = FeedbackHistoryViewModel()
+    @StateObject private var knowledgePagesVM = KnowledgePagesViewModel()
 
     enum Tab: Int, CaseIterable {
         case home, report, record, history, quality
@@ -39,14 +41,20 @@ struct RootTabView: View {
             Group {
                 switch selectedTab {
                 case .home:
-                    ProjectListView(viewModel: projectListVM)
+                    ProjectListView(
+                        viewModel: projectListVM,
+                        onShowKnowledge: { showKnowledgePages = true }
+                    )
                 case .report:
                     NavigationStack {
                         ReportListView(viewModel: projectListVM)
                     }
                 case .record:
                     // 録音タブ選択時はモーダルを表示（homeをバックに表示）
-                    ProjectListView(viewModel: projectListVM)
+                    ProjectListView(
+                        viewModel: projectListVM,
+                        onShowKnowledge: { showKnowledgePages = true }
+                    )
                 case .history:
                     NavigationStack {
                         FeedbackHistoryView(viewModel: feedbackHistoryVM)
@@ -65,6 +73,24 @@ struct RootTabView: View {
         .ignoresSafeArea(.keyboard)
         .fullScreenCover(isPresented: $showRecordingModal) {
             VoiceFeedbackView(viewModel: voiceFeedbackVM)
+        }
+        .fullScreenCover(isPresented: $showKnowledgePages) {
+            NavigationStack {
+                KnowledgePagesView(viewModel: knowledgePagesVM)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button {
+                                showKnowledgePages = false
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "chevron.left")
+                                    Text("戻る")
+                                }
+                                .foregroundStyle(AppTheme.accent)
+                            }
+                        }
+                    }
+            }
         }
     }
 

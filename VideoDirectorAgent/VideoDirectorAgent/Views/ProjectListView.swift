@@ -4,6 +4,7 @@ import UIKit
 // MARK: - 画面1: プロジェクト一覧（ホーム）— Netflix風
 struct ProjectListView: View {
     @ObservedObject var viewModel: ProjectListViewModel
+    var onShowKnowledge: (() -> Void)? = nil
     @State private var searchText = ""
     @State private var selectedProject: VideoProject?
     @State private var showAllProjects = false
@@ -57,6 +58,14 @@ struct ProjectListView: View {
                         .font(AppTheme.heroFont(20))
                         .foregroundStyle(AppTheme.accent)
                         .tracking(4)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        onShowKnowledge?()
+                    } label: {
+                        Image(systemName: "book.fill")
+                            .foregroundStyle(AppTheme.textSecondary)
+                    }
                 }
             }
             .refreshable {

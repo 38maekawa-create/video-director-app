@@ -1,11 +1,37 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-16 iOS UI 4画面追加完了（E2E/テロップ/音声/ナレッジ）
+2026-03-16 素材動画YouTube URL連携 + アプリ内再生機能実装完了
 <!-- authored: T1/副官A/バティ/2026-03-16 -->
 
 ## 現在の作業状態
-**iOS UI 4画面追加完了（E2Eパイプライン・テロップチェック・音声品質評価・ナレッジページ）+ バックエンド4機能の並列実装中**
+**素材動画YouTube URL連携 + アプリ内再生機能実装完了 + バックエンド4機能の並列実装中**
+
+### 2026-03-16 セッション7 完了タスク（素材動画YouTube URL連携）
+
+| # | タスク | 状態 |
+|---|--------|------|
+| 1 | Python API: source_videosテーブル作成 + GET/POST エンドポイント追加 | ✅ |
+| 2 | Web UI: 「素材動画」タブ追加（YouTube iframe埋め込み + 手動登録フォーム） | ✅ |
+| 3 | iOS Swift: SourceVideosSubTabView新規作成（API連携 + 複数動画表示 + 手動登録シート） | ✅ |
+| 4 | テスト: test_source_videos_api.py 19テスト全PASS | ✅ |
+
+**新規エンドポイント:**
+- `GET /api/v1/projects/{project_id}/source-videos` — プロジェクト別素材動画一覧（source_videosテーブル + レガシーJSONの統合・重複排除）
+- `POST /api/v1/projects/{project_id}/source-videos` — 素材動画手動登録（video_id自動抽出、重複チェック）
+
+**新規テーブル:** source_videos（id, project_id, youtube_url, video_id, title, duration, quality_status, source, knowledge_file, created_at）
+
+**新規ファイル:**
+- `tests/test_source_videos_api.py` — 19テスト（video_id抽出6件 + GET 4件 + POST 7件 + 既存scan/status 2件）
+- `VideoDirectorAgent/.../Views/SourceVideosSubTabView.swift` — iOS素材動画サブタブ + YouTube再生シート + 手動登録シート
+
+**変更ファイル:**
+- `api_server.py` — source_videosテーブル + SourceVideoCreate + _extract_video_id + 2エンドポイント
+- `webapp/app.js` — 素材動画タブ追加 + renderSourceVideos + 手動登録フォーム
+- `webapp/styles.css` — sv-* スタイル追加（Netflix風ダークUI準拠）
+- `APIClient.swift` — fetchSourceVideos / addSourceVideo メソッド + モデル定義
+- `DirectionReportView.swift` — sourceVideoSection → SourceVideosSubTabView委譲
 
 ### 2026-03-16 セッション6 完了タスク
 

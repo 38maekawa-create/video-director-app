@@ -266,6 +266,23 @@ html, body {
   display: none;
 }
 
+/* ===== カテゴリ別セクション ===== */
+.category-header {
+  margin-top: 8px;
+}
+
+.category-icon-badge {
+  font-size: 18px;
+}
+
+.category-count-badge {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--card);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
 /* ===== プロジェクトカード ===== */
 .project-card {
   flex-shrink: 0;

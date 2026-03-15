@@ -2027,3 +2027,23 @@ Traceback (most recent call last):
   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/json/decoder.py", line 355, in raw_decode
     raise JSONDecodeError("Expecting value", s, err.value) from None
 json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+WARNING:  StatReload detected changes in 'src/video_direction/integrations/api_server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [94620]
+WARNING:  StatReload detected changes in 'src/video_direction/integrations/api_server.py'. Reloading...
+INFO:     Started server process [98809]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [99046]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/integrations/api_server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [99046]
+INFO:     Started server process [99134]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

@@ -50,7 +50,52 @@
 
   // ===== 画面1: ホーム =====
   function renderHome() {
-    const projects = MockData.projects;
+    // MockDataでまず描画し、APIから取得できたら上書き
+    renderHomeWithProjects(MockData.projects);
+
+    // APIからプロジェクト一覧を非同期取得
+    fetch('http://localhost:8210/api/projects')
+      .then(res => res.ok ? res.json() : Promise.reject('API error'))
+      .then(apiProjects => {
+        if (apiProjects && apiProjects.length > 0) {
+          // APIデータをWebApp互換フォーマットに変換
+          const projects = apiProjects.map(p => ({
+            id: p.id || '',
+            guestName: p.guest_name || p.guestName || '',
+            title: p.title || '',
+            icon: 'VD',
+            shootDate: p.shoot_date || p.shootDate || '',
+            guestAge: p.guest_age || p.guestAge || null,
+            guestOccupation: p.guest_occupation || p.guestOccupation || '',
+            status: p.status || 'directed',
+            statusLabel: statusToLabel(p.status),
+            unreviewedCount: p.unreviewed_count || p.unreviewedCount || 0,
+            qualityScore: p.quality_score || p.qualityScore || null,
+            hasUnsentFeedback: p.has_unsent_feedback || p.hasUnsentFeedback || false,
+            category: p.category || ''
+          }));
+          // 撮影日の新しい順にソート
+          projects.sort((a, b) => b.shootDate.localeCompare(a.shootDate));
+          window._apiProjects = projects;
+          renderHomeWithProjects(projects);
+        }
+      })
+      .catch(() => {
+        // APIが利用不可ならMockDataのまま
+      });
+  }
+
+  function statusToLabel(status) {
+    const map = {
+      directed: 'ディレクション済',
+      editing: '編集中',
+      reviewPending: 'レビュー待ち',
+      published: '公開'
+    };
+    return map[status] || status || '';
+  }
+
+  function renderHomeWithProjects(projects) {
     const hero = projects[0];
 
     // ヒーローバナー
@@ -89,6 +134,51 @@
 
     // カルーセル: 全プロジェクト
     renderCarousel('carousel-all', '全プロジェクト', 'ALL', projects);
+
+    // カテゴリ別セクション
+    renderCategoryCarousels(projects);
+  }
+
+  // カテゴリ別カルーセルをレンダリング
+  function renderCategoryCarousels(projects) {
+    const memberProjects = projects.filter(p => p.category === 'teko_member');
+    const realestateProjects = projects.filter(p => p.category === 'teko_realestate');
+    const uncategorized = projects.filter(p => !p.category);
+
+    renderCategoryCarousel('carousel-member', 'TEKOメンバー対談', '👤', '#4A90D9', memberProjects);
+    renderCategoryCarousel('carousel-realestate', 'TEKO不動産対談', '🏢', '#E5A023', realestateProjects);
+    renderCategoryCarousel('carousel-uncategorized', 'その他', '📁', '#888', uncategorized);
+  }
+
+  // カテゴリ別カルーセル（件数バッジ付き）
+  function renderCategoryCarousel(containerId, title, icon, accentColor, projects) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    if (!projects.length) {
+      container.style.display = 'none';
+      return;
+    }
+    container.style.display = '';
+
+    container.innerHTML = `
+      <div class="carousel-header category-header">
+        <span class="category-icon-badge" style="color: ${accentColor}">${icon}</span>
+        <span class="section-title">${title}</span>
+        <span class="category-count-badge">${projects.length}件</span>
+      </div>
+      <div class="carousel-scroll">
+        ${projects.map(p => projectCardHTML(p)).join('')}
+      </div>
+    `;
+
+    // カードクリックイベント
+    container.querySelectorAll('.project-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const projectId = card.dataset.id;
+        const project = (window._apiProjects || MockData.projects).find(p => p.id === projectId);
+        if (project) openReport(project);
+      });
+    });
   }
 
   function renderCarousel(containerId, title, icon, projects) {
@@ -113,7 +203,7 @@
     container.querySelectorAll('.project-card').forEach(card => {
       card.addEventListener('click', () => {
         const projectId = card.dataset.id;
-        const project = MockData.projects.find(p => p.id === projectId);
+        const project = (window._apiProjects || MockData.projects).find(p => p.id === projectId);
         if (project) openReport(project);
       });
     });
@@ -153,7 +243,7 @@
   }
 
   function filterHomeProjects(query) {
-    const all = MockData.projects;
+    const all = window._apiProjects || MockData.projects;
     const filtered = query
       ? all.filter(p =>
           p.guestName.toLowerCase().includes(query) ||
@@ -162,8 +252,9 @@
         )
       : all;
 
-    // 全プロジェクトカルーセルのみ更新
+    // 全プロジェクトカルーセルとカテゴリカルーセルを更新
     renderCarousel('carousel-all', '全プロジェクト', 'ALL', filtered);
+    renderCategoryCarousels(filtered);
   }
 
   // ===== 画面2: レポート詳細 =====
@@ -273,8 +364,8 @@
           // 編集FBタブ（追加: 2026-03-16）
           openEditFeedback(currentProject);
         } else if (tabName === 'レビュー') {
-          // Vimeoレビュータブ（追加: 2026-03-16）
-          openVimeoReview(currentProject);
+          // Vimeoレビュータブ: サブタブ内にインライン表示
+          renderVimeoReviewInline(currentProject);
         } else if (tabName === 'フレーム評価') {
           // フレーム評価タブ（C-1）
           renderFrameEvaluation(currentProject);
@@ -1167,9 +1258,13 @@
       feedbacks = data.feedbacks || data.timeline_feedbacks || data.timelineFeedbacks || [];
       duration = data.duration || data.video_duration || 0;
 
-      // プロジェクト詳細から取得
+      // プロジェクト詳細から取得（edited_videoが文字列URLの場合とオブジェクトの場合の両方に対応）
       if (!vimeoUrl && data.edited_video) {
-        vimeoUrl = data.edited_video.vimeo_url || data.edited_video.vimeoUrl || '';
+        if (typeof data.edited_video === 'string') {
+          vimeoUrl = data.edited_video;
+        } else {
+          vimeoUrl = data.edited_video.vimeo_url || data.edited_video.vimeoUrl || '';
+        }
       }
       if (!feedbacks.length && data.vimeo_feedbacks) {
         feedbacks = data.vimeo_feedbacks;
@@ -1258,6 +1353,118 @@
       navigateTo('report');
       if (currentProject) renderReport(currentProject);
     });
+  }
+
+  // ===================================================================
+  // レビューサブタブ: インラインVimeo埋め込み再生（report-sectionsコンテナ内）
+  // ===================================================================
+
+  function renderVimeoReviewInline(project) {
+    var container = document.getElementById('report-sections');
+    container.innerHTML = '<div class="ef-loading"><div class="yt-loading-text">レビューデータを読み込み中...</div></div>';
+
+    // プロジェクト一覧から edited_video を取得
+    var editedVideo = project.edited_video || project.editedVideo || '';
+    if (typeof editedVideo === 'object' && editedVideo) {
+      editedVideo = editedVideo.vimeo_url || editedVideo.vimeoUrl || '';
+    }
+
+    // APIから最新データを取得
+    fetch('http://localhost:8210/api/projects/' + encodeURIComponent(project.id))
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        var vimeoUrl = editedVideo;
+        if (!vimeoUrl && data && data.edited_video) {
+          if (typeof data.edited_video === 'string') {
+            vimeoUrl = data.edited_video;
+          } else {
+            vimeoUrl = data.edited_video.vimeo_url || data.edited_video.vimeoUrl || '';
+          }
+        }
+        renderVimeoReviewInlineContent(container, project, vimeoUrl);
+      })
+      .catch(function() {
+        renderVimeoReviewInlineContent(container, project, editedVideo);
+      });
+  }
+
+  function renderVimeoReviewInlineContent(container, p, vimeoUrl) {
+    var vimeoId = extractVimeoId(vimeoUrl);
+    var html = '';
+
+    // Vimeoプレーヤー（16:9、角丸12px）
+    if (vimeoId) {
+      html += '<div style="margin-bottom: 16px;">' +
+        '<div style="position: relative; width: 100%; padding-bottom: 56.25%; border-radius: 12px; overflow: hidden; background: #000;">' +
+          '<iframe src="https://player.vimeo.com/video/' + vimeoId + '?title=0&byline=0&portrait=0&color=E50914" ' +
+            'style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" ' +
+            'allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>' +
+        '</div>' +
+      '</div>';
+
+      // Vimeoで開くボタン
+      if (vimeoUrl) {
+        html += '<a href="' + escapeAttr(vimeoUrl) + '" target="_blank" rel="noopener" style="' +
+          'display: flex; align-items: center; justify-content: center; gap: 8px; ' +
+          'background: #1AB7EA; color: #fff; font-weight: bold; font-size: 14px; ' +
+          'padding: 12px 24px; border-radius: 10px; text-decoration: none; margin-bottom: 16px;">' +
+          '\u2197 Vimeoで開く</a>';
+      }
+    } else {
+      // 動画未登録プレースホルダー
+      html += '<div style="' +
+        'display: flex; flex-direction: column; align-items: center; justify-content: center; ' +
+        'height: 220px; background: #181818; border-radius: 12px; margin-bottom: 16px;">' +
+        '<div style="font-size: 40px; color: #808080; margin-bottom: 12px;">&#9654;&#8416;</div>' +
+        '<div style="font-size: 14px; color: #808080;">\u7de8\u96c6\u6e08\u307f\u52d5\u753b\u304c\u307e\u3060\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u3055\u308c\u3066\u3044\u307e\u305b\u3093</div>' +
+        '<div style="font-size: 12px; color: rgba(128,128,128,0.7); margin-top: 4px;">Vimeo\u306b\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u5f8c\u3001\u3053\u3053\u3067\u518d\u751f\u30fb\u30ec\u30d3\u30e5\u30fc\u3067\u304d\u307e\u3059</div>' +
+      '</div>';
+    }
+
+    // レビューコメント入力エリア
+    html += '<div style="background: #181818; border-radius: 12px; padding: 14px; margin-bottom: 16px;">' +
+      '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">' +
+        '<span style="color: var(--accent);">&#128172;</span>' +
+        '<span style="font-size: 16px; font-weight: bold; color: #fff;">\u30ec\u30d3\u30e5\u30fc\u30b3\u30e1\u30f3\u30c8</span>' +
+      '</div>' +
+      '<textarea id="vr-inline-comment" placeholder="\u30b3\u30e1\u30f3\u30c8\u3092\u5165\u529b..." style="' +
+        'width: 100%; min-height: 80px; max-height: 120px; resize: vertical; ' +
+        'background: #222; color: #fff; border: 1px solid rgba(128,128,128,0.3); border-radius: 8px; ' +
+        'padding: 10px; font-size: 14px; font-family: inherit; box-sizing: border-box;"></textarea>' +
+      '<div style="display: flex; justify-content: flex-end; margin-top: 8px;">' +
+        '<button id="vr-inline-send" style="' +
+          'display: flex; align-items: center; gap: 6px; ' +
+          'background: var(--accent); color: #fff; font-weight: bold; font-size: 14px; ' +
+          'padding: 10px 20px; border: none; border-radius: 20px; cursor: pointer;">' +
+          '&#9993; \u9001\u4fe1</button>' +
+      '</div>' +
+    '</div>';
+
+    // コメント履歴コンテナ
+    html += '<div id="vr-inline-comments-list"></div>';
+
+    container.innerHTML = html;
+
+    // 送信ボタンイベント
+    var sendBtn = document.getElementById('vr-inline-send');
+    var commentInput = document.getElementById('vr-inline-comment');
+    var commentsList = document.getElementById('vr-inline-comments-list');
+    if (sendBtn && commentInput) {
+      sendBtn.addEventListener('click', function() {
+        var text = commentInput.value.trim();
+        if (!text) return;
+        var now = new Date();
+        var dateStr = now.getFullYear() + '/' + String(now.getMonth()+1).padStart(2,'0') + '/' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+        var commentHtml = '<div style="background: #222; border-radius: 8px; padding: 12px; margin-bottom: 8px;">' +
+          '<div style="display: flex; justify-content: flex-end;">' +
+            '<span style="font-size: 11px; color: #808080;">' + dateStr + '</span>' +
+          '</div>' +
+          '<div style="font-size: 14px; color: #e5e5e5; margin-top: 4px;">' + escapeHTML(text) + '</div>' +
+        '</div>';
+        commentsList.insertAdjacentHTML('afterbegin', commentHtml);
+        commentInput.value = '';
+      });
+    }
   }
 
   // ===================================================================

@@ -102,6 +102,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
     let editedVideoURL: String?
     let knowledge: String?
     let category: String?
+    let knowledgePageUrl: String?
 
     /// カテゴリの表示名
     var categoryDisplayName: String {
@@ -259,6 +260,11 @@ struct VideoProject: Identifiable, Codable, Hashable {
         if let direct = try? container.decodeIfPresent(String.self, forKey: key), !direct.isEmpty {
             return direct
         }
+        // fallbackKeyが文字列URLの場合（例: edited_video が "https://vimeo.com/..." の場合）
+        if let directFallback = try? container.decodeIfPresent(String.self, forKey: fallbackKey), !directFallback.isEmpty {
+            return directFallback
+        }
+        // fallbackKeyがオブジェクトの場合（例: edited_video が { "url": "...", "vimeoUrl": "..." } の場合）
         if let payload = try? container.decodeIfPresent([String: JSONValue].self, forKey: fallbackKey) {
             for candidateKey in ["url", "vimeoUrl", "videoUrl", "link"] {
                 if let value = payload[candidateKey]?.stringValue, !value.isEmpty {

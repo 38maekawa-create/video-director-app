@@ -10,9 +10,13 @@ import os
 import re
 from pathlib import Path
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 from ..integrations.ai_dev5_connector import VideoData, HighlightScene
 from .guest_classifier import ClassificationResult
 from .income_evaluator import IncomeEvaluation
+
+if TYPE_CHECKING:
+    from ..tracker.feedback_learner import FeedbackLearner, LearningRule
 
 
 @dataclass
@@ -197,7 +201,7 @@ def _apply_learned_rules(
     video_data: VideoData,
     classification: ClassificationResult,
     income_eval: IncomeEvaluation,
-    feedback_learner,
+    feedback_learner: "FeedbackLearner",
 ) -> tuple[list[DirectionEntry], list]:
     """FB学習ルールに基づく追加ディレクションを生成
 
@@ -262,10 +266,17 @@ def _apply_learned_rules(
     return entries, applied_rules
 
 
-def _rule_matches_highlight(rule, highlight) -> bool:
+def _rule_matches_highlight(rule: "LearningRule", highlight: HighlightScene) -> bool:
     """ルールがハイライトシーンに適用可能か判定
 
     ルールのカテゴリとハイライトのカテゴリ・テキスト内容を照合する。
+
+    Args:
+        rule: 適用候補の学習ルール
+        highlight: 対象ハイライトシーン
+
+    Returns:
+        ルールが適用可能な場合True
     """
     rule_text_lower = rule.rule_text.lower()
     highlight_text_lower = (highlight.text or "").lower()

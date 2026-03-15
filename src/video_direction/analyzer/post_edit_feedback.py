@@ -39,7 +39,7 @@ class EditFeedbackResult:
     quality_score: Optional[QualityScoreResult] = None
 
     # コンテンツフィードバック
-    content_feedback: list = field(default_factory=list)  # List[ContentFeedbackItem]
+    content_feedback: list[ContentFeedbackItem] = field(default_factory=list)
 
     # テロップチェック
     telop_check: Optional[TelopCheckResult] = None
@@ -62,8 +62,8 @@ class EditFeedbackResult:
 def generate_post_edit_feedback(
     original_video_data: VideoData,
     edited_video_data: Optional[VideoData] = None,
-    included_timestamps: list = None,
-    excluded_timestamps: list = None,
+    included_timestamps: Optional[list[str]] = None,
+    excluded_timestamps: Optional[list[str]] = None,
     editor: str = "",
     stage: str = "draft",
 ) -> EditFeedbackResult:
@@ -133,9 +133,9 @@ def generate_post_edit_feedback(
 def _generate_content_feedback(
     video_data: VideoData,
     classification: ClassificationResult,
-    included_ts: list,
-    excluded_ts: list,
-) -> list:
+    included_ts: list[str],
+    excluded_ts: list[str],
+) -> list[ContentFeedbackItem]:
     """コンテンツに関するフィードバックを生成"""
     feedback = []
 
@@ -157,10 +157,10 @@ def _generate_content_feedback(
 
 
 def _check_highlight_inclusion(
-    highlights: list,
-    included_ts: list,
-    excluded_ts: list,
-) -> list:
+    highlights: list[HighlightScene],
+    included_ts: list[str],
+    excluded_ts: list[str],
+) -> list[ContentFeedbackItem]:
     """ハイライトシーンの取捨選択をチェック"""
     feedback = []
 
@@ -217,7 +217,7 @@ def _check_highlight_inclusion(
 def _check_classification_alignment(
     video_data: VideoData,
     classification: ClassificationResult,
-) -> list:
+) -> list[ContentFeedbackItem]:
     """ゲスト分類に基づくコンテンツチェック"""
     feedback = []
 
@@ -255,7 +255,7 @@ def _check_classification_alignment(
     return feedback
 
 
-def _check_content_balance(video_data: VideoData) -> list:
+def _check_content_balance(video_data: VideoData) -> list[ContentFeedbackItem]:
     """全体的なコンテンツバランスをチェック"""
     feedback = []
 

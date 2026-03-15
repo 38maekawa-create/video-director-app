@@ -17,7 +17,7 @@ Phase 3以降（C-1実装後）:
 import re
 from dataclasses import dataclass, field
 from ..integrations.ai_dev5_connector import VideoData, HighlightScene
-from .direction_generator import DirectionTimeline
+from .direction_generator import DirectionTimeline, DirectionEntry
 
 
 # テロップチェックの閾値設定
@@ -176,8 +176,15 @@ def _create_telop_candidate_from_highlight(hl: HighlightScene) -> TelopCandidate
     )
 
 
-def _create_telop_candidate_from_direction(entry) -> TelopCandidate:
-    """演出ディレクションエントリーからテロップ候補を生成"""
+def _create_telop_candidate_from_direction(entry: DirectionEntry) -> TelopCandidate:
+    """演出ディレクションエントリーからテロップ候補を生成
+
+    Args:
+        entry: 演出ディレクションエントリー（direction_type == "telop" のもの）
+
+    Returns:
+        テロップ候補オブジェクト
+    """
     text = entry.description if hasattr(entry, "description") else str(entry)
     # テロップ指示からテキスト部分を抽出
     telop_match = re.search(r"[「『](.*?)[」』]", text)
@@ -195,7 +202,7 @@ def _create_telop_candidate_from_direction(entry) -> TelopCandidate:
     )
 
 
-def _check_single_telop(candidate: TelopCandidate) -> list:
+def _check_single_telop(candidate: TelopCandidate) -> list[TelopIssue]:
     """単一テロップの品質チェック"""
     issues = []
 
@@ -237,8 +244,15 @@ def _check_single_telop(candidate: TelopCandidate) -> list:
     return issues
 
 
-def _check_brackets(candidate: TelopCandidate) -> list:
-    """括弧の対応をチェック"""
+def _check_brackets(candidate: TelopCandidate) -> list[TelopIssue]:
+    """括弧の対応をチェック
+
+    Args:
+        candidate: チェック対象のテロップ候補
+
+    Returns:
+        括弧不一致が検出された場合の問題リスト（正常時は空リスト）
+    """
     issues = []
     bracket_pairs = [("「", "」"), ("（", "）"), ("(", ")"), ("『", "』")]
 
@@ -257,7 +271,7 @@ def _check_brackets(candidate: TelopCandidate) -> list:
     return issues
 
 
-def _check_consistency(candidates: list) -> list:
+def _check_consistency(candidates: list[TelopCandidate]) -> list[TelopIssue]:
     """テロップ間の一貫性チェック"""
     issues = []
     if len(candidates) < 2:
@@ -297,7 +311,7 @@ def _check_consistency(candidates: list) -> list:
     return issues
 
 
-def _check_typos_in_transcript(video_data: VideoData) -> list:
+def _check_typos_in_transcript(video_data: VideoData) -> list[TelopIssue]:
     """トランスクリプト内のテロップ向け誤字脱字チェック"""
     issues = []
 
@@ -318,7 +332,7 @@ def _check_typos_in_transcript(video_data: VideoData) -> list:
     return issues
 
 
-def _calculate_consistency_score(candidates: list, issues: list) -> float:
+def _calculate_consistency_score(candidates: list[TelopCandidate], issues: list[TelopIssue]) -> float:
     """一貫性スコアを計算（0-100）"""
     if not candidates:
         return 100.0

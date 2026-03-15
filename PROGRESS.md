@@ -1,14 +1,32 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-15 （TASK_PRACTICAL_FB_LOOP.md実施 — FB学習ループ接続 + スプシマッチング精度改善完了）
-<!-- authored: T3/兵隊A/AI開発10/2026-03-15 [TASK_PRACTICAL_FB_LOOP指示書に基づく] -->
+2026-03-16 （TASK_PRACTICAL_YOUTUBE_IOS.md実施 — YouTube素材3機能iOS UI完成）
+<!-- authored: T3/兵隊A/AI開発10/2026-03-16 [TASK_PRACTICAL_YOUTUBE_IOS指示書に基づく] -->
 
 ## 現在の作業状態
-**iOS UI完了 → バックエンド強化（FB学習ループ接続 + スプシマッチング精度改善）完了**
+**YouTube素材3機能iOS UI完成（サムネ指示書・タイトル案・概要欄）**
 
 iPhoneからAPIサーバー（100.110.206.6:8210）に接続して実データ29件を表示・操作できる状態。
 Build 5→17を連続デプロイ。Build 17でなおとさんから「UIはこれで完了！」の承認を得た。
+
+### TASK_PRACTICAL_YOUTUBE_IOS.md 実施結果（2026-03-16）
+
+**1. YouTubeAssetsView.swift 全面改善（完了）**
+- サムネ指示書: Z型4ゾーンを番号付きカードで視覚化。全体コンセプト・フォント・背景の3メタデータを分離表示。色指定をゾーンカード内にインライン表示
+- タイトル案: 各タイトル候補にコピーボタン追加。選択タイトルの編集後もコピー可能。選択中のカードにアクセント枠付きハイライト
+- 概要欄: ヘッダー横にコピーボタン追加。コピー・リセット・確定保存の3ボタン維持
+- コピーフィードバック: コピー後2秒間「コピー済」チェックマーク表示（copiedItemId状態管理）
+- サムネ指示書全体をテキスト化してコピーする機能追加（thumbnailDesignAsText）
+
+**2. YouTubeAssetsViewModel.swift 修正（完了）**
+- `localhost:8210` ハードコード → `APIClient.shared.fetchYouTubeAssets()` 経由に修正
+- MockDataフォールバック削除（APIClient.sharedのエラーハンドリングに統一）
+
+**3. DirectionReportView遷移確認（問題なし）**
+- `case 2: YouTubeAssetsView(projectId: project.id)` で正常接続済み
+
+**4. ビルド結果: BUILD SUCCEEDED**
 
 ### TASK_PRACTICAL_FB_LOOP.md 実施結果（2026-03-15）
 
@@ -194,10 +212,10 @@ xcodebuild -exportArchive -archivePath ./build/*.xcarchive \
 - 修正前後のディレクション比較画面
 - 素材ナレッジとの連携
 
-### [P2] YouTube素材3機能UI完成（iOS版）
-- タイトル案表示・コピー
-- サムネ指示書表示
-- 概要欄テキスト表示・コピー
+### ~~[P2] YouTube素材3機能UI完成（iOS版）~~ ✅ 2026-03-16完了
+- ~~タイトル案表示・コピー~~
+- ~~サムネ指示書表示~~
+- ~~概要欄テキスト表示・コピー~~
 
 ### [P2] スマホ導入線整理（T-037）
 - TestFlight配布フローの整理
@@ -212,7 +230,7 @@ xcodebuild -exportArchive -archivePath ./build/*.xcarchive \
 
 | # | 問題 | 状態 |
 |---|------|------|
-| 1 | YouTubeAssetsViewModel.swiftのbaseURLがlocalhost:8210ハードコード | 未修正（APIClient.sharedを使うべき） |
+| 1 | ~~YouTubeAssetsViewModel.swiftのbaseURLがlocalhost:8210ハードコード~~ | ✅ 修正済み（APIClient.shared経由に変更 2026-03-16） |
 | 2 | feedbacksテーブルが空（0件） | 正常。録音機能からFB投入後にデータが蓄積される |
 | 3 | xcodebuild署名: `CODE_SIGN_STYLE=Automatic`ではなく手動指定が必要 | TT2DA7H5NJ + "Apple Development" で解決済み |
 | 4 | 層cの該当者0件: 現データセット29件に自営業家系なし | 追加データで検証必要 |

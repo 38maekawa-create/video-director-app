@@ -1591,3 +1591,19 @@ INFO:     Finished server process [35309]
 INFO:     Started server process [35557]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'scripts/sync_sheets.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35557]
+INFO:     Started server process [37179]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'scripts/sync_sheets.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [37179]
+INFO:     Started server process [37215]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

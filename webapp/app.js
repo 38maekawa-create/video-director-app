@@ -22,6 +22,8 @@
     createRecordingModal();
   }
 
+  // トラッキングページは遅延初期化（タブ選択時に読み込み）
+
   // ===== スコア色判定 =====
   function scoreColor(score) {
     if (score >= 85) return 'var(--status-complete)';
@@ -210,6 +212,14 @@
       navigateTo('home');
     });
 
+    // Vimeoレビューボタン
+    const vimeoBtn = content.querySelector('.btn-vimeo');
+    if (vimeoBtn) {
+      vimeoBtn.addEventListener('click', () => {
+        openVimeoReview(p);
+      });
+    }
+
     // タブ
     renderReportTabs();
     renderReportSection(0);
@@ -230,6 +240,9 @@
     }
     // YouTube素材タブ（追加: 2026-03-15）
     tabs.push('YouTube素材');
+    // 編集FB / Vimeoレビュータブ（追加: 2026-03-16）
+    tabs.push('編集FB');
+    tabs.push('レビュー');
 
     const container = document.getElementById('report-tabs');
     container.innerHTML = tabs.map((t, i) => `
@@ -249,6 +262,12 @@
         } else if (tabName === 'YouTube素材') {
           // YouTube素材タブ（追加: 2026-03-15）
           renderYouTubeAssets(currentProject);
+        } else if (tabName === '編集FB') {
+          // 編集FBタブ（追加: 2026-03-16）
+          openEditFeedback(currentProject);
+        } else if (tabName === 'レビュー') {
+          // Vimeoレビュータブ（追加: 2026-03-16）
+          openVimeoReview(currentProject);
         } else {
           renderReportSection(parseInt(btn.dataset.index));
         }
@@ -655,6 +674,11 @@
     if (tab === 'report' && !currentProject) {
       openReport(MockData.projects[0]);
     }
+
+    // トラッキングタブ: 遅延初期化（タブ選択時にAPI呼び出し）
+    if (tab === 'tracking') {
+      renderTrackingPage();
+    }
   }
 
   // ===== 録音モーダル =====
@@ -709,6 +733,457 @@
       drawTrendChart();
     }
   });
+
+  // ===================================================================
+  // 画面5: 編集後動画FB表示（NEW-3）
+  // ===================================================================
+
+  function openEditFeedback(project) {
+    currentProject = project;
+    navigateTo('edit-feedback');
+    renderEditFeedback(project);
+  }
+
+  function renderEditFeedback(p) {
+    var content = document.getElementById('edit-feedback-content');
+    content.innerHTML = '<button class="back-btn" id="ef-back">\u2190 \u623b\u308b</button>' +
+      '<div class="ef-loading"><div class="yt-loading-text">\u7de8\u96c6\u5f8cFB\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...</div></div>';
+
+    document.getElementById('ef-back').addEventListener('click', function() {
+      navigateTo('report');
+      if (currentProject) renderReport(currentProject);
+    });
+
+    // APIからプロジェクト詳細を取得（edited_video フィールドを確認）
+    fetch('http://localhost:8210/api/projects/' + encodeURIComponent(p.id))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        renderEditFeedbackContent(content, p, data);
+      })
+      .catch(function() {
+        // APIなしの場合のフォールバック
+        renderEditFeedbackContent(content, p, null);
+      });
+  }
+
+  function renderEditFeedbackContent(container, p, apiData) {
+    var vimeoUrl = '';
+    var editedVideo = null;
+    var feedbackComments = [];
+
+    if (apiData) {
+      editedVideo = apiData.edited_video || apiData.editedVideo || null;
+      if (editedVideo) {
+        vimeoUrl = editedVideo.vimeo_url || editedVideo.vimeoUrl || '';
+      }
+      feedbackComments = apiData.edit_feedback || apiData.editFeedback || [];
+    }
+
+    var vimeoId = extractVimeoId(vimeoUrl);
+
+    var html = '<button class="back-btn" id="ef-back2">\u2190 \u623b\u308b</button>';
+
+    // ヒーロー部分（グレード + スコア）
+    var grade = 'B';
+    var gradeScore = 7.2;
+    if (apiData && apiData.quality_score) {
+      gradeScore = apiData.quality_score / 10;
+      if (gradeScore >= 8.5) grade = 'S';
+      else if (gradeScore >= 7.5) grade = 'A';
+      else if (gradeScore >= 6.0) grade = 'B';
+      else grade = 'C';
+    }
+    var gradeColor = grade === 'S' ? 'var(--status-complete)' :
+                     grade === 'A' ? 'var(--status-directed)' :
+                     grade === 'B' ? 'var(--status-editing)' : 'var(--accent)';
+
+    html += '<div class="ef-hero">' +
+      '<div class="ef-grade-circle" style="border-color: ' + gradeColor + '; color: ' + gradeColor + '">' + grade + '</div>' +
+      '<div class="ef-score-row">' +
+        '<span class="ef-score-value">' + gradeScore.toFixed(1) + '</span>' +
+        '<span class="ef-score-label"> / 10.0</span>' +
+      '</div>' +
+      '<div class="ef-score-bar"><div class="ef-score-bar-fill" style="width: ' + (gradeScore * 10) + '%; background: ' + gradeColor + '"></div></div>' +
+    '</div>';
+
+    // Vimeo埋め込みプレーヤー
+    if (vimeoId) {
+      html += '<div class="ef-section">' +
+        '<div class="ef-section-header"><span class="ef-section-icon">VD</span>\u7de8\u96c6\u6e08\u307f\u52d5\u753b</div>' +
+        '<div class="vimeo-player-wrap">' +
+          '<iframe src="https://player.vimeo.com/video/' + vimeoId + '?title=0&byline=0&portrait=0" ' +
+            'class="vimeo-iframe" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>' +
+        '</div>' +
+      '</div>';
+    } else {
+      html += '<div class="ef-section">' +
+        '<div class="ef-section-header"><span class="ef-section-icon">VD</span>\u7de8\u96c6\u6e08\u307f\u52d5\u753b</div>' +
+        '<div class="ef-empty">\u7de8\u96c6\u6e08\u307f\u52d5\u753b\u304c\u307e\u3060\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u3055\u308c\u3066\u3044\u307e\u305b\u3093</div>' +
+      '</div>';
+    }
+
+    // FBコメント一覧
+    html += '<div class="ef-section">' +
+      '<div class="ef-section-header"><span class="ef-section-icon" style="background: var(--status-editing)">FB</span>\u30d5\u30a3\u30fc\u30c9\u30d0\u30c3\u30af\u30b3\u30e1\u30f3\u30c8</div>';
+
+    if (feedbackComments.length > 0) {
+      feedbackComments.forEach(function(fb) {
+        var severity = fb.severity || fb.priority || 'info';
+        var sevColor = severity === 'high' || severity === 'critical' ? 'var(--accent)' :
+                       severity === 'medium' || severity === 'warning' ? 'var(--status-editing)' :
+                       'var(--status-directed)';
+        var catLabel = fb.category || fb.area || '\u5168\u822c';
+        html += '<div class="ef-fb-item">' +
+          '<div class="ef-fb-bar" style="background: ' + sevColor + '"></div>' +
+          '<div class="ef-fb-body">' +
+            '<div class="ef-fb-meta">' +
+              '<span class="ef-fb-cat" style="color: ' + sevColor + '; background: ' + sevColor.replace(')', ', 0.15)').replace('var(', 'rgba(229,9,20,') + '">' + escapeHTML(catLabel) + '</span>' +
+              (fb.area ? '<span class="ef-fb-area">' + escapeHTML(fb.area) + '</span>' : '') +
+            '</div>' +
+            '<div class="ef-fb-msg">' + escapeHTML(fb.message || fb.note || fb.text || '') + '</div>' +
+          '</div>' +
+        '</div>';
+      });
+    } else {
+      // フォールバック: プロジェクトのreportSectionsから生成
+      var section = MockData.reportSections[3]; // 音声FB履歴
+      if (section) {
+        section.items.forEach(function(item) {
+          html += '<div class="ef-fb-item">' +
+            '<div class="ef-fb-bar" style="background: var(--status-directed)"></div>' +
+            '<div class="ef-fb-body">' +
+              '<div class="ef-fb-msg">' + escapeHTML(item) + '</div>' +
+            '</div>' +
+          '</div>';
+        });
+      } else {
+        html += '<div class="ef-empty">\u30d5\u30a3\u30fc\u30c9\u30d0\u30c3\u30af\u304c\u307e\u3060\u3042\u308a\u307e\u305b\u3093</div>';
+      }
+    }
+
+    html += '</div>';
+
+    // メタ情報
+    html += '<div class="ef-section ef-meta-section">' +
+      '<div class="ef-meta-row"><span class="ef-meta-label">\u30b2\u30b9\u30c8</span><span class="ef-meta-val">' + escapeHTML(p.guestName) + '</span></div>' +
+      '<div class="ef-meta-row"><span class="ef-meta-label">\u64ae\u5f71\u65e5</span><span class="ef-meta-val">' + escapeHTML(p.shootDate) + '</span></div>' +
+      (editedVideo && editedVideo.editor_name ? '<div class="ef-meta-row"><span class="ef-meta-label">\u7de8\u96c6\u8005</span><span class="ef-meta-val">' + escapeHTML(editedVideo.editor_name) + '</span></div>' : '') +
+      (editedVideo && editedVideo.stage ? '<div class="ef-meta-row"><span class="ef-meta-label">\u7de8\u96c6\u6bb5\u968e</span><span class="ef-meta-val">' + escapeHTML(stageLabel(editedVideo.stage)) + '</span></div>' : '') +
+    '</div>';
+
+    container.innerHTML = html;
+
+    document.getElementById('ef-back2').addEventListener('click', function() {
+      navigateTo('report');
+      if (currentProject) renderReport(currentProject);
+    });
+  }
+
+  function stageLabel(stage) {
+    var labels = { draft: '\u521d\u7a3f', revision_1: '\u4fee\u6b631', revision_2: '\u4fee\u6b632', final: '\u6700\u7d42\u7a3f' };
+    return labels[stage] || stage || '';
+  }
+
+  // ===================================================================
+  // 画面6: Vimeoレビュー表示
+  // ===================================================================
+
+  function openVimeoReview(project) {
+    currentProject = project;
+    navigateTo('vimeo-review');
+    renderVimeoReview(project);
+  }
+
+  function renderVimeoReview(p) {
+    var content = document.getElementById('vimeo-review-content');
+    content.innerHTML = '<button class="back-btn" id="vr-back">\u2190 \u623b\u308b</button>' +
+      '<div class="ef-loading"><div class="yt-loading-text">Vimeo\u30ec\u30d3\u30e5\u30fc\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...</div></div>';
+
+    document.getElementById('vr-back').addEventListener('click', function() {
+      navigateTo('report');
+      if (currentProject) renderReport(currentProject);
+    });
+
+    // API: POST /api/v1/vimeo/post-review?dry_run=true
+    fetch('http://localhost:8210/api/v1/vimeo/post-review?dry_run=true', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ project_id: p.id })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        renderVimeoReviewContent(content, p, data);
+      })
+      .catch(function() {
+        // APIなしフォールバック: プロジェクト詳細から取得
+        fetch('http://localhost:8210/api/projects/' + encodeURIComponent(p.id))
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            renderVimeoReviewContent(content, p, data);
+          })
+          .catch(function() {
+            renderVimeoReviewContent(content, p, null);
+          });
+      });
+  }
+
+  function renderVimeoReviewContent(container, p, data) {
+    var vimeoUrl = '';
+    var feedbacks = [];
+    var duration = 0;
+
+    if (data) {
+      // post-review APIレスポンス
+      vimeoUrl = data.vimeo_url || data.vimeoUrl || '';
+      feedbacks = data.feedbacks || data.timeline_feedbacks || data.timelineFeedbacks || [];
+      duration = data.duration || data.video_duration || 0;
+
+      // プロジェクト詳細から取得
+      if (!vimeoUrl && data.edited_video) {
+        vimeoUrl = data.edited_video.vimeo_url || data.edited_video.vimeoUrl || '';
+      }
+      if (!feedbacks.length && data.vimeo_feedbacks) {
+        feedbacks = data.vimeo_feedbacks;
+      }
+    }
+
+    var vimeoId = extractVimeoId(vimeoUrl);
+
+    var html = '<button class="back-btn" id="vr-back2">\u2190 \u623b\u308b</button>';
+
+    // ヘッダー
+    html += '<div class="vr-header">' +
+      '<div class="vr-title">Vimeo\u30ec\u30d3\u30e5\u30fc</div>' +
+      '<div class="vr-subtitle">' + escapeHTML(p.guestName) + ' - ' + escapeHTML(p.title) + '</div>' +
+    '</div>';
+
+    // Vimeoプレーヤー
+    if (vimeoId) {
+      html += '<div class="vr-player-section">' +
+        '<div class="vimeo-player-wrap">' +
+          '<iframe id="vimeo-player-iframe" src="https://player.vimeo.com/video/' + vimeoId + '?title=0&byline=0&portrait=0" ' +
+            'class="vimeo-iframe" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>' +
+        '</div>' +
+      '</div>';
+    } else {
+      html += '<div class="vr-player-section">' +
+        '<div class="ef-empty">Vimeo\u52d5\u753b\u304c\u307e\u3060\u767b\u9332\u3055\u308c\u3066\u3044\u307e\u305b\u3093</div>' +
+      '</div>';
+    }
+
+    // タイムラインバー（FBマーカー付き）
+    if (feedbacks.length > 0 && duration > 0) {
+      html += '<div class="vr-timeline-section">' +
+        '<div class="vr-timeline-label">\u30bf\u30a4\u30e0\u30e9\u30a4\u30f3 FB\u30de\u30fc\u30ab\u30fc</div>' +
+        '<div class="vr-timeline-bar">' +
+          '<div class="vr-timeline-track"></div>';
+
+      feedbacks.forEach(function(fb, i) {
+        var ts = fb.timestamp_seconds || fb.timestampMark || fb.timestamp || 0;
+        var pos = (ts / duration) * 100;
+        var priority = fb.priority || 'medium';
+        var pColor = priority === 'high' || priority === 'critical' ? 'var(--accent)' :
+                     priority === 'medium' ? 'var(--status-editing)' :
+                     'var(--status-directed)';
+        html += '<div class="vr-marker" style="left: ' + pos + '%; background: ' + pColor + '" data-fb-index="' + i + '" title="' + escapeAttr(fb.note || fb.text || '') + '"></div>';
+      });
+
+      html += '</div></div>';
+    }
+
+    // FB一覧
+    html += '<div class="vr-fb-list">';
+
+    if (feedbacks.length > 0) {
+      feedbacks.forEach(function(fb) {
+        var ts = fb.timestamp_seconds || fb.timestampMark || fb.timestamp || 0;
+        var tsStr = formatTimestamp(ts);
+        var priority = fb.priority || 'medium';
+        var pColor = priority === 'high' || priority === 'critical' ? 'var(--accent)' :
+                     priority === 'medium' ? 'var(--status-editing)' :
+                     'var(--status-directed)';
+        var element = fb.element || fb.category || '';
+        var note = fb.note || fb.text || fb.message || '';
+
+        html += '<div class="vr-fb-card">' +
+          '<div class="vr-fb-left">' +
+            '<div class="vr-fb-ts" style="color: var(--accent)">' + tsStr + '</div>' +
+            '<div class="vr-fb-dot" style="background: ' + pColor + '"></div>' +
+          '</div>' +
+          '<div class="vr-fb-right">' +
+            '<div class="vr-fb-element">' + escapeHTML(element) + '</div>' +
+            '<div class="vr-fb-note">' + escapeHTML(note) + '</div>' +
+            '<span class="vr-fb-priority" style="color: ' + pColor + '; background: ' + pColor.replace(')', ', 0.15)').replace('var(', 'rgba(229,9,20,') + '">' + escapeHTML(priority) + '</span>' +
+          '</div>' +
+        '</div>';
+      });
+    } else {
+      html += '<div class="ef-empty">\u30bf\u30a4\u30e0\u30b3\u30fc\u30c9\u4ed8\u304dFB\u304c\u3042\u308a\u307e\u305b\u3093</div>';
+    }
+
+    html += '</div>';
+
+    container.innerHTML = html;
+
+    document.getElementById('vr-back2').addEventListener('click', function() {
+      navigateTo('report');
+      if (currentProject) renderReport(currentProject);
+    });
+  }
+
+  // ===================================================================
+  // 画面7: 映像トラッキング表示（NEW-4〜7）
+  // ===================================================================
+
+  function renderTrackingPage() {
+    var content = document.getElementById('tracking-content');
+    content.innerHTML = '<div class="ef-loading"><div class="yt-loading-text">\u30c8\u30e9\u30c3\u30ad\u30f3\u30b0\u30c7\u30fc\u30bf\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...</div></div>';
+
+    // 並列でAPI呼び出し
+    var videosPromise = fetch('http://localhost:8210/api/tracking/videos')
+      .then(function(r) { return r.ok ? r.json() : []; })
+      .catch(function() { return []; });
+
+    var summaryPromise = fetch('http://localhost:8210/api/v1/learning/summary')
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .catch(function() { return null; });
+
+    Promise.all([videosPromise, summaryPromise]).then(function(results) {
+      var videos = results[0];
+      var summary = results[1];
+      // 配列でない場合（オブジェクト内にvideosキーがある場合）
+      if (videos && !Array.isArray(videos) && videos.videos) {
+        videos = videos.videos;
+      }
+      if (!Array.isArray(videos)) videos = [];
+      renderTrackingContent(content, videos, summary);
+    });
+  }
+
+  function renderTrackingContent(container, videos, summary) {
+    var html = '';
+
+    // 学習状況サマリー
+    if (summary) {
+      var fbLearning = summary.feedback_learning || summary.feedbackLearning || {};
+      var vidLearning = summary.video_learning || summary.videoLearning || {};
+
+      html += '<div class="tk-section">' +
+        '<div class="tk-section-title">\u5b66\u7fd2\u72b6\u6cc1</div>' +
+        '<div class="tk-stats-row">' +
+          tkStatCard('FB\u5b66\u7fd2', fbLearning.total_patterns || fbLearning.totalPatterns || 0, fbLearning.active_rules || fbLearning.activeRules || 0, null) +
+          tkStatCard('\u6620\u50cf\u5b66\u7fd2', vidLearning.total_patterns || vidLearning.totalPatterns || 0, vidLearning.active_rules || vidLearning.activeRules || 0, vidLearning.total_source_videos || vidLearning.totalSourceVideos || null) +
+        '</div>';
+
+      // カテゴリ分布
+      var catDist = (vidLearning.category_distribution || vidLearning.categoryDistribution);
+      if (catDist && Object.keys(catDist).length > 0) {
+        html += '<div class="tk-cat-dist">' +
+          '<div class="tk-cat-label">\u30ab\u30c6\u30b4\u30ea\u5206\u5e03</div>' +
+          '<div class="tk-cat-tags">';
+
+        var catLabels = { cutting: '\u30ab\u30c3\u30c8', color: '\u8272\u5f69', tempo: '\u30c6\u30f3\u30dd', technique: '\u30c6\u30af\u30cb\u30c3\u30af', composition: '\u69cb\u56f3', telop: '\u30c6\u30ed\u30c3\u30d7', bgm: 'BGM', camera: '\u30ab\u30e1\u30e9', general: '\u5168\u822c' };
+        var catColors = { cutting: '#E50914', color: '#F5A623', tempo: '#4A90D9', technique: '#46D369', composition: '#9B59B6' };
+
+        var sorted = Object.entries(catDist).sort(function(a, b) { return b[1] - a[1]; });
+        sorted.forEach(function(entry) {
+          var key = entry[0], val = entry[1];
+          var lbl = catLabels[key] || key;
+          var clr = catColors[key] || '#808080';
+          html += '<span class="tk-cat-tag" style="background: ' + clr + '">' + lbl + ' ' + val + '</span>';
+        });
+
+        html += '</div></div>';
+      }
+
+      html += '</div>';
+    }
+
+    // トラッキング動画一覧
+    html += '<div class="tk-section">' +
+      '<div class="tk-section-title">\u30c8\u30e9\u30c3\u30ad\u30f3\u30b0\u4e2d\u306e\u52d5\u753b</div>';
+
+    if (videos.length > 0) {
+      videos.forEach(function(video) {
+        var title = video.title || '\u7121\u984c';
+        var channel = video.channel_name || video.channelName || '\u30c1\u30e3\u30f3\u30cd\u30eb\u672a\u8a2d\u5b9a';
+        var status = video.analysis_status || video.analysisStatus || 'pending';
+        var statusLbl = status === 'completed' ? '\u5206\u6790\u5b8c\u4e86' : status === 'analyzing' ? '\u5206\u6790\u4e2d' : '\u5f85\u6a5f\u4e2d';
+        var statusClr = status === 'completed' ? 'var(--status-complete)' : status === 'analyzing' ? 'var(--status-editing)' : 'var(--text-muted)';
+
+        var analysis = video.analysis_result || video.analysisResult || null;
+
+        html += '<div class="tk-video-card">' +
+          '<div class="tk-video-header">' +
+            '<div class="tk-video-info">' +
+              '<div class="tk-video-title">' + escapeHTML(title) + '</div>' +
+              '<div class="tk-video-channel">' + escapeHTML(channel) + '</div>' +
+            '</div>' +
+            '<span class="tk-video-status" style="background: ' + statusClr + '">' + statusLbl + '</span>' +
+          '</div>';
+
+        if (analysis) {
+          var details = [
+            ['\u7dcf\u5408', analysis.overall_score || analysis.overallScore ? (analysis.overall_score || analysis.overallScore).toFixed(0) : '-'],
+            ['\u69cb\u56f3', analysis.composition || '-'],
+            ['\u30c6\u30f3\u30dd', analysis.tempo || '-'],
+            ['\u30ab\u30c3\u30c8', analysis.cutting_style || analysis.cuttingStyle || '-'],
+            ['\u8272\u5f69', analysis.color_grading || analysis.colorGrading || '-']
+          ];
+          details.forEach(function(d) {
+            html += '<div class="tk-detail-row"><span class="tk-detail-label">' + d[0] + '</span><span class="tk-detail-val">' + escapeHTML(String(d[1])) + '</span></div>';
+          });
+
+          var techniques = analysis.key_techniques || analysis.keyTechniques || [];
+          if (techniques.length > 0) {
+            html += '<div class="tk-techniques">' +
+              '<div class="tk-techniques-label">\u62bd\u51fa\u30c6\u30af\u30cb\u30c3\u30af</div>';
+            techniques.forEach(function(t) {
+              html += '<div class="tk-technique-item">\u30fb' + escapeHTML(t) + '</div>';
+            });
+            html += '</div>';
+          }
+        }
+
+        html += '</div>';
+      });
+    } else {
+      html += '<div class="ef-empty">\u30c8\u30e9\u30c3\u30ad\u30f3\u30b0\u4e2d\u306e\u52d5\u753b\u306f\u3042\u308a\u307e\u305b\u3093</div>';
+    }
+
+    html += '</div>';
+
+    container.innerHTML = html;
+  }
+
+  function tkStatCard(title, patterns, rules, videos) {
+    var html = '<div class="tk-stat-card">' +
+      '<div class="tk-stat-title">' + title + '</div>' +
+      '<div class="tk-stat-nums">' +
+        '<div class="tk-stat-num"><span class="tk-stat-big">' + patterns + '</span><span class="tk-stat-sub">\u30d1\u30bf\u30fc\u30f3</span></div>' +
+        '<div class="tk-stat-num"><span class="tk-stat-big" style="color: var(--status-complete)">' + rules + '</span><span class="tk-stat-sub">\u30eb\u30fc\u30eb</span></div>';
+    if (videos !== null && videos !== undefined) {
+      html += '<div class="tk-stat-num"><span class="tk-stat-big" style="color: var(--status-directed)">' + videos + '</span><span class="tk-stat-sub">\u6620\u50cf</span></div>';
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  // ===================================================================
+  // ユーティリティ
+  // ===================================================================
+
+  function extractVimeoId(url) {
+    if (!url) return '';
+    var match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    return match ? match[1] : '';
+  }
+
+  function formatTimestamp(seconds) {
+    var m = Math.floor(seconds / 60);
+    var s = Math.floor(seconds % 60);
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
 
   // ===== YouTube素材3機能（追加: 2026-03-15） =====
 

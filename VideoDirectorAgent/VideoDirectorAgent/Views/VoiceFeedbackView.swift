@@ -53,6 +53,11 @@ struct VoiceFeedbackView: View {
                         if viewModel.flowState == .readyToSend || viewModel.flowState == .sent {
                             sendSection
                         }
+
+                        // Vimeo投稿セクション（変換済みの場合に表示）
+                        if viewModel.flowState == .readyToSend || viewModel.flowState == .sent {
+                            vimeoPostSection
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 40)
@@ -445,7 +450,214 @@ struct VoiceFeedbackView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
+    // MARK: - Vimeo投稿セクション
+    private var vimeoPostSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // セクションヘッダー
+            HStack {
+                Image(systemName: "play.rectangle.fill")
+                    .foregroundStyle(AppTheme.accent)
+                Text("Vimeoレビュー投稿")
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.white)
+            }
+
+            // Vimeo動画ID入力
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Vimeo動画ID")
+                    .font(.caption)
+                    .foregroundStyle(AppTheme.textMuted)
+
+                TextField("例: 123456789", text: $viewModel.vimeoVideoId)
+                    .font(.body)
+                    .foregroundStyle(.white)
+                    .padding(12)
+                    .background(AppTheme.cardBackgroundLight)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(
+                                viewModel.vimeoVideoId.isEmpty
+                                    ? AppTheme.textMuted.opacity(0.3)
+                                    : AppTheme.accent.opacity(0.5),
+                                lineWidth: 1
+                            )
+                    )
+                    .keyboardType(.numberPad)
+            }
+
+            // 投稿予定コメント数の表示
+            if !viewModel.structuredItems.isEmpty {
+                HStack {
+                    Image(systemName: "list.bullet")
+                        .foregroundStyle(AppTheme.textMuted)
+                    Text("\(viewModel.structuredItems.count)件のコメントを投稿予定")
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.textSecondary)
+                }
+            }
+
+            // dry-runボタン（プレビュー）
+            Button {
+                viewModel.sendToVimeoReview(dryRun: true)
+            } label: {
+                HStack {
+                    if viewModel.isPostingToVimeo {
+                        ProgressView()
+                            .tint(.white)
+                            .scaleEffect(0.8)
+                    } else {
+                        Image(systemName: "eye.fill")
+                    }
+                    Text("Vimeo投稿プレビュー")
+                }
+                .font(.subheadline)
+                .fontWeight(.bold)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    viewModel.vimeoVideoId.isEmpty || viewModel.isPostingToVimeo
+                        ? AppTheme.textMuted
+                        : AppTheme.accent
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+            .disabled(viewModel.vimeoVideoId.isEmpty || viewModel.isPostingToVimeo)
+
+            // dry-run結果表示
+            if let result = viewModel.vimeoPostResult, result.mode == "dry_run" {
+                vimeoPreviewResult(result)
+
+                // 本番投稿ボタン（dry-run成功後に表示）
+                Button {
+                    viewModel.sendToVimeoReview(dryRun: false)
+                } label: {
+                    HStack {
+                        if viewModel.isPostingToVimeo {
+                            ProgressView()
+                                .tint(.white)
+                                .scaleEffect(0.8)
+                        } else {
+                            Image(systemName: "paperplane.fill")
+                        }
+                        Text("Vimeoに本番投稿する")
+                    }
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(viewModel.isPostingToVimeo ? AppTheme.textMuted : AppTheme.statusComplete)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                .disabled(viewModel.isPostingToVimeo)
+            }
+
+            // 本番投稿完了結果表示
+            if let result = viewModel.vimeoPostResult, result.mode != "dry_run" {
+                vimeoPostCompleteResult(result)
+            }
+        }
+        .padding(16)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: - Vimeo dry-runプレビュー結果
+    private func vimeoPreviewResult(_ result: VimeoPostReviewResponse) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(AppTheme.statusComplete)
+                Text("投稿プレビュー")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(AppTheme.statusComplete)
+                Spacer()
+                Text("動画: \(result.targetVideoId)")
+                    .font(.caption2)
+                    .foregroundStyle(AppTheme.textMuted)
+            }
+
+            if let plan = result.plan {
+                ForEach(Array(plan.enumerated()), id: \.offset) { index, item in
+                    HStack(spacing: 8) {
+                        Text(item.timecode)
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundStyle(AppTheme.accent)
+                            .frame(width: 55, alignment: .leading)
+
+                        Text(priorityEmoji(item.priority))
+                            .font(.caption)
+
+                        if let payload = item.vimeoPayload, let text = payload["text"] {
+                            Text(text)
+                                .font(.caption)
+                                .foregroundStyle(AppTheme.textSecondary)
+                                .lineLimit(2)
+                        }
+
+                        Spacer()
+                    }
+                    .padding(8)
+                    .background(AppTheme.cardBackgroundLight)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                }
+            }
+        }
+        .padding(12)
+        .background(AppTheme.statusComplete.opacity(0.05))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    // MARK: - Vimeo本番投稿結果
+    private func vimeoPostCompleteResult(_ result: VimeoPostReviewResponse) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            let posted = result.summary?.posted ?? 0
+            let failed = result.summary?.failed ?? 0
+
+            HStack {
+                Image(systemName: failed == 0 ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                    .foregroundStyle(failed == 0 ? AppTheme.statusComplete : AppTheme.accent)
+                Text(failed == 0 ? "投稿完了" : "一部失敗あり")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(failed == 0 ? AppTheme.statusComplete : AppTheme.accent)
+            }
+
+            HStack(spacing: 16) {
+                Label("\(posted)件 成功", systemImage: "checkmark")
+                    .font(.caption)
+                    .foregroundStyle(AppTheme.statusComplete)
+
+                if failed > 0 {
+                    Label("\(failed)件 失敗", systemImage: "xmark")
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.accent)
+                }
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background((result.summary?.failed ?? 0) == 0
+            ? AppTheme.statusComplete.opacity(0.1)
+            : AppTheme.accent.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
     // MARK: - ヘルパー
+    private func priorityEmoji(_ priority: String) -> String {
+        switch priority.lowercased() {
+        case "high": return "🔴"
+        case "low": return "🟢"
+        default: return "🟡"
+        }
+    }
+
+    // MARK: - ヘルパー（既存）
     private var flowStatusText: String {
         switch viewModel.flowState {
         case .idle: return "タップして録音開始"

@@ -24,7 +24,7 @@ final class VimeoReviewViewModel: ObservableObject {
     /// Vimeo動画ID
     @Published var vimeoVideoId: String = MockData.sampleVimeoVideoId
 
-    private let baseURL = "http://localhost:8210"
+    private var baseURL: String { APIClient.shared.baseURL.absoluteString }
 
     /// APIからフィードバック一覧を取得（失敗時はモックにフォールバック）
     func loadFeedbacks(projectId: String) async {

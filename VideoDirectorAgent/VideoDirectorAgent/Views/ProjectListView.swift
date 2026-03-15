@@ -87,6 +87,21 @@ struct ProjectListView: View {
                     }
             }
         }
+        .fullScreenCover(isPresented: $showAllProjects) {
+            AllProjectsListView(
+                projects: viewModel.filteredProjects,
+                onSelect: { project in
+                    showAllProjects = false
+                    // 少し遅延させてからプロジェクト詳細を表示（fullScreenCover切り替え）
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        selectedProject = project
+                    }
+                },
+                onDismiss: {
+                    showAllProjects = false
+                }
+            )
+        }
     }
 
     @ViewBuilder
@@ -225,6 +240,153 @@ struct ProjectListView: View {
                 Capsule()
                     .strokeBorder(status.color.opacity(0.5), lineWidth: 1)
             )
+    }
+}
+
+// MARK: - 全プロジェクト一覧画面（縦スクロール・グリッド）
+private struct AllProjectsListView: View {
+    let projects: [VideoProject]
+    let onSelect: (VideoProject) -> Void
+    let onDismiss: () -> Void
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12),
+    ]
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(.vertical, showsIndicators: false) {
+                LazyVGrid(columns: columns, spacing: 16) {
+                    ForEach(projects) { project in
+                        AllProjectsCard(project: project)
+                            .onTapGesture {
+                                onSelect(project)
+                            }
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 32)
+            }
+            .background(AppTheme.background.ignoresSafeArea())
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        onDismiss()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                            Text("ホーム")
+                        }
+                        .foregroundStyle(AppTheme.accent)
+                    }
+                }
+                ToolbarItem(placement: .principal) {
+                    Text("全プロジェクト")
+                        .font(AppTheme.sectionFont(17))
+                        .foregroundStyle(.white)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Text("\(projects.count)件")
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.textMuted)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - 全プロジェクト一覧用カード（大きめ）
+private struct AllProjectsCard: View {
+    let project: VideoProject
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // サムネイル部分
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(
+                        LinearGradient(
+                            colors: [AppTheme.cardBackground, project.status.color.opacity(0.2)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+
+                Image(systemName: project.thumbnailSymbol)
+                    .font(.system(size: 36))
+                    .foregroundStyle(.white.opacity(0.3))
+
+                // クオリティスコアバー
+                if let score = project.qualityScore {
+                    VStack {
+                        Spacer()
+                        GeometryReader { geo in
+                            Rectangle()
+                                .fill(AppTheme.accent)
+                                .frame(width: geo.size.width * CGFloat(score) / 100.0, height: 3)
+                        }
+                        .frame(height: 3)
+                    }
+                }
+            }
+            .frame(height: 110)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(alignment: .topTrailing) {
+                if project.hasUnsentFeedback {
+                    Circle()
+                        .fill(AppTheme.accent)
+                        .frame(width: 10, height: 10)
+                        .offset(x: -6, y: 6)
+                }
+            }
+            .overlay(alignment: .topLeading) {
+                // ステータスバッジ
+                Text(project.status.label)
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(project.status.color.opacity(0.6))
+                    .clipShape(Capsule())
+                    .padding(6)
+            }
+
+            // テキスト情報
+            Text(project.guestName)
+                .font(.system(size: 15, weight: .bold, design: .serif))
+                .tracking(1.5)
+                .foregroundStyle(.white)
+                .lineLimit(1)
+
+            if let occupation = project.guestOccupation, !occupation.isEmpty {
+                Text(occupation)
+                    .font(.caption2)
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .lineLimit(1)
+            }
+
+            HStack(spacing: 6) {
+                Text(project.shootDate)
+                    .font(.caption2)
+                    .foregroundStyle(AppTheme.textMuted)
+
+                if project.unreviewedCount > 0 {
+                    Text("未レビュー\(project.unreviewedCount)")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(AppTheme.accent)
+                        .clipShape(Capsule())
+                }
+            }
+        }
+        .padding(10)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 

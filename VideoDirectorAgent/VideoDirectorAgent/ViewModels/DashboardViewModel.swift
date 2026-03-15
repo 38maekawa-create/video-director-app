@@ -102,7 +102,8 @@ final class DashboardViewModel: ObservableObject {
 
         if errors.isEmpty {
             hasLoaded = true
-        } else {
+        } else if !hasLoaded {
+            // 初回ロード失敗時のみエラー表示（データがあればrefresh失敗は無視）
             errorMessage = "\(errors.joined(separator: "・"))の取得に失敗しました"
         }
     }

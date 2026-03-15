@@ -49,7 +49,9 @@ final class ProjectListViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            projects = try await APIClient.shared.fetchProjects()
+            let fetched = try await APIClient.shared.fetchProjects()
+            // 撮影日の新しい順にソート
+            projects = fetched.sorted { $0.shootDate > $1.shootDate }
             errorMessage = nil
         } catch {
             // 本番運用: API未接続時はエラーを表示

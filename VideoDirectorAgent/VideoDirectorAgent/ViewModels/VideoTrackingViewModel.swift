@@ -32,7 +32,8 @@ final class VideoTrackingViewModel: ObservableObject {
         if errors.isEmpty {
             errorMessage = nil
             hasLoaded = true
-        } else {
+        } else if !hasLoaded {
+            // 初回ロード失敗時のみエラー表示
             errorMessage = "\(errors.joined(separator: "・"))の取得に失敗しました"
         }
     }

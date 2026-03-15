@@ -15,7 +15,7 @@
 		<key>CFBundleShortVersionString</key>
 		<string>1.0.0</string>
 		<key>CFBundleVersion</key>
-		<string>12</string>
+		<string>13</string>
 		<key>SigningIdentity</key>
 		<string>Apple Development: Naoto Maekawa (UHNBL94PS9)</string>
 		<key>Team</key>
@@ -24,7 +24,7 @@
 	<key>ArchiveVersion</key>
 	<integer>2</integer>
 	<key>CreationDate</key>
-	<date>2026-03-15T12:11:06Z</date>
+	<date>2026-03-15T12:16:35Z</date>
 	<key>Name</key>
 	<string>VideoDirectorAgent</string>
 	<key>SchemeName</key>

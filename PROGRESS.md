@@ -1,11 +1,57 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-15 23:50（TASK_FIX_HOME_CAROUSEL.md実施 — DBソート修正完了）
-<!-- authored: T1/副官A/バティ/2026-03-15 [なおとさんとの対話セッション中] -->
+2026-03-15 （TASK_PRACTICAL_VIMEO.md実施 — Vimeo API実投稿準備完了）
+<!-- authored: T1/副官A/バティ/2026-03-15 [なおとさん指示: 映像エージェント実用化] -->
 
 ## 現在の作業状態
-**iOS UI完了 → カルーセルタップ実装済み・DBソート修正完了 → 次フェーズ（バックエンド機能拡充）へ**
+**iOS UI完了 → Vimeo API実投稿準備完了（dry-runまで）→ 次は本番投稿承認待ち**
+
+### TASK_PRACTICAL_VIMEO.md 実施結果（2026-03-15）
+
+**実施内容:**
+
+1. **Vimeo API認証確認**
+   - `~/.config/maekawa/api-keys.env` を確認 → `VIMEO_ACCESS_TOKEN` **未設定**
+   - 設定方法: `~/.config/maekawa/api-keys.env` に以下を追記してください:
+     ```
+     VIMEO_ACCESS_TOKEN=your_vimeo_token_here
+     ```
+   - または環境変数 `export VIMEO_ACCESS_TOKEN=xxx` で設定可
+   - **BLOCKED: 本番投稿実行にはなおとさんによるVimeoトークン設定が必要**
+
+2. **dry-run解除と安全対策（実装完了）**
+   - `--dry-run` はこれまで任意フラグ → **デフォルトdry-run** に変更
+   - `--execute` フラグを新設（本番投稿用）
+   - `--execute` 指定時は対話型確認プロンプト表示（`--yes` でスキップ可）
+   - リトライロジック（指数バックオフ）は既存実装を維持
+   - 使用例:
+     ```bash
+     # dry-run（デフォルト・安全）
+     python3 scripts/post_vimeo_review_comments.py relay.json
+
+     # 本番投稿（なおとさん承認後に実行）
+     python3 scripts/post_vimeo_review_comments.py relay.json --execute
+     ```
+
+3. **レビューコメントのフォーマット改善**
+   - 優先度（高/中/低）に応じたプレフィックス追加:
+     - 高: `🔴【優先度: 高】`
+     - 中: `🟡【優先度: 中】`
+     - 低: `🟢【優先度: 低】`
+   - コメントの `priority` フィールドに "高"/"中"/"低" を指定するだけで自動付与
+
+**テスト結果: 13件全PASS**（既存4件 + 新規9件）
+- `test_main_live_mode_posts_with_execute_flag` — `--execute --yes` で本番投稿
+- `test_main_default_is_dry_run` — デフォルトdry-run確認
+- `test_main_execute_cancelled_by_user` — ユーザー中止確認
+- `test_build_comment_text_priority_high/low/no_priority/with_reference` — 優先度フォーマット
+
+**変更ファイル:**
+- `scripts/post_vimeo_review_comments.py` — デフォルトdry-run化・`--execute`追加・優先度フォーマット追加
+- `tests/test_post_vimeo_review_comments.py` — 既存テスト修正 + 新規9テスト追加
+
+---
 
 iPhoneからAPIサーバー（100.110.206.6:8210）に接続して実データ29件を表示・操作できる状態。
 Build 5→17を連続デプロイ。Build 17でなおとさんから「UIはこれで完了！」の承認を得た。
@@ -163,9 +209,14 @@ xcodebuild -exportArchive -archivePath ./build/*.xcarchive \
 
 ## 次にやるべき作業（優先順位付き）
 
+### [P0-BLOCKED] Vimeo API本番投稿（要なおとさん承認）
+- **前提条件**: `~/.config/maekawa/api-keys.env` に `VIMEO_ACCESS_TOKEN` を設定
+- 実行コマンド: `python3 scripts/post_vimeo_review_comments.py relay.json --execute`
+- 疎通確認: `VIMEO_ACCESS_TOKEN` 設定後に `--dry-run` モードで `/videos/{id}/comments` エンドポイントへの到達確認
+
 ### [P1] 音声FB→Vimeoレビュー連携（T-039）
 - 音声フィードバック録音 → STT → Vimeoタイムコードにマッピング
-- 実運用フローの構築
+- 実運用フローの構築（Vimeo投稿部分はpost_vimeo_review_comments.pyで準備完了）
 
 ### [P1] Vimeoレビュータイムライン表示（T-040）
 - タイムライン上にFBポイントを可視化

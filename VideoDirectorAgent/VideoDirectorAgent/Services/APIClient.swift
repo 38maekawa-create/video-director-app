@@ -148,7 +148,7 @@ final class APIClient: ObservableObject {
         path: String,
         method: String
     ) async throws -> T {
-        let url = baseURL.appending(path: path)
+        let url = buildURL(base: baseURL, path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.timeoutInterval = 12
@@ -174,7 +174,7 @@ final class APIClient: ObservableObject {
         method: String,
         body: Body
     ) async throws -> T {
-        let url = baseURL.appending(path: path)
+        let url = buildURL(base: baseURL, path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.timeoutInterval = 12
@@ -194,6 +194,16 @@ final class APIClient: ObservableObject {
         }
 
         return try decoder.decode(T.self, from: data)
+    }
+
+    // クエリパラメータ付きパスを正しくURLに変換するヘルパー
+    // URL.appending(path:) はクエリ文字列の ? を %3F にエンコードしてしまうため
+    private func buildURL(base: URL, path: String) -> URL {
+        guard let url = URL(string: base.absoluteString + path) else {
+            // フォールバック: 従来の方式
+            return base.appending(path: path)
+        }
+        return url
     }
 }
 

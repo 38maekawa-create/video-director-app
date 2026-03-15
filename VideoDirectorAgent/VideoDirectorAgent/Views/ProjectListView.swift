@@ -159,6 +159,9 @@ struct ProjectListView: View {
         }
     }
 
+    // MARK: - カルーセルセクション内のヒーローにもButton対応
+    // （ヒーローは縦ScrollView内なのでonTapGestureで問題なし）
+
     // MARK: - 検索バー
     private var searchBar: some View {
         HStack(spacing: 10) {
@@ -195,11 +198,12 @@ struct ProjectListView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(projects) { project in
-                        projectCard(project)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                selectedProject = project
-                            }
+                        Button {
+                            selectedProject = project
+                        } label: {
+                            projectCard(project)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal, 16)

@@ -89,6 +89,21 @@ struct FeedbackHistoryView: View {
                         ProgressView()
                             .tint(AppTheme.accent)
                             .padding(.vertical, 24)
+                    } else if items.isEmpty && errorMessage == nil {
+                        // フィードバックがまだない場合の空状態UI
+                        VStack(spacing: 16) {
+                            Image(systemName: "bubble.left.and.bubble.right")
+                                .font(.system(size: 48))
+                                .foregroundStyle(AppTheme.textMuted)
+                            Text("フィードバック履歴がありません")
+                                .font(.headline)
+                                .foregroundStyle(AppTheme.textSecondary)
+                            Text("録音タブからフィードバックを録音すると\nここに履歴が表示されます")
+                                .font(.caption)
+                                .foregroundStyle(AppTheme.textMuted)
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(.vertical, 60)
                     }
                     ForEach(groupedItems, id: \.0) { date, items in
                         Section {

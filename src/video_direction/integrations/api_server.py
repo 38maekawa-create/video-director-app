@@ -683,6 +683,132 @@ def remove_tracking_video(video_id: str):
     raise HTTPException(404, "Tracked video not found")
 
 
+# --- フレーム評価 (C-1) ---
+
+def _get_frame_evaluator():
+    """フレーム評価モジュールの取得"""
+    try:
+        from src.video_direction.analyzer import frame_evaluator
+        return frame_evaluator
+    except ImportError:
+        return None
+
+
+class FrameEvaluationRequest(BaseModel):
+    """フレーム評価リクエスト"""
+    video_path: Optional[str] = None  # 動画ファイルパス（ローカル）
+    use_api: bool = False  # Claude Vision APIを使うか
+    timestamps: Optional[list[str]] = None  # 評価したいタイムスタンプ（省略時はハイライトから自動選定）
+
+
+@app.get("/api/v1/projects/{project_id}/frame-evaluation")
+def get_frame_evaluation(project_id: str):
+    """プロジェクトのフレーム評価結果を取得する（キャッシュ済み結果）
+
+    まだ評価が実行されていない場合は空の結果を返す。
+    """
+    evaluator = _get_frame_evaluator()
+    if not evaluator:
+        return {
+            "project_id": project_id,
+            "status": "unavailable",
+            "message": "フレーム評価モジュールが利用できません",
+            "evaluations": [],
+        }
+
+    # キャッシュされた評価結果を読み込む
+    cache_path = Path.home() / "AI開発10" / ".data" / "frame_evaluations" / f"{project_id}.json"
+    if cache_path.exists():
+        data = json.loads(cache_path.read_text())
+        return data
+
+    return {
+        "project_id": project_id,
+        "status": "not_evaluated",
+        "message": "フレーム評価がまだ実行されていません。POSTで評価を実行してください。",
+        "evaluations": [],
+    }
+
+
+@app.post("/api/v1/projects/{project_id}/frame-evaluation")
+def run_frame_evaluation(project_id: str, body: FrameEvaluationRequest = FrameEvaluationRequest()):
+    """プロジェクトのフレーム評価を実行する
+
+    動画ファイルパスが指定されていれば実映像ベースの評価を行い、
+    なければ文字起こしデータベースの推定評価を行う。
+    """
+    evaluator = _get_frame_evaluator()
+    if not evaluator:
+        raise HTTPException(500, "フレーム評価モジュールが利用できません")
+
+    # プロジェクト取得
+    conn = _get_db()
+    row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(404, "Project not found")
+
+    project_data = dict(row)
+
+    # AI開発5コネクタからVideoDataを構築（簡易版）
+    try:
+        from src.video_direction.integrations.ai_dev5_connector import VideoData, HighlightScene
+        # knowledgeフィールドからハイライト情報を復元
+        highlights = []
+        knowledge_json = project_data.get("knowledge")
+        if knowledge_json:
+            try:
+                knowledge = json.loads(knowledge_json) if isinstance(knowledge_json, str) else knowledge_json
+                for h in knowledge.get("highlights", []):
+                    highlights.append(HighlightScene(
+                        timestamp=h.get("timestamp", "00:00"),
+                        speaker=h.get("speaker", ""),
+                        text=h.get("text", ""),
+                        category=h.get("category", ""),
+                    ))
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        video_data = VideoData(
+            video_id=project_id,
+            title=project_data.get("title", ""),
+            speakers=project_data.get("guest_name", ""),
+            highlights=highlights,
+        )
+    except ImportError:
+        raise HTTPException(500, "AI開発5コネクタが利用できません")
+
+    # フレーム評価の実行
+    from dataclasses import asdict
+    result = evaluator.evaluate_frames(
+        video_data=video_data,
+        video_path=body.video_path,
+        use_api=body.use_api,
+    )
+    result_dict = asdict(result)
+
+    # 結果にメタデータを追加
+    response = {
+        "project_id": project_id,
+        "status": "completed",
+        "evaluated_at": datetime.now(timezone.utc).isoformat(),
+        "total_frames": result_dict.get("total_frames", 0),
+        "issue_count": result_dict.get("issue_count", 0),
+        "review_count": result_dict.get("review_count", 0),
+        "average_score": result_dict.get("average_score", 0.0),
+        "is_stub": result_dict.get("is_stub", True),
+        "evaluations": result_dict.get("evaluations", []),
+    }
+
+    # 結果をキャッシュに保存
+    cache_dir = Path.home() / "AI開発10" / ".data" / "frame_evaluations"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / f"{project_id}.json"
+    cache_path.write_text(json.dumps(response, ensure_ascii=False, indent=2))
+
+    return response
+
+
 # --- 映像学習インサイト (NEW-6/7) ---
 
 def _get_feedback_learner():

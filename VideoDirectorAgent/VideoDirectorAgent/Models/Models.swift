@@ -773,6 +773,91 @@ struct TrackingInsight: Identifiable, Codable {
     let createdAt: String
 }
 
+// MARK: - フレーム評価モデル
+
+struct FrameEvaluationResponse: Codable {
+    let projectId: String
+    let status: String
+    let evaluatedAt: String?
+    let totalFrames: Int?
+    let issueCount: Int?
+    let reviewCount: Int?
+    let averageScore: Double?
+    let isStub: Bool?
+    let message: String?
+    let evaluations: [FrameEvaluationItem]?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        projectId = try container.decodeIfPresent(String.self, forKey: .projectId) ?? ""
+        status = try container.decodeIfPresent(String.self, forKey: .status) ?? "unknown"
+        evaluatedAt = try container.decodeIfPresent(String.self, forKey: .evaluatedAt)
+        totalFrames = try container.decodeIfPresent(Int.self, forKey: .totalFrames)
+        issueCount = try container.decodeIfPresent(Int.self, forKey: .issueCount)
+        reviewCount = try container.decodeIfPresent(Int.self, forKey: .reviewCount)
+        averageScore = try container.decodeIfPresent(Double.self, forKey: .averageScore)
+        isStub = try container.decodeIfPresent(Bool.self, forKey: .isStub)
+        message = try container.decodeIfPresent(String.self, forKey: .message)
+        evaluations = try container.decodeIfPresent([FrameEvaluationItem].self, forKey: .evaluations)
+    }
+}
+
+struct FrameEvaluationItem: Codable, Identifiable {
+    var id: String { frame?.timestamp ?? UUID().uuidString }
+    let frame: FrameInfoModel?
+    let consensusScore: Double?
+    let agreementLevel: String?
+    let findings: [FindingModel]?
+}
+
+struct FrameInfoModel: Codable {
+    let timestamp: String
+    let frameIndex: Int?
+    let sceneDescription: String?
+    let isStub: Bool?
+}
+
+struct FindingModel: Codable, Identifiable {
+    var id: String { "\(axis)-\(level)" }
+    let axis: String
+    let axisLabel: String
+    let level: String  // "issue" / "review"
+    let description: String
+    let suggestion: String?
+}
+
+// MARK: - 学習サマリーモデル
+
+struct LearningSummary: Codable {
+    let feedbackLearning: LearningDetail?
+    let videoLearning: LearningDetail?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        feedbackLearning = try container.decodeIfPresent(LearningDetail.self, forKey: .feedbackLearning)
+        videoLearning = try container.decodeIfPresent(LearningDetail.self, forKey: .videoLearning)
+    }
+}
+
+struct LearningDetail: Codable {
+    let totalPatterns: Int?
+    let totalRules: Int?
+    let activeRules: Int?
+    let highConfidencePatterns: Int?
+    let categoryDistribution: [String: Int]?
+    let totalSourceVideos: Int?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        totalPatterns = try container.decodeIfPresent(Int.self, forKey: .totalPatterns)
+        totalRules = try container.decodeIfPresent(Int.self, forKey: .totalRules)
+        activeRules = try container.decodeIfPresent(Int.self, forKey: .activeRules)
+        highConfidencePatterns = try container.decodeIfPresent(Int.self, forKey: .highConfidencePatterns)
+        categoryDistribution = try container.decodeIfPresent([String: Int].self, forKey: .categoryDistribution)
+        totalSourceVideos = try container.decodeIfPresent(Int.self, forKey: .totalSourceVideos)
+    }
+}
+
 struct AuditReport: Codable, Identifiable {
     var id: String { runAt }
     let runAt: String

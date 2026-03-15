@@ -17,6 +17,7 @@ from .income_evaluator import IncomeEvaluation
 
 if TYPE_CHECKING:
     from ..tracker.feedback_learner import FeedbackLearner, LearningRule
+    from ..tracker.video_learner import VideoLearner, VideoLearningRule
 
 
 @dataclass
@@ -42,6 +43,7 @@ def generate_directions(
     classification: ClassificationResult,
     income_eval: IncomeEvaluation,
     feedback_learner=None,
+    video_learner=None,
 ) -> DirectionTimeline:
     """ルールベースで演出ディレクションを生成する
 
@@ -50,6 +52,7 @@ def generate_directions(
         classification: ゲスト分類結果
         income_eval: 年収演出判断結果
         feedback_learner: FeedbackLearnerインスタンス（FB学習ルール反映用、Noneなら無視）
+        video_learner: VideoLearnerインスタンス（映像トラッキング学習ルール反映用、Noneなら無視）
     """
     entries = []
 
@@ -67,13 +70,24 @@ def generate_directions(
         )
         entries.extend(fb_entries)
 
+    # 映像トラッキング学習ルールの適用（FBと同じ仕組み）
+    if video_learner is not None:
+        vl_entries, vl_applied = _apply_learned_rules(
+            video_data, classification, income_eval, video_learner
+        )
+        entries.extend(vl_entries)
+        applied_rules.extend(vl_applied)
+
     # タイムスタンプ順にソート
     entries.sort(key=lambda e: _timestamp_to_seconds(e.timestamp))
 
-    # LLM分析を試行（APIキーがなければスキップ。FB学習ルールもプロンプトに注入）
+    # LLM分析を試行（APIキーがなければスキップ。FB学習ルール+映像学習ルールをプロンプトに注入）
     llm_analysis = ""
     try:
-        llm_analysis = _llm_analyze(video_data, classification, income_eval, feedback_learner=feedback_learner)
+        llm_analysis = _llm_analyze(
+            video_data, classification, income_eval,
+            feedback_learner=feedback_learner, video_learner=video_learner,
+        )
     except Exception:
         pass
 
@@ -325,8 +339,9 @@ def _llm_analyze(
     classification: ClassificationResult,
     income_eval: IncomeEvaluation,
     feedback_learner=None,
+    video_learner=None,
 ) -> str:
-    """LLM（Claude Sonnet）による追加分析。FB学習ルールがあればプロンプトに注入する"""
+    """LLM（Claude Sonnet）による追加分析。FB学習ルール+映像学習ルールがあればプロンプトに注入する"""
     # APIキー読み込み
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
@@ -359,6 +374,16 @@ def _llm_analyze(
         except Exception:
             pass
 
+    # 映像トラッキング学習インサイトもLLMプロンプトに注入
+    video_insights_text = ""
+    if video_learner is not None:
+        try:
+            insights = video_learner.get_insights_for_direction()
+            if insights:
+                video_insights_text = "\n\n外部映像トラッキングから学習した演出パターン（参考にすること）:\n" + "\n".join(f"- {i}" for i in insights[:10])
+        except Exception:
+            pass
+
     prompt = f"""以下はTEKO対談インタビュー動画のハイライトシーンです。
 動画編集者向けに、追加の演出ディレクション提案を3〜5個生成してください。
 
@@ -368,7 +393,7 @@ def _llm_analyze(
 - タイトル: {video_data.title}
 
 ハイライトシーン:
-{highlights_text}{learned_rules_text}
+{highlights_text}{learned_rules_text}{video_insights_text}
 
 以下のフォーマットで、具体的なタイムスタンプと演出指示を出してください:
 [MM:SS] 演出タイプ（テロップ/画角/色変え）: 具体的な指示内容
@@ -387,41 +412,69 @@ def _llm_analyze(
     return response.content[0].text
 
 
-def get_learning_context(feedback_learner: "FeedbackLearner" = None) -> dict:
-    """FB学習ルールのコンテキストを取得する
+def get_learning_context(feedback_learner: "FeedbackLearner" = None, video_learner: "VideoLearner" = None) -> dict:
+    """FB学習ルール+映像学習ルールのコンテキストを取得する
 
     ディレクション生成の前に学習状況を確認したり、
     APIレスポンスで学習ルールの適用状況を返すために使用する。
 
     Args:
         feedback_learner: FeedbackLearnerインスタンス（Noneなら空を返す）
+        video_learner: VideoLearnerインスタンス（Noneなら映像学習部分は空）
 
     Returns:
         dict: {
-            "active_rules": [...],  # 有効なルール一覧
+            "active_rules": [...],  # 有効なルール一覧（FB+映像統合）
             "insights": {...},      # 学習状況サマリー
             "has_rules": bool,      # ルールがあるかどうか
+            "video_learning": {...},  # 映像学習状況
         }
     """
-    if feedback_learner is None:
-        return {"active_rules": [], "insights": {}, "has_rules": False}
+    all_rules = []
+    insights = {}
+    video_learning = {}
 
-    try:
-        active_rules = feedback_learner.get_active_rules()
-        insights = feedback_learner.get_insights()
-        return {
-            "active_rules": [
+    # FB学習ルール
+    if feedback_learner is not None:
+        try:
+            fb_rules = feedback_learner.get_active_rules()
+            insights = feedback_learner.get_insights()
+            all_rules.extend([
                 {
                     "id": r.id,
                     "rule_text": r.rule_text,
                     "category": r.category,
                     "priority": r.priority,
                     "applied_count": r.applied_count,
+                    "source": "feedback",
                 }
-                for r in active_rules
-            ],
-            "insights": insights,
-            "has_rules": len(active_rules) > 0,
-        }
-    except Exception:
-        return {"active_rules": [], "insights": {}, "has_rules": False}
+                for r in fb_rules
+            ])
+        except Exception:
+            pass
+
+    # 映像トラッキング学習ルール
+    if video_learner is not None:
+        try:
+            vl_rules = video_learner.get_active_rules()
+            video_learning = video_learner.get_insights()
+            all_rules.extend([
+                {
+                    "id": r.id,
+                    "rule_text": r.rule_text,
+                    "category": r.category,
+                    "priority": r.priority,
+                    "applied_count": r.applied_count,
+                    "source": "video_tracking",
+                }
+                for r in vl_rules
+            ])
+        except Exception:
+            pass
+
+    return {
+        "active_rules": all_rules,
+        "insights": insights,
+        "has_rules": len(all_rules) > 0,
+        "video_learning": video_learning,
+    }

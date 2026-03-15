@@ -62,39 +62,172 @@ struct VideoTrackingView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
+            // 学習状況サマリーセクション
+            if let summary = viewModel.learningSummary {
+                learningSummarySection(summary)
+            }
+
             VStack(alignment: .leading, spacing: 12) {
                 Text("学習済みインサイト")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
+                    .font(AppTheme.sectionFont(15))
                     .foregroundStyle(.white)
 
-                ForEach(viewModel.insights) { insight in
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Text(insight.category)
+                if viewModel.insights.isEmpty {
+                    Text("学習済みインサイトはまだありません")
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.textMuted)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                } else {
+                    ForEach(viewModel.insights) { insight in
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                Text(insight.category)
+                                    .font(.caption)
+                                    .foregroundStyle(AppTheme.accent)
+                                Spacer()
+                                Text("信頼度 \(Int(insight.confidence * 100))%")
+                                    .font(.caption2)
+                                    .foregroundStyle(AppTheme.textMuted)
+                            }
+                            Text(insight.pattern)
                                 .font(.caption)
-                                .foregroundStyle(AppTheme.accent)
-                            Spacer()
-                            Text("信頼度 \(Int(insight.confidence * 100))%")
+                                .foregroundStyle(AppTheme.textSecondary)
+                            Text("参照映像 \(insight.sourceCount)件")
                                 .font(.caption2)
                                 .foregroundStyle(AppTheme.textMuted)
                         }
-                        Text(insight.pattern)
-                            .font(.caption)
-                            .foregroundStyle(AppTheme.textSecondary)
-                        Text("参照映像 \(insight.sourceCount)件")
-                            .font(.caption2)
-                            .foregroundStyle(AppTheme.textMuted)
+                        .padding(12)
+                        .background(AppTheme.cardBackgroundLight)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
-                    .padding(12)
-                    .background(AppTheme.cardBackgroundLight)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
             }
             .padding(16)
             .background(AppTheme.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
+    }
+
+    // 学習状況サマリーカード
+    private func learningSummarySection(_ summary: LearningSummary) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("学習状況")
+                .font(AppTheme.sectionFont(15))
+                .foregroundStyle(.white)
+
+            HStack(spacing: 16) {
+                // FB学習
+                summaryStatCard(
+                    title: "FB学習",
+                    icon: "text.bubble.fill",
+                    patterns: summary.feedbackLearning?.totalPatterns ?? 0,
+                    rules: summary.feedbackLearning?.activeRules ?? 0
+                )
+                // 映像学習
+                summaryStatCard(
+                    title: "映像学習",
+                    icon: "film.fill",
+                    patterns: summary.videoLearning?.totalPatterns ?? 0,
+                    rules: summary.videoLearning?.activeRules ?? 0,
+                    videos: summary.videoLearning?.totalSourceVideos
+                )
+            }
+
+            // カテゴリ分布（映像学習の場合）
+            if let dist = summary.videoLearning?.categoryDistribution, !dist.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("カテゴリ分布")
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.textMuted)
+                    FlowLayout(spacing: 6) {
+                        ForEach(dist.sorted(by: { $0.value > $1.value }), id: \.key) { key, value in
+                            Text("\(categoryLabel(key)) \(value)")
+                                .font(.caption2)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(categoryColor(key))
+                                .clipShape(Capsule())
+                        }
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func summaryStatCard(title: String, icon: String, patterns: Int, rules: Int, videos: Int? = nil) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.caption)
+                    .foregroundStyle(AppTheme.accent)
+                Text(title)
+                    .font(AppTheme.labelFont(12))
+                    .foregroundStyle(.white)
+            }
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(patterns)")
+                        .font(AppTheme.heroFont(20))
+                        .foregroundStyle(.white)
+                    Text("パターン")
+                        .font(.caption2)
+                        .foregroundStyle(AppTheme.textMuted)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(rules)")
+                        .font(AppTheme.heroFont(20))
+                        .foregroundStyle(AppTheme.statusComplete)
+                    Text("ルール")
+                        .font(.caption2)
+                        .foregroundStyle(AppTheme.textMuted)
+                }
+                if let videos = videos {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(videos)")
+                            .font(AppTheme.heroFont(20))
+                            .foregroundStyle(Color(hex: 0x4A90D9))
+                        Text("映像")
+                            .font(.caption2)
+                            .foregroundStyle(AppTheme.textMuted)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(AppTheme.cardBackgroundLight)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    private func categoryLabel(_ key: String) -> String {
+        let labels: [String: String] = [
+            "cutting": "カット",
+            "color": "色彩",
+            "tempo": "テンポ",
+            "technique": "テクニック",
+            "composition": "構図",
+            "telop": "テロップ",
+            "bgm": "BGM",
+            "camera": "カメラ",
+            "general": "全般",
+        ]
+        return labels[key] ?? key
+    }
+
+    private func categoryColor(_ key: String) -> Color {
+        let colors: [String: Color] = [
+            "cutting": Color(hex: 0xE50914),
+            "color": Color(hex: 0xF5A623),
+            "tempo": Color(hex: 0x4A90D9),
+            "technique": AppTheme.statusComplete,
+            "composition": Color(hex: 0x9B59B6),
+        ]
+        return colors[key] ?? AppTheme.textMuted
     }
 
     private func detailRow(_ title: String, value: String) -> some View {

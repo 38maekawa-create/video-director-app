@@ -92,6 +92,18 @@ final class APIClient: ObservableObject {
         try await request([TrackingInsight].self, path: "/api/tracking/insights")
     }
 
+    func fetchFrameEvaluation(projectId: String) async throws -> FrameEvaluationResponse {
+        try await request(FrameEvaluationResponse.self, path: "/api/v1/projects/\(projectId)/frame-evaluation")
+    }
+
+    func runFrameEvaluation(projectId: String) async throws -> FrameEvaluationResponse {
+        try await request(FrameEvaluationResponse.self, path: "/api/v1/projects/\(projectId)/frame-evaluation", method: "POST")
+    }
+
+    func fetchLearningSummary() async throws -> LearningSummary {
+        try await request(LearningSummary.self, path: "/api/learning/summary")
+    }
+
     func fetchLatestAudit() async throws -> AuditReport {
         try await request(AuditReport.self, path: "/api/audit/latest")
     }

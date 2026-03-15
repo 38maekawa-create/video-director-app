@@ -4,6 +4,7 @@ import Foundation
 final class VideoTrackingViewModel: ObservableObject {
     @Published var videos: [TrackedVideo] = []
     @Published var insights: [TrackingInsight] = []
+    @Published var learningSummary: LearningSummary?
     @Published var isLoading = false
     @Published var errorMessage: String?
 
@@ -27,6 +28,12 @@ final class VideoTrackingViewModel: ObservableObject {
             insights = try await APIClient.shared.fetchTrackingInsights()
         } catch {
             if insights.isEmpty { errors.append("インサイト") }
+        }
+
+        do {
+            learningSummary = try await APIClient.shared.fetchLearningSummary()
+        } catch {
+            // 学習サマリーの取得失敗は致命的でないためスキップ
         }
 
         if errors.isEmpty {

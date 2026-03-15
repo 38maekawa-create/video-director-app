@@ -21,6 +21,23 @@ class VideoPattern:
     updated_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
 
+@dataclass
+class VideoLearningRule:
+    """FeedbackLearner.LearningRuleと互換のルール構造体
+
+    direction_generatorが _apply_learned_rules() で使用する
+    rule_text, category, priority, applied_count, id を持つ。
+    """
+    id: str
+    rule_text: str
+    category: str  # "cutting" / "color" / "tempo" / "composition" / "technique"
+    source_pattern_ids: list = field(default_factory=list)
+    priority: str = "medium"  # high / medium / low
+    applied_count: int = 0
+    is_active: bool = True
+    created_at: str = field(default_factory=lambda: datetime.now().isoformat())
+
+
 class VideoLearner:
     """トラッキング映像の分析結果からパターンを学習"""
 
@@ -165,6 +182,47 @@ class VideoLearner:
                     f"（確信度: {pattern.confidence:.0%}、{pattern.source_count}件から導出）"
                 )
         return insights
+
+    def get_active_rules(self, category: str = None) -> list["VideoLearningRule"]:
+        """direction_generator互換: 有効なルール一覧を返す
+
+        FeedbackLearner.get_active_rules() と同じインターフェースで、
+        direction_generatorに接続できるようにする。
+        確信度0.4以上のアクティブなパターンをルール形式で返す。
+        """
+        rules = []
+        for pattern in self.get_patterns(min_confidence=0.4):
+            if pattern.is_active:
+                priority = "high" if pattern.confidence >= 0.8 else (
+                    "medium" if pattern.confidence >= 0.6 else "low"
+                )
+                rule = VideoLearningRule(
+                    id=f"vr_{pattern.id}",
+                    rule_text=pattern.pattern,
+                    category=pattern.category,
+                    source_pattern_ids=[pattern.id],
+                    priority=priority,
+                    applied_count=0,
+                    is_active=True,
+                    created_at=pattern.created_at,
+                )
+                if category is None or rule.category == category:
+                    rules.append(rule)
+        return sorted(rules, key=lambda r: r.priority == "high", reverse=True)
+
+    def get_insights(self) -> dict:
+        """FeedbackLearner.get_insights()と統一されたフォーマットで学習状況を返す"""
+        category_counts = Counter(p.category for p in self._patterns.values())
+        return {
+            "total_patterns": len(self._patterns),
+            "total_rules": len(self.get_active_rules()),
+            "active_rules": len(self.get_active_rules()),
+            "high_confidence_patterns": len(
+                [p for p in self._patterns.values() if p.confidence >= 0.6]
+            ),
+            "category_distribution": dict(category_counts),
+            "top_categories": category_counts.most_common(3),
+        }
 
     def get_summary(self) -> dict:
         """学習状況サマリー"""

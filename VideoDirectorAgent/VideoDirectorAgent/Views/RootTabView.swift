@@ -39,18 +39,14 @@ struct RootTabView: View {
             Group {
                 switch selectedTab {
                 case .home:
-                    NavigationStack {
-                        ProjectListView(viewModel: projectListVM)
-                    }
+                    ProjectListView(viewModel: projectListVM)
                 case .report:
                     NavigationStack {
                         ReportListView(viewModel: projectListVM)
                     }
                 case .record:
                     // 録音タブ選択時はモーダルを表示（homeをバックに表示）
-                    NavigationStack {
-                        ProjectListView(viewModel: projectListVM)
-                    }
+                    ProjectListView(viewModel: projectListVM)
                 case .history:
                     NavigationStack {
                         FeedbackHistoryView(viewModel: feedbackHistoryVM)

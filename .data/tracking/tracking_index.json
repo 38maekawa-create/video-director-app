@@ -22,14 +22,29 @@
       "channel_name": "PIVOT 公式チャンネル",
       "thumbnail_url": "https://i.ytimg.com/vi/FY1ozxiOoyY/maxresdefault.jpg",
       "duration_seconds": 2000,
-      "analysis_status": "pending",
-      "analysis_result": null,
+      "analysis_status": "completed",
+      "analysis_result": {
+        "video_id": "https://www.youtube.com/watch?v=FY1ozxiOoyY",
+        "overall_score": 0.0,
+        "composition": "",
+        "tempo": "",
+        "cutting_style": "",
+        "color_grading": "",
+        "audio_balance": "",
+        "key_techniques": [
+          "ロング動画（10分以上）",
+          "タグ: 山本由伸, 菊池雄星, 野球, baseball, WBC"
+        ],
+        "summary": "",
+        "frame_count": 0,
+        "avg_scene_duration": 0.0
+      },
       "tags": [
         "PIVOT",
         "参考"
       ],
       "created_at": "2026-03-16T02:10:37.393476",
-      "updated_at": "2026-03-16T02:10:37.393513"
+      "updated_at": "2026-03-16T02:13:04.964007"
     },
     {
       "id": "r0jicguWKTE",
@@ -38,14 +53,28 @@
       "channel_name": "PIVOT 公式チャンネル",
       "thumbnail_url": "https://i.ytimg.com/vi_webp/r0jicguWKTE/maxresdefault.webp",
       "duration_seconds": 2397,
-      "analysis_status": "pending",
-      "analysis_result": null,
+      "analysis_status": "completed",
+      "analysis_result": {
+        "video_id": "https://www.youtube.com/watch?v=r0jicguWKTE",
+        "overall_score": 0.0,
+        "composition": "",
+        "tempo": "",
+        "cutting_style": "",
+        "color_grading": "",
+        "audio_balance": "",
+        "key_techniques": [
+          "ロング動画（10分以上）"
+        ],
+        "summary": "",
+        "frame_count": 0,
+        "avg_scene_duration": 0.0
+      },
       "tags": [
         "PIVOT",
         "参考"
       ],
       "created_at": "2026-03-16T02:10:45.743220",
-      "updated_at": "2026-03-16T02:10:45.743258"
+      "updated_at": "2026-03-16T02:13:25.596796"
     },
     {
       "id": "WctEltSFf0M",
@@ -54,14 +83,28 @@
       "channel_name": "PIVOT 公式チャンネル",
       "thumbnail_url": "https://i.ytimg.com/vi_webp/WctEltSFf0M/maxresdefault.webp",
       "duration_seconds": 2953,
-      "analysis_status": "pending",
-      "analysis_result": null,
+      "analysis_status": "completed",
+      "analysis_result": {
+        "video_id": "https://www.youtube.com/watch?v=WctEltSFf0M",
+        "overall_score": 0.0,
+        "composition": "",
+        "tempo": "",
+        "cutting_style": "",
+        "color_grading": "",
+        "audio_balance": "",
+        "key_techniques": [
+          "ロング動画（10分以上）"
+        ],
+        "summary": "",
+        "frame_count": 0,
+        "avg_scene_duration": 0.0
+      },
       "tags": [
         "PIVOT",
         "参考"
       ],
       "created_at": "2026-03-16T02:10:54.351292",
-      "updated_at": "2026-03-16T02:10:54.351310"
+      "updated_at": "2026-03-16T02:13:28.923525"
     },
     {
       "id": "4oYsoLHXP9g",
@@ -70,14 +113,29 @@
       "channel_name": "PIVOT 公式チャンネル",
       "thumbnail_url": "https://i.ytimg.com/vi/4oYsoLHXP9g/maxresdefault.jpg",
       "duration_seconds": 2084,
-      "analysis_status": "pending",
-      "analysis_result": null,
+      "analysis_status": "completed",
+      "analysis_result": {
+        "video_id": "https://www.youtube.com/watch?v=4oYsoLHXP9g",
+        "overall_score": 0.0,
+        "composition": "",
+        "tempo": "",
+        "cutting_style": "",
+        "color_grading": "",
+        "audio_balance": "",
+        "key_techniques": [
+          "ロング動画（10分以上）",
+          "タグ: baseball highlights, sports, sports highlights, wbc, wbc 2026"
+        ],
+        "summary": "",
+        "frame_count": 0,
+        "avg_scene_duration": 0.0
+      },
       "tags": [
         "PIVOT",
         "参考"
       ],
       "created_at": "2026-03-16T02:11:04.141062",
-      "updated_at": "2026-03-16T02:11:04.141125"
+      "updated_at": "2026-03-16T02:13:31.562857"
     },
     {
       "id": "6MlMoGB1cHo",
@@ -86,15 +144,185 @@
       "channel_name": "PIVOT 公式チャンネル",
       "thumbnail_url": "https://i.ytimg.com/vi/6MlMoGB1cHo/maxresdefault.jpg",
       "duration_seconds": 1971,
-      "analysis_status": "pending",
-      "analysis_result": null,
+      "analysis_status": "completed",
+      "analysis_result": {
+        "video_id": "https://www.youtube.com/watch?v=6MlMoGB1cHo",
+        "overall_score": 0.0,
+        "composition": "",
+        "tempo": "",
+        "cutting_style": "",
+        "color_grading": "",
+        "audio_balance": "",
+        "key_techniques": [
+          "ロング動画（10分以上）",
+          "タグ: エミン・ユルマズ, PIVOT, pivot, ピボット, トランプ"
+        ],
+        "summary": "",
+        "frame_count": 0,
+        "avg_scene_duration": 0.0
+      },
       "tags": [
         "PIVOT",
         "参考"
       ],
       "created_at": "2026-03-16T02:11:08.727036",
-      "updated_at": "2026-03-16T02:11:08.727059"
+      "updated_at": "2026-03-16T02:13:33.846588"
+    },
+    {
+      "id": "xEuP2QqOoEY",
+      "url": "https://www.youtube.com/watch?v=xEuP2QqOoEY",
+      "title": "【就活100社落ちる】スーパー店員→うつ病→選挙芸人「山本期日前」の人生に須田慎一郎が迫る",
+      "channel_name": "楽待 RAKUMACHI",
+      "thumbnail_url": "https://i.ytimg.com/vi/xEuP2QqOoEY/maxresdefault.jpg",
+      "duration_seconds": 3682,
+      "analysis_status": "completed",
+      "analysis_result": {
+        "video_id": "https://www.youtube.com/watch?v=xEuP2QqOoEY",
+        "overall_score": 0.0,
+        "composition": "",
+        "tempo": "",
+        "cutting_style": "",
+        "color_grading": "",
+        "audio_balance": "",
+        "key_techniques": [
+          "ロング動画（10分以上）",
+          "タグ: 不動産投資, 投資, 楽待, 大家, 失敗"
+        ],
+        "summary": "",
+        "frame_count": 0,
+        "avg_scene_duration": 0.0
+      },
+      "tags": [
+        "楽街",
+        "参考"
+      ],
+      "created_at": "2026-03-16T02:11:32.093348",
+      "updated_at": "2026-03-16T02:13:37.734688"
+    },
+    {
+      "id": "UTyzo9FI1fs",
+      "url": "https://www.youtube.com/watch?v=UTyzo9FI1fs",
+      "title": "【DIE WITH ZEROはバカ】年収の4倍貯金する「442の法則」／貯金100万円なら投資するな／引退後も「1億プレーヤー」の里崎智也がタワマンを捨てた理由",
+      "channel_name": "楽待 RAKUMACHI",
+      "thumbnail_url": "https://i.ytimg.com/vi_webp/UTyzo9FI1fs/maxresdefault.webp",
+      "duration_seconds": 2227,
+      "analysis_status": "completed",
+      "analysis_result": {
+        "video_id": "https://www.youtube.com/watch?v=UTyzo9FI1fs",
+        "overall_score": 0.0,
+        "composition": "",
+        "tempo": "",
+        "cutting_style": "",
+        "color_grading": "",
+        "audio_balance": "",
+        "key_techniques": [
+          "ロング動画（10分以上）",
+          "タグ: 不動産投資, 投資, 楽待, 大家, 失敗"
+        ],
+        "summary": "",
+        "frame_count": 0,
+        "avg_scene_duration": 0.0
+      },
+      "tags": [
+        "楽街",
+        "参考"
+      ],
+      "created_at": "2026-03-16T02:11:34.826159",
+      "updated_at": "2026-03-16T02:13:41.476641"
+    },
+    {
+      "id": "NWa3BHEejhg",
+      "url": "https://www.youtube.com/watch?v=NWa3BHEejhg",
+      "title": "【口だけ積極財政!?】元日銀理事が斬る高市財政／5兆円減税なら赤字国債発行か／対米投資5500億円で日本が有利に？／トランプ関税「違憲」判決の影響《元日銀理事・門間一夫／前編》",
+      "channel_name": "楽待 RAKUMACHI",
+      "thumbnail_url": "https://i.ytimg.com/vi_webp/NWa3BHEejhg/maxresdefault.webp",
+      "duration_seconds": 2057,
+      "analysis_status": "completed",
+      "analysis_result": {
+        "video_id": "https://www.youtube.com/watch?v=NWa3BHEejhg",
+        "overall_score": 0.0,
+        "composition": "",
+        "tempo": "",
+        "cutting_style": "",
+        "color_grading": "",
+        "audio_balance": "",
+        "key_techniques": [
+          "ロング動画（10分以上）",
+          "タグ: 不動産投資, 投資, 楽待, 大家, 失敗"
+        ],
+        "summary": "",
+        "frame_count": 0,
+        "avg_scene_duration": 0.0
+      },
+      "tags": [
+        "楽街",
+        "参考"
+      ],
+      "created_at": "2026-03-16T02:11:37.495856",
+      "updated_at": "2026-03-16T02:13:44.596777"
+    },
+    {
+      "id": "MwR_PNBPrNY",
+      "url": "https://www.youtube.com/watch?v=MwR_PNBPrNY",
+      "title": "【地方高利回り投資】このまま続けていいのか？ 投資歴23年大家の人生相談",
+      "channel_name": "楽待 RAKUMACHI",
+      "thumbnail_url": "https://i.ytimg.com/vi/MwR_PNBPrNY/maxresdefault.jpg",
+      "duration_seconds": 681,
+      "analysis_status": "completed",
+      "analysis_result": {
+        "video_id": "https://www.youtube.com/watch?v=MwR_PNBPrNY",
+        "overall_score": 0.0,
+        "composition": "",
+        "tempo": "",
+        "cutting_style": "",
+        "color_grading": "",
+        "audio_balance": "",
+        "key_techniques": [
+          "ロング動画（10分以上）",
+          "タグ: 不動産投資, 投資, 楽待, 大家, 失敗"
+        ],
+        "summary": "",
+        "frame_count": 0,
+        "avg_scene_duration": 0.0
+      },
+      "tags": [
+        "楽街",
+        "参考"
+      ],
+      "created_at": "2026-03-16T02:11:40.977403",
+      "updated_at": "2026-03-16T02:13:47.797070"
+    },
+    {
+      "id": "MM8jFd198gU",
+      "url": "https://www.youtube.com/watch?v=MM8jFd198gU",
+      "title": "【株価下落の前触れか】米雇用統計が示す景気後退のサイン／イラン情勢が最後の引き金／「プライベートクレジット」何が問題か／カネ余り終了？／決算短信で見えないリスク／岡崎良介×佐田志歩【ザキオカに聞け！】",
+      "channel_name": "楽待 RAKUMACHI",
+      "thumbnail_url": "https://i.ytimg.com/vi/MM8jFd198gU/maxresdefault.jpg",
+      "duration_seconds": 2972,
+      "analysis_status": "completed",
+      "analysis_result": {
+        "video_id": "https://www.youtube.com/watch?v=MM8jFd198gU",
+        "overall_score": 0.0,
+        "composition": "",
+        "tempo": "",
+        "cutting_style": "",
+        "color_grading": "",
+        "audio_balance": "",
+        "key_techniques": [
+          "ロング動画（10分以上）",
+          "タグ: 不動産投資, 投資, 楽待, 大家, 失敗"
+        ],
+        "summary": "",
+        "frame_count": 0,
+        "avg_scene_duration": 0.0
+      },
+      "tags": [
+        "楽街",
+        "参考"
+      ],
+      "created_at": "2026-03-16T02:11:43.787056",
+      "updated_at": "2026-03-16T02:13:50.581542"
     }
   ],
-  "updated_at": "2026-03-16T02:11:08.727451"
+  "updated_at": "2026-03-16T02:13:50.581923"
 }

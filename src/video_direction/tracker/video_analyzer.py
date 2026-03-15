@@ -180,8 +180,12 @@ class VideoAnalyzer:
     ) -> VideoAnalysisResult:
         """YouTube メタデータから分析"""
         try:
+            yt_dlp_cmd = "yt-dlp"
+            yt_dlp_user_path = Path.home() / "Library" / "Python" / "3.9" / "bin" / "yt-dlp"
+            if yt_dlp_user_path.exists():
+                yt_dlp_cmd = str(yt_dlp_user_path)
             proc = subprocess.run(
-                ["yt-dlp", "--dump-json", "--no-download", url],
+                [yt_dlp_cmd, "--dump-json", "--no-download", url],
                 capture_output=True,
                 text=True,
                 timeout=30,

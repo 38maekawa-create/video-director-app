@@ -1269,3 +1269,11 @@ INFO:     Finished server process [88931]
 INFO:     Started server process [20253]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/tracker/video_analyzer.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [20253]
+INFO:     Started server process [21354]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

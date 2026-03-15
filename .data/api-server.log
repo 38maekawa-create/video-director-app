@@ -269,3 +269,9 @@ INFO:     127.0.0.1:62967 - "GET /api/projects HTTP/1.1" 500 Internal Server Err
 INFO:     127.0.0.1:62968 - "GET /api/projects HTTP/1.1" 500 Internal Server Error
 INFO:     127.0.0.1:62982 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.113.28.70:52036 - "GET /api/projects/p-20260101-%E3%82%B3%E3%83%86%E3%83%84/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.113.28.70:60675 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:60676 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:60677 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:60677 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     100.113.28.70:60676 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:49313 - "GET /api/projects/p-20260101-%E3%82%B3%E3%83%86%E3%83%84/youtube-assets HTTP/1.1" 200 OK

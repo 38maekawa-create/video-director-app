@@ -224,6 +224,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         sourceVideoURL = VideoProject.decodeNestedURL(from: container, key: .sourceVideoURL, fallbackKey: .sourceVideo)
         editedVideoURL = VideoProject.decodeNestedURL(from: container, key: .editedVideoURL, fallbackKey: .editedVideo)
         knowledge = VideoProject.decodeKnowledgeText(from: container)
+        category = try container.decodeIfPresent(String.self, forKey: .category)
 
         // APIはsnake_case（"review_pending"）を返すが、enumのrawValueはcamelCase（"reviewPending"）
         // decodeIfPresentは値が存在するがデコード失敗時にエラーを投げるため、

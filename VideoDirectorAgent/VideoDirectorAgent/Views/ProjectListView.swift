@@ -46,6 +46,34 @@ struct ProjectListView: View {
                             projects: viewModel.filteredProjects,
                             showSeeAll: true
                         )
+
+                        // カテゴリ別セクション
+                        if !viewModel.tekoMemberProjects.isEmpty {
+                            categorySection(
+                                title: "TEKOメンバー対談",
+                                icon: "person.2.fill",
+                                accentColor: Color(hex: 0x4A90D9),
+                                projects: viewModel.tekoMemberProjects
+                            )
+                        }
+
+                        if !viewModel.tekoRealestateProjects.isEmpty {
+                            categorySection(
+                                title: "TEKO不動産対談",
+                                icon: "building.2.fill",
+                                accentColor: Color(hex: 0xE5A023),
+                                projects: viewModel.tekoRealestateProjects
+                            )
+                        }
+
+                        if !viewModel.uncategorizedProjects.isEmpty {
+                            categorySection(
+                                title: "その他",
+                                icon: "questionmark.folder.fill",
+                                accentColor: AppTheme.textMuted,
+                                projects: viewModel.uncategorizedProjects
+                            )
+                        }
                     }
                     .padding(.bottom, 32)
                 }
@@ -228,6 +256,33 @@ struct ProjectListView: View {
                     showAllProjects = true
                 }
             }
+
+            ProjectCarouselScrollView(projects: projects) { project in
+                selectedProject = project
+            }
+            .frame(height: 170)
+        }
+    }
+
+    @ViewBuilder
+    private func categorySection(title: String, icon: String, accentColor: Color, projects: [VideoProject]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .foregroundStyle(accentColor)
+                Text(title)
+                    .font(AppTheme.sectionFont(17))
+                    .foregroundStyle(.white)
+                Text("\(projects.count)件")
+                    .font(.caption)
+                    .foregroundStyle(AppTheme.textMuted)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(AppTheme.cardBackground)
+                    .clipShape(Capsule())
+                Spacer()
+            }
+            .padding(.horizontal, 16)
 
             ProjectCarouselScrollView(projects: projects) { project in
                 selectedProject = project

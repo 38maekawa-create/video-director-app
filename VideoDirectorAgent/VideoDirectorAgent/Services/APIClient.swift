@@ -210,6 +210,24 @@ final class APIClient: ObservableObject {
         )
     }
 
+    // MARK: - カテゴリ
+
+    /// カテゴリ別プロジェクト一覧を取得
+    func fetchProjectsByCategory(_ category: String) async throws -> [VideoProject] {
+        try await request([VideoProject].self, path: "/api/v1/projects/by-category/\(category)")
+    }
+
+    /// プロジェクトのカテゴリを変更
+    func updateProjectCategory(projectId: String, category: String?) async throws {
+        let body = CategoryUpdateBody(category: category)
+        _ = try await request(
+            EmptyResponse.self,
+            path: "/api/v1/projects/\(projectId)/category",
+            method: "PUT",
+            body: body
+        )
+    }
+
     func convertFeedback(rawText: String, projectId: String) async throws -> FeedbackConvertResponse {
         let body = FeedbackConvertRequest(rawText: rawText, projectId: projectId)
         return try await request(FeedbackConvertResponse.self, path: "/api/feedback/convert", method: "POST", body: body)
@@ -378,4 +396,8 @@ private struct TitleSelectionPayload: Encodable {
     let index: Int
     let editedTitle: String?
     let by: String
+}
+
+struct CategoryUpdateBody: Encodable {
+    let category: String?
 }

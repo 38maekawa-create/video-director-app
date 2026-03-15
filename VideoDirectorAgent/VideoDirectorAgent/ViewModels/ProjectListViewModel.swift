@@ -48,6 +48,24 @@ final class ProjectListViewModel: ObservableObject {
         projects.filter { $0.hasUnsentFeedback }
     }
 
+    /// TEKOメンバー対談カテゴリのプロジェクト
+    var tekoMemberProjects: [VideoProject] {
+        let base = searchText.isEmpty ? projects : filteredProjects
+        return base.filter { $0.category == "teko_member" }
+    }
+
+    /// TEKO不動産対談カテゴリのプロジェクト
+    var tekoRealestateProjects: [VideoProject] {
+        let base = searchText.isEmpty ? projects : filteredProjects
+        return base.filter { $0.category == "teko_realestate" }
+    }
+
+    /// 未分類プロジェクト
+    var uncategorizedProjects: [VideoProject] {
+        let base = searchText.isEmpty ? projects : filteredProjects
+        return base.filter { $0.category == nil || $0.category?.isEmpty == true }
+    }
+
     var heroProject: VideoProject? {
         projects.first
     }

@@ -1,88 +1,144 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-15（webapp YouTube素材UI完成・524件全PASS）
+2026-03-15 20:25（TestFlight Build 8アップロード完了）
+<!-- authored: T1/副官A/バティ/2026-03-15 [なおとさんとの対話セッション中] -->
 
 ## 現在の作業状態
-**完了（webapp YouTube素材3機能UI追加済み）**
+**実用化進行中（TestFlight実機テスト Phase）**
 
-webapp/app.js・webapp/styles.css に YouTube素材3機能UIを追加。既存コードへの削除・変更なし（追加のみ）。Python 524テスト全PASS。
+iPhoneからAPIサーバー（100.110.206.6:8210）に接続して実データ29件を表示・操作できる状態。
+Build 5→8を連続デプロイし、各ビルドでバグ検出→修正→再ビルドのイテレーションを回している。
 
-### webapp YouTube素材UI追加内容（2026-03-15 最新）
-<!-- authored: T3/兵隊B/AI開発10/2026-03-15 [TASK指示書に基づく] -->
+---
 
-**変更ファイル:**
-- `webapp/app.js`: YouTube素材タブ追加 + 描画関数群追加
-- `webapp/styles.css`: YouTube素材UI用CSSクラス追加
+## TestFlight Build 履歴
 
-**追加した3機能:**
-1. **サムネ生成ディレクション（Z型4ゾーン指示書）**
-   - `renderYouTubeAssets()` が API `GET /api/projects/{id}/youtube-assets` からデータ取得
-   - `thumbnail_design` の4ゾーン（top_left/top_right/diagonal/bottom_right）をカードUIで表示
-   - 各ゾーンに色分け（①赤=左上フック、②青=右上人物、③黄=対角テーマ、④緑=右下CTA）
-   - APIオフライン時はプロジェクトデータからローカル生成（フォールバック）
+| Build | 内容 | 状態 |
+|-------|------|------|
+| 5 | 初回TestFlight配信成功 | ✅ |
+| 6 | isSent Bool/Intデコード修正 → 品質タブ復活 | ✅ |
+| 7 | ナビゲーション修正・レポートタブ分離・ATS修正 | ✅ |
+| 8 | ホームタップ修正（Button化）・履歴タブURL修正・空状態UI | ✅ アップロード完了 |
 
-2. **タイトル案（タップでコピー）**
-   - `title_proposals.candidates` を縦リスト表示（推薦案には「推薦」バッジ）
-   - タップで `navigator.clipboard.writeText()` → 古いブラウザは `execCommand` フォールバック
-   - コピー完了時に「✓ コピー完了！」表示（2秒後に元に戻る）
+## Build 8で修正した内容（2026-03-15 20:25）
 
-3. **概要欄テキスト**
-   - `description_edited` または `description_original` を `<pre>` でテキスト整形保持
-   - 右上の「コピー」ボタンでワンタップコピー
+### 1. ホーム画面のプロジェクトカードがタップに反応しない問題
+- **原因**: 横ScrollView内の`onTapGesture`がスクロールジェスチャと競合
+- **修正**: `onTapGesture` → `Button` + `.buttonStyle(.plain)` に変更
+- **ファイル**: `Views/ProjectListView.swift`
 
-**実装方針（既存コード無変更）:**
-- `renderReportTabs()` 内のtabs配列に `'YouTube素材'` を追記
-- click handlerに `else if (tabName === 'YouTube素材')` を追記
-- 新関数群は全てIIFEのクロージング直前に追記
+### 2. 履歴タブ「APIに接続できません」エラー
+- **原因**: `URL.appending(path:)` がクエリパラメータ `?limit=50` の `?` を `%3F` にエンコード
+- **修正**: `buildURL(base:path:)` ヘルパー追加。文字列結合でURL構築
+- **ファイル**: `Services/APIClient.swift`
+- **補足**: feedbacksテーブルは現在0件。空の場合は空状態UIを表示
 
-### テスト実行結果（2026-03-15 最新）
-- **総テスト件数: 524件 全PASS（所要時間: 約25秒）**
-- テストファイル数: 36ファイル（tests/内）
-- 備考: `test_api_phase3_4.py`・`test_feedback_learning_api.py` の2ファイルは `fastapi` パッケージが必要（python3.11環境にインストール済みで実行可能）
-- warnings: 2件（fastapiの `on_event` 非推奨警告、動作には影響なし）
+### 3. 履歴タブの空状態UI追加
+- フィードバック0件時に「フィードバック履歴がありません」を表示
+- **ファイル**: `Views/FeedbackHistoryView.swift`
 
-### 直近の作業（2026-03-15）
-- エッジケーステスト25件追加（499 → 524件）
-- 追加テストファイル: `tests/test_edge_cases.py`（25件）
-  - 空データ系（6件）: 空ハイライト/空プロファイル/空文字列/空FB/空URLなど
-  - 不正フォーマット系（8件）: 不正タイムスタンプ/不正JSON/存在しないファイル/特殊文字/極端に長いテキスト
-  - タイムアウト系（3件）: yt-dlpタイムアウト/コマンド未インストール/LLMタイムアウト
-  - 並行実行系（3件）: VideoTracker/FeedbackLearner/generate_directionsの並行呼び出し
-  - 境界値・その他（5件）: ハイライト1件/重複URL/存在しないID参照/カテゴリ自動推定
-- バグ修正: `_timestamp_to_seconds`（`"abc:def"` 形式でValueErrorが発生）→ try-except でガード
-- 全524件 PASS 確認
+---
 
-### 2件前の作業（2026-03-15）
-- テスト未カバーモジュール3件（video_tracker / video_learner / video_analyzer）を特定
-- ユニットテスト56件追加（443 → 499件）
-- 追加テストファイル: `tests/test_video_tracker.py`（20件）、`tests/test_video_learner.py`（22件）、`tests/test_video_analyzer.py`（14件）
-- 全499件 PASS 確認
+## DB修正完了（2026-03-15）
+
+### メンバー名・タイトル全件修正
+スプシ（動画コンテンツ分析DB「TEKO対談動画」タブ）の正式名を正として、DB全29件を照合・修正完了。
+
+**修正内容:**
+- 重複削除: 60件 → 29件
+- guest_name統一: MEMBER_MASTER.jsonのcanonical_name + さん付き
+- タイトル内の文字起こし誤変換修正:
+  - コスト氏 → kos、コテツ → コテ、メイジ → メンイチ、羽生氏 → ハオ
+  - ゲスト氏（里芋、トーマス） → さといも・トーマス
+  - pay → PAY、ryo → RYO（大文字統一）
+
+**タイトル一括置換で発生した副作用バグ（修正済み）:**
+- 「さといも・さといも・さといも・トーマスさん」（連鎖置換） → 正しく修正
+- 「RYOすけさん」（部分マッチ「りょう」→「RYO」） → 正しく修正
+- タイトル内「さん」消失（置換マップに「〇〇さん」→「〇〇」が含まれていた） → バックアップから復元
+
+**教訓（DB一括置換）:**
+- 短い文字列の部分マッチ置換は危険。長い文字列優先で置換するか、単語境界を意識する
+- 連鎖置換（AをBに置換した結果、Bの一部がさらに置換される）を防ぐため、1レコードずつ個別UPDATEが安全
+- 置換前に必ずバックアップ。`cp db db.bak_YYYYMMDD_HHMMSS`
+
+---
+
+## 18モデル3台体制の生産性評価（2026-03-15 なおとさん壁打ち）
+
+### ✅ 良かった点
+- Mac2（Web UI）とMac3（iOS）に同時タスク投入 → Mac2のWeb変更（+624行）は品質OK。2つの成果物が並列で出てきた
+- CLIビルド→TestFlightアップロードの完全自動化 → 人間の操作ゼロでBuild 5→6→7→8を連続デプロイ
+- バグ検出→修正→再ビルドのサイクルが速い — ATS問題発見→修正→ビルド→アップロードが数分
+
+### ❌ 課題（Mac3の暴走）
+- Mac3の兵隊が「既存コード削除禁止」ルールを無視して3,954行削除 → リバートが必要になった
+- 原因: タスク投入時にCLAUDE.mdのルールが既にセッション開始済みの兵隊に届いてなかった
+- 教訓: **ルールはCLAUDE.mdだけでなくタスク指示書に直接埋め込む必要がある**
+
+### 📊 実感値
+- 「1セッションで全部やる」よりは確実に速い
+- 品質管理（監査フェーズ）がまだ回ってないから、暴走検知が遅れた
+- 監査2名が機能し始めればスピード×品質の両立ができるはず
+
+---
+
+## 技術的な学び（オペレーション組み込み用）
+
+### iOS開発のハマりポイント（TestFlight配信時に判明）
+
+| # | 問題 | 原因 | 修正 | 今後のチェックリスト |
+|---|------|------|------|-------------------|
+| 1 | iPhoneからAPI接続不可 | ATS（App Transport Security）がHTTP通信をブロック | Info.plistに`NSAllowsArbitraryLoads=true` + IP例外追加 | 新しいIPアドレスへの接続時は必ずATS例外を確認 |
+| 2 | 品質・履歴タブエラー | `is_sent: 0`(Int)をBoolでデコード失敗 | Bool/Int両対応のフレキシブルデコーダー | APIレスポンスの型をSwift側で柔軟に受ける |
+| 3 | カルーセルタップ反応なし | 横ScrollView内のonTapGestureがスクロールと競合 | Button + .buttonStyle(.plain) に変更 | 横スクロール内のタップは常にButtonを使う |
+| 4 | クエリパラメータ付きAPIエラー | `URL.appending(path:)`が`?`を`%3F`にエンコード | 文字列結合でURL構築するヘルパー追加 | SwiftのURL APIはクエリパラメータに注意 |
+| 5 | レポートタブがホームと同じ | RootTabViewの.reportケースがProjectListViewを表示 | 専用ReportListView作成 | 新タブ追加時は必ずビューの割り当てを確認 |
+
+### xcodebuild CLI ビルド手順（自動化済み）
+```bash
+# 1. バージョンバンプ
+sed -i '' 's/CURRENT_PROJECT_VERSION = N;/CURRENT_PROJECT_VERSION = N+1;/g' *.xcodeproj/project.pbxproj
+
+# 2. Archive
+xcodebuild -project *.xcodeproj -scheme VideoDirectorAgent -sdk iphoneos \
+  -configuration Release -archivePath ./build/*.xcarchive archive \
+  DEVELOPMENT_TEAM=TT2DA7H5NJ CODE_SIGN_IDENTITY="Apple Development" \
+  -allowProvisioningUpdates
+
+# 3. Export & Upload
+xcodebuild -exportArchive -archivePath ./build/*.xcarchive \
+  -exportOptionsPlist ExportOptions.plist -exportPath ./build/export \
+  -allowProvisioningUpdates
+```
+
+### MEMBER_MASTER.json 運用ルール
+- `canonical_name`: 正式名（DB・UIで使用する名前）
+- `transcription_errors`: 文字起こし誤変換リスト（メイジ→メンイチ等）
+- `aliases`: 別名・旧名
+- `merged_from`: 統合元（重複削除時に記録）
+- **DB修正時は必ずMEMBER_MASTER.jsonのcanonical_nameを正とする**
+- **タイトル一括置換は個別UPDATE文で行う（REPLACE関数の連鎖置換を防ぐ）**
 
 ---
 
 ## 次にやるべき作業（優先順位付き）
 
-### [P0] TestFlight配布実行（Mac1（hime）で）
+### [P1] Build 8 動作確認
+- ホームのカルーセルタップ → 詳細画面に遷移するか
+- 履歴タブ → 「フィードバック履歴がありません」が表示されるか（エラーではなく）
+- レポートタブ → 引き続き縦リスト表示
 
-**前提条件（なおとさん操作）**:
-1. App-Specific Password 発行
-   - https://appleid.apple.com → セキュリティ → App-Specific Password
-   - Mac1（hime）で: `echo 'xxxx-xxxx-xxxx-xxxx' > ~/.config/maekawa/asc-password`
-2. Apple IDはXcodeに登録済み（`7010mae@gmail.com`）
-3. App Store Connect でアプリ未登録なら登録
-   - Bundle ID: `com.maekawa.VideoDirectorAgent` / 主言語: 日本語 / カテゴリ: ユーティリティ
+### [P2] YouTube素材3機能UI完成（iOS版）
+- タイトル案表示・コピー
+- サムネ指示書表示
+- 概要欄テキスト表示・コピー
 
-**スクリプト実行**:
-```bash
-cd ~/AI開発10
-./deploy-testflight.sh
-```
+### [P3] before/after差分UI
+- 修正前後のディレクション比較画面
 
-**完了後**:
-- App Store Connect → TestFlight → テスター追加（5〜15分待機後）
-
-### [P1] 映像品質学習の本線実装
+### [P4] 映像トラッキング+学習ループ
 - FB学習ループの運用データ投入
 - 評価ルール精度改善
 
@@ -92,84 +148,39 @@ cd ~/AI開発10
 
 | # | 問題 | 状態 |
 |---|------|------|
-| 1 | 実機ビルド: Provisioning Profile自動生成 | Apple IDはXcodeに登録済み（解消済み） |
-| 2 | launchd API起動: `curl http://localhost:8210/api/health` | 正常応答確認済み（PID:17171で稼働中・解消済み） |
-| 3 | 層cの該当者0件: 現データセット30件に自営業家系なし | 追加データで検証必要 |
-| 4 | スプシマッチング精度: 30件中15件マッチ（50%） | ゲスト名正規化実装済み、スプシ側未登録が主因 |
-| 5 | Python 3.9 EOL警告: google-auth, urllib3が警告出力 | 低優先度 |
+| 1 | YouTubeAssetsViewModel.swiftのbaseURLがlocalhost:8210ハードコード | 未修正（APIClient.sharedを使うべき） |
+| 2 | feedbacksテーブルが空（0件） | 正常。録音機能からFB投入後にデータが蓄積される |
+| 3 | xcodebuild署名: `CODE_SIGN_STYLE=Automatic`ではなく手動指定が必要 | TT2DA7H5NJ + "Apple Development" で解決済み |
+| 4 | 層cの該当者0件: 現データセット29件に自営業家系なし | 追加データで検証必要 |
 
 ---
 
 ## 完了済み作業アーカイブ
 
-### テストカバレッジ向上（2026-03-15）
-カバレッジが低い4モジュールに95件の新規ユニットテストを追加。402テスト全PASS。
+### webapp YouTube素材UI追加（2026-03-15）
+- YouTube素材タブ追加（サムネ指示書・タイトル案・概要欄）
+- テスト524件全PASS
 
-| テストファイル | 件数 | 対象モジュール |
-|-------------|------|-------------|
-| `tests/test_feedback_learner.py` | 31件 | `tracker/feedback_learner.py` |
-| `tests/test_sheets_manager_helpers.py` | 32件 | `integrations/sheets_manager.py` |
-| `tests/test_knowledge_loader.py` | 16件 | `knowledge/loader.py` |
-| `tests/test_direction_generator_extended.py` | 16件 | `analyzer/direction_generator.py` |
+### TestFlight初回配信〜Build 8（2026-03-15）
+- Build 5: 初回配信成功
+- Build 6: isSentデコード修正
+- Build 7: ATS修正・ナビゲーション修正・レポートタブ分離
+- Build 8: ホームタップ修正・履歴URL修正・空状態UI
 
-テスト数推移: 348 → **402件**
-
-### APIリファレンスドキュメント（2026-03-15）
-- `docs/API_REFERENCE.md` 新規作成
-- 全40エンドポイントを14カテゴリに整理
-
-### TestFlight配布準備（2026-03-15）
-- `deploy-testflight.sh` 作成（Archive→Export→ASC Upload 全工程自動化）
-- `VideoDirectorAgent/ExportOptions.plist` 作成
-- Bundle ID: `com.maekawa.VideoDirectorAgent` / Team ID: `TT2DA7H5NJ`
-- CFBundleVersion: ハードコード→ `$(CURRENT_PROJECT_VERSION)` に修正済み
-- **Xcodeは Mac1（hime）に導入済み。スクリプト実行は Mac1（hime）で行う**
+### DB クリーンアップ（2026-03-15）
+- 重複削除60→29件、メンバー名統一、タイトル誤字修正
 
 ### Phase 5 実用化チューニング（2026-03-14）
-- FBエラーハンドリング強化（`post_vimeo_review_comments.py`）
-- Mac側 relay adapter 実投稿運用化（ログ日付階層化・再送キュー）
-- 音声FB/STT外部保存拡張（feedbackOutbox + API自動flush）
-- API/Swift安定化（MockData参照除去・APIClient設定駆動化）
-- テスト数: 320 → 330 → 334件
+- FBエラーハンドリング強化
+- Mac側 relay adapter 実投稿運用化
+- 音声FB/STT外部保存拡張
+- API/Swift安定化
 
 ### Phase 3-4 全機能実装（2026-03-13）
-- Python側: 10新規ファイル実装（frame_evaluator, audio_evaluator, feedback_learner 他）
-- APIサーバー: 14エンドポイント追加（合計40+）
-- Swift側: 新画面5つ追加（EditorManagement, VideoTracking, NotificationSettings 他）
-- xcodebuild BUILD SUCCEEDED（エラー0件）
-- iPhone 17 Pro シミュレータで実データ表示確認済み
+- Python側10新規ファイル、14APIエンドポイント追加
+- Swift側新画面5つ追加
+- xcodebuild BUILD SUCCEEDED
 
-### ネイティブiOSアプリ化（2026-03-13）
-- FastAPI + SQLiteバックエンド（ポート8210）
-- 14 Swiftファイル（Models/Views/ViewModels/Services）
-- DB: 60プロジェクト・60 YouTube素材・1フィードバック
-- Info.plist: ATS例外・マイク/音声認識/ネットワーク権限設定済み
-
-### before/after統合カルテ + Webアプリ（2026-03-11）
-- Netflix風ダークUI（5画面）
-- PWA対応（manifest.json + service-worker.js）
-- localStorage永続化
-- relay server → send CLI → Vimeo API 往復確認済み
-- 動画ナレッジページ閲覧機能（28件中24名分マッチ）
-
-### YouTube素材3機能追加（2026-03-12）
-- Z型サムネイル指示書生成
-- タイトル考案（3〜5案）
-- 概要欄文章生成（few-shot: TEKOチャンネル最新10件）
-
-### Phase 2 全機能実装（2026-03-10）
-- 9機能実装（切り抜きカットポイント、ハイライトディレクション、品質スコアリング 他）
-- 250テスト全PASS
-
-### E2Eテスト・GitHub Pages公開（2026-03-10）
-- direction-pages リポジトリで32件のHTMLレポート公開
-- スプシ連携E2E（ディレクションURL列への書き込み成功）
-
-### Phase 1 コアエンジン実装（2026-03-09）
-- 9機能実装（ゲスト層分類・年収演出判断・固有名詞フィルター 他）
-- 50テスト全PASS、実データ30件エラー0件
-
-### 初期化・要件定義（2026-03-09〜10）
-- ワークスペース初期化
-- 40機能から28機能に取捨選択（なおとさん承認済み）
-- `docs/REQUIREMENTS.md` 作成
+### Phase 1-2 コアエンジン実装（2026-03-09〜10）
+- 28機能実装、250+テスト全PASS
+- E2Eテスト・GitHub Pages公開

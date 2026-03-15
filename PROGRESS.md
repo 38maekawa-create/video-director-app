@@ -1,14 +1,14 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-15 20:25（TestFlight Build 8アップロード完了）
+2026-03-15 20:57（TestFlight Build 10アップロード完了）
 <!-- authored: T1/副官A/バティ/2026-03-15 [なおとさんとの対話セッション中] -->
 
 ## 現在の作業状態
 **実用化進行中（TestFlight実機テスト Phase）**
 
 iPhoneからAPIサーバー（100.110.206.6:8210）に接続して実データ29件を表示・操作できる状態。
-Build 5→8を連続デプロイし、各ビルドでバグ検出→修正→再ビルドのイテレーションを回している。
+Build 5→10を連続デプロイし、各ビルドでバグ検出→修正→再ビルドのイテレーションを回している。
 
 ---
 
@@ -19,7 +19,29 @@ Build 5→8を連続デプロイし、各ビルドでバグ検出→修正→再
 | 5 | 初回TestFlight配信成功 | ✅ |
 | 6 | isSent Bool/Intデコード修正 → 品質タブ復活 | ✅ |
 | 7 | ナビゲーション修正・レポートタブ分離・ATS修正 | ✅ |
-| 8 | ホームタップ修正（Button化）・履歴タブURL修正・空状態UI | ✅ アップロード完了 |
+| 8 | ホームタップ修正（Button化）・履歴タブURL修正・空状態UI | ✅ |
+| 9 | Editor型修正・NavigationLink(value:)化・@StateObject保持 | ✅ |
+| 10 | タブ切替くるくる修正・API耐障害性・contentShape追加 | ✅ アップロード完了 |
+
+## Build 10で修正した内容（2026-03-15 20:57）
+
+### 1. タブ切り替え時のくるくる読み込み防止
+- **原因**: ReportListView/FeedbackHistoryViewが毎回ViewModelを内部で再生成し、APIを再ロード
+- **修正**: ViewModelをRootTabViewの@StateObjectで一元管理し、各Viewに@ObservedObjectで渡す
+- **ファイル**: RootTabView.swift, ReportListView.swift, FeedbackHistoryView.swift, FeedbackHistoryViewModel.swift（新規）
+
+### 2. 品質タブAPIエラーの耐障害性向上
+- **原因**: DashboardViewModelのloadDashboardで4つのAPIを`async let`で並列実行し、1つでも失敗すると全データ更新されない
+- **修正**: 各APIを個別try-catchで囲み、部分的な失敗でも成功したデータは更新。エラーメッセージは失敗した項目のみ表示
+- **ファイル**: DashboardViewModel.swift, EditorManagementViewModel.swift, VideoTrackingViewModel.swift
+
+### 3. 品質タブの全サブタブ並列ロード
+- **修正**: loadAllで品質・編集者・トラッキングを`async let`で並列実行（従来は逐次実行）
+- **ファイル**: QualityDashboardView.swift
+
+### 4. ホームタップ問題への追加修正
+- **修正**: NavigationLinkのラベルに`.contentShape(Rectangle())`を追加し、タップ領域を明示的に指定
+- **ファイル**: ProjectListView.swift
 
 ## Build 8で修正した内容（2026-03-15 20:25）
 

@@ -71,6 +71,7 @@ struct QualityDashboardView: View {
 
             mainScoreCard
             summaryCard
+            gradeDistributionCard
             trendCard
             categoryScoreCard
             suggestionsCard
@@ -396,6 +397,115 @@ struct QualityDashboardView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(AppTheme.cardBackgroundLight)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+        }
+        .padding(16)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var gradeDistributionCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Image(systemName: "chart.bar.fill")
+                    .foregroundStyle(AppTheme.accent)
+                Text("グレード分布")
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.white)
+                Spacer()
+                if let stats = viewModel.qualityStats {
+                    // 改善傾向バッジ
+                    let delta = stats.improvementDelta ?? 0
+                    HStack(spacing: 4) {
+                        Image(systemName: delta >= 0 ? "arrow.up.right" : "arrow.down.right")
+                            .font(.caption2)
+                        Text(stats.deltaLabel)
+                            .font(.caption2)
+                            .fontWeight(.bold)
+                    }
+                    .foregroundStyle(delta >= 0 ? AppTheme.statusComplete : AppTheme.accent)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background((delta >= 0 ? AppTheme.statusComplete : AppTheme.accent).opacity(0.15))
+                    .clipShape(Capsule())
+                }
+            }
+
+            if let stats = viewModel.qualityStats {
+                // スコアあり/なし表示
+                HStack(spacing: 16) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("スコアあり")
+                            .font(.caption2)
+                            .foregroundStyle(AppTheme.textMuted)
+                        Text("\(stats.totalScored)件")
+                            .font(.system(size: 20, weight: .heavy, design: .rounded))
+                            .foregroundStyle(.white)
+                    }
+                    if stats.totalUnscored > 0 {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("未集計")
+                                .font(.caption2)
+                                .foregroundStyle(AppTheme.textMuted)
+                            Text("\(stats.totalUnscored)件")
+                                .font(.system(size: 20, weight: .heavy, design: .rounded))
+                                .foregroundStyle(AppTheme.textMuted)
+                        }
+                    }
+                    Spacer()
+                    if let avg = stats.averageScore {
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text("全体平均")
+                                .font(.caption2)
+                                .foregroundStyle(AppTheme.textMuted)
+                            Text(String(format: "%.1f", avg))
+                                .font(.system(size: 20, weight: .heavy, design: .rounded))
+                                .foregroundStyle(scoreColor(Int(avg)))
+                        }
+                    }
+                }
+
+                // グレード分布バー
+                let entries = stats.sortedGradeEntries
+                let maxCount = max(entries.map(\.count).max() ?? 1, 1)
+                VStack(spacing: 8) {
+                    ForEach(entries) { entry in
+                        if entry.count > 0 {
+                            HStack(spacing: 10) {
+                                Text(entry.grade)
+                                    .font(.caption2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(entry.color)
+                                    .frame(width: 24, alignment: .center)
+
+                                GeometryReader { geo in
+                                    ZStack(alignment: .leading) {
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .fill(AppTheme.cardBackgroundLight)
+                                            .frame(height: 20)
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .fill(entry.color)
+                                            .frame(
+                                                width: geo.size.width * CGFloat(entry.count) / CGFloat(maxCount),
+                                                height: 20
+                                            )
+                                    }
+                                }
+                                .frame(height: 20)
+
+                                Text("\(entry.count)")
+                                    .font(.caption2)
+                                    .foregroundStyle(AppTheme.textSecondary)
+                                    .frame(width: 20, alignment: .trailing)
+                            }
+                        }
+                    }
+                }
+            } else {
+                Text("品質統計データ未取得")
+                    .font(.caption)
+                    .foregroundStyle(AppTheme.textMuted)
             }
         }
         .padding(16)

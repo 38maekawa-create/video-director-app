@@ -1,11 +1,47 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-16 （TASK_P1_BEFORE_AFTER.md実施 — Before/After連携 iOS UI + APIエンドポイント完成）
-<!-- authored: Claude Code/2026-03-16 [なおとさん指示: P1一気にやりきる] -->
+2026-03-16 （TASK_P2_QUALITY_DASHBOARD.md実施 — 品質ダッシュボード実データ連動完成）
+<!-- authored: Claude Code/2026-03-16 [なおとさん指示: P2品質ダッシュボード実データ連動] -->
 
 ## 現在の作業状態
-**P1完了: Before/After連携（編集後フィードバック）iOS UI + APIエンドポイント実装済み**
+**P2完了: 品質ダッシュボード実データ連動 iOS UI + APIエンドポイント実装済み**
+
+---
+
+### TASK_P2_QUALITY_DASHBOARD.md 実施結果（2026-03-16）
+
+**実施内容: 5ファイル変更・1ファイル新規作成・22テスト全PASS**
+
+#### 1. APIエンドポイント追加（`src/video_direction/integrations/api_server.py`）
+- `GET /api/v1/dashboard/quality` を追加
+- `_grade_from_score_100()` ヘルパー関数追加（0-100スケール → A+/A/B+/B/C/D/E）
+- レスポンス: `total_scored`, `total_unscored`, `average_score`, `grade_distribution`, `recent_trend`（直近5件）, `improvement_delta`（改善傾向）
+- DB実データ28件を集計（quality_score NULLの1件はunscored扱い）
+
+#### 2. iOS Swiftモデル追加（`VideoDirectorAgent/Models/Models.swift`）
+- `GradeDistEntry` — グレード分布1件（grade/count/color）
+- `QualityStats` — 統計レスポンス全体（sortedGradeEntries/deltaLabel 含む）
+
+#### 3. APIClientメソッド追加（`VideoDirectorAgent/Services/APIClient.swift`）
+- `fetchQualityStats()` — GET `/api/v1/dashboard/quality` を呼び出す
+
+#### 4. DashboardViewModel更新（`VideoDirectorAgent/ViewModels/DashboardViewModel.swift`）
+- `@Published var qualityStats: QualityStats?` を追加
+- `loadDashboard()` 内で `fetchQualityStats()` を取得（個別try-catchで耐障害性あり）
+- エラー時は「品質統計」をエラーリストに追加
+
+#### 5. iOS UI追加（`VideoDirectorAgent/Views/QualityDashboardView.swift`）
+- `gradeDistributionCard` を品質セクションに追加（summaryCard と trendCard の間）
+- AppTheme準拠デザイン: 改善傾向バッジ（Capsule）、グレード別カラーバー、件数/平均表示
+
+#### 6. テスト追加（`tests/test_quality_dashboard_api.py`）
+- 22件全PASS
+- `TestGradeFromScore100` (12件): 境界値含む全グレード変換テスト（0-100スケール）
+- `TestQualityDashboardEndpoint` (10件): レスポンス構造・グレード分布整合性・実DB値テスト
+
+#### ビルド確認
+- Pythonテスト: 22件全PASS（新規）+ 既存62件維持 ✅
 
 ---
 

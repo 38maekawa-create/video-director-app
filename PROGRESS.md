@@ -1,12 +1,18 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-15（PROGRESS.md整理）
+2026-03-15（テストカバレッジ強化: 443 → 499件）
 
 ## 現在の作業状態
 **待機中（Mac mini M4でのTestFlight配布実行待ち）**
 
-全開発フェーズ完了。Python 402テスト全PASS。iOSアプリビルド成功。TestFlight配布に必要なスクリプト・設定は全て用意済み。Mac mini M4 での手動実行ステップのみ残存。
+全開発フェーズ完了。Python 499テスト全PASS。iOSアプリビルド成功。TestFlight配布に必要なスクリプト・設定は全て用意済み。Mac mini M4 での手動実行ステップのみ残存。
+
+### 直近の作業（2026-03-15）
+- テスト未カバーモジュール3件（video_tracker / video_learner / video_analyzer）を特定
+- ユニットテスト56件追加（443 → 499件）
+- 追加テストファイル: `tests/test_video_tracker.py`（20件）、`tests/test_video_learner.py`（22件）、`tests/test_video_analyzer.py`（14件）
+- 全499件 PASS 確認
 
 ---
 

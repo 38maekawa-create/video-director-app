@@ -1,14 +1,45 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-16 （TASK_PRACTICAL_YOUTUBE_IOS.md実施 — YouTube素材3機能iOS UI完成）
-<!-- authored: T3/兵隊A/AI開発10/2026-03-16 [TASK_PRACTICAL_YOUTUBE_IOS指示書に基づく] -->
+2026-03-16 （TASK_P1_VOICE_FB_VIMEO.md実施 — 音声FB→Vimeoレビューコメント連携完成）
+<!-- authored: T3/兵隊A/AI開発10/2026-03-16 [TASK_P1_VOICE_FB_VIMEO指示書に基づく] -->
 
 ## 現在の作業状態
-**YouTube素材3機能iOS UI完成（サムネ指示書・タイトル案・概要欄）**
+**音声FB→Vimeoレビューコメント連携完成（dry-runモードまで）**
 
-iPhoneからAPIサーバー（100.110.206.6:8210）に接続して実データ29件を表示・操作できる状態。
-Build 5→17を連続デプロイ。Build 17でなおとさんから「UIはこれで完了！」の承認を得た。
+音声FB録音→STT→タイムコードマッピング→Vimeoコメント投稿の一気通貫フローが完成。
+dry-runモードでAPIエンドポイント疎通確認済み。テスト562件全PASS（新規24件追加）。
+
+### TASK_P1_VOICE_FB_VIMEO.md 実施結果（2026-03-16）
+
+**1. APIサーバーにVimeoコメント投稿エンドポイント追加（完了）**
+- `POST /api/v1/vimeo/post-review` エンドポイント新設
+- リクエスト: `{ vimeo_video_id, comments: [{ timecode, text, priority, feedback_id }] }`
+- `dry_run=true`（デフォルト）で投稿計画のみ返却、`dry_run=false`で本番投稿
+- 内部で`scripts/post_vimeo_review_comments.py`の`load_token`/`build_endpoint`/`post_with_retry`を呼び出し
+- タイムコード→秒変換: MM:SS, HH:MM:SS, 秒数の3フォーマット対応
+- 優先度: high→🔴, medium→🟡, low→🟢のプレフィックス自動付与
+- VIMEO_TIMECODE_MODE（embed_text/body_field/skip）対応
+
+**2. iOS側VoiceFeedbackViewModelにVimeo投稿フロー追加（完了）**
+- `sendToVimeoReview(dryRun:)` メソッド追加
+- structuredItemsがある場合: 各アイテムを個別コメントとして投稿
+- structuredItemsがない場合: convertedText全体を1コメントとして投稿
+- vimeoVideoId, vimeoPostResult, isPostingToVimeo の状態管理プロパティ追加
+
+**3. iOS側APIClient.swiftにVimeo投稿メソッド追加（完了）**
+- `postVimeoReviewComments(vimeoVideoId:comments:dryRun:)` メソッド追加
+- VimeoPostReviewResponse, VimeoCommentPayload, VimeoReviewPlanItem モデル追加（Models.swift）
+
+**4. タイムコードマッピング実装（完了）**
+- `_timecode_to_seconds()`: MM:SS→秒, HH:MM:SS→秒, 秒数→秒 の3フォーマット変換
+- VIMEO_TIMECODE_MODE=embed_text（デフォルト）: `[MM:SS]` をコメント本文先頭に埋め込み
+
+**5. テスト24件追加（完了）— 全562件PASS**
+- TestTimecodeToSeconds: 7件
+- TestPriorityToJapanese: 5件
+- TestBuildVimeoCommentPayload: 5件
+- TestVimeoPostReviewEndpoint: 7件（dry-run/デフォルト/空ID/空comments/複数フォーマット/feedback_id有無）
 
 ### TASK_PRACTICAL_YOUTUBE_IOS.md 実施結果（2026-03-16）
 
@@ -201,9 +232,9 @@ xcodebuild -exportArchive -archivePath ./build/*.xcarchive \
 
 ## 次にやるべき作業（優先順位付き）
 
-### [P1] 音声FB→Vimeoレビュー連携（T-039）
-- 音声フィードバック録音 → STT → Vimeoタイムコードにマッピング
-- 実運用フローの構築
+### ~~[P1] 音声FB→Vimeoレビュー連携（T-039）~~ ✅ 2026-03-16完了
+- ~~音声フィードバック録音 → STT → Vimeoタイムコードにマッピング~~
+- ~~実運用フローの構築~~
 
 ### [P1] Vimeoレビュータイムライン表示（T-040）
 - タイムライン上にFBポイントを可視化

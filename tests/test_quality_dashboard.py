@@ -298,3 +298,178 @@ class TestVideoQualityRecord:
         )
         rate = record.calculate_improvement_rate()
         assert rate == 50.0  # (75-50)/50*100
+
+
+# === 永続化エッジケーステスト ===
+
+class TestPersistenceEdgeCases:
+    """品質スコア永続化のエッジケーステスト"""
+
+    def test_jsonファイル破損時は空で初期化(self, tmp_dir):
+        """JSONが壊れているファイルがあっても空dictで正常起動する"""
+        data_file = Path(tmp_dir) / "quality_dashboard.json"
+        # 破損したJSONを書き込む
+        data_file.write_text("{ broken json <<<", encoding="utf-8")
+        db = QualityDashboard(data_dir=tmp_dir)
+        assert len(db.records) == 0
+
+    def test_空ファイル時は空で初期化(self, tmp_dir):
+        """0バイトのファイルがあっても空dictで正常起動する"""
+        data_file = Path(tmp_dir) / "quality_dashboard.json"
+        data_file.write_text("", encoding="utf-8")
+        db = QualityDashboard(data_dir=tmp_dir)
+        assert len(db.records) == 0
+
+    def test_必須キー欠損JSONは空で初期化(self, tmp_dir):
+        """video_id等の必須キーが欠けたレコードがあっても空で初期化"""
+        data_file = Path(tmp_dir) / "quality_dashboard.json"
+        # video_idキーが欠けた不正データ
+        corrupt = {
+            "version": "1.0",
+            "records": {
+                "v1": {"guest_name": "テスト"}  # video_id等が欠損
+            }
+        }
+        data_file.write_text(json.dumps(corrupt), encoding="utf-8")
+        db = QualityDashboard(data_dir=tmp_dir)
+        assert len(db.records) == 0
+
+    def test_初稿スコアゼロの改善率はゼロ(self, tmp_dir):
+        """初稿スコアが0のとき改善率計算でゼロ除算しない"""
+        db = QualityDashboard(data_dir=tmp_dir)
+        db.record_quality(
+            video_id="zero_start", guest_name="テスト", video_title="テスト",
+            stage="draft", total_score=0.0, grade="D",
+        )
+        db.record_quality(
+            video_id="zero_start", guest_name="テスト", video_title="テスト",
+            stage="final", total_score=80.0, grade="A",
+        )
+        record = db.get_record("zero_start")
+        # ゼロ除算を回避し improvement_rate=0 で返る
+        assert record.improvement_rate == 0.0
+
+    def test_スコア境界値0のラウンドトリップ(self, tmp_dir):
+        """スコア0.0が保存・読み込み後も正確に保持される"""
+        db1 = QualityDashboard(data_dir=tmp_dir)
+        db1.record_quality(
+            video_id="score_zero", guest_name="テスト", video_title="テスト",
+            stage="draft", total_score=0.0, grade="D",
+        )
+        db2 = QualityDashboard(data_dir=tmp_dir)
+        record = db2.get_record("score_zero")
+        assert record.snapshots[0].total_score == 0.0
+
+    def test_スコア境界値100のラウンドトリップ(self, tmp_dir):
+        """スコア100.0が保存・読み込み後も正確に保持される"""
+        db1 = QualityDashboard(data_dir=tmp_dir)
+        db1.record_quality(
+            video_id="score_max", guest_name="テスト", video_title="テスト",
+            stage="final", total_score=100.0, grade="S",
+        )
+        db2 = QualityDashboard(data_dir=tmp_dir)
+        record = db2.get_record("score_max")
+        assert record.snapshots[0].total_score == 100.0
+
+    def test_日本語video_idのラウンドトリップ(self, tmp_dir):
+        """日本語を含むvideo_idが保存・読み込み後も正確に保持される"""
+        db1 = QualityDashboard(data_dir=tmp_dir)
+        jp_id = "2026年3月_田中さん_対談動画"
+        db1.record_quality(
+            video_id=jp_id, guest_name="田中さん", video_title="対談動画",
+            stage="draft", total_score=72.5, grade="B",
+        )
+        db2 = QualityDashboard(data_dir=tmp_dir)
+        record = db2.get_record(jp_id)
+        assert record is not None
+        assert record.guest_name == "田中さん"
+        assert record.snapshots[0].total_score == 72.5
+
+    def test_スコア悪化でマイナス改善率(self, tmp_dir):
+        """修正後にスコアが下がった場合、改善率がマイナスになる"""
+        db = QualityDashboard(data_dir=tmp_dir)
+        db.record_quality(
+            video_id="regress_test", guest_name="テスト", video_title="テスト",
+            stage="draft", total_score=80.0, grade="A",
+        )
+        db.record_quality(
+            video_id="regress_test", guest_name="テスト", video_title="テスト",
+            stage="final", total_score=60.0, grade="C",
+        )
+        record = db.get_record("regress_test")
+        assert record.improvement_rate < 0.0  # (60-80)/80*100 = -25%
+
+    def test_未知ステージ名はそのままラベルになる(self, tmp_dir):
+        """stage_labelsにないステージ名は stage 自体がラベルとして使われる"""
+        db = QualityDashboard(data_dir=tmp_dir)
+        db.record_quality(
+            video_id="custom_stage", guest_name="テスト", video_title="テスト",
+            stage="special_review", total_score=75.0, grade="B",
+        )
+        record = db.get_record("custom_stage")
+        assert record.snapshots[0].stage_label == "special_review"
+
+    def test_clear_all後に新規登録できる(self, tmp_dir):
+        """clear_all後でも正常に新しいレコードを登録できる"""
+        db = QualityDashboard(data_dir=tmp_dir)
+        db.record_quality(
+            video_id="before_clear", guest_name="テスト", video_title="テスト",
+            stage="draft", total_score=70.0, grade="B",
+        )
+        db.clear_all()
+        assert db.get_record("before_clear") is None
+        db.record_quality(
+            video_id="after_clear", guest_name="新テスト", video_title="新テスト",
+            stage="draft", total_score=80.0, grade="A",
+        )
+        assert db.get_record("after_clear") is not None
+
+    def test_複数回save_load繰り返しでデータ整合性(self, tmp_dir):
+        """save→load→save→loadを繰り返してもデータが壊れない"""
+        db = QualityDashboard(data_dir=tmp_dir)
+        for i in range(3):
+            db.record_quality(
+                video_id=f"multi_{i}", guest_name=f"ゲスト{i}", video_title=f"動画{i}",
+                stage="draft", total_score=float(60 + i * 10), grade="B",
+            )
+        # 2回ロードして同じデータを得る
+        db2 = QualityDashboard(data_dir=tmp_dir)
+        db3 = QualityDashboard(data_dir=tmp_dir)
+        assert len(db2.records) == 3
+        assert len(db3.records) == 3
+        for i in range(3):
+            r2 = db2.get_record(f"multi_{i}")
+            r3 = db3.get_record(f"multi_{i}")
+            assert r2.snapshots[0].total_score == r3.snapshots[0].total_score
+
+    def test_dimension_scoresのラウンドトリップ(self, tmp_dir):
+        """dimension_scoresが保存・読み込み後も正確に保持される"""
+        dims = {"cut": 85, "color": 70, "telop": 90, "bgm": 65, "camera": 75, "composition": 80, "tempo": 78}
+        db1 = QualityDashboard(data_dir=tmp_dir)
+        db1.record_quality(
+            video_id="dims_test", guest_name="テスト", video_title="テスト",
+            stage="draft", total_score=77.6, grade="B",
+            dimension_scores=dims,
+        )
+        db2 = QualityDashboard(data_dir=tmp_dir)
+        record = db2.get_record("dims_test")
+        assert record.snapshots[0].dimension_scores == dims
+
+    def test_空のrecordsキーを持つJSONは正常ロード(self, tmp_dir):
+        """recordsキーが空dictのJSONファイルは0件として正常ロードされる"""
+        data_file = Path(tmp_dir) / "quality_dashboard.json"
+        data_file.write_text(json.dumps({"version": "1.0", "records": {}}), encoding="utf-8")
+        db = QualityDashboard(data_dir=tmp_dir)
+        assert len(db.records) == 0
+
+    def test_notesフィールドのラウンドトリップ(self, tmp_dir):
+        """notesフィールドが保存・読み込み後も正確に保持される"""
+        db1 = QualityDashboard(data_dir=tmp_dir)
+        db1.record_quality(
+            video_id="notes_test", guest_name="テスト", video_title="テスト",
+            stage="draft", total_score=65.0, grade="B",
+            notes="テロップの色が明るすぎる。修正依頼済み。",
+        )
+        db2 = QualityDashboard(data_dir=tmp_dir)
+        record = db2.get_record("notes_test")
+        assert record.snapshots[0].notes == "テロップの色が明るすぎる。修正依頼済み。"

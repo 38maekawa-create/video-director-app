@@ -1,10 +1,34 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-15 (TestFlight配布準備: deploy-testflight.sh作成・Xcodeプロジェクト設定監査完了)
+2026-03-15 (品質スコア永続化エッジケーステスト14件追加・348テスト全PASS確認)
 
 ## 現在の作業状態
-**TestFlight配布準備完了** — Xcodeプロジェクト設定監査・Info.plist修正・deploy-testflight.sh / ExportOptions.plist 作成完了。Mac mini M4（Xcode搭載）での実行待ち。
+**テスト補強完了** — 品質スコア永続化（QualityDashboard）のエッジケーステスト14件を追加。348テスト全PASS。TestFlight配布準備も完了済み（Mac mini M4での実行待ち）。
+
+### 品質スコア永続化エッジケーステスト追加（2026-03-15 完了）
+`tests/test_quality_dashboard.py` に `TestPersistenceEdgeCases` クラスを追加（14テスト）:
+
+| テスト | 検証内容 |
+|--------|----------|
+| JSON破損時の回復 | `json.JSONDecodeError` → 空dictで正常起動 |
+| 空ファイル（0バイト） | ファイル存在するが内容なし → 空dictで正常起動 |
+| 必須キー欠損JSON | `video_id` 等欠損 → `KeyError` をキャッチして空で初期化 |
+| 初稿スコア0の改善率 | 分母0のゼロ除算ガード → `improvement_rate=0.0` |
+| スコア境界値0のラウンドトリップ | `0.0` が保存・読み込み後も正確に保持 |
+| スコア境界値100のラウンドトリップ | `100.0` が保存・読み込み後も正確に保持 |
+| 日本語video_idのラウンドトリップ | 日本語キーが `ensure_ascii=False` で正確に保持 |
+| スコア悪化でマイナス改善率 | 初稿→最終でスコア低下 → 負の改善率が正しく返る |
+| 未知ステージ名のラベル | `stage_labels` にない値 → stage文字列がそのままラベルになる |
+| clear_all後の再登録 | clear後にファイルが消え、新規登録が正常に機能する |
+| 複数回save/loadの整合性 | 3回ロードしてもデータが壊れない |
+| dimension_scoresのラウンドトリップ | 7次元スコアdict全体が正確に保持 |
+| 空recordsキーのJSONロード | `{"records": {}}` → 0件として正常ロード |
+| notesフィールドのラウンドトリップ | 日本語notesが保存・読み込み後も正確に保持 |
+
+テスト数: 334 → 348（+14件）
+
+### TestFlight配布準備（2026-03-15 完了）
 
 ### TestFlight配布準備（2026-03-15 完了）
 

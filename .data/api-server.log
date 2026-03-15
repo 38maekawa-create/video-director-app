@@ -323,3 +323,6 @@ INFO:     100.113.28.70:50595 - "GET /api/tracking/insights HTTP/1.1" 200 OK
 INFO:     100.113.28.70:50594 - "GET /api/learning/summary HTTP/1.1" 200 OK
 INFO:     100.113.28.70:50598 - "GET /api/editors HTTP/1.1" 200 OK
 INFO:     100.113.28.70:50599 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55040 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55041 - "GET /api/projects/p-20260101-%E3%82%B3%E3%83%86%E3%83%84/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55044 - "GET /api/projects HTTP/1.1" 200 OK

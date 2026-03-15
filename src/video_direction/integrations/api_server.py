@@ -199,9 +199,12 @@ def list_projects():
         for bool_field in ("has_unsent_feedback",):
             if bool_field in d:
                 d[bool_field] = bool(d[bool_field])
-        for json_field in ("source_video", "edited_video", "feedback_summary", "knowledge"):
+        for json_field in ("feedback_summary", "knowledge"):
             if d.get(json_field):
-                d[json_field] = json.loads(d[json_field])
+                try:
+                    d[json_field] = json.loads(d[json_field])
+                except (json.JSONDecodeError, TypeError):
+                    pass  # JSON以外の文字列はそのまま保持
         result.append(d)
     return result
 

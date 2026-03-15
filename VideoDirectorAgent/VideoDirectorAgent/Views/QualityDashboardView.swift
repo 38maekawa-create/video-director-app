@@ -34,10 +34,10 @@ struct QualityDashboardView: View {
         }
         .background(AppTheme.background.ignoresSafeArea())
         .task {
-            await loadAll()
+            await loadAllIfNeeded()
         }
         .refreshable {
-            await loadAll(forceRefresh: true)
+            await loadAll()
         }
         .sheet(isPresented: $showNotificationSettings) {
             NotificationSettingsView()
@@ -469,10 +469,19 @@ struct QualityDashboardView: View {
             .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
-    private func loadAll(forceRefresh: Bool = false) async {
-        if !forceRefresh, viewModel.isLoading { return }
-        await viewModel.loadDashboard()
-        await editorViewModel.loadEditors()
-        await trackingViewModel.load()
+    private func loadAllIfNeeded() async {
+        // 初回のみロード（タブ切り替え時の再ロード防止）
+        async let dashboardLoad: () = viewModel.loadDashboardIfNeeded()
+        async let editorLoad: () = editorViewModel.loadEditors()
+        async let trackingLoad: () = trackingViewModel.load()
+        _ = await (dashboardLoad, editorLoad, trackingLoad)
+    }
+
+    private func loadAll() async {
+        // 強制リフレッシュ（pull-to-refresh時）
+        async let dashboardLoad: () = viewModel.loadDashboard()
+        async let editorLoad: () = editorViewModel.loadEditors(forceRefresh: true)
+        async let trackingLoad: () = trackingViewModel.load(forceRefresh: true)
+        _ = await (dashboardLoad, editorLoad, trackingLoad)
     }
 }

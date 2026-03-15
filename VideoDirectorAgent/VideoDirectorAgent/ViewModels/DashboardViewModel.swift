@@ -20,6 +20,7 @@ final class DashboardViewModel: ObservableObject {
     @Published var auditHistory: [AuditReport] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    private var hasLoaded = false
 
     var latestScore: Int {
         trend.last?.score ?? 0
@@ -30,23 +31,53 @@ final class DashboardViewModel: ObservableObject {
         return trend[trend.count - 1].score - trend[trend.count - 2].score
     }
 
+    func loadDashboardIfNeeded() async {
+        if hasLoaded { return }
+        await loadDashboard()
+    }
+
     func loadDashboard() async {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
 
-        async let summaryTask = APIClient.shared.fetchDashboardSummary()
-        async let trendTask = APIClient.shared.fetchQualityTrend()
-        async let auditTask = APIClient.shared.fetchLatestAudit()
-        async let auditHistoryTask = APIClient.shared.fetchAuditHistory()
+        var errors: [String] = []
+
+        // 各APIを個別に取得（1つの失敗が他に影響しない）
+        var fetchedSummary: DashboardSummary?
+        var fetchedTrend: [QualityTrendItem] = []
+        var fetchedAudit: AuditReport?
+        var fetchedAuditHistory: [AuditReport] = []
 
         do {
-            let fetchedSummary = try await summaryTask
-            let fetchedTrend = try await trendTask
-            let fetchedAudit = try await auditTask
-            let fetchedAuditHistory = try await auditHistoryTask
+            fetchedSummary = try await APIClient.shared.fetchDashboardSummary()
+        } catch {
+            errors.append("サマリー")
+        }
 
-            summary = fetchedSummary
+        do {
+            fetchedTrend = try await APIClient.shared.fetchQualityTrend()
+        } catch {
+            errors.append("トレンド")
+        }
+
+        do {
+            fetchedAudit = try await APIClient.shared.fetchLatestAudit()
+        } catch {
+            errors.append("監査")
+        }
+
+        do {
+            fetchedAuditHistory = try await APIClient.shared.fetchAuditHistory()
+        } catch {
+            errors.append("監査履歴")
+        }
+
+        // 取得成功したデータのみ更新（既存データを保持）
+        if let s = fetchedSummary {
+            summary = s
+        }
+        if !fetchedTrend.isEmpty {
             trend = fetchedTrend.enumerated().map { index, item in
                 QualityTrendPoint(
                     id: UUID(),
@@ -54,14 +85,25 @@ final class DashboardViewModel: ObservableObject {
                     score: item.qualityScore ?? 0
                 )
             }
-            latestAudit = fetchedAudit
+        }
+        if let a = fetchedAudit {
+            latestAudit = a
+        }
+        if !fetchedAuditHistory.isEmpty {
             auditHistory = fetchedAuditHistory
-            categoryScores = makeCategoryScores(summary: fetchedSummary, trend: fetchedTrend, audit: fetchedAudit)
-            suggestions = makeSuggestions(summary: fetchedSummary, audit: fetchedAudit)
-            alerts = makeAlerts(summary: fetchedSummary, audit: fetchedAudit)
-        } catch {
-            // 本番運用: API失敗時はエラーメッセージを表示、既存データを保持
-            errorMessage = "ダッシュボードAPIに接続できません: \(error.localizedDescription)"
+        }
+
+        // カテゴリスコア等の派生データを更新
+        if let s = summary, let a = latestAudit {
+            categoryScores = makeCategoryScores(summary: s, trend: fetchedTrend.isEmpty ? [] : fetchedTrend, audit: a)
+            suggestions = makeSuggestions(summary: s, audit: a)
+            alerts = makeAlerts(summary: s, audit: a)
+        }
+
+        if errors.isEmpty {
+            hasLoaded = true
+        } else {
+            errorMessage = "\(errors.joined(separator: "・"))の取得に失敗しました"
         }
     }
 

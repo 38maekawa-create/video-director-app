@@ -7,20 +7,33 @@ final class VideoTrackingViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    func load() async {
+    private var hasLoaded = false
+
+    func load(forceRefresh: Bool = false) async {
+        if !forceRefresh && hasLoaded { return }
         if isLoading { return }
         isLoading = true
         defer { isLoading = false }
 
-        async let videosTask = APIClient.shared.fetchTrackingVideos()
-        async let insightsTask = APIClient.shared.fetchTrackingInsights()
+        var errors: [String] = []
 
         do {
-            videos = try await videosTask
-            insights = try await insightsTask
-            errorMessage = nil
+            videos = try await APIClient.shared.fetchTrackingVideos()
         } catch {
-            errorMessage = "トラッキングAPIに接続できません: \(error.localizedDescription)"
+            if videos.isEmpty { errors.append("動画") }
+        }
+
+        do {
+            insights = try await APIClient.shared.fetchTrackingInsights()
+        } catch {
+            if insights.isEmpty { errors.append("インサイト") }
+        }
+
+        if errors.isEmpty {
+            errorMessage = nil
+            hasLoaded = true
+        } else {
+            errorMessage = "\(errors.joined(separator: "・"))の取得に失敗しました"
         }
     }
 }

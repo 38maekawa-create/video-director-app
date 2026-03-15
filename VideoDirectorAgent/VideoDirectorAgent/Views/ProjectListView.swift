@@ -12,6 +12,7 @@ struct ProjectListView: View {
                 if let hero = viewModel.heroProject {
                     NavigationLink(value: hero) {
                         heroSection(hero)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
@@ -195,6 +196,7 @@ struct ProjectListView: View {
                     ForEach(projects) { project in
                         NavigationLink(value: project) {
                             projectCard(project)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                     }

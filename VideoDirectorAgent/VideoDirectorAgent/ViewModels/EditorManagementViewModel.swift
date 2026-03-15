@@ -6,7 +6,10 @@ final class EditorManagementViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    func loadEditors() async {
+    private var hasLoaded = false
+
+    func loadEditors(forceRefresh: Bool = false) async {
+        if !forceRefresh && hasLoaded { return }
         if isLoading { return }
         isLoading = true
         defer { isLoading = false }
@@ -14,8 +17,12 @@ final class EditorManagementViewModel: ObservableObject {
         do {
             editors = try await APIClient.shared.fetchEditors()
             errorMessage = nil
+            hasLoaded = true
         } catch {
-            errorMessage = "編集者APIに接続できません: \(error.localizedDescription)"
+            // API失敗時は既存データを保持してエラーのみ表示
+            if editors.isEmpty {
+                errorMessage = "編集者APIに接続できません: \(error.localizedDescription)"
+            }
         }
     }
 }

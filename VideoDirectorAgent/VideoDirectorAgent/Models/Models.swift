@@ -1232,3 +1232,382 @@ enum VimeoPlaybackState {
     case paused
     case error(String)
 }
+
+// MARK: - E2Eパイプラインモデル
+
+/// E2Eパイプライン実行リクエスト
+struct E2EPipelineRequestBody: Encodable {
+    let vimeoVideoId: String?
+    let dryRun: Bool
+    let useLlm: Bool
+
+    init(vimeoVideoId: String? = nil, dryRun: Bool = true, useLlm: Bool = true) {
+        self.vimeoVideoId = vimeoVideoId
+        self.dryRun = dryRun
+        self.useLlm = useLlm
+    }
+}
+
+/// E2Eパイプライン各ステップの状態
+struct E2EPipelineStepStatus: Codable {
+    let status: String
+    let feedbackCount: Int?
+    let projectTitle: String?
+    let guestName: String?
+    let insights: [String: JSONValue]?
+    let error: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        status = try container.decodeIfPresent(String.self, forKey: .status) ?? "unknown"
+        feedbackCount = try container.decodeIfPresent(Int.self, forKey: .feedbackCount)
+        projectTitle = try container.decodeIfPresent(String.self, forKey: .projectTitle)
+        guestName = try container.decodeIfPresent(String.self, forKey: .guestName)
+        insights = try container.decodeIfPresent([String: JSONValue].self, forKey: .insights)
+        error = try container.decodeIfPresent(String.self, forKey: .error)
+    }
+}
+
+/// E2Eパイプラインのディレクションエントリ
+struct E2EDirectionEntry: Identifiable, Codable {
+    var id: String { "\(timestamp)_\(element)" }
+    let timestamp: String
+    let element: String
+    let instruction: String
+    let priority: String
+    let reasoning: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        timestamp = try container.decodeIfPresent(String.self, forKey: .timestamp) ?? ""
+        element = try container.decodeIfPresent(String.self, forKey: .element) ?? ""
+        instruction = try container.decodeIfPresent(String.self, forKey: .instruction) ?? ""
+        priority = try container.decodeIfPresent(String.self, forKey: .priority) ?? "medium"
+        reasoning = try container.decodeIfPresent(String.self, forKey: .reasoning)
+    }
+
+    /// 優先度カラー
+    var priorityColor: Color {
+        switch priority.lowercased() {
+        case "high": return AppTheme.accent
+        case "medium": return Color(hex: 0xF5A623)
+        default: return Color(hex: 0x4A90D9)
+        }
+    }
+}
+
+/// E2Eパイプラインレスポンス
+struct E2EPipelineResponse: Codable {
+    let projectId: String
+    let status: String
+    let steps: [String: E2EPipelineStepStatus]?
+    let directionEntries: [E2EDirectionEntry]?
+    let errors: [String]?
+    let vimeoResult: VimeoPostReviewResponse?
+    let generatedAt: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        projectId = try container.decodeIfPresent(String.self, forKey: .projectId) ?? ""
+        status = try container.decodeIfPresent(String.self, forKey: .status) ?? "unknown"
+        steps = try container.decodeIfPresent([String: E2EPipelineStepStatus].self, forKey: .steps)
+        directionEntries = try container.decodeIfPresent([E2EDirectionEntry].self, forKey: .directionEntries)
+        errors = try container.decodeIfPresent([String].self, forKey: .errors)
+        vimeoResult = try container.decodeIfPresent(VimeoPostReviewResponse.self, forKey: .vimeoResult)
+        generatedAt = try container.decodeIfPresent(String.self, forKey: .generatedAt)
+    }
+}
+
+// MARK: - テロップチェックモデル
+
+/// テロップチェック実行リクエスト
+struct TelopCheckRequestBody: Encodable {
+    let videoPath: String?
+    let useOcr: Bool
+    let numSamples: Int
+
+    init(videoPath: String? = nil, useOcr: Bool = true, numSamples: Int = 10) {
+        self.videoPath = videoPath
+        self.useOcr = useOcr
+        self.numSamples = numSamples
+    }
+}
+
+/// テロップチェック問題1件
+struct TelopIssue: Identifiable, Codable {
+    var id: String { "\(type)_\(description.prefix(30))" }
+    let type: String           // "spelling" / "consistency" / "timing"
+    let severity: String       // "error" / "warning" / "info"
+    let description: String
+    let location: String?
+    let suggestion: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        type = try container.decodeIfPresent(String.self, forKey: .type) ?? "unknown"
+        severity = try container.decodeIfPresent(String.self, forKey: .severity) ?? "info"
+        description = try container.decodeIfPresent(String.self, forKey: .description) ?? ""
+        location = try container.decodeIfPresent(String.self, forKey: .location)
+        suggestion = try container.decodeIfPresent(String.self, forKey: .suggestion)
+    }
+
+    /// severity に応じたAppTheme準拠カラー
+    var severityColor: Color {
+        switch severity.lowercased() {
+        case "error": return AppTheme.accent
+        case "warning": return Color(hex: 0xF5A623)
+        default: return Color(hex: 0x4A90D9)
+        }
+    }
+
+    /// severity に応じたSFSymbol
+    var severityIcon: String {
+        switch severity.lowercased() {
+        case "error": return "xmark.circle.fill"
+        case "warning": return "exclamationmark.triangle.fill"
+        default: return "info.circle.fill"
+        }
+    }
+}
+
+/// フレームベーステロップチェック結果
+struct TelopFrameCheckResult: Codable {
+    let totalFramesChecked: Int
+    let totalTelopsFound: Int
+    let extractionMethod: String?
+    let spellingIssues: [TelopIssue]?
+    let consistencyIssues: [TelopIssue]?
+    let timingIssues: [TelopIssue]?
+    let errorCount: Int
+    let warningCount: Int
+    let overallScore: Double?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        totalFramesChecked = try container.decodeIfPresent(Int.self, forKey: .totalFramesChecked) ?? 0
+        totalTelopsFound = try container.decodeIfPresent(Int.self, forKey: .totalTelopsFound) ?? 0
+        extractionMethod = try container.decodeIfPresent(String.self, forKey: .extractionMethod)
+        spellingIssues = try container.decodeIfPresent([TelopIssue].self, forKey: .spellingIssues)
+        consistencyIssues = try container.decodeIfPresent([TelopIssue].self, forKey: .consistencyIssues)
+        timingIssues = try container.decodeIfPresent([TelopIssue].self, forKey: .timingIssues)
+        errorCount = try container.decodeIfPresent(Int.self, forKey: .errorCount) ?? 0
+        warningCount = try container.decodeIfPresent(Int.self, forKey: .warningCount) ?? 0
+        overallScore = try container.decodeIfPresent(Double.self, forKey: .overallScore)
+    }
+
+    /// 全問題を統合して返す
+    var allIssues: [TelopIssue] {
+        (spellingIssues ?? []) + (consistencyIssues ?? []) + (timingIssues ?? [])
+    }
+}
+
+/// テロップチェックレスポンス
+struct TelopCheckResponse: Codable {
+    let projectId: String
+    let status: String
+    let checkedAt: String?
+    let frameCheck: TelopFrameCheckResult?
+    let message: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        projectId = try container.decodeIfPresent(String.self, forKey: .projectId) ?? ""
+        status = try container.decodeIfPresent(String.self, forKey: .status) ?? "unknown"
+        checkedAt = try container.decodeIfPresent(String.self, forKey: .checkedAt)
+        frameCheck = try container.decodeIfPresent(TelopFrameCheckResult.self, forKey: .frameCheck)
+        message = try container.decodeIfPresent(String.self, forKey: .message)
+    }
+}
+
+// MARK: - 音声品質評価モデル
+
+/// 音声品質評価の軸別スコア
+struct AudioAxisScore: Identifiable, Codable {
+    var id: String { axis }
+    let axis: String
+    let axisLabel: String?
+    let score: Double
+    let grade: String?
+    let description: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        axis = try container.decodeIfPresent(String.self, forKey: .axis) ?? ""
+        axisLabel = try container.decodeIfPresent(String.self, forKey: .axisLabel)
+        score = try container.decodeIfPresent(Double.self, forKey: .score) ?? 0
+        grade = try container.decodeIfPresent(String.self, forKey: .grade)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+    }
+
+    /// 表示用ラベル
+    var displayLabel: String {
+        axisLabel ?? axis
+    }
+
+    /// スコアに応じたAppTheme準拠カラー
+    var scoreColor: Color {
+        if score >= 85 { return AppTheme.statusComplete }
+        if score >= 70 { return Color(hex: 0xF5A623) }
+        return AppTheme.accent
+    }
+}
+
+/// 音声品質問題1件
+struct AudioIssue: Identifiable, Codable {
+    var id: String { "\(axis)_\(description.prefix(30))" }
+    let axis: String
+    let severity: String
+    let description: String
+    let suggestion: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        axis = try container.decodeIfPresent(String.self, forKey: .axis) ?? ""
+        severity = try container.decodeIfPresent(String.self, forKey: .severity) ?? "info"
+        description = try container.decodeIfPresent(String.self, forKey: .description) ?? ""
+        suggestion = try container.decodeIfPresent(String.self, forKey: .suggestion)
+    }
+
+    /// severity に応じたカラー
+    var severityColor: Color {
+        switch severity.lowercased() {
+        case "error", "high": return AppTheme.accent
+        case "warning", "medium": return Color(hex: 0xF5A623)
+        default: return Color(hex: 0x4A90D9)
+        }
+    }
+}
+
+/// 音声品質評価レスポンス
+struct AudioEvaluationResponse: Codable {
+    let projectId: String
+    let status: String
+    let evaluatedAt: String?
+    let overallScore: Double
+    let grade: String
+    let analysisMethod: String?
+    let isEstimated: Bool?
+    let axisScores: [AudioAxisScore]?
+    let issues: [AudioIssue]?
+    let errorCount: Int?
+    let warningCount: Int?
+    let message: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        projectId = try container.decodeIfPresent(String.self, forKey: .projectId) ?? ""
+        status = try container.decodeIfPresent(String.self, forKey: .status) ?? "unknown"
+        evaluatedAt = try container.decodeIfPresent(String.self, forKey: .evaluatedAt)
+        overallScore = try container.decodeIfPresent(Double.self, forKey: .overallScore) ?? 0
+        grade = try container.decodeIfPresent(String.self, forKey: .grade) ?? "D"
+        analysisMethod = try container.decodeIfPresent(String.self, forKey: .analysisMethod)
+        isEstimated = try container.decodeIfPresent(Bool.self, forKey: .isEstimated)
+        axisScores = try container.decodeIfPresent([AudioAxisScore].self, forKey: .axisScores)
+        issues = try container.decodeIfPresent([AudioIssue].self, forKey: .issues)
+        errorCount = try container.decodeIfPresent(Int.self, forKey: .errorCount)
+        warningCount = try container.decodeIfPresent(Int.self, forKey: .warningCount)
+        message = try container.decodeIfPresent(String.self, forKey: .message)
+    }
+
+    /// グレードカラー
+    var gradeColor: Color {
+        switch grade {
+        case "A+", "A": return AppTheme.statusComplete
+        case "B+", "B": return Color(hex: 0x4A90D9)
+        case "C": return Color(hex: 0xF5A623)
+        default: return AppTheme.accent
+        }
+    }
+}
+
+// MARK: - ナレッジページモデル
+
+/// ナレッジページ概要（一覧表示用）
+struct KnowledgePage: Identifiable, Codable {
+    var id: String { pageId }
+    let pageId: String
+    let title: String
+    let guestName: String?
+    let shootDate: String?
+    let createdAt: String?
+    let url: String?
+    let summary: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        pageId = try container.decodeIfPresent(String.self, forKey: .pageId) ?? UUID().uuidString
+        title = try container.decodeIfPresent(String.self, forKey: .title) ?? ""
+        guestName = try container.decodeIfPresent(String.self, forKey: .guestName)
+        shootDate = try container.decodeIfPresent(String.self, forKey: .shootDate)
+        createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt)
+        url = try container.decodeIfPresent(String.self, forKey: .url)
+        summary = try container.decodeIfPresent(String.self, forKey: .summary)
+    }
+}
+
+/// ナレッジページ一覧レスポンス
+struct KnowledgePagesResponse: Codable {
+    let total: Int
+    let offset: Int
+    let pages: [KnowledgePage]
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        total = try container.decodeIfPresent(Int.self, forKey: .total) ?? 0
+        offset = try container.decodeIfPresent(Int.self, forKey: .offset) ?? 0
+        pages = try container.decodeIfPresent([KnowledgePage].self, forKey: .pages) ?? []
+    }
+}
+
+/// ナレッジ検索結果1件
+struct KnowledgeSearchResult: Identifiable, Codable {
+    var id: String { pageId }
+    let pageId: String
+    let title: String
+    let guestName: String?
+    let matchSnippet: String?
+    let score: Double?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        pageId = try container.decodeIfPresent(String.self, forKey: .pageId) ?? UUID().uuidString
+        title = try container.decodeIfPresent(String.self, forKey: .title) ?? ""
+        guestName = try container.decodeIfPresent(String.self, forKey: .guestName)
+        matchSnippet = try container.decodeIfPresent(String.self, forKey: .matchSnippet)
+        score = try container.decodeIfPresent(Double.self, forKey: .score)
+    }
+}
+
+/// ナレッジ検索レスポンス
+struct KnowledgeSearchResponse: Codable {
+    let query: String
+    let total: Int
+    let results: [KnowledgeSearchResult]
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        query = try container.decodeIfPresent(String.self, forKey: .query) ?? ""
+        total = try container.decodeIfPresent(Int.self, forKey: .total) ?? 0
+        results = try container.decodeIfPresent([KnowledgeSearchResult].self, forKey: .results) ?? []
+    }
+}
+
+/// ナレッジページ詳細レスポンス
+struct KnowledgePageDetail: Codable {
+    let pageId: String
+    let title: String
+    let htmlContent: String?
+    let url: String?
+    let guestName: String?
+    let format: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        pageId = try container.decodeIfPresent(String.self, forKey: .pageId) ?? ""
+        title = try container.decodeIfPresent(String.self, forKey: .title) ?? ""
+        htmlContent = try container.decodeIfPresent(String.self, forKey: .htmlContent)
+        url = try container.decodeIfPresent(String.self, forKey: .url)
+        guestName = try container.decodeIfPresent(String.self, forKey: .guestName)
+        format = try container.decodeIfPresent(String.self, forKey: .format)
+    }
+}

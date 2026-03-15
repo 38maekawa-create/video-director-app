@@ -734,9 +734,20 @@ def add_tracking_video(body: TrackingVideoAdd):
     return asdict(video)
 
 
+class TrackingBatchAdd(BaseModel):
+    urls: list = []
+    tags: list = []
+
+
+class TrackingAnalyzeBatch(BaseModel):
+    video_ids: list = []  # 空なら全pending
+    use_llm: bool = True
+    auto_learn: bool = True  # 分析後に自動でVideoLearnerに学習させるか
+
+
 @app.post("/api/tracking/videos/{video_id}/analyze")
-def analyze_tracking_video(video_id: str):
-    """トラッキング映像を分析"""
+def analyze_tracking_video(video_id: str, use_llm: bool = True, auto_learn: bool = True):
+    """トラッキング映像を分析 → 自動学習"""
     tracker = _get_video_tracker()
     analyzer = _get_video_analyzer()
     if not tracker or not analyzer:
@@ -744,12 +755,136 @@ def analyze_tracking_video(video_id: str):
     video = tracker.get_video(video_id)
     if not video:
         raise HTTPException(404, "Tracked video not found")
-    # 分析実行
-    result = analyzer.analyze(video_url=video.url)
+
+    # 字幕がなければ先に取得
+    transcript = video.transcript
+    if not transcript:
+        transcript = tracker.fetch_transcript(video_id)
+
+    # 分析実行（字幕・メタデータを渡す）
+    tracker.update_analysis(video_id, {}, "analyzing")
+    result = analyzer.analyze(
+        video_url=video.url,
+        transcript=transcript,
+        title=video.title,
+        channel_name=video.channel_name,
+        duration_seconds=video.duration_seconds,
+        use_llm=use_llm,
+    )
     from dataclasses import asdict
     result_dict = asdict(result)
     tracker.update_analysis(video_id, result_dict, "completed")
+
+    # 自動学習: 分析結果をVideoLearnerに投入
+    learned_patterns = []
+    if auto_learn:
+        learner = _get_video_learner()
+        if learner:
+            patterns = learner.learn_from_analysis(
+                video_id=video_id,
+                analysis_result=result_dict,
+                video_url=video.url,
+            )
+            learned_patterns = [asdict(p) for p in patterns]
+
+    result_dict["learned_patterns_count"] = len(learned_patterns)
     return result_dict
+
+
+@app.post("/api/tracking/videos/batch")
+def add_tracking_videos_batch(body: TrackingBatchAdd):
+    """複数URLの一括登録"""
+    tracker = _get_video_tracker()
+    if not tracker:
+        raise HTTPException(500, "Tracker not available")
+    videos = tracker.add_videos_batch(urls=body.urls, tags=body.tags)
+    from dataclasses import asdict
+    return {"added": len(videos), "videos": [asdict(v) for v in videos]}
+
+
+@app.post("/api/tracking/analyze-batch")
+def analyze_tracking_batch(body: TrackingAnalyzeBatch):
+    """複数映像の一括分析 → 学習"""
+    tracker = _get_video_tracker()
+    analyzer = _get_video_analyzer()
+    if not tracker or not analyzer:
+        raise HTTPException(500, "Tracker/Analyzer not available")
+
+    # 対象映像を決定
+    if body.video_ids:
+        target_ids = body.video_ids
+    else:
+        # 全pending映像を対象
+        target_ids = [v.id for v in tracker.list_videos(status="pending")]
+
+    results = []
+    learner = _get_video_learner() if body.auto_learn else None
+    from dataclasses import asdict
+
+    for vid in target_ids:
+        video = tracker.get_video(vid)
+        if not video:
+            results.append({"video_id": vid, "status": "not_found"})
+            continue
+
+        try:
+            # 字幕取得
+            transcript = video.transcript
+            if not transcript:
+                transcript = tracker.fetch_transcript(vid)
+
+            # 分析実行
+            tracker.update_analysis(vid, {}, "analyzing")
+            result = analyzer.analyze(
+                video_url=video.url,
+                transcript=transcript,
+                title=video.title,
+                channel_name=video.channel_name,
+                duration_seconds=video.duration_seconds,
+                use_llm=body.use_llm,
+            )
+            result_dict = asdict(result)
+            tracker.update_analysis(vid, result_dict, "completed")
+
+            # 自動学習
+            learned_count = 0
+            if learner:
+                patterns = learner.learn_from_analysis(
+                    video_id=vid, analysis_result=result_dict, video_url=video.url,
+                )
+                learned_count = len(patterns)
+
+            results.append({
+                "video_id": vid,
+                "title": video.title,
+                "status": "completed",
+                "overall_score": result.overall_score,
+                "learned_patterns": learned_count,
+            })
+        except Exception as e:
+            tracker.update_analysis(vid, {"error": str(e)}, "error")
+            results.append({"video_id": vid, "status": "error", "error": str(e)[:200]})
+
+    return {
+        "total": len(target_ids),
+        "completed": sum(1 for r in results if r.get("status") == "completed"),
+        "results": results,
+    }
+
+
+@app.get("/api/tracking/status")
+def get_tracking_status():
+    """トラッキング全体のステータスサマリー"""
+    tracker = _get_video_tracker()
+    if not tracker:
+        return {"error": "Tracker not available"}
+    summary = tracker.get_status_summary()
+
+    # 学習状況も追加
+    learner = _get_video_learner()
+    if learner:
+        summary["learning"] = learner.get_insights()
+    return summary
 
 
 @app.delete("/api/tracking/videos/{video_id}")

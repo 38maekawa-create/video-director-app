@@ -70,7 +70,17 @@ class VideoLearner:
     def learn_from_analysis(
         self, video_id: str, analysis_result: dict, video_url: str = None
     ) -> list[VideoPattern]:
-        """映像分析結果からパターンを抽出・学習"""
+        """映像分析結果からパターンを抽出・学習
+
+        対応フィールド:
+        - cutting_style → category: cutting
+        - color_grading → category: color
+        - tempo → category: tempo
+        - composition → category: composition
+        - key_techniques → category: technique
+        - learnable_patterns → category: technique（TEKO応用可能パターン）
+        - strengths → category: technique（強みパターン）
+        """
         new_patterns = []
 
         # カット割りパターン
@@ -103,11 +113,44 @@ class VideoLearner:
             )
             new_patterns.append(pattern)
 
+        # 構成パターン（VideoAnalyzer強化で追加）
+        if composition := analysis_result.get("composition"):
+            pattern = self._update_or_create_pattern(
+                category="composition",
+                pattern_text=composition,
+                video_id=video_id,
+                video_url=video_url,
+            )
+            new_patterns.append(pattern)
+
         # テクニックパターン
         for technique in analysis_result.get("key_techniques", []):
+            # メタデータ由来の汎用タグ（ショート動画、タグ: ...）は除外
+            if technique.startswith("タグ:") or "動画（" in technique:
+                continue
             pattern = self._update_or_create_pattern(
                 category="technique",
                 pattern_text=technique,
+                video_id=video_id,
+                video_url=video_url,
+            )
+            new_patterns.append(pattern)
+
+        # LLM分析で抽出された「TEKO対談に応用できるパターン」
+        for learnable in analysis_result.get("learnable_patterns", []):
+            pattern = self._update_or_create_pattern(
+                category="technique",
+                pattern_text=f"[応用] {learnable}",
+                video_id=video_id,
+                video_url=video_url,
+            )
+            new_patterns.append(pattern)
+
+        # 強みパターン（他映像の強みをTEKOにも取り込む）
+        for strength in analysis_result.get("strengths", []):
+            pattern = self._update_or_create_pattern(
+                category="technique",
+                pattern_text=f"[参考] {strength}",
                 video_id=video_id,
                 video_url=video_url,
             )
@@ -134,18 +177,20 @@ class VideoLearner:
                     existing.source_video_ids.append(video_id)
                 if video_url and video_url not in existing.example_urls:
                     existing.example_urls.append(video_url)
-                existing.confidence = min(1.0, existing.source_count / 5.0)
+                # 10本規模のデータでも実用的なルールが生成されるよう閾値を緩和
+                # 3件重複で0.6到達 → ルール生成開始
+                existing.confidence = min(1.0, existing.source_count / 3.0)
                 existing.updated_at = datetime.now().isoformat()
                 return existing
 
-        # 新規作成
+        # 新規作成（初期confidence=0.25: 10本規模のデータでも2件重複でルール生成に近づく）
         new_pattern = VideoPattern(
             id=f"vpat_{datetime.now().strftime('%Y%m%d%H%M%S')}_{len(self._patterns)}",
             category=category,
             pattern=pattern_text,
             source_video_ids=[video_id],
             example_urls=[video_url] if video_url else [],
-            confidence=0.2,
+            confidence=0.25,
         )
         self._patterns[new_pattern.id] = new_pattern
         return new_pattern

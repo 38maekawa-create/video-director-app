@@ -1927,6 +1927,1007 @@
     return html;
   }
 
+  // ===================================================================
+  // ツールメニュー画面
+  // ===================================================================
+
+  function renderToolsMenu() {
+    // ツールページ用のコンテナを探すか、page-tracking の構造と同様にコンテナに描画
+    var page = document.getElementById('page-e2e-pipeline');
+    // ツールタブは専用ページがないので、既存ページを全部非表示にして
+    // ツールメニューをオーバーレイ的に表示する
+    // → 実際にはnavigateToでpage-toolsが探されるがHTMLにないので
+    // 代わりにモーダル風のツールメニューを生成する
+    var existing = document.getElementById('tools-menu-overlay');
+    if (existing) {
+      existing.classList.add('visible');
+      return;
+    }
+
+    var overlay = document.createElement('div');
+    overlay.className = 'tools-menu-overlay visible';
+    overlay.id = 'tools-menu-overlay';
+
+    var tools = [
+      { id: 'e2e-pipeline', icon: 'E2E', label: 'E2Eパイプライン', desc: '全工程一括実行' },
+      { id: 'telop-check', icon: 'TC', label: 'テロップチェック', desc: '誤字脱字・フォント検証' },
+      { id: 'audio-eval', icon: 'AE', label: '音声品質評価', desc: 'LUFS・ピーク・無音検出' },
+      { id: 'knowledge-browse', icon: 'KN', label: 'ナレッジページ', desc: '166ページ全文検索' },
+      { id: 'fb-learning', icon: 'FL', label: 'FB学習詳細', desc: 'パターン・ルール一覧' },
+      { id: 'frame-eval-detail', icon: 'FE', label: 'フレーム評価詳細', desc: '評価履歴・カテゴリ別' }
+    ];
+
+    overlay.innerHTML = '<div class="tools-menu-content">' +
+      '<div class="tools-menu-header">' +
+        '<span class="tools-menu-title">ツール</span>' +
+        '<button class="tools-menu-close" id="tools-menu-close">\u2715</button>' +
+      '</div>' +
+      '<div class="tools-menu-grid">' +
+        tools.map(function(t) {
+          return '<button class="tools-menu-item" data-tool="' + t.id + '">' +
+            '<div class="tools-menu-icon">' + t.icon + '</div>' +
+            '<div class="tools-menu-label">' + t.label + '</div>' +
+            '<div class="tools-menu-desc">' + t.desc + '</div>' +
+          '</button>';
+        }).join('') +
+      '</div>' +
+    '</div>';
+
+    document.body.appendChild(overlay);
+
+    // 閉じるボタン
+    document.getElementById('tools-menu-close').addEventListener('click', function() {
+      overlay.classList.remove('visible');
+      navigateTo('home');
+    });
+
+    // 背景クリックで閉じる
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) {
+        overlay.classList.remove('visible');
+        navigateTo('home');
+      }
+    });
+
+    // 各ツールボタン
+    overlay.querySelectorAll('.tools-menu-item').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        overlay.classList.remove('visible');
+        navigateTo(btn.dataset.tool);
+      });
+    });
+  }
+
+  // ===================================================================
+  // 画面8: E2Eパイプライン
+  // ===================================================================
+
+  function renderE2EPipelinePage() {
+    var content = document.getElementById('e2e-pipeline-content');
+    var projects = (typeof MockData !== 'undefined' && MockData.projects) ? MockData.projects : [];
+
+    content.innerHTML = '<button class="back-btn" id="e2e-back">\u2190 ツール</button>' +
+      '<div class="e2e-form">' +
+        '<div class="e2e-section">' +
+          '<label class="e2e-label">プロジェクト選択</label>' +
+          '<select class="e2e-select" id="e2e-project-select">' +
+            '<option value="">-- 選択してください --</option>' +
+            projects.map(function(p) {
+              return '<option value="' + escapeAttr(p.id) + '">' + escapeHTML(p.guestName) + ' - ' + escapeHTML(p.title) + '</option>';
+            }).join('') +
+          '</select>' +
+        '</div>' +
+        '<div class="e2e-section">' +
+          '<label class="e2e-label">Vimeo Video ID（任意）</label>' +
+          '<input type="text" class="e2e-input" id="e2e-vimeo-id" placeholder="例: 123456789">' +
+        '</div>' +
+        '<div class="e2e-section">' +
+          '<label class="e2e-toggle-wrap">' +
+            '<input type="checkbox" id="e2e-dryrun" checked>' +
+            '<span class="e2e-toggle-text">Dry Run（テスト実行）</span>' +
+          '</label>' +
+        '</div>' +
+        '<button class="e2e-run-btn" id="e2e-run-btn">E2Eパイプライン実行</button>' +
+      '</div>' +
+      '<div class="e2e-progress" id="e2e-progress" style="display:none;"></div>' +
+      '<div class="e2e-result" id="e2e-result" style="display:none;"></div>';
+
+    document.getElementById('e2e-back').addEventListener('click', function() {
+      navigateTo('tools');
+    });
+
+    document.getElementById('e2e-run-btn').addEventListener('click', function() {
+      runE2EPipeline();
+    });
+  }
+
+  function runE2EPipeline() {
+    var pid = document.getElementById('e2e-project-select').value;
+    if (!pid) {
+      alert('プロジェクトを選択してください');
+      return;
+    }
+
+    var vimeoId = document.getElementById('e2e-vimeo-id').value.trim();
+    var dryRun = document.getElementById('e2e-dryrun').checked;
+    var progressEl = document.getElementById('e2e-progress');
+    var resultEl = document.getElementById('e2e-result');
+    var runBtn = document.getElementById('e2e-run-btn');
+
+    // 5段階のパイプラインステップ
+    var steps = [
+      { key: 'fb_fetch', label: 'FB取得', icon: '1' },
+      { key: 'learning_rules', label: '学習ルール確認', icon: '2' },
+      { key: 'video_insights', label: '映像インサイト', icon: '3' },
+      { key: 'direction_gen', label: 'ディレクション生成', icon: '4' },
+      { key: 'vimeo_post', label: 'Vimeo投稿', icon: '5' }
+    ];
+
+    // 進捗表示を初期化
+    progressEl.style.display = 'block';
+    resultEl.style.display = 'none';
+    runBtn.disabled = true;
+    progressEl.innerHTML = '<div class="e2e-steps">' +
+      steps.map(function(s) {
+        return '<div class="e2e-step" id="e2e-step-' + s.key + '">' +
+          '<div class="e2e-step-icon e2e-step-pending">' + s.icon + '</div>' +
+          '<div class="e2e-step-label">' + s.label + '</div>' +
+          '<div class="e2e-step-status">待機中</div>' +
+        '</div>';
+      }).join('<div class="e2e-step-connector"></div>') +
+    '</div>';
+
+    var body = { dry_run: dryRun };
+    if (vimeoId) body.vimeo_video_id = vimeoId;
+
+    fetch('http://localhost:8210/api/v1/projects/' + encodeURIComponent(pid) + '/e2e-pipeline', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        runBtn.disabled = false;
+        var pipelineSteps = data.steps || data.pipeline_steps || [];
+
+        // 各ステップのステータスを更新
+        steps.forEach(function(s) {
+          var el = document.getElementById('e2e-step-' + s.key);
+          if (!el) return;
+          var stepData = pipelineSteps.find(function(ps) { return ps.key === s.key || ps.step === s.key; });
+          var status = stepData ? (stepData.status || 'pending') : 'pending';
+          var iconEl = el.querySelector('.e2e-step-icon');
+          var statusEl = el.querySelector('.e2e-step-status');
+
+          iconEl.className = 'e2e-step-icon e2e-step-' + status;
+          if (status === 'success') {
+            statusEl.textContent = '成功';
+            statusEl.style.color = 'var(--status-complete)';
+          } else if (status === 'failed' || status === 'error') {
+            statusEl.textContent = '失敗';
+            statusEl.style.color = 'var(--accent)';
+          } else if (status === 'skipped') {
+            statusEl.textContent = 'スキップ';
+            statusEl.style.color = 'var(--text-muted)';
+          } else {
+            statusEl.textContent = '完了';
+            statusEl.style.color = 'var(--status-complete)';
+          }
+        });
+
+        // 結果表示
+        resultEl.style.display = 'block';
+        var overall = data.status || data.overall_status || 'completed';
+        resultEl.innerHTML = '<div class="e2e-result-card ' + (overall === 'failed' ? 'e2e-result-fail' : 'e2e-result-ok') + '">' +
+          '<div class="e2e-result-title">' + (overall === 'failed' ? 'パイプライン失敗' : 'パイプライン完了') + '</div>' +
+          (data.message ? '<div class="e2e-result-msg">' + escapeHTML(data.message) + '</div>' : '') +
+          (dryRun ? '<div class="e2e-result-dryrun">Dry Runモード: 実際の投稿は行われていません</div>' : '') +
+        '</div>';
+      })
+      .catch(function() {
+        runBtn.disabled = false;
+        // 全ステップを失敗表示
+        steps.forEach(function(s) {
+          var el = document.getElementById('e2e-step-' + s.key);
+          if (!el) return;
+          el.querySelector('.e2e-step-icon').className = 'e2e-step-icon e2e-step-failed';
+          el.querySelector('.e2e-step-status').textContent = '接続エラー';
+          el.querySelector('.e2e-step-status').style.color = 'var(--accent)';
+        });
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = '<div class="e2e-result-card e2e-result-fail">' +
+          '<div class="e2e-result-title">接続エラー</div>' +
+          '<div class="e2e-result-msg">サーバーに接続できませんでした。APIサーバーが起動しているか確認してください。</div>' +
+        '</div>';
+      });
+  }
+
+  // ===================================================================
+  // 画面9: テロップチェック
+  // ===================================================================
+
+  function renderTelopCheckPage() {
+    var content = document.getElementById('telop-check-content');
+    var projects = (typeof MockData !== 'undefined' && MockData.projects) ? MockData.projects : [];
+
+    content.innerHTML = '<button class="back-btn" id="tc-back">\u2190 ツール</button>' +
+      '<div class="tc-form">' +
+        '<div class="tc-section">' +
+          '<label class="tc-label">プロジェクト選択</label>' +
+          '<select class="e2e-select" id="tc-project-select">' +
+            '<option value="">-- 選択してください --</option>' +
+            projects.map(function(p) {
+              return '<option value="' + escapeAttr(p.id) + '">' + escapeHTML(p.guestName) + ' - ' + escapeHTML(p.title) + '</option>';
+            }).join('') +
+          '</select>' +
+        '</div>' +
+        '<div class="tc-section">' +
+          '<label class="tc-label">入力方式</label>' +
+          '<div class="tc-input-toggle">' +
+            '<button class="tc-toggle-btn active" data-mode="text" id="tc-mode-text">テキスト入力</button>' +
+            '<button class="tc-toggle-btn" data-mode="image" id="tc-mode-image">フレーム画像</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="tc-section" id="tc-text-area">' +
+          '<label class="tc-label">テロップテキスト</label>' +
+          '<textarea class="tc-textarea" id="tc-text-input" placeholder="チェックしたいテロップテキストを入力..."></textarea>' +
+        '</div>' +
+        '<div class="tc-section" id="tc-image-area" style="display:none;">' +
+          '<label class="tc-label">フレーム画像</label>' +
+          '<div class="tc-drop-zone" id="tc-drop-zone">' +
+            '<div class="tc-drop-icon">+</div>' +
+            '<div class="tc-drop-text">タップして画像を選択</div>' +
+            '<input type="file" id="tc-file-input" accept="image/*" style="display:none;">' +
+          '</div>' +
+          '<div id="tc-preview" style="display:none;"></div>' +
+        '</div>' +
+        '<button class="e2e-run-btn" id="tc-run-btn">テロップチェック実行</button>' +
+      '</div>' +
+      '<div id="tc-result" style="display:none;"></div>';
+
+    document.getElementById('tc-back').addEventListener('click', function() {
+      navigateTo('tools');
+    });
+
+    // 入力モード切替
+    document.getElementById('tc-mode-text').addEventListener('click', function() {
+      document.getElementById('tc-text-area').style.display = 'block';
+      document.getElementById('tc-image-area').style.display = 'none';
+      this.classList.add('active');
+      document.getElementById('tc-mode-image').classList.remove('active');
+    });
+    document.getElementById('tc-mode-image').addEventListener('click', function() {
+      document.getElementById('tc-text-area').style.display = 'none';
+      document.getElementById('tc-image-area').style.display = 'block';
+      this.classList.add('active');
+      document.getElementById('tc-mode-text').classList.remove('active');
+    });
+
+    // 画像アップロード
+    var dropZone = document.getElementById('tc-drop-zone');
+    var fileInput = document.getElementById('tc-file-input');
+    dropZone.addEventListener('click', function() { fileInput.click(); });
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files.length > 0) {
+        var preview = document.getElementById('tc-preview');
+        preview.style.display = 'block';
+        preview.innerHTML = '<div class="tc-preview-file">\u2713 ' + escapeHTML(fileInput.files[0].name) + '</div>';
+      }
+    });
+
+    document.getElementById('tc-run-btn').addEventListener('click', function() {
+      runTelopCheck();
+    });
+  }
+
+  function runTelopCheck() {
+    var pid = document.getElementById('tc-project-select').value;
+    if (!pid) {
+      alert('プロジェクトを選択してください');
+      return;
+    }
+
+    var resultEl = document.getElementById('tc-result');
+    var runBtn = document.getElementById('tc-run-btn');
+    runBtn.disabled = true;
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = '<div class="ef-loading"><div class="yt-loading-text">テロップチェック中...</div></div>';
+
+    var isTextMode = document.getElementById('tc-mode-text').classList.contains('active');
+    var formData = new FormData();
+
+    if (isTextMode) {
+      var text = document.getElementById('tc-text-input').value;
+      formData.append('telop_text', text);
+    } else {
+      var fileInput = document.getElementById('tc-file-input');
+      if (fileInput.files.length > 0) {
+        formData.append('frame_image', fileInput.files[0]);
+      }
+    }
+
+    fetch('http://localhost:8210/api/v1/projects/' + encodeURIComponent(pid) + '/telop-check', {
+      method: 'POST',
+      body: formData
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        runBtn.disabled = false;
+        renderTelopCheckResult(resultEl, data);
+      })
+      .catch(function() {
+        runBtn.disabled = false;
+        resultEl.innerHTML = '<div class="e2e-result-card e2e-result-fail">' +
+          '<div class="e2e-result-title">接続エラー</div>' +
+          '<div class="e2e-result-msg">サーバーに接続できませんでした。</div>' +
+        '</div>';
+      });
+  }
+
+  function renderTelopCheckResult(container, data) {
+    var issues = data.issues || data.checks || data.results || [];
+    var html = '<div class="tc-result-wrap">';
+
+    // 総合判定
+    var totalErrors = issues.filter(function(i) { return (i.severity || i.level) === 'error'; }).length;
+    var totalWarnings = issues.filter(function(i) { return (i.severity || i.level) === 'warning'; }).length;
+    var totalInfo = issues.filter(function(i) { return (i.severity || i.level) === 'info'; }).length;
+
+    html += '<div class="tc-summary-row">' +
+      '<span class="tc-summary-badge tc-sev-error">\u2717 エラー ' + totalErrors + '</span>' +
+      '<span class="tc-summary-badge tc-sev-warning">\u26a0 警告 ' + totalWarnings + '</span>' +
+      '<span class="tc-summary-badge tc-sev-info">\u24d8 情報 ' + totalInfo + '</span>' +
+    '</div>';
+
+    // 各問題の一覧
+    if (issues.length > 0) {
+      issues.forEach(function(issue) {
+        var sev = issue.severity || issue.level || 'info';
+        var sevClass = sev === 'error' ? 'tc-sev-error' : sev === 'warning' ? 'tc-sev-warning' : 'tc-sev-info';
+        var msg = issue.message || issue.text || issue.description || '';
+        var category = issue.category || issue.type || '';
+
+        html += '<div class="tc-issue-card ' + sevClass + '-card">' +
+          '<div class="tc-issue-sev ' + sevClass + '">' + sev.toUpperCase() + '</div>' +
+          '<div class="tc-issue-body">' +
+            (category ? '<div class="tc-issue-cat">' + escapeHTML(category) + '</div>' : '') +
+            '<div class="tc-issue-msg">' + escapeHTML(msg) + '</div>' +
+          '</div>' +
+        '</div>';
+      });
+    } else {
+      html += '<div class="tc-no-issues">' +
+        '<div class="tc-ok-icon">\u2713</div>' +
+        '<div class="tc-ok-text">テロップに問題は検出されませんでした</div>' +
+      '</div>';
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  // ===================================================================
+  // 画面10: 音声品質評価
+  // ===================================================================
+
+  function renderAudioEvalPage() {
+    var content = document.getElementById('audio-eval-content');
+    var projects = (typeof MockData !== 'undefined' && MockData.projects) ? MockData.projects : [];
+
+    content.innerHTML = '<button class="back-btn" id="ae-back">\u2190 ツール</button>' +
+      '<div class="ae-form">' +
+        '<div class="e2e-section">' +
+          '<label class="e2e-label">プロジェクト選択</label>' +
+          '<select class="e2e-select" id="ae-project-select">' +
+            '<option value="">-- 選択してください --</option>' +
+            projects.map(function(p) {
+              return '<option value="' + escapeAttr(p.id) + '">' + escapeHTML(p.guestName) + ' - ' + escapeHTML(p.title) + '</option>';
+            }).join('') +
+          '</select>' +
+        '</div>' +
+        '<div class="e2e-section">' +
+          '<label class="e2e-label">動画パス（任意）</label>' +
+          '<input type="text" class="e2e-input" id="ae-video-path" placeholder="/path/to/video.mp4">' +
+        '</div>' +
+        '<button class="e2e-run-btn" id="ae-run-btn">評価実行</button>' +
+      '</div>' +
+      '<div id="ae-result" style="display:none;"></div>';
+
+    document.getElementById('ae-back').addEventListener('click', function() {
+      navigateTo('tools');
+    });
+
+    document.getElementById('ae-run-btn').addEventListener('click', function() {
+      runAudioEval();
+    });
+  }
+
+  function runAudioEval() {
+    var pid = document.getElementById('ae-project-select').value;
+    if (!pid) {
+      alert('プロジェクトを選択してください');
+      return;
+    }
+
+    var videoPath = document.getElementById('ae-video-path').value.trim();
+    var resultEl = document.getElementById('ae-result');
+    var runBtn = document.getElementById('ae-run-btn');
+    runBtn.disabled = true;
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = '<div class="ef-loading"><div class="yt-loading-text">音声品質を評価中...</div></div>';
+
+    var body = {};
+    if (videoPath) body.video_path = videoPath;
+
+    fetch('http://localhost:8210/api/v1/projects/' + encodeURIComponent(pid) + '/audio-evaluation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        runBtn.disabled = false;
+        renderAudioEvalResult(resultEl, data);
+      })
+      .catch(function() {
+        runBtn.disabled = false;
+        resultEl.innerHTML = '<div class="e2e-result-card e2e-result-fail">' +
+          '<div class="e2e-result-title">接続エラー</div>' +
+          '<div class="e2e-result-msg">サーバーに接続できませんでした。</div>' +
+        '</div>';
+      });
+  }
+
+  function renderAudioEvalResult(container, data) {
+    var metrics = data.metrics || data.audio_metrics || {};
+    var issues = data.issues || data.problems || [];
+    var overallScore = data.overall_score || data.score || null;
+
+    var html = '<div class="ae-result-wrap">';
+
+    // 総合スコア表示
+    if (overallScore !== null) {
+      var sColor = scoreColor(overallScore);
+      var sClass = scoreClass(overallScore);
+      html += '<div class="ae-overall">' +
+        '<div class="ae-overall-label">音声品質スコア</div>' +
+        '<div class="ae-overall-score ' + sClass + '" style="color:' + sColor + '">' + overallScore + '</div>' +
+      '</div>';
+    }
+
+    // メトリクスカード
+    var metricItems = [
+      { key: 'loudness_lufs', label: '音量 (LUFS)', unit: 'LUFS' },
+      { key: 'peak_dbfs', label: 'ピーク', unit: 'dBFS' },
+      { key: 'dynamic_range', label: 'ダイナミックレンジ', unit: 'dB' },
+      { key: 'silence_segments', label: '無音区間', unit: '箇所' },
+      { key: 'sudden_changes', label: '急激な音量変化', unit: '箇所' }
+    ];
+
+    html += '<div class="ae-metrics-grid">';
+    metricItems.forEach(function(m) {
+      var val = metrics[m.key] !== undefined ? metrics[m.key] :
+                metrics[m.key.replace(/_/g, '')] !== undefined ? metrics[m.key.replace(/_/g, '')] : '--';
+      html += '<div class="ae-metric-card">' +
+        '<div class="ae-metric-label">' + m.label + '</div>' +
+        '<div class="ae-metric-value">' + val + '</div>' +
+        '<div class="ae-metric-unit">' + m.unit + '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+
+    // 問題リスト
+    if (issues.length > 0) {
+      html += '<div class="ae-issues-section">' +
+        '<div class="ae-issues-title">検出された問題</div>';
+      issues.forEach(function(issue) {
+        var sev = issue.severity || issue.level || 'info';
+        var sevColor = sev === 'error' || sev === 'critical' ? 'var(--accent)' :
+                       sev === 'warning' ? 'var(--status-editing)' : 'var(--status-directed)';
+        var msg = issue.message || issue.text || issue.description || '';
+        html += '<div class="ae-issue-item">' +
+          '<div class="ae-issue-dot" style="background:' + sevColor + '"></div>' +
+          '<div class="ae-issue-body">' +
+            '<div class="ae-issue-sev" style="color:' + sevColor + '">' + sev.toUpperCase() + '</div>' +
+            '<div class="ae-issue-msg">' + escapeHTML(msg) + '</div>' +
+          '</div>' +
+        '</div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<div class="tc-no-issues">' +
+        '<div class="tc-ok-icon">\u2713</div>' +
+        '<div class="tc-ok-text">音声品質に問題は検出されませんでした</div>' +
+      '</div>';
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  // ===================================================================
+  // 画面11: ナレッジページ閲覧
+  // ===================================================================
+
+  var knowledgeBrowseState = { pages: [], filteredPages: [], searchQuery: '', guestFilter: '' };
+
+  function renderKnowledgeBrowsePage() {
+    var content = document.getElementById('knowledge-browse-content');
+    content.innerHTML = '<button class="back-btn" id="kb-back">\u2190 ツール</button>' +
+      '<div class="kb-search-wrap">' +
+        '<div class="search-bar">' +
+          '<svg class="icon-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>' +
+          '<input type="text" id="kb-search" placeholder="ナレッジを検索...">' +
+        '</div>' +
+      '</div>' +
+      '<div class="kb-filter-bar" id="kb-filters"></div>' +
+      '<div class="kb-page-count" id="kb-page-count"></div>' +
+      '<div class="kb-grid" id="kb-grid"></div>' +
+      '<div class="kb-modal-overlay" id="kb-modal" style="display:none;">' +
+        '<div class="kb-modal-content">' +
+          '<div class="kb-modal-header">' +
+            '<span class="kb-modal-title" id="kb-modal-title"></span>' +
+            '<button class="kb-modal-close" id="kb-modal-close">\u2715</button>' +
+          '</div>' +
+          '<div class="kb-modal-body" id="kb-modal-body"></div>' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById('kb-back').addEventListener('click', function() {
+      navigateTo('tools');
+    });
+
+    document.getElementById('kb-modal-close').addEventListener('click', function() {
+      document.getElementById('kb-modal').style.display = 'none';
+    });
+    document.getElementById('kb-modal').addEventListener('click', function(e) {
+      if (e.target === this) this.style.display = 'none';
+    });
+
+    // ページ一覧を取得
+    content.querySelector('.kb-grid').innerHTML = '<div class="ef-loading"><div class="yt-loading-text">ナレッジページを読み込み中...</div></div>';
+
+    fetch('http://localhost:8210/api/v1/knowledge/pages')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var pages = data.pages || data || [];
+        knowledgeBrowseState.pages = pages;
+        knowledgeBrowseState.filteredPages = pages;
+        renderKnowledgeFilters(pages);
+        renderKnowledgeGrid(pages);
+      })
+      .catch(function() {
+        // フォールバック: knowledge-pages-mapから取得
+        var pages = [];
+        if (typeof KNOWLEDGE_PAGES_MAP !== 'undefined') {
+          Object.keys(KNOWLEDGE_PAGES_MAP).forEach(function(name) {
+            pages.push({ guest_name: name, filename: KNOWLEDGE_PAGES_MAP[name], title: name + ' ナレッジページ' });
+          });
+        }
+        knowledgeBrowseState.pages = pages;
+        knowledgeBrowseState.filteredPages = pages;
+        renderKnowledgeFilters(pages);
+        renderKnowledgeGrid(pages);
+      });
+
+    // 検索ハンドラー
+    document.getElementById('kb-search').addEventListener('input', function() {
+      knowledgeBrowseState.searchQuery = this.value.toLowerCase();
+      filterKnowledgePages();
+    });
+  }
+
+  function renderKnowledgeFilters(pages) {
+    var guests = [];
+    var seen = {};
+    pages.forEach(function(p) {
+      var name = p.guest_name || p.guestName || '';
+      if (name && !seen[name]) {
+        seen[name] = true;
+        guests.push(name);
+      }
+    });
+    guests.sort();
+
+    var filterBar = document.getElementById('kb-filters');
+    filterBar.innerHTML = '<button class="filter-btn active" data-guest="">すべて</button>' +
+      guests.map(function(g) {
+        return '<button class="filter-btn" data-guest="' + escapeAttr(g) + '">' + escapeHTML(g) + '</button>';
+      }).join('');
+
+    filterBar.querySelectorAll('.filter-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        filterBar.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        knowledgeBrowseState.guestFilter = btn.dataset.guest;
+        filterKnowledgePages();
+      });
+    });
+  }
+
+  function filterKnowledgePages() {
+    var pages = knowledgeBrowseState.pages;
+    var query = knowledgeBrowseState.searchQuery;
+    var guest = knowledgeBrowseState.guestFilter;
+
+    var filtered = pages.filter(function(p) {
+      var name = (p.guest_name || p.guestName || '').toLowerCase();
+      var title = (p.title || '').toLowerCase();
+      var matchSearch = !query || name.includes(query) || title.includes(query);
+      var matchGuest = !guest || (p.guest_name || p.guestName || '') === guest;
+      return matchSearch && matchGuest;
+    });
+
+    // 検索APIも使う
+    if (query && query.length >= 2) {
+      fetch('http://localhost:8210/api/v1/knowledge/search?q=' + encodeURIComponent(query))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var searchResults = data.results || data.pages || data || [];
+          // マージ（重複除去）
+          var ids = {};
+          filtered.forEach(function(p) { ids[p.filename || p.id] = true; });
+          searchResults.forEach(function(p) {
+            var key = p.filename || p.id;
+            if (!ids[key]) {
+              filtered.push(p);
+              ids[key] = true;
+            }
+          });
+          renderKnowledgeGrid(filtered);
+        })
+        .catch(function() {
+          renderKnowledgeGrid(filtered);
+        });
+    } else {
+      renderKnowledgeGrid(filtered);
+    }
+  }
+
+  function renderKnowledgeGrid(pages) {
+    var grid = document.getElementById('kb-grid');
+    var countEl = document.getElementById('kb-page-count');
+    countEl.textContent = pages.length + '件のナレッジページ';
+
+    if (pages.length === 0) {
+      grid.innerHTML = '<div class="ef-empty">該当するナレッジページがありません</div>';
+      return;
+    }
+
+    grid.innerHTML = pages.map(function(p) {
+      var guestName = p.guest_name || p.guestName || '';
+      var title = p.title || guestName + ' ナレッジ';
+      var filename = p.filename || '';
+
+      return '<div class="kb-card" data-filename="' + escapeAttr(filename) + '" data-title="' + escapeAttr(title) + '">' +
+        '<div class="kb-card-icon">KN</div>' +
+        '<div class="kb-card-body">' +
+          '<div class="kb-card-guest">' + escapeHTML(guestName) + '</div>' +
+          '<div class="kb-card-title">' + escapeHTML(title) + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    grid.querySelectorAll('.kb-card').forEach(function(card) {
+      card.addEventListener('click', function() {
+        var filename = card.dataset.filename;
+        var title = card.dataset.title;
+        openKnowledgeModal(filename, title);
+      });
+    });
+  }
+
+  function openKnowledgeModal(filename, title) {
+    var modal = document.getElementById('kb-modal');
+    var modalTitle = document.getElementById('kb-modal-title');
+    var modalBody = document.getElementById('kb-modal-body');
+
+    modalTitle.textContent = title;
+    modal.style.display = 'flex';
+
+    if (filename) {
+      modalBody.innerHTML = '<iframe src="knowledge-pages/' + encodeURIComponent(filename) + '" class="kb-iframe" sandbox="allow-same-origin"></iframe>';
+    } else {
+      modalBody.innerHTML = '<div class="ef-empty">コンテンツを読み込めません</div>';
+    }
+  }
+
+  // ===================================================================
+  // 画面12: FB学習詳細
+  // ===================================================================
+
+  function renderFBLearningPage() {
+    var content = document.getElementById('fb-learning-content');
+    content.innerHTML = '<button class="back-btn" id="fbl-back">\u2190 ツール</button>' +
+      '<div class="ef-loading"><div class="yt-loading-text">FB学習データを読み込み中...</div></div>';
+
+    document.getElementById('fbl-back').addEventListener('click', function() {
+      navigateTo('tools');
+    });
+
+    // 並列でAPI呼び出し
+    var patternsPromise = fetch('http://localhost:8210/api/learning/feedback-patterns')
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .catch(function() { return null; });
+
+    var summaryPromise = fetch('http://localhost:8210/api/learning/summary')
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .catch(function() { return null; });
+
+    Promise.all([patternsPromise, summaryPromise]).then(function(results) {
+      var patternsData = results[0];
+      var summaryData = results[1];
+      renderFBLearningContent(content, patternsData, summaryData);
+    });
+  }
+
+  function renderFBLearningContent(container, patternsData, summaryData) {
+    var html = '<button class="back-btn" id="fbl-back2">\u2190 ツール</button>';
+
+    // サマリー統計
+    var fbLearning = {};
+    if (summaryData) {
+      fbLearning = summaryData.feedback_learning || summaryData.feedbackLearning || summaryData || {};
+    }
+
+    var totalPatterns = fbLearning.total_patterns || fbLearning.totalPatterns || 0;
+    var activeRules = fbLearning.active_rules || fbLearning.activeRules || 0;
+    var totalFeedbacks = fbLearning.total_feedbacks || fbLearning.totalFeedbacks || 0;
+
+    html += '<div class="fbl-stats-row">' +
+      '<div class="fbl-stat-card">' +
+        '<div class="fbl-stat-num">' + totalPatterns + '</div>' +
+        '<div class="fbl-stat-label">検出パターン</div>' +
+      '</div>' +
+      '<div class="fbl-stat-card">' +
+        '<div class="fbl-stat-num" style="color:var(--status-complete)">' + activeRules + '</div>' +
+        '<div class="fbl-stat-label">有効ルール</div>' +
+      '</div>' +
+      '<div class="fbl-stat-card">' +
+        '<div class="fbl-stat-num" style="color:var(--status-directed)">' + totalFeedbacks + '</div>' +
+        '<div class="fbl-stat-label">学習元FB</div>' +
+      '</div>' +
+    '</div>';
+
+    // パターン一覧テーブル
+    var patterns = [];
+    if (patternsData) {
+      patterns = patternsData.patterns || patternsData.detected_patterns || patternsData || [];
+    }
+    if (Array.isArray(patterns) && patterns.length > 0) {
+      html += '<div class="fbl-section">' +
+        '<div class="fbl-section-title">パターン一覧</div>' +
+        '<div class="fbl-table-wrap">' +
+          '<table class="fbl-table">' +
+            '<thead><tr>' +
+              '<th>カテゴリ</th><th>パターン</th><th>確信度</th><th>頻度</th>' +
+            '</tr></thead>' +
+            '<tbody>';
+
+      patterns.forEach(function(pat) {
+        var cat = pat.category || pat.type || '全般';
+        var text = pat.pattern || pat.text || pat.description || '';
+        var conf = pat.confidence || pat.score || 0;
+        var confPct = Math.round(conf * 100);
+        var freq = pat.frequency || pat.count || 0;
+        var confColor = confPct >= 80 ? 'var(--status-complete)' : confPct >= 50 ? 'var(--status-editing)' : 'var(--accent)';
+
+        html += '<tr>' +
+          '<td><span class="fbl-cat-badge">' + escapeHTML(cat) + '</span></td>' +
+          '<td class="fbl-text-cell">' + escapeHTML(text) + '</td>' +
+          '<td><div class="fbl-conf-cell"><div class="fbl-conf-bar"><div class="fbl-conf-fill" style="width:' + confPct + '%;background:' + confColor + '"></div></div><span class="fbl-conf-pct">' + confPct + '%</span></div></td>' +
+          '<td class="fbl-freq-cell">' + freq + '回</td>' +
+        '</tr>';
+      });
+
+      html += '</tbody></table></div></div>';
+    }
+
+    // ルール一覧テーブル
+    var rules = fbLearning.rules || fbLearning.learned_rules || [];
+    if (rules.length > 0) {
+      html += '<div class="fbl-section">' +
+        '<div class="fbl-section-title">ルール一覧</div>' +
+        '<div class="fbl-table-wrap">' +
+          '<table class="fbl-table">' +
+            '<thead><tr>' +
+              '<th>ルール</th><th>カテゴリ</th><th>優先度</th><th>生成日</th>' +
+            '</tr></thead>' +
+            '<tbody>';
+
+      rules.forEach(function(rule) {
+        var rText = rule.text || rule.rule || rule.description || '';
+        var rCat = rule.category || '全般';
+        var rPriority = rule.priority || rule.weight || '';
+        var rDate = rule.created_at || rule.createdAt || rule.date || '';
+
+        html += '<tr>' +
+          '<td class="fbl-text-cell">' + escapeHTML(rText) + '</td>' +
+          '<td><span class="fbl-cat-badge">' + escapeHTML(rCat) + '</span></td>' +
+          '<td>' + escapeHTML(String(rPriority)) + '</td>' +
+          '<td class="fbl-date-cell">' + escapeHTML(rDate) + '</td>' +
+        '</tr>';
+      });
+
+      html += '</tbody></table></div></div>';
+    }
+
+    container.innerHTML = html;
+
+    document.getElementById('fbl-back2').addEventListener('click', function() {
+      navigateTo('tools');
+    });
+  }
+
+  // ===================================================================
+  // 画面13: フレーム評価詳細
+  // ===================================================================
+
+  function renderFrameEvalDetailPage() {
+    var content = document.getElementById('frame-eval-detail-content');
+    var projects = (typeof MockData !== 'undefined' && MockData.projects) ? MockData.projects : [];
+
+    content.innerHTML = '<button class="back-btn" id="fed-back">\u2190 ツール</button>' +
+      '<div class="fed-form">' +
+        '<div class="e2e-section">' +
+          '<label class="e2e-label">プロジェクト選択</label>' +
+          '<select class="e2e-select" id="fed-project-select">' +
+            '<option value="">-- 選択してください --</option>' +
+            projects.map(function(p) {
+              return '<option value="' + escapeAttr(p.id) + '">' + escapeHTML(p.guestName) + ' - ' + escapeHTML(p.title) + '</option>';
+            }).join('') +
+          '</select>' +
+        '</div>' +
+        '<button class="e2e-run-btn" id="fed-run-btn">評価データ取得</button>' +
+      '</div>' +
+      '<div id="fed-result" style="display:none;"></div>';
+
+    document.getElementById('fed-back').addEventListener('click', function() {
+      navigateTo('tools');
+    });
+
+    document.getElementById('fed-run-btn').addEventListener('click', function() {
+      runFrameEvalDetail();
+    });
+  }
+
+  function runFrameEvalDetail() {
+    var pid = document.getElementById('fed-project-select').value;
+    if (!pid) {
+      alert('プロジェクトを選択してください');
+      return;
+    }
+
+    var resultEl = document.getElementById('fed-result');
+    var runBtn = document.getElementById('fed-run-btn');
+    runBtn.disabled = true;
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = '<div class="ef-loading"><div class="yt-loading-text">フレーム評価データを取得中...</div></div>';
+
+    fetch('http://localhost:8210/api/v1/projects/' + encodeURIComponent(pid) + '/frame-evaluation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        runBtn.disabled = false;
+        renderFrameEvalDetailResult(resultEl, data);
+      })
+      .catch(function() {
+        runBtn.disabled = false;
+        resultEl.innerHTML = '<div class="e2e-result-card e2e-result-fail">' +
+          '<div class="e2e-result-title">接続エラー</div>' +
+          '<div class="e2e-result-msg">サーバーに接続できませんでした。</div>' +
+        '</div>';
+      });
+  }
+
+  function renderFrameEvalDetailResult(container, data) {
+    var frames = data.frames || data.evaluations || [];
+    var overallScore = data.overall_score || data.overallScore || null;
+    var summary = data.summary || '';
+    var categories = data.categories || data.category_scores || {};
+    var history = data.history || data.evaluation_history || [];
+
+    var html = '<div class="fed-result-wrap">';
+
+    // 総合スコア
+    if (overallScore !== null) {
+      var sColor = scoreColor(overallScore);
+      html += '<div class="ae-overall">' +
+        '<div class="ae-overall-label">フレーム総合評価</div>' +
+        '<div class="ae-overall-score" style="color:' + sColor + '">' + overallScore + '</div>' +
+        (summary ? '<div class="frame-eval-summary">' + escapeHTML(summary) + '</div>' : '') +
+      '</div>';
+    }
+
+    // カテゴリ別評価
+    var catEntries = Object.entries(categories);
+    if (catEntries.length > 0) {
+      html += '<div class="fed-section">' +
+        '<div class="fed-section-title">カテゴリ別評価</div>' +
+        '<div class="fed-cat-grid">';
+      catEntries.forEach(function(entry) {
+        var catName = entry[0];
+        var catScore = entry[1];
+        var cColor = scoreColor(typeof catScore === 'number' ? catScore : (catScore.score || 0));
+        var cVal = typeof catScore === 'number' ? catScore : (catScore.score || 0);
+        html += '<div class="fed-cat-card">' +
+          '<div class="fed-cat-name">' + escapeHTML(catName) + '</div>' +
+          '<div class="fed-cat-score" style="color:' + cColor + '">' + cVal + '</div>' +
+          '<div class="fed-cat-bar"><div class="fed-cat-bar-fill" style="width:' + cVal + '%;background:' + cColor + '"></div></div>' +
+        '</div>';
+      });
+      html += '</div></div>';
+    }
+
+    // 各フレーム詳細（既存のbuildFrameEvaluationHTMLと同じ構造）
+    if (frames.length > 0) {
+      html += '<div class="fed-section">' +
+        '<div class="fed-section-title">各フレーム評価詳細</div>';
+      frames.forEach(function(frame, idx) {
+        var frameScore = frame.score || frame.overall_score || 0;
+        var fColor = scoreColor(frameScore);
+        var timestamp = frame.timestamp || frame.time || '';
+        var tsStr = typeof timestamp === 'number' ? formatTimestamp(timestamp) : (timestamp || '');
+        var issues = frame.issues || frame.findings || [];
+        var suggestions = frame.suggestions || frame.improvements || [];
+
+        html += '<div class="frame-eval-card">' +
+          '<div class="frame-eval-card-header">' +
+            '<div class="frame-eval-frame-num">フレーム #' + (idx + 1) + (tsStr ? ' (' + tsStr + ')' : '') + '</div>' +
+            '<div class="frame-eval-frame-score" style="color:' + fColor + '">' + frameScore + '</div>' +
+          '</div>';
+
+        if (issues.length > 0) {
+          html += '<div class="frame-eval-issues"><div class="frame-eval-sub-label">指摘事項</div>';
+          issues.forEach(function(issue) {
+            var issueText = typeof issue === 'string' ? issue : (issue.text || issue.message || '');
+            var sev = typeof issue === 'object' ? (issue.severity || 'info') : 'info';
+            var sevColor = sev === 'error' || sev === 'critical' ? 'var(--accent)' :
+                           sev === 'medium' ? 'var(--status-editing)' : 'var(--status-directed)';
+            html += '<div class="frame-eval-issue-item"><div class="frame-eval-issue-dot" style="background:' + sevColor + '"></div><div class="frame-eval-issue-text">' + escapeHTML(issueText) + '</div></div>';
+          });
+          html += '</div>';
+        }
+
+        if (suggestions.length > 0) {
+          html += '<div class="frame-eval-suggestions"><div class="frame-eval-sub-label">改善提案</div>';
+          suggestions.forEach(function(sug) {
+            var sugText = typeof sug === 'string' ? sug : (sug.text || sug.suggestion || '');
+            html += '<div class="frame-eval-sug-item"><span class="frame-eval-sug-arrow">\u2192</span><span class="frame-eval-sug-text">' + escapeHTML(sugText) + '</span></div>';
+          });
+          html += '</div>';
+        }
+
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    // 過去の評価履歴
+    if (history.length > 0) {
+      html += '<div class="fed-section">' +
+        '<div class="fed-section-title">過去の評価履歴</div>';
+      history.forEach(function(h) {
+        var hDate = h.date || h.created_at || h.createdAt || '';
+        var hScore = h.score || h.overall_score || 0;
+        var hColor = scoreColor(hScore);
+        var hFrames = h.frame_count || h.frameCount || 0;
+        html += '<div class="fed-history-card">' +
+          '<div class="fed-history-date">' + escapeHTML(hDate) + '</div>' +
+          '<div class="fed-history-score" style="color:' + hColor + '">' + hScore + '</div>' +
+          '<div class="fed-history-frames">' + hFrames + 'フレーム</div>' +
+        '</div>';
+      });
+      html += '</div>';
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
   // HTML文字列エスケープ
   function escapeHTML(str) {
     if (!str) return '';

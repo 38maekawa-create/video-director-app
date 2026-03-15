@@ -130,6 +130,86 @@ final class APIClient: ObservableObject {
         )
     }
 
+    // MARK: - E2Eパイプライン
+
+    /// E2Eパイプラインを実行する（FB→学習→ディレクション生成→Vimeo投稿）
+    /// 長時間処理のためタイムアウトを120秒に設定
+    func runE2EPipeline(
+        projectId: String,
+        body: E2EPipelineRequestBody = E2EPipelineRequestBody()
+    ) async throws -> E2EPipelineResponse {
+        return try await performLongRequest(
+            E2EPipelineResponse.self,
+            path: "/api/v1/projects/\(projectId)/e2e-pipeline",
+            method: "POST",
+            body: body,
+            timeout: 120
+        )
+    }
+
+    // MARK: - テロップチェック
+
+    /// テロップチェック結果を取得（キャッシュ済み）
+    func fetchTelopCheck(projectId: String) async throws -> TelopCheckResponse {
+        try await request(TelopCheckResponse.self, path: "/api/v1/projects/\(projectId)/telop-check")
+    }
+
+    /// テロップチェックを実行する
+    func runTelopCheck(
+        projectId: String,
+        body: TelopCheckRequestBody = TelopCheckRequestBody()
+    ) async throws -> TelopCheckResponse {
+        return try await request(
+            TelopCheckResponse.self,
+            path: "/api/v1/projects/\(projectId)/telop-check",
+            method: "POST",
+            body: body
+        )
+    }
+
+    // MARK: - 音声品質評価
+
+    /// 音声品質評価結果を取得（キャッシュ済み）
+    func fetchAudioEvaluation(projectId: String) async throws -> AudioEvaluationResponse {
+        try await request(AudioEvaluationResponse.self, path: "/api/v1/projects/\(projectId)/audio-evaluation")
+    }
+
+    /// 音声品質評価を実行する
+    func runAudioEvaluation(projectId: String) async throws -> AudioEvaluationResponse {
+        try await request(
+            AudioEvaluationResponse.self,
+            path: "/api/v1/projects/\(projectId)/audio-evaluation",
+            method: "POST"
+        )
+    }
+
+    // MARK: - ナレッジページ
+
+    /// ナレッジページ一覧を取得
+    func fetchKnowledgePages(limit: Int = 50, offset: Int = 0) async throws -> KnowledgePagesResponse {
+        try await request(
+            KnowledgePagesResponse.self,
+            path: "/api/v1/knowledge/pages?limit=\(limit)&offset=\(offset)"
+        )
+    }
+
+    /// ナレッジページ詳細を取得（HTML形式）
+    func fetchKnowledgePageDetail(pageId: String) async throws -> KnowledgePageDetail {
+        try await request(
+            KnowledgePageDetail.self,
+            path: "/api/v1/knowledge/pages/\(pageId)?format=html"
+        )
+    }
+
+    /// ナレッジ検索
+    func searchKnowledge(query: String, limit: Int = 20) async throws -> KnowledgeSearchResponse {
+        let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
+        return try await request(
+            KnowledgeSearchResponse.self,
+            path: "/api/v1/knowledge/search?q=\(encodedQuery)&limit=\(limit)"
+        )
+    }
+
     func convertFeedback(rawText: String, projectId: String) async throws -> FeedbackConvertResponse {
         let body = FeedbackConvertRequest(rawText: rawText, projectId: projectId)
         return try await request(FeedbackConvertResponse.self, path: "/api/feedback/convert", method: "POST", body: body)
@@ -243,6 +323,31 @@ final class APIClient: ObservableObject {
             return EmptyResponse() as! T
         }
 
+        return try decoder.decode(T.self, from: data)
+    }
+
+    /// 長時間実行API用（タイムアウト延長）
+    private func performLongRequest<T: Decodable, Body: Encodable>(
+        _ type: T.Type = T.self,
+        path: String,
+        method: String,
+        body: Body,
+        timeout: TimeInterval
+    ) async throws -> T {
+        let url = buildURL(base: baseURL, path: path)
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.timeoutInterval = timeout
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try encoder.encode(body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.server(statusCode: httpResponse.statusCode)
+        }
         return try decoder.decode(T.self, from: data)
     }
 

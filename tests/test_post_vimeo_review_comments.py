@@ -77,7 +77,8 @@ def test_post_with_retry_returns_immediately_for_non_retryable_http_error(monkey
     assert result["retries"] == 0
 
 
-def test_main_live_mode_posts_without_dry_run(monkeypatch, tmp_path):
+def test_main_live_mode_posts_with_execute_flag(monkeypatch, tmp_path):
+    """--execute --yes フラグを指定した場合に本番投稿が行われること"""
     relay_payload = {
         "targetVideoId": "vimeo-001",
         "body": {
@@ -106,7 +107,11 @@ def test_main_live_mode_posts_without_dry_run(monkeypatch, tmp_path):
             "retries": 0,
         },
     )
-    monkeypatch.setattr(sys, "argv", ["post_vimeo_review_comments.py", str(json_path)])
+    # --execute --yes で確認プロンプトをスキップして本番投稿
+    monkeypatch.setattr(
+        sys, "argv",
+        ["post_vimeo_review_comments.py", str(json_path), "--execute", "--yes"],
+    )
 
     rc = MODULE.main()
     assert rc == 0
@@ -141,6 +146,108 @@ def test_main_dry_run_skips_invalid_and_duplicate_feedback(monkeypatch, tmp_path
     assert len(skipped) == 2
     assert any(item["reason"] == "duplicate feedbackId" for item in skipped)
     assert any("timestampSeconds" in item["reason"] for item in skipped)
+
+
+def test_main_default_is_dry_run(monkeypatch, tmp_path, capsys):
+    """引数なし（--execute未指定）でdry-runになること"""
+    relay_payload = {
+        "targetVideoId": "vimeo-002",
+        "body": {
+            "targetVideoId": "vimeo-002",
+            "comments": [
+                {"feedbackId": "fb-1", "timestampSeconds": 5, "convertedText": "テスト"},
+            ],
+        },
+    }
+    json_path = tmp_path / "relay_request.json"
+    json_path.write_text(json.dumps(relay_payload, ensure_ascii=False), encoding="utf-8")
+
+    # load_token / post_with_retry はモックしない（dry-runなので呼ばれないはず）
+    # 万一呼ばれた場合は例外で気づけるようにする
+    monkeypatch.setattr(MODULE, "load_token", lambda: (_ for _ in ()).throw(AssertionError("dry-runなのにload_tokenが呼ばれた")))
+    monkeypatch.setattr(sys, "argv", ["post_vimeo_review_comments.py", str(json_path)])
+
+    rc = MODULE.main()
+    assert rc == 0
+    out = capsys.readouterr().out
+    data = json.loads(out)
+    # dry-run出力には "requests" キーが含まれる
+    assert "requests" in data
+
+
+def test_main_execute_cancelled_by_user(monkeypatch, tmp_path):
+    """--execute 指定でユーザーが 'no' と回答した場合は中止されること"""
+    relay_payload = {
+        "targetVideoId": "vimeo-003",
+        "body": {
+            "targetVideoId": "vimeo-003",
+            "comments": [
+                {"feedbackId": "fb-1", "timestampSeconds": 5, "convertedText": "テスト"},
+            ],
+        },
+    }
+    json_path = tmp_path / "relay_request.json"
+    json_path.write_text(json.dumps(relay_payload, ensure_ascii=False), encoding="utf-8")
+
+    monkeypatch.setattr(MODULE, "load_token", lambda: "token")
+    # 'no' を入力するようシミュレート
+    monkeypatch.setattr("builtins.input", lambda _: "no")
+    monkeypatch.setattr(sys, "argv", ["post_vimeo_review_comments.py", str(json_path), "--execute"])
+
+    rc = MODULE.main()
+    assert rc == 1
+
+
+def test_build_comment_text_priority_high():
+    """優先度『高』のコメントにプレフィックスが付くこと"""
+    comment = {
+        "feedbackId": "fb-1",
+        "timestampSeconds": 10,
+        "convertedText": "サムネを変えてください",
+        "priority": "高",
+    }
+    text = MODULE.build_comment_text(comment)
+    assert "🔴【優先度: 高】" in text
+    assert "サムネを変えてください" in text
+
+
+def test_build_comment_text_priority_low():
+    """優先度『低』のコメントに低ラベルプレフィックスが付くこと"""
+    comment = {
+        "feedbackId": "fb-2",
+        "timestampSeconds": 20,
+        "convertedText": "BGMを少し下げてください",
+        "priority": "低",
+    }
+    text = MODULE.build_comment_text(comment)
+    assert "🟢【優先度: 低】" in text
+
+
+def test_build_comment_text_no_priority():
+    """優先度未指定のコメントにはプレフィックスが付かないこと"""
+    comment = {
+        "feedbackId": "fb-3",
+        "timestampSeconds": 30,
+        "convertedText": "テロップを修正してください",
+    }
+    text = MODULE.build_comment_text(comment)
+    assert "優先度" not in text
+    assert "テロップを修正してください" in text
+
+
+def test_build_comment_text_with_reference():
+    """参考事例URLと補足がコメントに含まれること"""
+    comment = {
+        "feedbackId": "fb-4",
+        "timestampSeconds": 5,
+        "convertedText": "カット割り参照",
+        "priority": "中",
+        "referenceExample": {"url": "https://example.com/ref", "note": "3秒ルール適用"},
+    }
+    text = MODULE.build_comment_text(comment)
+    assert "🟡【優先度: 中】" in text
+    assert "参考事例: https://example.com/ref" in text
+    assert "補足: 3秒ルール適用" in text
 
 
 def test_main_dry_run_skips_non_object_and_non_finite_timestamp(monkeypatch, tmp_path, capsys):

@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """Post converted review comments to Vimeo API from a relay request JSON.
 
-本番投稿モード（--dry-runなし）でVimeo APIにレビューコメントを投稿する。
+デフォルトは --dry-run モード（計画表示のみ）。
+本番投稿を行うには --execute フラグを明示的に指定すること。
 リトライロジック（指数バックオフ）・レート制限対応・詳細エラーハンドリング付き。
 """
 
@@ -18,6 +19,13 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+# 優先度ラベル → テキストプレフィックスのマッピング
+PRIORITY_PREFIX: dict[str, str] = {
+    '高': '🔴【優先度: 高】',
+    '中': '🟡【優先度: 中】',
+    '低': '🟢【優先度: 低】',
+}
 
 # リトライ設定
 MAX_RETRIES = 3
@@ -37,7 +45,18 @@ def load_payload(path: Path) -> dict:
 
 
 def build_comment_text(comment: dict) -> str:
-    parts = [comment['convertedText']]
+    """コメントテキストを組み立てる。
+
+    優先度（高/中/低）が指定されている場合はプレフィックスを付与する。
+    """
+    priority = comment.get('priority', '').strip()
+    prefix = PRIORITY_PREFIX.get(priority, '')
+
+    body = comment['convertedText']
+    if prefix:
+        body = f"{prefix} {body}"
+
+    parts = [body]
     ref = comment.get('referenceExample') or {}
     if ref.get('url'):
         parts.append(f"参考事例: {ref['url']}")
@@ -261,16 +280,55 @@ def _validate_comment(comment: dict) -> tuple[bool, list[str]]:
     return True, []
 
 
+def _confirm_execute(target_video_id: str, comment_count: int) -> bool:
+    """本番投稿前に対話的確認プロンプトを表示する。
+
+    Returns:
+        True: ユーザーが 'yes' を入力した場合（投稿続行）
+        False: それ以外（中止）
+    """
+    print(f"\n⚠️  本番投稿モード（--execute）が指定されました。", file=sys.stderr)
+    print(f"   対象動画ID : {target_video_id}", file=sys.stderr)
+    print(f"   投稿コメント数: {comment_count} 件", file=sys.stderr)
+    print(f"   この操作はVimeoに実際のコメントを投稿します。", file=sys.stderr)
+    try:
+        answer = input("本当に投稿しますか？ 続行するには 'yes' と入力してください: ").strip().lower()
+    except EOFError:
+        # 非対話環境（CI等）では入力不可 → 中止
+        print("非対話環境のため投稿を中止しました。--yes フラグで確認をスキップできます。",
+              file=sys.stderr)
+        return False
+    return answer == 'yes'
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description='Post converted review comments to Vimeo API')
+    parser = argparse.ArgumentParser(
+        description='Post converted review comments to Vimeo API',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            'デフォルトは --dry-run モード（Vimeoには何も投稿しない）。\n'
+            '本番投稿を行うには --execute を明示的に指定すること。\n'
+            '例:\n'
+            '  dry-run: python post_vimeo_review_comments.py relay.json\n'
+            '  本番実行: python post_vimeo_review_comments.py relay.json --execute --yes\n'
+        ),
+    )
     parser.add_argument('json_path', help='Path to relay request JSON file')
-    parser.add_argument('--dry-run', action='store_true', help='Print Vimeo request plan instead of posting')
+    parser.add_argument('--dry-run', action='store_true',
+                        help='Print Vimeo request plan instead of posting (後方互換・デフォルト動作と同じ)')
+    parser.add_argument('--execute', action='store_true',
+                        help='実際にVimeo APIへ投稿する（要なおとさん承認）')
+    parser.add_argument('--yes', action='store_true',
+                        help='本番投稿の確認プロンプトをスキップする（CI/自動化用）')
     parser.add_argument('--output', help='Optional path to save the Vimeo result JSON')
     parser.add_argument('--max-retries', type=int, default=MAX_RETRIES,
                         help=f'Max retries per comment (default: {MAX_RETRIES})')
     parser.add_argument('--interval', type=float, default=COMMENT_INTERVAL,
                         help=f'Interval between comments in seconds (default: {COMMENT_INTERVAL})')
     args = parser.parse_args()
+
+    # --execute が指定されていない限りは常にdry-run
+    is_dry_run = not args.execute
 
     try:
         if args.max_retries < 0:
@@ -312,11 +370,19 @@ def main() -> int:
                 'payload': payload,
             })
 
-        if args.dry_run:
+        if is_dry_run:
             dry_payload = {'targetVideoId': target_video_id, 'requests': plan}
             save_output(args.output, dry_payload)
             print(json.dumps(dry_payload, ensure_ascii=False, indent=2))
             return 0
+
+        # --execute モード: 本番投稿前に確認プロンプト（--yes でスキップ可）
+        postable_count = sum(1 for item in plan if item.get('status') != 'skipped')
+        if not args.yes:
+            if not _confirm_execute(target_video_id, postable_count):
+                print(json.dumps({'status': 'aborted', 'reason': 'user cancelled'}, ensure_ascii=False),
+                      file=sys.stderr)
+                return 1
 
         token = load_token()
 

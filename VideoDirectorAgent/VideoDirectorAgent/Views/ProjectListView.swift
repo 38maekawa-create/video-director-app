@@ -1,40 +1,4 @@
 import SwiftUI
-import UIKit
-
-// MARK: - UIScrollViewのdelaysContentTouches無効化ヘルパー
-// SwiftUIのScrollView内でButtonタップが効かない問題を解決する
-// UIViewRepresentableを使って親UIScrollViewを見つけ、delaysContentTouchesをfalseにする
-struct ScrollViewTouchFix: UIViewRepresentable {
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView(frame: .zero)
-        view.isUserInteractionEnabled = false
-        view.backgroundColor = .clear
-        // ビューが配置された後に親ScrollViewを探す
-        DispatchQueue.main.async {
-            disableDelaysContentTouches(in: view)
-        }
-        return view
-    }
-
-    func updateUIView(_ uiView: UIView, context: Context) {
-        // 更新時にも再設定（画面遷移から戻った時など）
-        DispatchQueue.main.async {
-            disableDelaysContentTouches(in: uiView)
-        }
-    }
-
-    private func disableDelaysContentTouches(in view: UIView) {
-        var current: UIView? = view
-        while let v = current {
-            if let scrollView = v as? UIScrollView {
-                scrollView.delaysContentTouches = false
-                scrollView.canCancelContentTouches = true
-                return
-            }
-            current = v.superview
-        }
-    }
-}
 
 // MARK: - 画面1: プロジェクト一覧（ホーム）— Netflix風
 struct ProjectListView: View {
@@ -253,82 +217,101 @@ struct ProjectListView: View {
                     }
                 }
                 .padding(.horizontal, 16)
-                .background(ScrollViewTouchFix())
             }
         }
     }
 
     // MARK: - カードボタン（横ScrollView内タップ対応）
+    // Button/onTapGestureはネストされたScrollView内で動作しないため、
+    // DragGesture(minimumDistance:0)を使い、指の移動が少ない場合をタップと判定する
+    @State private var pressedProjectId: String?
+
     private func cardButton(_ project: VideoProject) -> some View {
-        Button {
-            selectedProject = project
-        } label: {
-            VStack(alignment: .leading, spacing: 8) {
-                // サムネイル
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(
-                            LinearGradient(
-                                colors: [AppTheme.cardBackground, project.status.color.opacity(0.2)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
+        VStack(alignment: .leading, spacing: 8) {
+            // サムネイル
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(
+                        LinearGradient(
+                            colors: [AppTheme.cardBackground, project.status.color.opacity(0.2)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
                         )
+                    )
 
-                    Image(systemName: project.thumbnailSymbol)
-                        .font(.system(size: 32))
-                        .foregroundStyle(.white.opacity(0.3))
+                Image(systemName: project.thumbnailSymbol)
+                    .font(.system(size: 32))
+                    .foregroundStyle(.white.opacity(0.3))
 
-                    // プログレスバー（スコア表示）
-                    if let score = project.qualityScore {
-                        VStack {
-                            Spacer()
-                            Rectangle()
-                                .fill(AppTheme.accent)
-                                .frame(height: 3)
-                                .frame(
-                                    width: 150 * CGFloat(score) / 100.0,
-                                    alignment: .leading
-                                )
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                // プログレスバー（スコア表示）
+                if let score = project.qualityScore {
+                    VStack {
+                        Spacer()
+                        Rectangle()
+                            .fill(AppTheme.accent)
+                            .frame(height: 3)
+                            .frame(
+                                width: 150 * CGFloat(score) / 100.0,
+                                alignment: .leading
+                            )
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+            }
+            .frame(width: 150, height: 100)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(alignment: .topTrailing) {
+                // 未送信バッジ
+                if project.hasUnsentFeedback {
+                    Circle()
+                        .fill(AppTheme.accent)
+                        .frame(width: 10, height: 10)
+                        .offset(x: -4, y: 4)
+                }
+            }
+
+            // タイトル＋情報
+            Text(project.guestName)
+                .font(.system(size: 14, weight: .bold, design: .serif))
+                .tracking(1.5)
+                .foregroundStyle(.white)
+                .lineLimit(1)
+
+            // 職業
+            if let occupation = project.guestOccupation, !occupation.isEmpty {
+                Text(occupation)
+                    .font(.caption2)
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .lineLimit(1)
+            }
+
+            Text(project.shootDate)
+                .font(.caption2)
+                .foregroundStyle(AppTheme.textMuted)
+        }
+        .frame(width: 150, height: 170, alignment: .top)
+        .contentShape(Rectangle())
+        .opacity(pressedProjectId == project.id ? 0.6 : 1.0)
+        .scaleEffect(pressedProjectId == project.id ? 0.95 : 1.0)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    if pressedProjectId != project.id {
+                        withAnimation(.easeInOut(duration: 0.1)) {
+                            pressedProjectId = project.id
                         }
                     }
                 }
-                .frame(width: 150, height: 100)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .overlay(alignment: .topTrailing) {
-                    // 未送信バッジ
-                    if project.hasUnsentFeedback {
-                        Circle()
-                            .fill(AppTheme.accent)
-                            .frame(width: 10, height: 10)
-                            .offset(x: -4, y: 4)
+                .onEnded { value in
+                    withAnimation(.easeInOut(duration: 0.1)) {
+                        pressedProjectId = nil
+                    }
+                    // 移動距離が小さければタップとして処理
+                    if abs(value.translation.width) < 15 && abs(value.translation.height) < 15 {
+                        selectedProject = project
                     }
                 }
-
-                // タイトル＋情報
-                Text(project.guestName)
-                    .font(.system(size: 14, weight: .bold, design: .serif))
-                    .tracking(1.5)
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-
-                // 職業
-                if let occupation = project.guestOccupation, !occupation.isEmpty {
-                    Text(occupation)
-                        .font(.caption2)
-                        .foregroundStyle(AppTheme.textSecondary)
-                        .lineLimit(1)
-                }
-
-                Text(project.shootDate)
-                    .font(.caption2)
-                    .foregroundStyle(AppTheme.textMuted)
-            }
-            .frame(width: 150, height: 170, alignment: .top)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(ProjectCardButtonStyle())
+        )
     }
 
     // MARK: - ステータスバッジ
@@ -345,15 +328,5 @@ struct ProjectListView: View {
                 Capsule()
                     .strokeBorder(status.color.opacity(0.5), lineWidth: 1)
             )
-    }
-}
-
-// MARK: - カードボタンスタイル（横ScrollView内でタップ確実に反応させる）
-struct ProjectCardButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .opacity(configuration.isPressed ? 0.6 : 1.0)
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-            .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
     }
 }

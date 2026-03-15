@@ -1,0 +1,34 @@
+{
+  "project_id": "p-telop-001",
+  "status": "completed",
+  "checked_at": "2026-03-15T18:34:02.201398+00:00",
+  "frame_check": {
+    "total_frames_checked": 0,
+    "total_telops_found": 0,
+    "extraction_method": "none",
+    "extracted_telops": [],
+    "spelling_issues": [],
+    "consistency_issues": [],
+    "timing_issues": [],
+    "error_count": 0,
+    "warning_count": 0,
+    "overall_score": 100.0
+  },
+  "text_check": {
+    "total_telops": 1,
+    "error_count": 0,
+    "warning_count": 0,
+    "consistency_score": 100.0,
+    "candidates": [
+      {
+        "timestamp": "01:30",
+        "text": "年収5000万",
+        "category": "数字強調",
+        "char_count": 7,
+        "is_valid": true,
+        "issues": []
+      }
+    ],
+    "issues": []
+  }
+}

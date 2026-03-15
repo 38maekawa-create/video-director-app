@@ -11,6 +11,7 @@ from video_direction.analyzer.audio_evaluator import (
     AudioAxisScore,
     AudioIssue,
     AudioSegmentInfo,
+    AudioEvaluator,
     _evaluate_from_transcript,
     _estimate_audio_segments,
     _score_voice_clarity,
@@ -19,13 +20,17 @@ from video_direction.analyzer.audio_evaluator import (
     _score_se_quality,
     _score_volume_consistency,
     _detect_audio_issues,
+    _detect_ffmpeg_issues,
     _determine_audio_grade,
     _parse_duration_minutes,
     _timestamp_to_seconds,
     _seconds_to_timestamp,
+    _run_silencedetect,
+    _run_volumedetect,
     analyze_audio_with_ffmpeg,
     AUDIO_AXES,
     AUDIO_AXIS_LABELS,
+    SUDDEN_VOLUME_CHANGE_THRESHOLD,
 )
 from video_direction.integrations.ai_dev5_connector import VideoData, HighlightScene
 
@@ -264,3 +269,164 @@ class TestConstants:
     def test_全軸にラベルがある(self):
         for axis in AUDIO_AXES:
             assert axis in AUDIO_AXIS_LABELS
+
+
+# === AudioEvaluatorクラステスト ===
+
+class TestAudioEvaluatorClass:
+    """AudioEvaluatorクラスのテスト"""
+
+    def test_初期化(self):
+        evaluator = AudioEvaluator()
+        assert isinstance(evaluator.has_ffmpeg, bool)
+        assert isinstance(evaluator.has_ffprobe, bool)
+
+    def test_extract_audio_stats_存在しないファイル(self):
+        evaluator = AudioEvaluator()
+        result = evaluator.extract_audio_stats("/nonexistent/path.mp4")
+        assert result == {}
+
+    def test_detect_audio_issues_空データ(self):
+        evaluator = AudioEvaluator()
+        issues = evaluator.detect_audio_issues({})
+        assert isinstance(issues, list)
+
+    def test_detect_audio_issues_クリッピング検出(self):
+        evaluator = AudioEvaluator()
+        stats = {"true_peak": 1.0}  # 0dBTP超過
+        issues = evaluator.detect_audio_issues(stats)
+        assert len(issues) >= 1
+        assert issues[0]["issue_type"] == "volume"
+        assert issues[0]["severity"] == "error"
+
+    def test_detect_audio_issues_音量低すぎ(self):
+        evaluator = AudioEvaluator()
+        stats = {"loudness_lufs": -35.0}
+        issues = evaluator.detect_audio_issues(stats)
+        volume_issues = [i for i in issues if "小さい" in i["description"]]
+        assert len(volume_issues) >= 1
+
+    def test_detect_audio_issues_ノイズフロア高い(self):
+        evaluator = AudioEvaluator()
+        stats = {"noise_floor_estimate": -30.0}
+        issues = evaluator.detect_audio_issues(stats)
+        noise_issues = [i for i in issues if i["issue_type"] == "noise"]
+        assert len(noise_issues) >= 1
+
+    def test_detect_audio_issues_無音区間検出(self):
+        evaluator = AudioEvaluator()
+        stats = {
+            "silence_ranges": [
+                {"start": 10.0, "end": 22.0, "duration": 12.0},
+            ],
+        }
+        issues = evaluator.detect_audio_issues(stats)
+        silence_issues = [i for i in issues if i["issue_type"] == "clarity"]
+        assert len(silence_issues) >= 1
+
+    def test_detect_audio_issues_急激な音量変化(self):
+        evaluator = AudioEvaluator()
+        stats = {
+            "sudden_volume_changes": [
+                {"time": 30.0, "change_db": 20.0, "direction": "up"},
+            ],
+        }
+        issues = evaluator.detect_audio_issues(stats)
+        volume_issues = [i for i in issues if "急激" in i["description"]]
+        assert len(volume_issues) >= 1
+
+    def test_evaluate_overall_存在しないファイル(self):
+        evaluator = AudioEvaluator()
+        # ファイルが存在しない場合は推定評価にフォールバック
+        result = evaluator.evaluate_overall("/nonexistent/path.mp4")
+        assert isinstance(result, dict)
+        assert "overall_score" in result
+        assert "grade" in result
+        assert "axis_scores" in result
+        assert "issues" in result
+        assert result["is_estimated"] is True
+
+    def test_evaluate_overall_VideoData付き(self):
+        evaluator = AudioEvaluator()
+        video = _make_video_data(highlights=_make_highlights(5))
+        result = evaluator.evaluate_overall("/nonexistent/path.mp4", video)
+        assert isinstance(result, dict)
+        assert result["overall_score"] > 0
+
+    def test_detect_audio_issues_返り値の形式(self):
+        evaluator = AudioEvaluator()
+        stats = {"true_peak": 1.0, "loudness_lufs": -35.0}
+        issues = evaluator.detect_audio_issues(stats)
+        for issue in issues:
+            assert "timestamp" in issue
+            assert "issue_type" in issue
+            assert "severity" in issue
+            assert "description" in issue
+            assert "suggestion" in issue
+
+
+# === silencedetect / volumedetect テスト ===
+
+class TestSilenceAndVolumeDetect:
+    """無音検出・音量変化検出のテスト"""
+
+    def test_silencedetect_ファイルなし(self):
+        result = _run_silencedetect("/nonexistent/path.mp4")
+        assert result == {}
+
+    def test_volumedetect_ファイルなし(self):
+        result = _run_volumedetect("/nonexistent/path.mp4")
+        assert result == {}
+
+    def test_閾値定数が定義されている(self):
+        assert SUDDEN_VOLUME_CHANGE_THRESHOLD > 0
+
+
+# === ffmpeg問題検出の拡張テスト ===
+
+class TestFfmpegIssueDetectionExtended:
+    """ffmpeg問題検出の拡張テスト（無音・音量変化）"""
+
+    def test_無音区間5秒以上でwarning(self):
+        ffmpeg_data = {
+            "silence_ranges": [
+                {"start": 5.0, "end": 11.0, "duration": 6.0},
+            ],
+        }
+        issues = _detect_ffmpeg_issues(ffmpeg_data)
+        silence_issues = [i for i in issues if i.issue_type == "clarity"]
+        assert len(silence_issues) >= 1
+        assert silence_issues[0].severity == "warning"
+
+    def test_無音区間10秒以上でerror(self):
+        ffmpeg_data = {
+            "silence_ranges": [
+                {"start": 5.0, "end": 18.0, "duration": 13.0},
+            ],
+        }
+        issues = _detect_ffmpeg_issues(ffmpeg_data)
+        silence_issues = [i for i in issues if i.issue_type == "clarity" and i.severity == "error"]
+        assert len(silence_issues) >= 1
+
+    def test_急激な音量変化でwarning(self):
+        ffmpeg_data = {
+            "sudden_volume_changes": [
+                {"time": 45.0, "change_db": 18.5, "direction": "up"},
+            ],
+        }
+        issues = _detect_ffmpeg_issues(ffmpeg_data)
+        volume_issues = [i for i in issues if "急激" in i.description]
+        assert len(volume_issues) >= 1
+
+    def test_無音なしで問題なし(self):
+        ffmpeg_data = {
+            "silence_ranges": [],
+            "sudden_volume_changes": [],
+        }
+        issues = _detect_ffmpeg_issues(ffmpeg_data)
+        # 無音・音量変化関連のissueがないこと
+        silence_volume_issues = [
+            i for i in issues
+            if i.issue_type == "clarity" or "急激" in i.description
+        ]
+        assert len(silence_volume_issues) == 0

@@ -887,6 +887,152 @@ def run_frame_evaluation(project_id: str, body: FrameEvaluationRequest = FrameEv
     return response
 
 
+# --- テロップチェック (C-2 Phase 3) ---
+
+def _get_telop_checker():
+    """テロップチェックモジュールの取得"""
+    try:
+        from src.video_direction.analyzer import telop_checker
+        return telop_checker
+    except ImportError:
+        return None
+
+
+class TelopCheckRequest(BaseModel):
+    """テロップチェックリクエスト"""
+    video_path: Optional[str] = None  # 動画ファイルパス（ローカル）
+    frame_images_b64: Optional[list[dict]] = None  # base64フレーム画像リスト
+    use_ocr: bool = True  # OCRを使用するか
+    num_samples: int = 10  # フレームサンプリング数
+    telops_with_timestamps: Optional[list[dict]] = None  # タイミング評価用データ
+
+
+@app.get("/api/v1/projects/{project_id}/telop-check")
+def get_telop_check(project_id: str):
+    """プロジェクトのテロップチェック結果を取得する（キャッシュ済み結果）"""
+    checker = _get_telop_checker()
+    if not checker:
+        return {
+            "project_id": project_id,
+            "status": "unavailable",
+            "message": "テロップチェックモジュールが利用できません",
+        }
+
+    # キャッシュされた結果を読み込む
+    cache_path = Path.home() / "AI開発10" / ".data" / "telop_checks" / f"{project_id}.json"
+    if cache_path.exists():
+        return json.loads(cache_path.read_text())
+
+    return {
+        "project_id": project_id,
+        "status": "not_checked",
+        "message": "テロップチェックがまだ実行されていません。POSTで実行してください。",
+    }
+
+
+@app.post("/api/v1/projects/{project_id}/telop-check")
+def run_telop_check(project_id: str, body: TelopCheckRequest = TelopCheckRequest()):
+    """プロジェクトのテロップチェックを実行する
+
+    動画ファイルまたはbase64フレーム画像からテロップを抽出し、
+    誤字脱字・フォント一貫性・タイミングをチェックする。
+    """
+    checker = _get_telop_checker()
+    if not checker:
+        raise HTTPException(500, "テロップチェックモジュールが利用できません")
+
+    # プロジェクト取得
+    conn = _get_db()
+    row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(404, "Project not found")
+
+    project_data = dict(row)
+
+    # VideoDataの構築（テキストベースチェックとの統合用）
+    video_data = None
+    try:
+        from src.video_direction.integrations.ai_dev5_connector import VideoData, HighlightScene
+        highlights = []
+        knowledge_json = project_data.get("knowledge")
+        if knowledge_json:
+            try:
+                knowledge = json.loads(knowledge_json) if isinstance(knowledge_json, str) else knowledge_json
+                for h in knowledge.get("highlights", []):
+                    highlights.append(HighlightScene(
+                        timestamp=h.get("timestamp", "00:00"),
+                        speaker=h.get("speaker", ""),
+                        text=h.get("text", ""),
+                        category=h.get("category", ""),
+                    ))
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        video_data = VideoData(
+            title=project_data.get("title", ""),
+            speakers=project_data.get("guest_name", ""),
+            highlights=highlights,
+        )
+    except ImportError:
+        pass
+
+    # フレーム画像ベースのテロップチェック実行
+    from dataclasses import asdict
+    frame_result = checker.check_telops_from_frames(
+        video_path=body.video_path,
+        frame_images_b64=body.frame_images_b64,
+        video_data=video_data,
+        telops_with_timestamps=body.telops_with_timestamps,
+    )
+
+    # テキストベースのテロップチェックも同時実行（VideoDataがあれば）
+    text_result = None
+    if video_data:
+        text_result = checker.check_telops(video_data)
+
+    # 結果を統合
+    frame_dict = asdict(frame_result)
+    response = {
+        "project_id": project_id,
+        "status": "completed",
+        "checked_at": datetime.now(timezone.utc).isoformat(),
+        # フレーム画像ベースの結果
+        "frame_check": {
+            "total_frames_checked": frame_dict["total_frames_checked"],
+            "total_telops_found": frame_dict["total_telops_found"],
+            "extraction_method": frame_dict["extraction_method"],
+            "extracted_telops": frame_dict["extracted_telops"],
+            "spelling_issues": frame_dict["spelling_issues"],
+            "consistency_issues": frame_dict["consistency_issues"],
+            "timing_issues": frame_dict["timing_issues"],
+            "error_count": frame_dict["error_count"],
+            "warning_count": frame_dict["warning_count"],
+            "overall_score": frame_dict["overall_score"],
+        },
+    }
+
+    # テキストベースの結果を追加
+    if text_result:
+        text_dict = asdict(text_result)
+        response["text_check"] = {
+            "total_telops": text_dict["total_telops"],
+            "error_count": text_dict["error_count"],
+            "warning_count": text_dict["warning_count"],
+            "consistency_score": text_dict["consistency_score"],
+            "candidates": text_dict["candidates"],
+            "issues": text_dict["issues"],
+        }
+
+    # 結果をキャッシュに保存
+    cache_dir = Path.home() / "AI開発10" / ".data" / "telop_checks"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / f"{project_id}.json"
+    cache_path.write_text(json.dumps(response, ensure_ascii=False, indent=2))
+
+    return response
+
+
 # --- 音声品質評価 (C-3) ---
 
 class AudioEvaluationRequest(BaseModel):
@@ -1834,14 +1980,20 @@ def generate_direction(project_id: str, body: GenerateDirectionRequest = Generat
     # ゲスト分類（簡易デフォルト）
     classification = ClassificationResult(
         tier="c",
-        tier_label="一般層",
-        confidence=0.5,
+        tier_label="層c",
+        reason="APIからのデフォルト分類（プロファイル情報不足）",
+        presentation_template="標準テンプレート",
+        confidence="low",
     )
 
     # 年収演出（簡易デフォルト）
     income_eval = IncomeEvaluation(
-        should_emphasize=False,
+        income_value=None,
+        age_bracket="不明",
+        threshold=0,
+        emphasize=False,
         emphasis_reason="デフォルト（情報不足）",
+        telop_suggestion="",
     )
 
     # learnerインスタンス取得
@@ -2062,8 +2214,15 @@ def run_e2e_pipeline(project_id: str, body: E2EPipelineRequest = E2EPipelineRequ
             highlights=highlights,
         )
 
-        classification = ClassificationResult(tier="c", tier_label="一般層", confidence=0.5)
-        income_eval = IncomeEvaluation(should_emphasize=False, emphasis_reason="デフォルト")
+        classification = ClassificationResult(
+            tier="c", tier_label="層c",
+            reason="APIデフォルト分類", presentation_template="標準テンプレート",
+            confidence="low",
+        )
+        income_eval = IncomeEvaluation(
+            income_value=None, age_bracket="不明", threshold=0,
+            emphasize=False, emphasis_reason="デフォルト", telop_suggestion="",
+        )
 
         timeline = generate_directions(
             video_data=video_data,

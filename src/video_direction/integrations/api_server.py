@@ -463,6 +463,72 @@ def get_projects_by_category(category: str):
     return result
 
 
+@app.post("/api/v1/sync-categories")
+def sync_categories_from_sheet():
+    """スプレッドシートのA列「コンテンツ」を基準にDBのプロジェクトカテゴリを一括同期する。
+
+    スプシのA列値に基づくカテゴリマッピング:
+    - 「対談」→ teko_member
+    - 「オフ会インタビュー」→ teko_member
+    - 「不動産対談」→ teko_realestate
+    - それ以外 → null（未分類）
+    """
+    try:
+        from .sheets_manager import SheetsManager, _match_guest_name
+    except ImportError:
+        raise HTTPException(500, "SheetsManager import failed. Check dependencies.")
+
+    try:
+        sm = SheetsManager()
+        sheet_categories = sm.get_content_categories()
+    except Exception as e:
+        raise HTTPException(502, f"Failed to fetch categories from spreadsheet: {e}")
+
+    conn = _get_db()
+    projects = conn.execute("SELECT id, guest_name, title FROM projects").fetchall()
+
+    updated = []
+    skipped = []
+    now = datetime.now(timezone.utc).isoformat()
+
+    for proj in projects:
+        proj_id = proj["id"]
+        guest_name = proj["guest_name"] or ""
+        title = proj["title"] or ""
+
+        # ゲスト名でスプシカテゴリマップから直接マッチ
+        matched_category = None
+        for sheet_guest, cat in sheet_categories.items():
+            if _match_guest_name(guest_name, sheet_guest) or _match_guest_name(sheet_guest, title):
+                matched_category = cat
+                break
+
+        if matched_category is not None:
+            conn.execute(
+                "UPDATE projects SET category = ?, updated_at = ? WHERE id = ?",
+                (matched_category, now, proj_id),
+            )
+            updated.append({"id": proj_id, "guest_name": guest_name, "category": matched_category})
+        else:
+            # スプシに存在しないプロジェクトはカテゴリをnullにリセット
+            conn.execute(
+                "UPDATE projects SET category = NULL, updated_at = ? WHERE id = ?",
+                (now, proj_id),
+            )
+            skipped.append({"id": proj_id, "guest_name": guest_name, "reason": "not_found_in_sheet"})
+
+    conn.commit()
+    conn.close()
+
+    return {
+        "status": "synced",
+        "updated_count": len(updated),
+        "skipped_count": len(skipped),
+        "updated": updated,
+        "skipped": skipped,
+    }
+
+
 # --- YouTube素材 ---
 
 @app.get("/api/projects/{project_id}/youtube-assets")
@@ -3108,6 +3174,240 @@ def source_videos_status():
     from .source_video_linker import SourceVideoLinker
     linker = SourceVideoLinker(db_path=DB_PATH)
     return linker.get_status()
+
+
+# --- ビフォーアフター比較 ---
+
+@app.get("/api/v1/projects/{project_id}/before-after")
+def get_before_after(project_id: str):
+    """プロジェクトの全動画バージョン一覧（素材 vs 編集後 vs FB後再編集版）を返す。"""
+    conn = _get_db()
+
+    proj = conn.execute(
+        "SELECT id, guest_name, title, source_video, edited_video FROM projects WHERE id = ?",
+        (project_id,),
+    ).fetchone()
+    if not proj:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # 素材動画（YouTube）の収集
+    source_videos = []
+    rows = conn.execute(
+        "SELECT * FROM source_videos WHERE project_id = ? ORDER BY created_at DESC",
+        (project_id,),
+    ).fetchall()
+    for row in rows:
+        source_videos.append({
+            "youtube_url": row["youtube_url"],
+            "video_id": row["video_id"],
+            "title": row["title"],
+            "duration": row["duration"],
+            "embed_url": f"https://www.youtube.com/embed/{row['video_id']}?playsinline=1&rel=0",
+        })
+
+    # レガシー source_video JSON
+    legacy = proj["source_video"]
+    if legacy:
+        try:
+            data = json.loads(legacy) if isinstance(legacy, str) else legacy
+            if data and data.get("url"):
+                legacy_vid = _extract_video_id(data["url"])
+                if legacy_vid and not any(v["video_id"] == legacy_vid for v in source_videos):
+                    source_videos.append({
+                        "youtube_url": data["url"],
+                        "video_id": legacy_vid,
+                        "title": None,
+                        "duration": None,
+                        "embed_url": f"https://www.youtube.com/embed/{legacy_vid}?playsinline=1&rel=0",
+                    })
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    # 編集後動画（Vimeo）
+    edited_video = None
+    ev = proj["edited_video"]
+    if ev:
+        try:
+            ev_data = json.loads(ev) if isinstance(ev, str) else ev
+            if ev_data and ev_data.get("url"):
+                vimeo_url = ev_data["url"]
+                vimeo_id = ""
+                m = re.search(r"vimeo\.com/(\d+)", vimeo_url)
+                if m:
+                    vimeo_id = m.group(1)
+                edited_video = {
+                    "vimeo_url": vimeo_url,
+                    "vimeo_id": vimeo_id,
+                    "embed_url": f"https://player.vimeo.com/video/{vimeo_id}" if vimeo_id else None,
+                    "version": "v1",
+                }
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    # FB後再編集版（現状はDBにカラムがないため将来拡張用。edited_videoにバージョン情報があれば対応）
+    fb_revised_video = None
+
+    # FBタイムスタンプ一覧（diff_highlights）
+    fb_rows = conn.execute(
+        "SELECT timestamp_mark, category, converted_text, priority FROM feedbacks "
+        "WHERE project_id = ? AND timestamp_mark IS NOT NULL AND timestamp_mark != '' "
+        "ORDER BY timestamp_mark",
+        (project_id,),
+    ).fetchall()
+    diff_highlights = []
+    for fb in fb_rows:
+        diff_highlights.append({
+            "timestamp": fb["timestamp_mark"],
+            "category": fb["category"],
+            "text": fb["converted_text"] or "",
+            "priority": fb["priority"],
+        })
+
+    conn.close()
+
+    return {
+        "project_id": project_id,
+        "guest_name": proj["guest_name"],
+        "title": proj["title"],
+        "source_videos": source_videos,
+        "edited_video": edited_video,
+        "fb_revised_video": fb_revised_video,
+        "diff_highlights": diff_highlights,
+    }
+
+
+# --- 文字起こしdiff可視化 ---
+
+KNOWLEDGE_VIDEO_DIR = Path.home() / "TEKO" / "knowledge" / "01_teko" / "sources" / "video"
+
+
+def _load_transcript(guest_name: str, shoot_date: Optional[str] = None) -> Optional[str]:
+    """ナレッジファイルから文字起こし全文を読み込む。"""
+    if not KNOWLEDGE_VIDEO_DIR.exists():
+        return None
+
+    normalized = _normalize_name(guest_name)
+    if not normalized:
+        return None
+
+    shoot_compact = shoot_date.replace("-", "").replace("/", "") if shoot_date else None
+
+    best = None
+    best_with_date = None
+
+    for f in sorted(KNOWLEDGE_VIDEO_DIR.glob("*.md"), reverse=True):
+        fname_norm = unicodedata.normalize("NFKC", f.name.lower())
+        if normalized not in fname_norm:
+            continue
+        if shoot_compact and shoot_compact in fname_norm:
+            best_with_date = f
+            break
+        if best is None:
+            best = f
+
+    target = best_with_date or best
+    if target:
+        try:
+            return target.read_text(encoding="utf-8")
+        except Exception:
+            return None
+    return None
+
+
+@app.get("/api/v1/projects/{project_id}/transcript-diff")
+def get_transcript_diff(project_id: str):
+    """素材の文字起こし全文に対して、ハイライト採用部分を色分けするためのdiff分析結果を返す。"""
+    conn = _get_db()
+
+    proj = conn.execute(
+        "SELECT id, guest_name, shoot_date FROM projects WHERE id = ?",
+        (project_id,),
+    ).fetchone()
+    if not proj:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    guest_name = proj["guest_name"]
+    shoot_date = proj["shoot_date"]
+
+    # 文字起こし全文を読み込み
+    transcript_text = _load_transcript(guest_name, shoot_date)
+    if not transcript_text:
+        conn.close()
+        return {
+            "project_id": project_id,
+            "status": "no_transcript",
+            "message": f"ゲスト '{guest_name}' の文字起こしファイルが見つかりません",
+            "segments": [],
+        }
+
+    # FBのハイライトテキストとタイムスタンプを取得
+    fb_rows = conn.execute(
+        "SELECT timestamp_mark, converted_text, category FROM feedbacks "
+        "WHERE project_id = ? AND converted_text IS NOT NULL AND converted_text != '' "
+        "ORDER BY timestamp_mark",
+        (project_id,),
+    ).fetchall()
+
+    highlight_texts = []
+    punchline_texts = []
+    for fb in fb_rows:
+        text = fb["converted_text"]
+        cat = (fb["category"] or "").lower()
+        if "punchline" in cat or "パンチライン" in cat:
+            punchline_texts.append(text)
+        else:
+            highlight_texts.append(text)
+
+    # 文字起こしを行単位でセグメント化し、ステータスを付与
+    lines = transcript_text.split("\n")
+    segments = []
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped:
+            continue
+
+        # パンチライン判定
+        status = "unused"
+        matched_text = None
+        for pt in punchline_texts:
+            if pt in stripped or stripped in pt:
+                status = "punchline"
+                matched_text = pt
+                break
+        if status == "unused":
+            for ht in highlight_texts:
+                if ht in stripped or stripped in ht:
+                    status = "highlight"
+                    matched_text = ht
+                    break
+
+        segments.append({
+            "line_number": i + 1,
+            "text": stripped,
+            "status": status,
+            "matched_feedback": matched_text,
+        })
+
+    conn.close()
+
+    # 統計
+    total = len(segments)
+    used_count = sum(1 for s in segments if s["status"] != "unused")
+    punchline_count = sum(1 for s in segments if s["status"] == "punchline")
+    highlight_count = sum(1 for s in segments if s["status"] == "highlight")
+
+    return {
+        "project_id": project_id,
+        "status": "ok",
+        "total_segments": total,
+        "used_count": used_count,
+        "highlight_count": highlight_count,
+        "punchline_count": punchline_count,
+        "unused_count": total - used_count,
+        "segments": segments,
+    }
 
 
 # --- ヘルスチェック ---

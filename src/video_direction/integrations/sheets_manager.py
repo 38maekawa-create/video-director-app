@@ -70,6 +70,17 @@ HEADER_ROW = 2
 TITLE_COL = 2
 
 
+# A列「コンテンツ」値 → プロジェクトカテゴリのマッピング
+CONTENT_TO_CATEGORY: dict[str, str] = {
+    "対談": "teko_member",
+    "オフ会インタビュー": "teko_member",
+    "不動産対談": "teko_realestate",
+}
+
+# A列のカラムインデックス（1-based）
+CONTENT_COL = 1
+
+
 class SheetsManager:
     """スプレッドシート連携マネージャー"""
 
@@ -97,6 +108,44 @@ class SheetsManager:
         self._client = gspread.authorize(credentials)
         spreadsheet = self._client.open_by_key(SPREADSHEET_ID)
         self._worksheet = spreadsheet.worksheet(TAB_NAME)
+
+    def get_content_categories(self) -> dict[str, str | None]:
+        """A列「コンテンツ」とB列「タイトル」を読み取り、ゲスト名→カテゴリのマッピング辞書を返す。
+
+        Returns:
+            dict: ゲスト名(canonical_name or 抽出名) → カテゴリ("teko_member" / "teko_realestate" / None)
+        """
+        self._connect()
+        # A列（コンテンツ）とB列（タイトル）を一括取得
+        content_cells = self._worksheet.col_values(CONTENT_COL)
+        title_cells = self._worksheet.col_values(TITLE_COL)
+
+        result: dict[str, str | None] = {}
+        max_rows = max(len(content_cells), len(title_cells))
+
+        for row_idx in range(HEADER_ROW, max_rows):  # 0-based index, HEADER_ROWは2なのでskip row 1,2
+            # A列のコンテンツ値
+            content_val = content_cells[row_idx].strip() if row_idx < len(content_cells) else ""
+            # B列のタイトル値
+            title_val = title_cells[row_idx].strip() if row_idx < len(title_cells) else ""
+
+            if not title_val:
+                continue
+
+            # カテゴリを決定
+            category = CONTENT_TO_CATEGORY.get(content_val)
+
+            # タイトルからゲスト名を抽出
+            guest_names = _extract_names_from_title(title_val)
+            for name in guest_names:
+                # MEMBER_MASTER.jsonでcanonical_nameに解決
+                canonical = _resolve_via_member_master(name)
+                key = canonical if canonical else name
+                # 最初にマッチしたカテゴリを優先（同一ゲストが複数行にある場合）
+                if key not in result:
+                    result[key] = category
+
+        return result
 
     def find_direction_url_column(self) -> int:
         """ディレクションURL列のインデックス（1-based）を取得。なければ新規作成"""

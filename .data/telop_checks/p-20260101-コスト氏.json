@@ -1,0 +1,149 @@
+{
+  "project_id": "p-20260101-コスト氏",
+  "status": "completed",
+  "checked_at": "2026-03-15T20:23:46.113885+00:00",
+  "frame_check": {
+    "total_frames_checked": 0,
+    "total_telops_found": 0,
+    "extraction_method": "none",
+    "extracted_telops": [],
+    "spelling_issues": [],
+    "consistency_issues": [],
+    "timing_issues": [],
+    "error_count": 0,
+    "warning_count": 0,
+    "overall_score": 100.0
+  },
+  "text_check": {
+    "total_telops": 10,
+    "error_count": 0,
+    "warning_count": 1,
+    "consistency_score": 93.0,
+    "candidates": [
+      {
+        "timestamp": "01:03",
+        "text": "本業はIT関係のソフトウ",
+        "category": "属性テロップ",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "02:54",
+        "text": "今で900万くらいですか",
+        "category": "数字強調",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "03:28",
+        "text": "月曜日会議でみたいな感じ",
+        "category": "属性テロップ",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": [
+          {
+            "timestamp": "03:28",
+            "issue_type": "readability",
+            "severity": "warning",
+            "description": "冗長表現「みたいな感じ」が含まれています",
+            "original_text": "月曜日会議でみたいな感じ",
+            "suggestion": "月曜日会議で"
+          }
+        ]
+      },
+      {
+        "timestamp": "03:45",
+        "text": "結構まあ",
+        "category": "属性テロップ",
+        "char_count": 4,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "05:39",
+        "text": "結婚して子供ができて習い",
+        "category": "属性テロップ",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "08:08",
+        "text": "その中でやってるけど全然",
+        "category": "属性テロップ",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "08:30",
+        "text": "確かにねお金の話って僕友",
+        "category": "キー発言強調",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "09:48",
+        "text": "結構やっぱりしんどいなっ",
+        "category": "キー発言強調",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "10:55",
+        "text": "実績はそうですね",
+        "category": "数字強調",
+        "char_count": 8,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "12:51",
+        "text": "で",
+        "category": "一般テロップ",
+        "char_count": 1,
+        "is_valid": true,
+        "issues": [
+          {
+            "timestamp": "12:51",
+            "issue_type": "length",
+            "severity": "info",
+            "description": "テロップが短すぎます（1文字）",
+            "original_text": "で",
+            "suggestion": ""
+          }
+        ]
+      }
+    ],
+    "issues": [
+      {
+        "timestamp": "03:28",
+        "issue_type": "readability",
+        "severity": "warning",
+        "description": "冗長表現「みたいな感じ」が含まれています",
+        "original_text": "月曜日会議でみたいな感じ",
+        "suggestion": "月曜日会議で"
+      },
+      {
+        "timestamp": "12:51",
+        "issue_type": "length",
+        "severity": "info",
+        "description": "テロップが短すぎます（1文字）",
+        "original_text": "で",
+        "suggestion": ""
+      },
+      {
+        "timestamp": "12:51",
+        "issue_type": "consistency",
+        "severity": "info",
+        "description": "テロップ長が平均（10文字）から大きく乖離しています（1文字）",
+        "original_text": "で",
+        "suggestion": ""
+      }
+    ]
+  }
+}

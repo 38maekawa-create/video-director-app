@@ -1655,3 +1655,101 @@ struct KnowledgePageDetail: Codable {
         format = try container.decodeIfPresent(String.self, forKey: .format)
     }
 }
+
+// MARK: - ビフォーアフター比較モデル
+
+/// 素材動画（YouTube）の情報
+struct BeforeAfterSourceVideo: Codable, Identifiable {
+    var id: String { videoId }
+    let youtubeUrl: String
+    let videoId: String
+    let title: String?
+    let duration: String?
+    let embedUrl: String
+}
+
+/// 編集後動画（Vimeo）の情報
+struct BeforeAfterEditedVideo: Codable {
+    let vimeoUrl: String
+    let vimeoId: String
+    let embedUrl: String?
+    let version: String?
+}
+
+/// FBハイライト（タイムスタンプ付き差分）
+struct DiffHighlight: Codable, Identifiable {
+    var id: String { "\(timestamp)_\(text.prefix(20))" }
+    let timestamp: String
+    let category: String?
+    let text: String
+    let priority: String?
+}
+
+/// ビフォーアフターAPIレスポンス
+struct BeforeAfterResponse: Codable {
+    let projectId: String
+    let guestName: String
+    let title: String
+    let sourceVideos: [BeforeAfterSourceVideo]
+    let editedVideo: BeforeAfterEditedVideo?
+    let fbRevisedVideo: BeforeAfterEditedVideo?
+    let diffHighlights: [DiffHighlight]
+}
+
+// MARK: - 文字起こしdiff可視化モデル
+
+/// 文字起こしセグメント（1行分）
+struct TranscriptSegment: Codable, Identifiable {
+    var id: Int { lineNumber }
+    let lineNumber: Int
+    let text: String
+    let status: String        // "unused" / "highlight" / "punchline"
+    let matchedFeedback: String?
+
+    /// ステータスに応じた色
+    var statusColor: Color {
+        switch status {
+        case "punchline":
+            return Color(hex: 0xFFD700)   // 金色
+        case "highlight":
+            return AppTheme.accent         // Netflix赤
+        default:
+            return AppTheme.textMuted.opacity(0.4) // グレー半透明
+        }
+    }
+
+    /// ステータスの表示ラベル
+    var statusLabel: String {
+        switch status {
+        case "punchline": return "パンチライン"
+        case "highlight": return "ハイライト"
+        default: return "未使用"
+        }
+    }
+}
+
+/// 文字起こしdiffレスポンス
+struct TranscriptDiffResponse: Codable {
+    let projectId: String
+    let status: String
+    let totalSegments: Int?
+    let usedCount: Int?
+    let highlightCount: Int?
+    let punchlineCount: Int?
+    let unusedCount: Int?
+    let segments: [TranscriptSegment]
+    let message: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        projectId = try container.decodeIfPresent(String.self, forKey: .projectId) ?? ""
+        status = try container.decodeIfPresent(String.self, forKey: .status) ?? "unknown"
+        totalSegments = try container.decodeIfPresent(Int.self, forKey: .totalSegments)
+        usedCount = try container.decodeIfPresent(Int.self, forKey: .usedCount)
+        highlightCount = try container.decodeIfPresent(Int.self, forKey: .highlightCount)
+        punchlineCount = try container.decodeIfPresent(Int.self, forKey: .punchlineCount)
+        unusedCount = try container.decodeIfPresent(Int.self, forKey: .unusedCount)
+        segments = try container.decodeIfPresent([TranscriptSegment].self, forKey: .segments) ?? []
+        message = try container.decodeIfPresent(String.self, forKey: .message)
+    }
+}

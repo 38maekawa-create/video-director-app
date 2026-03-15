@@ -231,6 +231,18 @@ final class APIClient: ObservableObject {
         )
     }
 
+    // MARK: - ビフォーアフター比較
+
+    /// プロジェクトの全動画バージョン一覧を取得（素材 vs 編集後 vs FB後）
+    func fetchBeforeAfter(projectId: String) async throws -> BeforeAfterResponse {
+        try await request(BeforeAfterResponse.self, path: "/api/v1/projects/\(projectId)/before-after")
+    }
+
+    /// 文字起こしdiff分析結果を取得
+    func fetchTranscriptDiff(projectId: String) async throws -> TranscriptDiffResponse {
+        try await request(TranscriptDiffResponse.self, path: "/api/v1/projects/\(projectId)/transcript-diff")
+    }
+
     // MARK: - カテゴリ
 
     /// カテゴリ別プロジェクト一覧を取得

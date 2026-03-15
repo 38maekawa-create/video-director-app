@@ -92,7 +92,7 @@ struct DirectionReportView: View {
         .sheet(isPresented: $showKnowledgePage) {
             if let urlString = project.knowledgePageUrl,
                let url = URL(string: urlString) {
-                KnowledgePageWebView(url: url)
+                KnowledgePageWebView(url: url, projectId: project.id)
             }
         }
     }
@@ -592,51 +592,338 @@ struct DirectionReportView: View {
     }
 }
 
-// MARK: - ナレッジ閲覧ページ（WKWebViewフルスクリーン表示）
+// MARK: - ナレッジ閲覧ページ（WKWebViewフルスクリーン表示 + 音声FBフローティングボタン）
 struct KnowledgePageWebView: View {
     let url: URL
+    var projectId: String = ""
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var voiceVM = VoiceFeedbackViewModel()
+    @State private var showRecordingPanel = false
+    @State private var showSuccessToast = false
 
     var body: some View {
         NavigationView {
-            WebViewRepresentable(url: url)
-                .ignoresSafeArea(edges: .bottom)
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
+            ZStack(alignment: .bottomTrailing) {
+                WebViewRepresentable(url: url)
+                    .ignoresSafeArea(edges: .bottom)
+
+                // 録音パネル（録音中〜送信完了まで表示）
+                if showRecordingPanel {
+                    knowledgeRecordingPanel
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+
+                // フローティングマイクボタン（録音パネル非表示時のみ）
+                if !showRecordingPanel {
+                    floatingMicButton
+                        .padding(.trailing, 20)
+                        .padding(.bottom, 30)
+                        .transition(.scale.combined(with: .opacity))
+                }
+
+                // 送信完了トースト
+                if showSuccessToast {
+                    successToast
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
+            }
+            .animation(.easeInOut(duration: 0.3), value: showRecordingPanel)
+            .animation(.easeInOut(duration: 0.3), value: showSuccessToast)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        voiceVM.resetFlow()
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "xmark")
+                            Text("閉じる")
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.white)
+                    }
+                }
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "book.fill")
+                            .foregroundStyle(AppTheme.accent)
+                        Text("動画ナレッジ")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Link(destination: url) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "safari")
+                            Text("Safari")
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(AppTheme.accent)
+                    }
+                }
+            }
+            .toolbarBackground(AppTheme.cardBackground, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+        }
+        .onAppear {
+            voiceVM.projectId = projectId
+        }
+    }
+
+    // MARK: - フローティングマイクボタン（FABスタイル）
+    private var floatingMicButton: some View {
+        Button {
+            showRecordingPanel = true
+            voiceVM.toggleRecording()
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(Color(hex: 0xE50914))
+                    .frame(width: 60, height: 60)
+                    .shadow(color: .black.opacity(0.4), radius: 8, x: 0, y: 4)
+
+                Image(systemName: "mic.fill")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - 録音パネル（WebView下部にオーバーレイ表示）
+    private var knowledgeRecordingPanel: some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            VStack(spacing: 16) {
+                // ドラッグハンドル
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(AppTheme.textMuted.opacity(0.4))
+                    .frame(width: 40, height: 4)
+                    .padding(.top, 8)
+
+                // ステータステキスト
+                Text(panelStatusText)
+                    .font(.subheadline)
+                    .foregroundStyle(AppTheme.textSecondary)
+
+                // 録音ボタン + 時間表示
+                HStack(spacing: 20) {
+                    // 録音/停止ボタン
+                    Button(action: {
+                        if voiceVM.flowState == .idle {
+                            voiceVM.toggleRecording()
+                        } else if voiceVM.flowState == .recording {
+                            voiceVM.toggleRecording()
+                        }
+                    }) {
+                        ZStack {
+                            // パルスアニメーション（録音中）
+                            if voiceVM.flowState == .recording {
+                                Circle()
+                                    .fill(Color(hex: 0xE50914).opacity(0.3))
+                                    .frame(width: 80, height: 80)
+                                    .scaleEffect(knowledgePulseScale)
+                                    .animation(
+                                        .easeInOut(duration: 1.0).repeatForever(autoreverses: true),
+                                        value: voiceVM.flowState
+                                    )
+                            }
+
+                            Circle()
+                                .fill(voiceVM.flowState == .recording
+                                      ? Color(hex: 0xB71C1C)
+                                      : Color(hex: 0xE50914))
+                                .frame(width: 60, height: 60)
+                                .overlay(
+                                    Group {
+                                        if voiceVM.flowState == .recording {
+                                            RoundedRectangle(cornerRadius: 4)
+                                                .fill(.white)
+                                                .frame(width: 22, height: 22)
+                                        } else {
+                                            Image(systemName: "mic.fill")
+                                                .font(.system(size: 24, weight: .bold))
+                                                .foregroundStyle(.white)
+                                        }
+                                    }
+                                )
+                                .shadow(color: Color(hex: 0xE50914).opacity(0.4), radius: 6, x: 0, y: 3)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(voiceVM.flowState == .transcribing)
+
+                    // 録音時間（録音中のみ）
+                    if voiceVM.flowState == .recording {
+                        Text(voiceVM.formattedDuration)
+                            .font(.system(size: 28, weight: .heavy, design: .monospaced))
+                            .foregroundStyle(Color(hex: 0xE50914))
+                    }
+
+                    // 変換中スピナー
+                    if voiceVM.flowState == .transcribing {
+                        ProgressView()
+                            .tint(AppTheme.accent)
+                            .scaleEffect(1.2)
+                    }
+                }
+
+                // 文字起こし結果（コンパクト表示）
+                if !voiceVM.rawTranscript.isEmpty && voiceVM.flowState != .recording {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(voiceVM.rawTranscript)
+                            .font(.caption)
+                            .foregroundStyle(AppTheme.textSecondary)
+                            .lineLimit(3)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        // 変換ボタン
+                        if voiceVM.canConvert {
+                            Button(action: voiceVM.convertFeedback) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "arrow.triangle.2.circlepath")
+                                    Text("プロの指示に変換")
+                                }
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(AppTheme.accent)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                }
+
+                // 変換結果（コンパクト表示）
+                if !voiceVM.convertedText.isEmpty {
+                    Text(voiceVM.convertedText)
+                        .font(.caption)
+                        .foregroundStyle(.white)
+                        .lineLimit(3)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(8)
+                        .background(AppTheme.statusComplete.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .padding(.horizontal, 4)
+                }
+
+                // アクションボタン群
+                HStack(spacing: 12) {
+                    // 閉じるボタン
+                    Button {
+                        voiceVM.resetFlow()
+                        showRecordingPanel = false
+                    } label: {
+                        Text("閉じる")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.white)
+                            .padding(.vertical, 10)
+                            .padding(.horizontal, 20)
+                            .background(AppTheme.cardBackgroundLight)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+
+                    // 送信ボタン（送信可能時のみ）
+                    if voiceVM.canSend {
                         Button {
-                            dismiss()
+                            voiceVM.sendFeedback()
+                            // 送信成功を監視
+                            Task {
+                                // flowState が .sent になるのを待つ
+                                for _ in 0..<50 {
+                                    try? await Task.sleep(nanoseconds: 200_000_000)
+                                    if voiceVM.flowState == .sent {
+                                        showRecordingPanel = false
+                                        showSuccessToast = true
+                                        // 2秒後にトースト非表示
+                                        try? await Task.sleep(nanoseconds: 2_000_000_000)
+                                        showSuccessToast = false
+                                        voiceVM.resetFlow()
+                                        break
+                                    }
+                                }
+                            }
                         } label: {
                             HStack(spacing: 4) {
-                                Image(systemName: "xmark")
-                                Text("閉じる")
+                                Image(systemName: "paperplane.fill")
+                                Text("送信")
                             }
                             .font(.subheadline)
+                            .fontWeight(.bold)
                             .foregroundStyle(.white)
-                        }
-                    }
-                    ToolbarItem(placement: .principal) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "book.fill")
-                                .foregroundStyle(AppTheme.accent)
-                            Text("動画ナレッジ")
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                        }
-                    }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Link(destination: url) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "safari")
-                                Text("Safari")
-                            }
-                            .font(.subheadline)
-                            .foregroundStyle(AppTheme.accent)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(AppTheme.statusComplete)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
                     }
                 }
-                .toolbarBackground(AppTheme.cardBackground, for: .navigationBar)
-                .toolbarBackground(.visible, for: .navigationBar)
+
+                // 送信メッセージ表示
+                if let msg = voiceVM.sentMessage {
+                    Text(msg)
+                        .font(.caption)
+                        .foregroundStyle(voiceVM.flowState == .sent ? AppTheme.statusComplete : AppTheme.accent)
+                        .padding(.bottom, 4)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 20)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(AppTheme.cardBackground)
+                    .shadow(color: .black.opacity(0.5), radius: 15, y: -5)
+                    .ignoresSafeArea(edges: .bottom)
+            )
         }
+    }
+
+    // MARK: - 送信完了トースト
+    private var successToast: some View {
+        VStack {
+            HStack(spacing: 8) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(AppTheme.statusComplete)
+                    .font(.system(size: 20))
+                Text("フィードバックを送信しました")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.white)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .background(
+                Capsule()
+                    .fill(AppTheme.cardBackground)
+                    .shadow(color: .black.opacity(0.3), radius: 8, y: 2)
+            )
+            .padding(.top, 60)
+
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - ヘルパー
+    private var panelStatusText: String {
+        switch voiceVM.flowState {
+        case .idle: return "タップして録音開始"
+        case .recording: return "録音中... タップで停止"
+        case .transcribing: return "文字起こし中..."
+        case .readyToConvert: return "変換ボタンを押してください"
+        case .readyToSend: return "送信できます"
+        case .sent: return "送信完了"
+        }
+    }
+
+    private var knowledgePulseScale: CGFloat {
+        voiceVM.flowState == .recording ? 1.2 : 1.0
     }
 }

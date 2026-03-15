@@ -72,7 +72,8 @@
             unreviewedCount: p.unreviewed_count || p.unreviewedCount || 0,
             qualityScore: p.quality_score || p.qualityScore || null,
             hasUnsentFeedback: p.has_unsent_feedback || p.hasUnsentFeedback || false,
-            category: p.category || ''
+            category: p.category || '',
+            knowledgePageUrl: p.knowledge_page_url || p.knowledgePageUrl || null
           }));
           // 撮影日の新しい順にソート
           projects.sort((a, b) => b.shootDate.localeCompare(a.shootDate));
@@ -286,6 +287,11 @@
         </div>
         <div class="report-actions">
           <button class="btn-vimeo">▶ Vimeoレビューを開く</button>
+          ${p.knowledgePageUrl ? `
+            <a href="${p.knowledgePageUrl}" target="_blank" rel="noopener noreferrer" class="btn-knowledge-page">
+              <span style="margin-right:4px">📖</span> 閲覧ページ
+            </a>
+          ` : ''}
           ${p.qualityScore ? `
             <div class="score-display">
               <div class="score-value ${scoreClass(p.qualityScore)}" style="color: ${scoreColor(p.qualityScore)}">${p.qualityScore}</div>

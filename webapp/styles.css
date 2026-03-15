@@ -417,7 +417,8 @@ html, body {
 .report-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
   margin-top: 12px;
 }
 
@@ -433,6 +434,26 @@ html, body {
   border-radius: 50px;
   border: 1px solid rgba(128, 128, 128, 0.3);
   cursor: pointer;
+}
+
+.btn-knowledge-page {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  padding: 10px 16px;
+  background: var(--card);
+  border-radius: 50px;
+  border: 1px solid rgba(229, 9, 20, 0.5);
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+
+.btn-knowledge-page:hover {
+  border-color: var(--accent);
 }
 
 .score-display {

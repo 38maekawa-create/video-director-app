@@ -147,7 +147,8 @@ struct VideoProject: Identifiable, Codable, Hashable {
         sourceVideoURL: String? = nil,
         editedVideoURL: String? = nil,
         knowledge: String? = nil,
-        category: String? = nil
+        category: String? = nil,
+        knowledgePageUrl: String? = nil
     ) {
         self.id = id
         self.guestName = guestName
@@ -165,6 +166,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         self.editedVideoURL = editedVideoURL
         self.knowledge = knowledge
         self.category = category
+        self.knowledgePageUrl = knowledgePageUrl
     }
 
     enum CodingKeys: String, CodingKey {
@@ -184,6 +186,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         case editedVideoURL
         case knowledge
         case category
+        case knowledgePageUrl
         // デコード専用キー（APIレスポンスのネスト構造を展開するため）
         case sourceVideo
         case editedVideo
@@ -208,6 +211,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         try container.encodeIfPresent(editedVideoURL, forKey: .editedVideoURL)
         try container.encodeIfPresent(knowledge, forKey: .knowledge)
         try container.encodeIfPresent(category, forKey: .category)
+        try container.encodeIfPresent(knowledgePageUrl, forKey: .knowledgePageUrl)
     }
 
     init(from decoder: Decoder) throws {
@@ -226,6 +230,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         editedVideoURL = VideoProject.decodeNestedURL(from: container, key: .editedVideoURL, fallbackKey: .editedVideo)
         knowledge = VideoProject.decodeKnowledgeText(from: container)
         category = try container.decodeIfPresent(String.self, forKey: .category)
+        knowledgePageUrl = try container.decodeIfPresent(String.self, forKey: .knowledgePageUrl)
 
         // APIはsnake_case（"review_pending"）を返すが、enumのrawValueはcamelCase（"reviewPending"）
         // decodeIfPresentは値が存在するがデコード失敗時にエラーを投げるため、

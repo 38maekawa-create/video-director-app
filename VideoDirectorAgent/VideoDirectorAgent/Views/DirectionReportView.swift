@@ -68,6 +68,7 @@ struct DirectionReportView: View {
     @State private var feedbacks: [FeedbackItem] = []
     @State private var isFeedbackLoading = false
     @State private var showVoiceFeedback = false
+    @State private var showKnowledgePage = false
 
     private let tabTitles = ["概要", "ディレクション", "YouTube素材", "素材", "編集後", "FB・評価", "ナレッジ", "レビュー"]
 
@@ -87,6 +88,12 @@ struct DirectionReportView: View {
         .navigationBarTitleDisplayMode(.inline)
         .fullScreenCover(isPresented: $showVoiceFeedback) {
             VoiceFeedbackView(projectId: project.id)
+        }
+        .sheet(isPresented: $showKnowledgePage) {
+            if let urlString = project.knowledgePageUrl,
+               let url = URL(string: urlString) {
+                KnowledgePageWebView(url: url)
+            }
         }
     }
 
@@ -154,6 +161,28 @@ struct DirectionReportView: View {
                             Capsule()
                                 .strokeBorder(AppTheme.textMuted.opacity(0.3), lineWidth: 1)
                         )
+                    }
+
+                    if project.knowledgePageUrl != nil {
+                        Button {
+                            showKnowledgePage = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "book.fill")
+                                Text("閲覧ページ")
+                            }
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(AppTheme.cardBackground)
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule()
+                                    .strokeBorder(AppTheme.accent.opacity(0.5), lineWidth: 1)
+                            )
+                        }
                     }
 
                     if let score = project.qualityScore {
@@ -559,6 +588,55 @@ struct DirectionReportView: View {
             feedbacks = try await APIClient.shared.fetchFeedbacks(projectId: project.id)
         } catch {
             feedbacks = []
+        }
+    }
+}
+
+// MARK: - ナレッジ閲覧ページ（WKWebViewフルスクリーン表示）
+struct KnowledgePageWebView: View {
+    let url: URL
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            WebViewRepresentable(url: url)
+                .ignoresSafeArea(edges: .bottom)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "xmark")
+                                Text("閉じる")
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(.white)
+                        }
+                    }
+                    ToolbarItem(placement: .principal) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "book.fill")
+                                .foregroundStyle(AppTheme.accent)
+                            Text("動画ナレッジ")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                        }
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Link(destination: url) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "safari")
+                                Text("Safari")
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(AppTheme.accent)
+                        }
+                    }
+                }
+                .toolbarBackground(AppTheme.cardBackground, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
         }
     }
 }

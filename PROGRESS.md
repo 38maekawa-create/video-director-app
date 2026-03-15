@@ -1,14 +1,25 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-15（テストカバレッジ強化: 443 → 499件）
+2026-03-15（エッジケーステスト追加: 499 → 524件）
 
 ## 現在の作業状態
 **待機中（Mac mini M4でのTestFlight配布実行待ち）**
 
-全開発フェーズ完了。Python 499テスト全PASS。iOSアプリビルド成功。TestFlight配布に必要なスクリプト・設定は全て用意済み。Mac mini M4 での手動実行ステップのみ残存。
+全開発フェーズ完了。Python 524テスト全PASS。iOSアプリビルド成功。TestFlight配布に必要なスクリプト・設定は全て用意済み。Mac mini M4 での手動実行ステップのみ残存。
 
 ### 直近の作業（2026-03-15）
+- エッジケーステスト25件追加（499 → 524件）
+- 追加テストファイル: `tests/test_edge_cases.py`（25件）
+  - 空データ系（6件）: 空ハイライト/空プロファイル/空文字列/空FB/空URLなど
+  - 不正フォーマット系（8件）: 不正タイムスタンプ/不正JSON/存在しないファイル/特殊文字/極端に長いテキスト
+  - タイムアウト系（3件）: yt-dlpタイムアウト/コマンド未インストール/LLMタイムアウト
+  - 並行実行系（3件）: VideoTracker/FeedbackLearner/generate_directionsの並行呼び出し
+  - 境界値・その他（5件）: ハイライト1件/重複URL/存在しないID参照/カテゴリ自動推定
+- バグ修正: `_timestamp_to_seconds`（`"abc:def"` 形式でValueErrorが発生）→ try-except でガード
+- 全524件 PASS 確認
+
+### 2件前の作業（2026-03-15）
 - テスト未カバーモジュール3件（video_tracker / video_learner / video_analyzer）を特定
 - ユニットテスト56件追加（443 → 499件）
 - 追加テストファイル: `tests/test_video_tracker.py`（20件）、`tests/test_video_learner.py`（22件）、`tests/test_video_analyzer.py`（14件）

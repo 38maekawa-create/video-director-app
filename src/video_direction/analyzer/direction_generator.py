@@ -188,12 +188,15 @@ def _extract_punchline(text: str) -> str:
 
 
 def _timestamp_to_seconds(ts: str) -> int:
-    """タイムスタンプを秒数に変換"""
-    parts = ts.split(":")
-    if len(parts) == 2:
-        return int(parts[0]) * 60 + int(parts[1])
-    elif len(parts) == 3:
-        return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+    """タイムスタンプを秒数に変換（不正フォーマットは0を返す）"""
+    try:
+        parts = ts.split(":")
+        if len(parts) == 2:
+            return int(parts[0]) * 60 + int(parts[1])
+        elif len(parts) == 3:
+            return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+    except (ValueError, IndexError):
+        pass
     return 0
 
 

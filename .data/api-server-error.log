@@ -2232,3 +2232,4 @@ INFO:     Application startup complete.
   warnings.warn(eol_message.format("3.9"), FutureWarning)
 /Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
   warnings.warn(
+ffmpegが見つかりません。音声品質の実測評価は利用できません。brew install ffmpeg でインストールしてください。

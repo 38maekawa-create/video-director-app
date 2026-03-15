@@ -652,7 +652,7 @@ struct QualityTrendItem: Codable, Identifiable {
     let qualityScore: Int?
 }
 
-struct Editor: Identifiable, Codable {
+struct Editor: Identifiable, Decodable {
     let id: String
     let name: String
     let contactInfo: String?

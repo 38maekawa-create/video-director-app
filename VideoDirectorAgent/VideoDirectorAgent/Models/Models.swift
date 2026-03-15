@@ -193,8 +193,15 @@ struct VideoProject: Identifiable, Codable, Hashable {
         editedVideoURL = VideoProject.decodeNestedURL(from: container, key: .editedVideoURL, fallbackKey: .editedVideo)
         knowledge = VideoProject.decodeKnowledgeText(from: container)
 
-        if let status = try container.decodeIfPresent(ProjectStatus.self, forKey: .status) {
-            self.status = status
+        // APIはsnake_case（"review_pending"）を返すが、enumのrawValueはcamelCase（"reviewPending"）
+        // decodeIfPresentは値が存在するがデコード失敗時にエラーを投げるため、
+        // まずStringとしてデコードし、snake_case→camelCase変換してからenum化する
+        if let statusStr = try container.decodeIfPresent(String.self, forKey: .status) {
+            // snake_case → camelCase 変換（"review_pending" → "reviewPending"）
+            let camelCase = statusStr.split(separator: "_").enumerated().map { index, part in
+                index == 0 ? String(part) : part.capitalized
+            }.joined()
+            self.status = ProjectStatus(rawValue: camelCase) ?? .directed
         } else {
             self.status = .directed
         }

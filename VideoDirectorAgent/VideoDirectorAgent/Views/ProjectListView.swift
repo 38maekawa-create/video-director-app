@@ -4,73 +4,78 @@ import SwiftUI
 struct ProjectListView: View {
     @ObservedObject var viewModel: ProjectListViewModel
     @State private var searchText = ""
+    @State private var navigationPath = NavigationPath()
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 0) {
-                // ヒーローバナー
-                if let hero = viewModel.heroProject {
-                    NavigationLink(value: hero) {
-                        heroSection(hero)
-                            .contentShape(Rectangle())
+        NavigationStack(path: $navigationPath) {
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
+                    // ヒーローバナー
+                    if let hero = viewModel.heroProject {
+                        Button {
+                            navigationPath.append(hero)
+                        } label: {
+                            heroSection(hero)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
-                }
 
-                // 検索バー
-                searchBar
+                    // 検索バー
+                    searchBar
 
-                // カルーセルセクション群
-                VStack(spacing: 24) {
-                    // 最近のフィードバック
-                    if !viewModel.recentFeedbackProjects.isEmpty {
+                    // カルーセルセクション群
+                    VStack(spacing: 24) {
+                        // 最近のフィードバック
+                        if !viewModel.recentFeedbackProjects.isEmpty {
+                            carouselSection(
+                                title: "最近のフィードバック",
+                                icon: "bubble.left.fill",
+                                projects: viewModel.recentFeedbackProjects
+                            )
+                        }
+
+                        // 要対応
+                        if !viewModel.actionRequiredProjects.isEmpty {
+                            carouselSection(
+                                title: "要対応",
+                                icon: "exclamationmark.triangle.fill",
+                                projects: viewModel.actionRequiredProjects
+                            )
+                        }
+
+                        // 全プロジェクト
                         carouselSection(
-                            title: "最近のフィードバック",
-                            icon: "bubble.left.fill",
-                            projects: viewModel.recentFeedbackProjects
+                            title: "全プロジェクト",
+                            icon: "film.stack.fill",
+                            projects: viewModel.filteredProjects
                         )
                     }
-
-                    // 要対応
-                    if !viewModel.actionRequiredProjects.isEmpty {
-                        carouselSection(
-                            title: "要対応",
-                            icon: "exclamationmark.triangle.fill",
-                            projects: viewModel.actionRequiredProjects
-                        )
-                    }
-
-                    // 全プロジェクト
-                    carouselSection(
-                        title: "全プロジェクト",
-                        icon: "film.stack.fill",
-                        projects: viewModel.filteredProjects
-                    )
+                    .padding(.bottom, 32)
                 }
-                .padding(.bottom, 32)
             }
-        }
-        .background(AppTheme.background.ignoresSafeArea())
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text("VIDEO DIRECTOR")
-                    .font(AppTheme.heroFont(20))
-                    .foregroundStyle(AppTheme.accent)
-                    .tracking(4)
+            .background(AppTheme.background.ignoresSafeArea())
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("VIDEO DIRECTOR")
+                        .font(AppTheme.heroFont(20))
+                        .foregroundStyle(AppTheme.accent)
+                        .tracking(4)
+                }
             }
-        }
-        .refreshable {
-            await viewModel.refresh()
-        }
-        .task {
-            await viewModel.loadProjectsIfNeeded()
-        }
-        .onChange(of: searchText) { _, newValue in
-            viewModel.searchText = newValue
-        }
-        .navigationDestination(for: VideoProject.self) { project in
-            DirectionReportView(project: project)
+            .refreshable {
+                await viewModel.refresh()
+            }
+            .task {
+                await viewModel.loadProjectsIfNeeded()
+            }
+            .onChange(of: searchText) { _, newValue in
+                viewModel.searchText = newValue
+            }
+            .navigationDestination(for: VideoProject.self) { project in
+                DirectionReportView(project: project)
+            }
         }
     }
 
@@ -194,7 +199,9 @@ struct ProjectListView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(projects) { project in
-                        NavigationLink(value: project) {
+                        Button {
+                            navigationPath.append(project)
+                        } label: {
                             projectCard(project)
                                 .contentShape(Rectangle())
                         }
@@ -247,6 +254,7 @@ struct ProjectListView: View {
                         .fill(AppTheme.accent)
                         .frame(width: 10, height: 10)
                         .offset(x: 138, y: -88)
+                        .allowsHitTesting(false)
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 8))

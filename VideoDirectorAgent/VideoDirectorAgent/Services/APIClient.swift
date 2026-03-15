@@ -100,6 +100,19 @@ final class APIClient: ObservableObject {
         try await request([AuditReport].self, path: "/api/audit/history")
     }
 
+    /// 編集後フィードバックを取得（Before/After差分分析）
+    func fetchEditFeedback(
+        projectId: String,
+        body: EditFeedbackRequestBody = EditFeedbackRequestBody()
+    ) async throws -> EditFeedbackResponse {
+        return try await request(
+            EditFeedbackResponse.self,
+            path: "/api/v1/projects/\(projectId)/edit-feedback",
+            method: "POST",
+            body: body
+        )
+    }
+
     func convertFeedback(rawText: String, projectId: String) async throws -> FeedbackConvertResponse {
         let body = FeedbackConvertRequest(rawText: rawText, projectId: projectId)
         return try await request(FeedbackConvertResponse.self, path: "/api/feedback/convert", method: "POST", body: body)

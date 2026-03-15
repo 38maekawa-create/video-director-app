@@ -6,7 +6,7 @@ from pathlib import Path
 from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.video_direction.tracker.video_learner import VideoPattern, VideoLearner
+from src.video_direction.tracker.video_learner import VideoPattern, VideoLearner, VideoLearningRule
 
 
 # ────────────────────────────────────────────────
@@ -195,3 +195,112 @@ class TestVideoLearnerQuery:
             )
         insights = self.learner.get_insights_for_direction()
         assert len(insights) >= 1
+
+
+# ────────────────────────────────────────────────
+# VideoLearningRule データクラス
+# ────────────────────────────────────────────────
+
+class TestVideoLearningRule:
+    def test_最低限のフィールドで生成できる(self):
+        r = VideoLearningRule(id="vr_001", rule_text="高速カット", category="cutting")
+        assert r.id == "vr_001"
+        assert r.rule_text == "高速カット"
+        assert r.category == "cutting"
+        assert r.priority == "medium"
+        assert r.applied_count == 0
+        assert r.is_active is True
+
+
+# ────────────────────────────────────────────────
+# VideoLearner — get_active_rules（direction_generator互換）
+# ────────────────────────────────────────────────
+
+class TestGetActiveRules:
+    def setup_method(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.learner = VideoLearner(data_dir=self.tmp)
+
+    def test_確信度04未満のパターンはルールに含まれない(self):
+        # 1件だけ学習（confidence=0.2）
+        self.learner.learn_from_analysis(
+            video_id="v001",
+            analysis_result={"cutting_style": "テスト"},
+        )
+        rules = self.learner.get_active_rules()
+        assert len(rules) == 0
+
+    def test_確信度04以上のパターンがルールに含まれる(self):
+        # 3件学習で confidence = 3/5 = 0.6 > 0.4
+        for i in range(3):
+            self.learner.learn_from_analysis(
+                video_id=f"v{i:02d}",
+                analysis_result={"cutting_style": "高速カット MTV風スタイル"},
+            )
+        rules = self.learner.get_active_rules()
+        assert len(rules) >= 1
+        assert all(isinstance(r, VideoLearningRule) for r in rules)
+
+    def test_ルールにはrule_textとcategoryとpriorityがある(self):
+        for i in range(5):
+            self.learner.learn_from_analysis(
+                video_id=f"v{i:02d}",
+                analysis_result={"cutting_style": "高速カット MTV風スタイル"},
+            )
+        rules = self.learner.get_active_rules()
+        assert len(rules) >= 1
+        r = rules[0]
+        assert hasattr(r, "rule_text")
+        assert hasattr(r, "category")
+        assert hasattr(r, "priority")
+        assert r.priority in ("high", "medium", "low")
+
+    def test_category指定でフィルタできる(self):
+        for i in range(4):
+            self.learner.learn_from_analysis(
+                video_id=f"v{i:02d}",
+                analysis_result={
+                    "cutting_style": "高速カット",
+                    "color_grading": "暖色系",
+                },
+            )
+        cutting_rules = self.learner.get_active_rules(category="cutting")
+        assert all(r.category == "cutting" for r in cutting_rules)
+
+    def test_高確信度はhigh優先度になる(self):
+        # 5件で confidence = 1.0 → high
+        for i in range(5):
+            self.learner.learn_from_analysis(
+                video_id=f"v{i:02d}",
+                analysis_result={"cutting_style": "高速カット MTV風スタイル"},
+            )
+        rules = self.learner.get_active_rules()
+        high_rules = [r for r in rules if r.priority == "high"]
+        assert len(high_rules) >= 1
+
+
+# ────────────────────────────────────────────────
+# VideoLearner — get_insights（FeedbackLearner統一フォーマット）
+# ────────────────────────────────────────────────
+
+class TestGetInsights:
+    def setup_method(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.learner = VideoLearner(data_dir=self.tmp)
+
+    def test_空の状態でも正しいフォーマットで返す(self):
+        insights = self.learner.get_insights()
+        assert "total_patterns" in insights
+        assert "total_rules" in insights
+        assert "active_rules" in insights
+        assert "high_confidence_patterns" in insights
+        assert "category_distribution" in insights
+
+    def test_パターン追加後の値が正しい(self):
+        self.learner.learn_from_analysis(
+            video_id="v001",
+            analysis_result={"cutting_style": "テスト"},
+        )
+        insights = self.learner.get_insights()
+        assert insights["total_patterns"] == 1
+        assert "cutting" in insights["category_distribution"]

@@ -1181,3 +1181,47 @@ struct EditFeedbackResponse: Decodable {
         min(max(qualityScore / 10.0, 0.0), 1.0)
     }
 }
+
+// MARK: - Vimeoタイムライン関連モデル
+
+struct VimeoFeedbackItem: Identifiable, Codable {
+    let id: UUID
+    /// タイムコード（秒単位）
+    let timestampMark: TimeInterval
+    /// 映像要素カテゴリ（カット割り・テロップ等）
+    let element: String
+    /// 優先度
+    let priorityRaw: String
+    /// フィードバック本文
+    let note: String
+    /// Vimeo動画ID
+    let vimeoVideoId: String
+
+    var priority: FeedbackPriority {
+        FeedbackPriority(rawValue: priorityRaw) ?? .medium
+    }
+
+    /// タイムコードを MM:SS 文字列で返す
+    var timestampString: String {
+        let minutes = Int(timestampMark) / 60
+        let seconds = Int(timestampMark) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case timestampMark = "timestamp_mark"
+        case element
+        case priorityRaw = "priority"
+        case note
+        case vimeoVideoId = "vimeo_video_id"
+    }
+}
+
+/// Vimeoプレイヤーの再生状態（ViewModelと共有）
+enum VimeoPlaybackState {
+    case idle
+    case playing
+    case paused
+    case error(String)
+}

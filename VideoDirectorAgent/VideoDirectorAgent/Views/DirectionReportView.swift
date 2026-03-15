@@ -9,7 +9,7 @@ struct DirectionReportView: View {
     @State private var isFeedbackLoading = false
     @State private var showVoiceFeedback = false
 
-    private let tabTitles = ["概要", "ディレクション", "YouTube素材", "素材", "編集後", "FB・評価", "ナレッジ"]
+    private let tabTitles = ["概要", "ディレクション", "YouTube素材", "素材", "編集後", "FB・評価", "ナレッジ", "レビュー"]
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -159,6 +159,8 @@ struct DirectionReportView: View {
                 feedbackListSection
             case 6:
                 knowledgeDetailSection
+            case 7:
+                VimeoReviewTabView(projectId: project.id)
             default:
                 EmptyView()
             }

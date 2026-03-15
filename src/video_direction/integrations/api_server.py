@@ -846,7 +846,6 @@ def run_frame_evaluation(project_id: str, body: FrameEvaluationRequest = FrameEv
                 pass
 
         video_data = VideoData(
-            video_id=project_id,
             title=project_data.get("title", ""),
             speakers=project_data.get("guest_name", ""),
             highlights=highlights,

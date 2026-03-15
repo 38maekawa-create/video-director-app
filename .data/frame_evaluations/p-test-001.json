@@ -1,0 +1,194 @@
+{
+  "project_id": "p-test-001",
+  "status": "completed",
+  "evaluated_at": "2026-03-15T15:52:57.036176+00:00",
+  "total_frames": 2,
+  "issue_count": 8,
+  "review_count": 0,
+  "average_score": 58.9,
+  "is_stub": true,
+  "evaluations": [
+    {
+      "frame": {
+        "timestamp": "01:30",
+        "frame_index": 0,
+        "scene_description": "[実績数字] ゲスト: 年収5000万",
+        "image_path": "",
+        "is_stub": true
+      },
+      "evaluations": [
+        {
+          "model_name": "claude-opus-4.6",
+          "scores": {
+            "composition": 58,
+            "lighting": 60,
+            "color_balance": 62,
+            "focus": 57,
+            "framing": 59
+          },
+          "overall_score": 59.2,
+          "comments": [
+            "Phase 2推定値（claude-opus-4.6）: 文字起こしベースの推定評価",
+            "シーン: [実績数字] ゲスト: 年収5000万"
+          ],
+          "is_stub": true
+        },
+        {
+          "model_name": "gpt-5.4",
+          "scores": {
+            "composition": 61,
+            "lighting": 55,
+            "color_balance": 61,
+            "focus": 59,
+            "framing": 57
+          },
+          "overall_score": 58.6,
+          "comments": [
+            "Phase 2推定値（gpt-5.4）: 文字起こしベースの推定評価",
+            "シーン: [実績数字] ゲスト: 年収5000万"
+          ],
+          "is_stub": true
+        }
+      ],
+      "consensus_score": 58.9,
+      "findings": [
+        {
+          "axis": "composition",
+          "axis_label": "構図",
+          "level": "issue",
+          "description": "構図のスコアが低い（平均60点）",
+          "model_scores": {
+            "claude-opus-4.6": 58,
+            "gpt-5.4": 61
+          },
+          "suggestion": "構図の改善を推奨"
+        },
+        {
+          "axis": "lighting",
+          "axis_label": "照明",
+          "level": "issue",
+          "description": "照明のスコアが低い（平均58点）",
+          "model_scores": {
+            "claude-opus-4.6": 60,
+            "gpt-5.4": 55
+          },
+          "suggestion": "照明の改善を推奨"
+        },
+        {
+          "axis": "focus",
+          "axis_label": "フォーカス",
+          "level": "issue",
+          "description": "フォーカスのスコアが低い（平均58点）",
+          "model_scores": {
+            "claude-opus-4.6": 57,
+            "gpt-5.4": 59
+          },
+          "suggestion": "フォーカスの改善を推奨"
+        },
+        {
+          "axis": "framing",
+          "axis_label": "フレーミング",
+          "level": "issue",
+          "description": "フレーミングのスコアが低い（平均58点）",
+          "model_scores": {
+            "claude-opus-4.6": 59,
+            "gpt-5.4": 57
+          },
+          "suggestion": "フレーミングの改善を推奨"
+        }
+      ],
+      "agreement_level": "agreed"
+    },
+    {
+      "frame": {
+        "timestamp": "05:00",
+        "frame_index": 1,
+        "scene_description": "[TEKO価値] ゲスト: TEKOで人生変わった",
+        "image_path": "",
+        "is_stub": true
+      },
+      "evaluations": [
+        {
+          "model_name": "claude-opus-4.6",
+          "scores": {
+            "composition": 58,
+            "lighting": 60,
+            "color_balance": 62,
+            "focus": 57,
+            "framing": 59
+          },
+          "overall_score": 59.2,
+          "comments": [
+            "Phase 2推定値（claude-opus-4.6）: 文字起こしベースの推定評価",
+            "シーン: [TEKO価値] ゲスト: TEKOで人生変わった"
+          ],
+          "is_stub": true
+        },
+        {
+          "model_name": "gpt-5.4",
+          "scores": {
+            "composition": 61,
+            "lighting": 55,
+            "color_balance": 61,
+            "focus": 59,
+            "framing": 57
+          },
+          "overall_score": 58.6,
+          "comments": [
+            "Phase 2推定値（gpt-5.4）: 文字起こしベースの推定評価",
+            "シーン: [TEKO価値] ゲスト: TEKOで人生変わった"
+          ],
+          "is_stub": true
+        }
+      ],
+      "consensus_score": 58.9,
+      "findings": [
+        {
+          "axis": "composition",
+          "axis_label": "構図",
+          "level": "issue",
+          "description": "構図のスコアが低い（平均60点）",
+          "model_scores": {
+            "claude-opus-4.6": 58,
+            "gpt-5.4": 61
+          },
+          "suggestion": "構図の改善を推奨"
+        },
+        {
+          "axis": "lighting",
+          "axis_label": "照明",
+          "level": "issue",
+          "description": "照明のスコアが低い（平均58点）",
+          "model_scores": {
+            "claude-opus-4.6": 60,
+            "gpt-5.4": 55
+          },
+          "suggestion": "照明の改善を推奨"
+        },
+        {
+          "axis": "focus",
+          "axis_label": "フォーカス",
+          "level": "issue",
+          "description": "フォーカスのスコアが低い（平均58点）",
+          "model_scores": {
+            "claude-opus-4.6": 57,
+            "gpt-5.4": 59
+          },
+          "suggestion": "フォーカスの改善を推奨"
+        },
+        {
+          "axis": "framing",
+          "axis_label": "フレーミング",
+          "level": "issue",
+          "description": "フレーミングのスコアが低い（平均58点）",
+          "model_scores": {
+            "claude-opus-4.6": 59,
+            "gpt-5.4": 57
+          },
+          "suggestion": "フレーミングの改善を推奨"
+        }
+      ],
+      "agreement_level": "agreed"
+    }
+  ]
+}

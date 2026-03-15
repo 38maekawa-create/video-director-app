@@ -385,4 +385,50 @@ https://teko-lp.com/
             overallHealth: "good"
         )
     ]
+
+    // MARK: - Vimeoタイムラインモックデータ
+    static let sampleVimeoVideoId = "76979871"
+
+    static let vimeoFeedbacks: [VimeoFeedbackItem] = [
+        .init(
+            id: UUID(),
+            timestampMark: 12,
+            element: "カット割り",
+            priorityRaw: "高",
+            note: "冒頭フックが弱い。結論を先出しして視聴者を引き込む構成に変更してください。",
+            vimeoVideoId: sampleVimeoVideoId
+        ),
+        .init(
+            id: UUID(),
+            timestampMark: 78,
+            element: "テロップ",
+            priorityRaw: "高",
+            note: "テロップ情報量が多すぎる。1カット1メッセージに整理してください。",
+            vimeoVideoId: sampleVimeoVideoId
+        ),
+        .init(
+            id: UUID(),
+            timestampMark: 138,
+            element: "BGM",
+            priorityRaw: "中",
+            note: "BGMレベルを-3dB調整し、ナレーション明瞭度を優先してください。",
+            vimeoVideoId: sampleVimeoVideoId
+        ),
+        .init(
+            id: UUID(),
+            timestampMark: 220,
+            element: "カメラワーク",
+            priorityRaw: "低",
+            note: "Bロール差し替えでテンポ改善。インサートカットを追加するとリズムが出ます。",
+            vimeoVideoId: sampleVimeoVideoId
+        ),
+        .init(
+            id: UUID(),
+            timestampMark: 301,
+            element: "構図",
+            priorityRaw: "中",
+            note: "クロースアップが続きすぎ。引きの画を挟んでテンポに変化を出してください。",
+            vimeoVideoId: sampleVimeoVideoId
+        )
+    ]
 }

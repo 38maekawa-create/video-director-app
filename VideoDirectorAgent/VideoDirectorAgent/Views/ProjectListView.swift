@@ -6,6 +6,7 @@ struct ProjectListView: View {
     @ObservedObject var viewModel: ProjectListViewModel
     @State private var searchText = ""
     @State private var selectedProject: VideoProject?
+    @State private var showAllProjects = false
 
     var body: some View {
         NavigationStack {
@@ -41,7 +42,8 @@ struct ProjectListView: View {
                         carouselSection(
                             title: "全プロジェクト",
                             icon: "film.stack.fill",
-                            projects: viewModel.filteredProjects
+                            projects: viewModel.filteredProjects,
+                            showSeeAll: true
                         )
                     }
                     .padding(.bottom, 32)
@@ -182,7 +184,7 @@ struct ProjectListView: View {
     }
 
     @ViewBuilder
-    private func carouselSection(title: String, icon: String, projects: [VideoProject]) -> some View {
+    private func carouselSection(title: String, icon: String, projects: [VideoProject], showSeeAll: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: icon)
@@ -193,9 +195,15 @@ struct ProjectListView: View {
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.caption)
-                    .foregroundStyle(AppTheme.textMuted)
+                    .foregroundStyle(showSeeAll ? AppTheme.accent : AppTheme.textMuted)
             }
             .padding(.horizontal, 16)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if showSeeAll {
+                    showAllProjects = true
+                }
+            }
 
             ProjectCarouselScrollView(projects: projects) { project in
                 selectedProject = project

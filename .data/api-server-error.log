@@ -1238,3 +1238,14 @@ INFO:     Finished server process [15552]
 INFO:     Started server process [15567]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [15567]
+INFO:     Stopping reloader process [48824]
+INFO:     Will watch for changes in these directories: ['/Users/maekawanaoto/AI開発10']
+INFO:     Uvicorn running on http://0.0.0.0:8210 (Press CTRL+C to quit)
+INFO:     Started reloader process [17171] using StatReload
+INFO:     Started server process [17175]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

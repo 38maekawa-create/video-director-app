@@ -580,6 +580,49 @@ struct DashboardSummary: Codable {
     let statusCounts: [String: Int]
     let recentFeedbacks: [FeedbackItem]
     let unsentFeedbackCount: Int
+
+    init(
+        totalProjects: Int,
+        withAssets: Int,
+        avgQualityScore: Double?,
+        statusCounts: [String: Int],
+        recentFeedbacks: [FeedbackItem],
+        unsentFeedbackCount: Int
+    ) {
+        self.totalProjects = totalProjects
+        self.withAssets = withAssets
+        self.avgQualityScore = avgQualityScore
+        self.statusCounts = statusCounts
+        self.recentFeedbacks = recentFeedbacks
+        self.unsentFeedbackCount = unsentFeedbackCount
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case totalProjects
+        case withAssets
+        case projectsWithAssets
+        case avgQualityScore
+        case averageQualityScore
+        case statusCounts
+        case statusBreakdown
+        case recentFeedbacks
+        case unsentFeedbackCount
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        totalProjects = try container.decodeIfPresent(Int.self, forKey: .totalProjects) ?? 0
+        withAssets = try container.decodeIfPresent(Int.self, forKey: .withAssets)
+            ?? container.decodeIfPresent(Int.self, forKey: .projectsWithAssets)
+            ?? 0
+        avgQualityScore = try container.decodeIfPresent(Double.self, forKey: .avgQualityScore)
+            ?? container.decodeIfPresent(Double.self, forKey: .averageQualityScore)
+        statusCounts = try container.decodeIfPresent([String: Int].self, forKey: .statusCounts)
+            ?? container.decodeIfPresent([String: Int].self, forKey: .statusBreakdown)
+            ?? [:]
+        recentFeedbacks = try container.decodeIfPresent([FeedbackItem].self, forKey: .recentFeedbacks) ?? []
+        unsentFeedbackCount = try container.decodeIfPresent(Int.self, forKey: .unsentFeedbackCount) ?? 0
+    }
 }
 
 struct QualityTrendItem: Codable, Identifiable {

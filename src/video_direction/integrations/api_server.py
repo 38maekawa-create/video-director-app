@@ -948,3 +948,48 @@ def health():
         "youtube_assets": assets_count,
         "feedbacks": feedback_count,
     }
+
+
+# --- Webアプリ静的ファイル配信 ---
+# PCブラウザから http://localhost:8210/ でアクセス可能にする
+
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+# ルートの index.html を返す
+@app.get("/")
+def serve_index():
+    index_path = Path.home() / "AI開発10" / "index.html"
+    if index_path.exists():
+        return FileResponse(str(index_path), media_type="text/html")
+    return {"error": "index.html not found"}
+
+# webapp/ ディレクトリの静的ファイルを配信
+WEBAPP_DIR = Path.home() / "AI開発10" / "webapp"
+if WEBAPP_DIR.exists():
+    app.mount("/webapp", StaticFiles(directory=str(WEBAPP_DIR)), name="webapp")
+
+# ルートレベルの静的ファイル（app.js, styles.css, data.js等）
+ROOT_DIR = Path.home() / "AI開発10"
+for ext in ["js", "css"]:
+    pass  # 個別ルートで対応
+
+@app.get("/{filename:path}")
+def serve_root_static(filename: str):
+    """APIパスでないリクエストを静的ファイルとして配信"""
+    if filename.startswith("api/"):
+        raise HTTPException(status_code=404)
+    file_path = Path.home() / "AI開発10" / filename
+    if file_path.exists() and file_path.is_file():
+        suffix = file_path.suffix
+        media_types = {
+            ".js": "application/javascript",
+            ".css": "text/css",
+            ".html": "text/html",
+            ".json": "application/json",
+            ".png": "image/png",
+            ".jpg": "image/jpeg",
+            ".svg": "image/svg+xml",
+        }
+        return FileResponse(str(file_path), media_type=media_types.get(suffix, "application/octet-stream"))
+    raise HTTPException(status_code=404, detail=f"File not found: {filename}")

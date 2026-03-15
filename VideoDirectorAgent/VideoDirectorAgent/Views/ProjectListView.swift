@@ -4,14 +4,16 @@ import SwiftUI
 struct ProjectListView: View {
     @ObservedObject var viewModel: ProjectListViewModel
     @State private var searchText = ""
-    @State private var selectedProject: VideoProject?
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 0) {
                 // ヒーローバナー
                 if let hero = viewModel.heroProject {
-                    heroSection(hero)
+                    NavigationLink(value: hero) {
+                        heroSection(hero)
+                    }
+                    .buttonStyle(.plain)
                 }
 
                 // 検索バー
@@ -66,7 +68,7 @@ struct ProjectListView: View {
         .onChange(of: searchText) { _, newValue in
             viewModel.searchText = newValue
         }
-        .navigationDestination(item: $selectedProject) { project in
+        .navigationDestination(for: VideoProject.self) { project in
             DirectionReportView(project: project)
         }
     }
@@ -153,14 +155,7 @@ struct ProjectListView: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
         }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            selectedProject = project
-        }
     }
-
-    // MARK: - カルーセルセクション内のヒーローにもButton対応
-    // （ヒーローは縦ScrollView内なのでonTapGestureで問題なし）
 
     // MARK: - 検索バー
     private var searchBar: some View {
@@ -198,9 +193,7 @@ struct ProjectListView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(projects) { project in
-                        Button {
-                            selectedProject = project
-                        } label: {
+                        NavigationLink(value: project) {
                             projectCard(project)
                         }
                         .buttonStyle(.plain)
@@ -243,6 +236,7 @@ struct ProjectListView: View {
                         }
                     }
                     .frame(width: 150, height: 100)
+                    .allowsHitTesting(false)
                 }
 
                 // 未送信バッジ

@@ -70,10 +70,10 @@ def generate_directions(
     # タイムスタンプ順にソート
     entries.sort(key=lambda e: _timestamp_to_seconds(e.timestamp))
 
-    # LLM分析を試行（APIキーがなければスキップ）
+    # LLM分析を試行（APIキーがなければスキップ。FB学習ルールもプロンプトに注入）
     llm_analysis = ""
     try:
-        llm_analysis = _llm_analyze(video_data, classification, income_eval)
+        llm_analysis = _llm_analyze(video_data, classification, income_eval, feedback_learner=feedback_learner)
     except Exception:
         pass
 
@@ -324,8 +324,9 @@ def _llm_analyze(
     video_data: VideoData,
     classification: ClassificationResult,
     income_eval: IncomeEvaluation,
+    feedback_learner=None,
 ) -> str:
-    """LLM（Claude Sonnet）による追加分析"""
+    """LLM（Claude Sonnet）による追加分析。FB学習ルールがあればプロンプトに注入する"""
     # APIキー読み込み
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
@@ -347,6 +348,17 @@ def _llm_analyze(
         for h in video_data.highlights[:15]
     ])
 
+    # FB学習ルールがあればLLMプロンプトに注入
+    learned_rules_text = ""
+    if feedback_learner is not None:
+        try:
+            active_rules = feedback_learner.get_active_rules()
+            if active_rules:
+                rules_lines = [f"- [{r.category}] {r.rule_text} (優先度: {r.priority})" for r in active_rules[:10]]
+                learned_rules_text = "\n\n過去のフィードバックから学習した演出ルール（これらを優先的に反映すること）:\n" + "\n".join(rules_lines)
+        except Exception:
+            pass
+
     prompt = f"""以下はTEKO対談インタビュー動画のハイライトシーンです。
 動画編集者向けに、追加の演出ディレクション提案を3〜5個生成してください。
 
@@ -356,7 +368,7 @@ def _llm_analyze(
 - タイトル: {video_data.title}
 
 ハイライトシーン:
-{highlights_text}
+{highlights_text}{learned_rules_text}
 
 以下のフォーマットで、具体的なタイムスタンプと演出指示を出してください:
 [MM:SS] 演出タイプ（テロップ/画角/色変え）: 具体的な指示内容
@@ -373,3 +385,43 @@ def _llm_analyze(
         messages=[{"role": "user", "content": prompt}],
     )
     return response.content[0].text
+
+
+def get_learning_context(feedback_learner: "FeedbackLearner" = None) -> dict:
+    """FB学習ルールのコンテキストを取得する
+
+    ディレクション生成の前に学習状況を確認したり、
+    APIレスポンスで学習ルールの適用状況を返すために使用する。
+
+    Args:
+        feedback_learner: FeedbackLearnerインスタンス（Noneなら空を返す）
+
+    Returns:
+        dict: {
+            "active_rules": [...],  # 有効なルール一覧
+            "insights": {...},      # 学習状況サマリー
+            "has_rules": bool,      # ルールがあるかどうか
+        }
+    """
+    if feedback_learner is None:
+        return {"active_rules": [], "insights": {}, "has_rules": False}
+
+    try:
+        active_rules = feedback_learner.get_active_rules()
+        insights = feedback_learner.get_insights()
+        return {
+            "active_rules": [
+                {
+                    "id": r.id,
+                    "rule_text": r.rule_text,
+                    "category": r.category,
+                    "priority": r.priority,
+                    "applied_count": r.applied_count,
+                }
+                for r in active_rules
+            ],
+            "insights": insights,
+            "has_rules": len(active_rules) > 0,
+        }
+    except Exception:
+        return {"active_rules": [], "insights": {}, "has_rules": False}

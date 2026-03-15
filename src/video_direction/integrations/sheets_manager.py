@@ -1,6 +1,7 @@
 from __future__ import annotations
 """J-2: スプシ統合 — 【インタビュー対談動画】管理タブとの連携"""
 
+import json
 import re
 import unicodedata
 from difflib import SequenceMatcher
@@ -11,6 +12,49 @@ try:
 except ImportError:  # pragma: no cover - 依存がない環境のテスト実行を許容
     Credentials = None
     gspread = None
+
+
+# --- MEMBER_MASTER.json別名解決テーブル ---
+# canonical_name / aliases / transcription_errors を一括で検索可能にする
+_MEMBER_ALIAS_MAP: dict[str, str] | None = None
+
+
+def _load_member_alias_map() -> dict[str, str]:
+    """MEMBER_MASTER.jsonから別名→canonical_nameのマップを構築する（遅延ロード）"""
+    global _MEMBER_ALIAS_MAP
+    if _MEMBER_ALIAS_MAP is not None:
+        return _MEMBER_ALIAS_MAP
+
+    _MEMBER_ALIAS_MAP = {}
+    master_path = Path.home() / "TEKO" / "knowledge" / "people" / "MEMBER_MASTER.json"
+    if not master_path.exists():
+        return _MEMBER_ALIAS_MAP
+
+    try:
+        data = json.loads(master_path.read_text(encoding="utf-8"))
+        for m in data.get("members", []):
+            canonical = m.get("canonical_name", "")
+            if not canonical:
+                continue
+            # canonical_name自身
+            _MEMBER_ALIAS_MAP[_normalize_name(canonical)] = canonical
+            # aliases
+            for alias in m.get("aliases", []):
+                _MEMBER_ALIAS_MAP[_normalize_name(alias)] = canonical
+            # transcription_errors（文字起こし誤変換）
+            for te in m.get("transcription_errors", []):
+                _MEMBER_ALIAS_MAP[_normalize_name(te)] = canonical
+    except Exception:
+        pass
+
+    return _MEMBER_ALIAS_MAP
+
+
+def _resolve_via_member_master(name: str) -> str | None:
+    """MEMBER_MASTER.jsonの別名テーブルでcanonical_nameに解決する"""
+    alias_map = _load_member_alias_map()
+    normalized = _normalize_name(name)
+    return alias_map.get(normalized)
 
 
 SPREADSHEET_ID = "1bW_qb13p747xoa2yf7RHaccNVTFCMxV8a5CjGdNqI6I"
@@ -212,6 +256,15 @@ def _match_guest_name(guest_name: str, sheet_title: str) -> bool:
     # スプシタイトルから名前候補を抽出
     title_names = _extract_names_from_title(sheet_title)
 
+    # 戦略0: MEMBER_MASTER.jsonの別名解決によるマッチング
+    # ゲスト名とタイトル内名前候補の両方をcanonical_nameに解決して比較
+    guest_canonical = _resolve_via_member_master(guest_name)
+    if guest_canonical:
+        for title_name in title_names:
+            title_canonical = _resolve_via_member_master(title_name)
+            if title_canonical and _normalize_name(guest_canonical) == _normalize_name(title_canonical):
+                return True
+
     # 戦略1: 正規化後の完全一致
     for title_name in title_names:
         if _normalize_name(title_name) == name_normalized:
@@ -244,6 +297,28 @@ def _match_guest_name(guest_name: str, sheet_title: str) -> bool:
     title_hira = _to_hiragana(title_normalized)
     if _is_partial_match(name_hiragana, title_hira):
         return True
+
+    # 戦略5: ローマ字↔ひらがな変換によるマッチング
+    # ゲスト名がローマ字の場合 → ひらがなに変換してマッチ
+    name_from_romaji = _romaji_to_hiragana(name_normalized)
+    if name_from_romaji:
+        for title_name in title_names:
+            tn = _normalize_name(title_name)
+            tn_hira = _to_hiragana(tn)
+            if name_from_romaji == tn_hira or _is_partial_match(name_from_romaji, tn_hira):
+                return True
+        if _is_partial_match(name_from_romaji, title_hira):
+            return True
+
+    # タイトルから抽出した名前がローマ字の場合 → ひらがなに変換してゲスト名とマッチ
+    for title_name in title_names:
+        tn = _normalize_name(title_name)
+        tn_from_romaji = _romaji_to_hiragana(tn)
+        if tn_from_romaji:
+            if name_hiragana and (name_hiragana == tn_from_romaji or _is_partial_match(name_hiragana, tn_from_romaji)):
+                return True
+            if name_katakana and _to_katakana(tn_from_romaji) == name_katakana:
+                return True
 
     return False
 
@@ -284,3 +359,78 @@ def _to_katakana(text: str) -> str:
         chr(ord(c) + 0x60) if "\u3041" <= c <= "\u3096" else c
         for c in text
     )
+
+
+# ローマ字→ひらがな変換テーブル（ヘボン式ベース + よくある綴り）
+_ROMAJI_TO_HIRAGANA = {
+    "sha": "しゃ", "shi": "し", "shu": "しゅ", "sho": "しょ",
+    "cha": "ちゃ", "chi": "ち", "chu": "ちゅ", "cho": "ちょ",
+    "tsu": "つ", "fu": "ふ",
+    "kya": "きゃ", "kyu": "きゅ", "kyo": "きょ",
+    "nya": "にゃ", "nyu": "にゅ", "nyo": "にょ",
+    "hya": "ひゃ", "hyu": "ひゅ", "hyo": "ひょ",
+    "mya": "みゃ", "myu": "みゅ", "myo": "みょ",
+    "rya": "りゃ", "ryu": "りゅ", "ryo": "りょ",
+    "gya": "ぎゃ", "gyu": "ぎゅ", "gyo": "ぎょ",
+    "bya": "びゃ", "byu": "びゅ", "byo": "びょ",
+    "pya": "ぴゃ", "pyu": "ぴゅ", "pyo": "ぴょ",
+    "ja": "じゃ", "ji": "じ", "ju": "じゅ", "jo": "じょ",
+    "ka": "か", "ki": "き", "ku": "く", "ke": "け", "ko": "こ",
+    "sa": "さ", "si": "し", "su": "す", "se": "せ", "so": "そ",
+    "ta": "た", "ti": "ち", "tu": "つ", "te": "て", "to": "と",
+    "na": "な", "ni": "に", "nu": "ぬ", "ne": "ね", "no": "の",
+    "ha": "は", "hi": "ひ", "hu": "ふ", "he": "へ", "ho": "ほ",
+    "ma": "ま", "mi": "み", "mu": "む", "me": "め", "mo": "も",
+    "ya": "や", "yu": "ゆ", "yo": "よ",
+    "ra": "ら", "ri": "り", "ru": "る", "re": "れ", "ro": "ろ",
+    "wa": "わ", "wi": "ゐ", "we": "ゑ", "wo": "を",
+    "ga": "が", "gi": "ぎ", "gu": "ぐ", "ge": "げ", "go": "ご",
+    "za": "ざ", "zi": "じ", "zu": "ず", "ze": "ぜ", "zo": "ぞ",
+    "da": "だ", "di": "ぢ", "du": "づ", "de": "で", "do": "ど",
+    "ba": "ば", "bi": "び", "bu": "ぶ", "be": "べ", "bo": "ぼ",
+    "pa": "ぱ", "pi": "ぴ", "pu": "ぷ", "pe": "ぺ", "po": "ぽ",
+    "a": "あ", "i": "い", "u": "う", "e": "え", "o": "お",
+    "n": "ん",
+}
+
+
+def _romaji_to_hiragana(text: str) -> str:
+    """ローマ字文字列をひらがなに変換する（ベストエフォート）
+
+    完全な変換は不要。マッチング用途なので「hirai」→「ひらい」レベルで十分。
+    促音（っ）、長音（ー）にも対応。
+    """
+    if not text:
+        return ""
+    text = text.lower().strip()
+    # 全角英数を半角に
+    text = unicodedata.normalize("NFKC", text)
+
+    # 英字のみの文字列でなければ変換不要（既にひらがな/カタカナを含む場合）
+    if not re.fullmatch(r"[a-z\-]+", text):
+        return ""
+
+    result = []
+    i = 0
+    while i < len(text):
+        # 促音: 子音の連続（nn以外）
+        if i + 1 < len(text) and text[i] == text[i + 1] and text[i] not in "aeioun":
+            result.append("っ")
+            i += 1
+            continue
+
+        matched = False
+        # 長いパターンから優先マッチ（3文字 → 2文字 → 1文字）
+        for length in (3, 2, 1):
+            chunk = text[i:i + length]
+            if chunk in _ROMAJI_TO_HIRAGANA:
+                result.append(_ROMAJI_TO_HIRAGANA[chunk])
+                i += length
+                matched = True
+                break
+
+        if not matched:
+            # 変換できない文字はスキップ（ハイフン等）
+            i += 1
+
+    return "".join(result)

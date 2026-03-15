@@ -160,3 +160,11 @@ INFO:     100.110.206.6:56553 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.110.206.6:56561 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.110.206.6:56565 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.110.206.6:56570 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:63890 - "GET /api/feedbacks?limit=50 HTTP/1.1" 200 OK
+INFO:     100.113.28.70:52555 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:52554 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:52556 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:52555 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     100.113.28.70:52554 - "GET /api/dashboard/quality-trend HTTP/1.1" 200 OK
+INFO:     100.113.28.70:52554 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     100.113.28.70:52554 - "GET /api/audit/history HTTP/1.1" 200 OK

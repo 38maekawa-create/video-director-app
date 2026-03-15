@@ -526,7 +526,14 @@ struct FeedbackItem: Identifiable, Codable {
             ?? ((raw?.isEmpty == false) ? "voice" : nil)
         projectTitle = try container.decodeIfPresent(String.self, forKey: .projectTitle)
         guestName = try container.decodeIfPresent(String.self, forKey: .guestName)
-        isSent = try container.decodeIfPresent(Bool.self, forKey: .isSent) ?? true
+        // APIは is_sent を Int(0/1) で返す場合があるため、Bool と Int の両方に対応
+        if let boolVal = try? container.decode(Bool.self, forKey: .isSent) {
+            isSent = boolVal
+        } else if let intVal = try? container.decode(Int.self, forKey: .isSent) {
+            isSent = intVal != 0
+        } else {
+            isSent = true
+        }
     }
 
     func encode(to encoder: Encoder) throws {

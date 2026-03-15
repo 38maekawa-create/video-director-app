@@ -256,3 +256,4 @@ INFO:     127.0.0.1:60833 - "POST /api/tracking/videos/NWa3BHEejhg/analyze HTTP/
 INFO:     127.0.0.1:60838 - "POST /api/tracking/videos/MwR_PNBPrNY/analyze HTTP/1.1" 200 OK
 INFO:     127.0.0.1:60842 - "POST /api/tracking/videos/MM8jFd198gU/analyze HTTP/1.1" 200 OK
 INFO:     127.0.0.1:60847 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61362 - "GET /api/projects HTTP/1.1" 200 OK

@@ -348,6 +348,11 @@ final class CarouselCollectionVC: UIViewController {
             collectionView.topAnchor.constraint(equalTo: view.topAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
+
+        // viewDidLoad前にconfigure()が呼ばれた場合のデータ反映
+        if !projects.isEmpty {
+            collectionView.reloadData()
+        }
     }
 
     func configure(projects: [VideoProject], onSelect: @escaping (VideoProject) -> Void) {
@@ -384,6 +389,7 @@ private final class CarouselCardCell: UICollectionViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
+        hostingController?.willMove(toParent: nil)
         hostingController?.view.removeFromSuperview()
         hostingController?.removeFromParent()
         hostingController = nil
@@ -398,7 +404,15 @@ private final class CarouselCardCell: UICollectionViewCell {
         // タッチをセルに透過させる（didSelectItemAtが発火するように）
         hc.view.isUserInteractionEnabled = false
 
-        contentView.addSubview(hc.view)
+        // UIHostingControllerを正しくVC hierarchyに登録（レイアウト安定化）
+        if let parentVC = findParentViewController() {
+            parentVC.addChild(hc)
+            contentView.addSubview(hc.view)
+            hc.didMove(toParent: parentVC)
+        } else {
+            contentView.addSubview(hc.view)
+        }
+
         NSLayoutConstraint.activate([
             hc.view.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             hc.view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
@@ -406,5 +420,16 @@ private final class CarouselCardCell: UICollectionViewCell {
             hc.view.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
         ])
         hostingController = hc
+    }
+
+    private func findParentViewController() -> UIViewController? {
+        var responder: UIResponder? = self
+        while let next = responder?.next {
+            if let vc = next as? UIViewController {
+                return vc
+            }
+            responder = next
+        }
+        return nil
     }
 }

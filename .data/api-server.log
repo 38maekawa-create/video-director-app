@@ -291,3 +291,15 @@ INFO:     100.113.28.70:60347 - "GET /api/editors HTTP/1.1" 200 OK
 INFO:     100.113.28.70:60348 - "GET /api/tracking/videos HTTP/1.1" 200 OK
 INFO:     100.113.28.70:60348 - "GET /api/tracking/insights HTTP/1.1" 200 OK
 INFO:     100.113.28.70:60347 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55639 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55639 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55639 - "GET /api/feedbacks?limit=50 HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55639 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55641 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55640 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55639 - "GET /api/dashboard/quality-trend HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55641 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55639 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55640 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55639 - "GET /api/audit/history HTTP/1.1" 200 OK
+INFO:     100.113.28.70:55639 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK

@@ -589,33 +589,38 @@ struct QualityDashboardView: View {
     // MARK: - ツールセクション（E2E / テロップ / 音声評価）
     private var toolsSection: some View {
         VStack(spacing: 20) {
-            // E2Eパイプライン
-            E2EPipelineView(viewModel: e2ePipelineVM, projects: toolProjects)
-
-            // テロップチェック
-            TelopCheckView(viewModel: telopCheckVM, projects: toolProjects)
-
-            // 音声品質評価
-            AudioEvaluationView(viewModel: audioEvalVM, projects: toolProjects)
-        }
-        .task {
-            // ツールセクション表示時にプロジェクト一覧を取得
             if toolProjects.isEmpty {
-                do {
-                    toolProjects = try await APIClient.shared.fetchProjects()
-                } catch {
-                    print("ツール用プロジェクト取得エラー: \(error)")
-                }
+                // プリフェッチ済みのはずだが、万一空なら控えめにローディング表示
+                ProgressView()
+                    .tint(AppTheme.accent)
+                    .frame(maxWidth: .infinity, minHeight: 100)
+            } else {
+                // E2Eパイプライン
+                E2EPipelineView(viewModel: e2ePipelineVM, projects: toolProjects)
+
+                // テロップチェック
+                TelopCheckView(viewModel: telopCheckVM, projects: toolProjects)
+
+                // 音声品質評価
+                AudioEvaluationView(viewModel: audioEvalVM, projects: toolProjects)
             }
         }
     }
 
     private func loadAllIfNeeded() async {
         // 初回のみロード（タブ切り替え時の再ロード防止）
+        // ツールセクション用のプロジェクト一覧もここでプリフェッチ（タブ切替時のカクつき防止）
+        let needsToolProjects = toolProjects.isEmpty
         async let dashboardLoad: () = viewModel.loadDashboardIfNeeded()
         async let editorLoad: () = editorViewModel.loadEditors()
         async let trackingLoad: () = trackingViewModel.load()
-        _ = await (dashboardLoad, editorLoad, trackingLoad)
+        async let toolProjectsLoad: [VideoProject] = needsToolProjects
+            ? ((try? await APIClient.shared.fetchProjects()) ?? [])
+            : []
+        let (_, _, _, fetchedProjects) = await (dashboardLoad, editorLoad, trackingLoad, toolProjectsLoad)
+        if needsToolProjects && !fetchedProjects.isEmpty {
+            toolProjects = fetchedProjects
+        }
     }
 
     private func loadAll() async {
@@ -623,6 +628,8 @@ struct QualityDashboardView: View {
         async let dashboardLoad: () = viewModel.loadDashboard()
         async let editorLoad: () = editorViewModel.loadEditors(forceRefresh: true)
         async let trackingLoad: () = trackingViewModel.load(forceRefresh: true)
-        _ = await (dashboardLoad, editorLoad, trackingLoad)
+        async let toolProjectsLoad: [VideoProject] = (try? await APIClient.shared.fetchProjects()) ?? []
+        let (_, _, _, fetchedProjects) = await (dashboardLoad, editorLoad, trackingLoad, toolProjectsLoad)
+        toolProjects = fetchedProjects
     }
 }

@@ -71,7 +71,7 @@ struct DirectionReportView: View {
     @State private var showKnowledgePage = false
     @State private var showBeforeAfter = false
 
-    private let tabTitles = ["概要", "ディレクション", "YouTube素材", "素材", "編集後", "FB・評価", "ナレッジ", "レビュー"]
+    private let tabTitles = ["概要", "ディレクション", "YouTube素材", "素材", "FB・評価", "ナレッジ", "レビュー"]
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -147,26 +147,7 @@ struct DirectionReportView: View {
                 .font(.caption)
                 .foregroundStyle(AppTheme.textMuted)
 
-                HStack {
-                    Button {
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "play.circle.fill")
-                            Text("Vimeoレビューを開く")
-                        }
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(AppTheme.cardBackground)
-                        .clipShape(Capsule())
-                        .overlay(
-                            Capsule()
-                                .strokeBorder(AppTheme.textMuted.opacity(0.3), lineWidth: 1)
-                        )
-                    }
-
+                HStack(spacing: 12) {
                     Button {
                         showBeforeAfter = true
                     } label: {
@@ -209,8 +190,9 @@ struct DirectionReportView: View {
                         }
                     }
 
+                    Spacer()
+
                     if let score = project.qualityScore {
-                        Spacer()
                         VStack(spacing: 2) {
                             Text("\(score)")
                                 .font(.system(size: 24, weight: .heavy))
@@ -267,12 +249,10 @@ struct DirectionReportView: View {
             case 3:
                 sourceVideoSection
             case 4:
-                editedVideoSection
-            case 5:
                 feedbackListSection
-            case 6:
+            case 5:
                 knowledgeDetailSection
-            case 7:
+            case 6:
                 VimeoReviewTabView(projectId: project.id, editedVideoURL: project.editedVideoURL)
             default:
                 EmptyView()

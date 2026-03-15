@@ -228,6 +228,27 @@ struct VimeoReviewTabView: View {
 
     var body: some View {
         VStack(spacing: 16) {
+            // Vimeoレビューページへの導線（外部リンク）
+            if let urlString = editedVideoURL, let url = URL(string: urlString) {
+                Link(destination: url) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 18))
+                        Text("Vimeoレビューページを開く")
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                        Spacer()
+                        Image(systemName: "arrow.up.right.square")
+                            .font(.caption)
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(Color(hex: 0x1AB7EA))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+            }
+
             // Vimeo動画埋め込み再生
             if let videoId = vimeoVideoId {
                 VimeoPlayerView(

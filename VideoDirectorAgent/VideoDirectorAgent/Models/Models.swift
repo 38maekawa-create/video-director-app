@@ -82,7 +82,10 @@ enum ProjectStatus: String, CaseIterable, Codable {
     }
 }
 
-struct VideoProject: Identifiable, Codable {
+struct VideoProject: Identifiable, Codable, Hashable {
+    static func == (lhs: VideoProject, rhs: VideoProject) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+
     let id: String
     let guestName: String
     let title: String

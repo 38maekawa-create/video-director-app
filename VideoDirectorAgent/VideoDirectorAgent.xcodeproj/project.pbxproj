@@ -29,6 +29,7 @@
 		A10000010000000000000014 /* EditorManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000016 /* EditorManagementView.swift */; };
 		A10000010000000000000015 /* VideoTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000017 /* VideoTrackingView.swift */; };
 		A10000010000000000000016 /* NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000018 /* NotificationSettingsView.swift */; };
+		A10000010000000000000017 /* ReportListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000019 /* ReportListView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -297,7 +298,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = TT2DA7H5NJ;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = VideoDirectorAgent/Info.plist;
@@ -322,7 +323,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = TT2DA7H5NJ;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = VideoDirectorAgent/Info.plist;

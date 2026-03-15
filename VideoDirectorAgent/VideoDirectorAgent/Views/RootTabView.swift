@@ -41,10 +41,10 @@ struct RootTabView: View {
                     }
                 case .report:
                     NavigationStack {
-                        ProjectListView(viewModel: ProjectListViewModel())
+                        ReportListView()
                     }
                 case .record:
-                    // 録音タブ選択時はモーダルを表示
+                    // 録音タブ選択時はモーダルを表示（homeをバックに表示）
                     NavigationStack {
                         ProjectListView(viewModel: ProjectListViewModel())
                     }

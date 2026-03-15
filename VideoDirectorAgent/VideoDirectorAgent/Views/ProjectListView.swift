@@ -4,6 +4,7 @@ import SwiftUI
 struct ProjectListView: View {
     @ObservedObject var viewModel: ProjectListViewModel
     @State private var searchText = ""
+    @State private var selectedProject: VideoProject?
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -64,6 +65,9 @@ struct ProjectListView: View {
         }
         .onChange(of: searchText) { _, newValue in
             viewModel.searchText = newValue
+        }
+        .navigationDestination(item: $selectedProject) { project in
+            DirectionReportView(project: project)
         }
     }
 
@@ -149,6 +153,10 @@ struct ProjectListView: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
         }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            selectedProject = project
+        }
     }
 
     // MARK: - 検索バー
@@ -187,12 +195,11 @@ struct ProjectListView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(projects) { project in
-                        NavigationLink {
-                            DirectionReportView(project: project)
-                        } label: {
-                            projectCard(project)
-                        }
-                        .buttonStyle(.plain)
+                        projectCard(project)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                selectedProject = project
+                            }
                     }
                 }
                 .padding(.horizontal, 16)

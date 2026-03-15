@@ -10,6 +10,8 @@ struct QualityDashboardView: View {
     @State private var showNotificationSettings = false
     /// ツールセクション内のプロジェクト一覧取得用
     @State private var toolProjects: [VideoProject] = []
+    /// ツールプロジェクトのロード完了フラグ（初回ロード中 vs 本当に0件を区別）
+    @State private var toolProjectsLoaded = false
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -589,10 +591,16 @@ struct QualityDashboardView: View {
     // MARK: - ツールセクション（E2E / テロップ / 音声評価）
     private var toolsSection: some View {
         VStack(spacing: 20) {
-            if toolProjects.isEmpty {
-                // プリフェッチ済みのはずだが、万一空なら控えめにローディング表示
+            if toolProjects.isEmpty && !toolProjectsLoaded {
+                // 初回ロード中のみスピナー表示
                 ProgressView()
                     .tint(AppTheme.accent)
+                    .frame(maxWidth: .infinity, minHeight: 100)
+            } else if toolProjects.isEmpty && toolProjectsLoaded {
+                // ロード完了したが0件の場合
+                Text("プロジェクトが見つかりません")
+                    .font(.caption)
+                    .foregroundStyle(AppTheme.textMuted)
                     .frame(maxWidth: .infinity, minHeight: 100)
             } else {
                 // E2Eパイプライン
@@ -618,8 +626,9 @@ struct QualityDashboardView: View {
             ? ((try? await APIClient.shared.fetchProjects()) ?? [])
             : []
         let (_, _, _, fetchedProjects) = await (dashboardLoad, editorLoad, trackingLoad, toolProjectsLoad)
-        if needsToolProjects && !fetchedProjects.isEmpty {
+        if needsToolProjects {
             toolProjects = fetchedProjects
+            toolProjectsLoaded = true
         }
     }
 
@@ -630,6 +639,10 @@ struct QualityDashboardView: View {
         async let trackingLoad: () = trackingViewModel.load(forceRefresh: true)
         async let toolProjectsLoad: [VideoProject] = (try? await APIClient.shared.fetchProjects()) ?? []
         let (_, _, _, fetchedProjects) = await (dashboardLoad, editorLoad, trackingLoad, toolProjectsLoad)
-        toolProjects = fetchedProjects
+        // リフレッシュ成功時のみ更新（失敗時に既存データをクリアしない）
+        if !fetchedProjects.isEmpty {
+            toolProjects = fetchedProjects
+        }
+        toolProjectsLoaded = true
     }
 }

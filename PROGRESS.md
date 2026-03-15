@@ -1,11 +1,30 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-16 （TASK_P2_TRACKING_DASHBOARD.md実施 — 映像トラッキング機能の実用化完了）
-<!-- authored: T3/兵隊A/AI開発10/2026-03-16 [TASK_P2_TRACKING_DASHBOARD指示書に基づく] -->
+2026-03-16 Build 19統合完了 — P1/P2全タスク3台Mac並列完了・統合
+<!-- authored: T1/副官A/バティ/2026-03-16 [なおとさん指示: P1一気にやりきる + 空きモデルにP2投入] -->
 
 ## 現在の作業状態
-**P2完了: 映像トラッキング機能の実用化（video_learner→direction_generator接続 + frame_evaluator API + iOS UI拡張）**
+**Build 19: P1全完了 + P2全完了 → TestFlight提出中**
+
+### 今回のセッションで完了したタスク（3台Mac並列実行）
+
+| # | タスク | Mac | 優先度 | 状態 |
+|---|--------|-----|--------|------|
+| 1 | FB学習ループ接続 + スプレッドシート照合改善 | Mac2 | 実用化 | ✅ |
+| 2 | Vimeo APIドライラン/実行実装 | Mac2 | 実用化 | ✅ |
+| 3 | YouTube素材iOS UI完成 | Mac3 | 実用化 | ✅ |
+| 4 | 音声FB→Vimeo連携 E2Eフロー（API+iOS） | Mac2 | P1 | ✅ |
+| 5 | 音声FB→Vimeo連携 UI組み込み | Mac1 | P1 | ✅ |
+| 6 | Before/After iOS UI + APIエンドポイント | Mac2+Mac1 | P1 | ✅ |
+| 7 | Vimeoレビュータイムライン表示 | Mac3 | P1 | ✅ |
+| 8 | 品質ダッシュボード実データ連動 | Mac2 | P2 | ✅ |
+| 9 | 映像トラッキング実用化（video_learner+frame_evaluator） | Mac1 | P2 | ✅ |
+
+### テスト・ビルド
+- Pythonテスト: **626件全PASS**
+- xcodebuild: **BUILD SUCCEEDED**
+- TestFlight: Build 19 アーカイブ中
 
 ---
 

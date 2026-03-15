@@ -285,129 +285,126 @@ private struct ProjectCarouselCard: View {
     }
 }
 
-private struct ProjectCarouselScrollView: UIViewRepresentable {
+// MARK: - UICollectionViewベースのカルーセル（タップ確実動作）
+// UICollectionView.didSelectItemAt はiOS標準のセル選択機能。
+// ScrollView内タップ問題（SwiftUI/UIControl 11回失敗）を根本解決。
+private struct ProjectCarouselScrollView: UIViewControllerRepresentable {
     let projects: [VideoProject]
     let onSelect: (VideoProject) -> Void
 
-    func makeUIView(context: Context) -> CarouselScrollView {
-        let scrollView = CarouselScrollView()
-        scrollView.configure(projects: projects, onSelect: onSelect)
-        return scrollView
+    func makeUIViewController(context: Context) -> CarouselCollectionVC {
+        let vc = CarouselCollectionVC()
+        vc.configure(projects: projects, onSelect: onSelect)
+        return vc
     }
 
-    func updateUIView(_ uiView: CarouselScrollView, context: Context) {
-        uiView.configure(projects: projects, onSelect: onSelect)
+    func updateUIViewController(_ vc: CarouselCollectionVC, context: Context) {
+        vc.configure(projects: projects, onSelect: onSelect)
     }
 }
 
-private final class CarouselScrollView: UIScrollView {
-    private let stackView = UIStackView()
-    private var contentSignature = ""
+final class CarouselCollectionVC: UIViewController {
+    private var collectionView: UICollectionView!
+    private var projects: [VideoProject] = []
+    private var onSelect: ((VideoProject) -> Void)?
+    private var currentIDs = ""
 
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .clear
 
-        delaysContentTouches = false
-        canCancelContentTouches = true
-        showsHorizontalScrollIndicator = false
-        showsVerticalScrollIndicator = false
-        alwaysBounceHorizontal = true
-        alwaysBounceVertical = false
-        isDirectionalLockEnabled = true
-        backgroundColor = .clear
+        // Compositional Layout: 横スクロール
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .absolute(150),
+            heightDimension: .absolute(170)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
 
-        stackView.axis = .horizontal
-        stackView.alignment = .top
-        stackView.spacing = 12
-        stackView.translatesAutoresizingMaskIntoConstraints = false
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .absolute(150),
+            heightDimension: .absolute(170)
+        )
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 
-        addSubview(stackView)
+        let section = NSCollectionLayoutSection(group: group)
+        section.orthogonalScrollingBehavior = .continuous
+        section.interGroupSpacing = 12
+        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
+
+        let layout = UICollectionViewCompositionalLayout(section: section)
+
+        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .clear
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        collectionView.register(CarouselCardCell.self, forCellWithReuseIdentifier: CarouselCardCell.reuseID)
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.showsHorizontalScrollIndicator = false
+
+        view.addSubview(collectionView)
         NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: contentLayoutGuide.leadingAnchor, constant: 16),
-            stackView.trailingAnchor.constraint(equalTo: contentLayoutGuide.trailingAnchor, constant: -16),
-            stackView.topAnchor.constraint(equalTo: contentLayoutGuide.topAnchor),
-            stackView.bottomAnchor.constraint(equalTo: contentLayoutGuide.bottomAnchor),
-            stackView.heightAnchor.constraint(equalTo: frameLayoutGuide.heightAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override func touchesShouldCancel(in view: UIView) -> Bool {
-        true
     }
 
     func configure(projects: [VideoProject], onSelect: @escaping (VideoProject) -> Void) {
-        let newSignature = projects.map { project in
-            [
-                project.id,
-                project.guestName,
-                project.shootDate,
-                project.guestOccupation ?? "",
-                String(project.unreviewedCount),
-                String(project.hasUnsentFeedback),
-                String(project.qualityScore ?? -1),
-            ].joined(separator: "|")
-        }.joined(separator: ",")
-        guard newSignature != contentSignature || stackView.arrangedSubviews.isEmpty else { return }
-
-        contentSignature = newSignature
-        stackView.arrangedSubviews.forEach { view in
-            stackView.removeArrangedSubview(view)
-            view.removeFromSuperview()
-        }
-
-        for project in projects {
-            let cardView = CarouselCardButton(project: project, onSelect: onSelect)
-            stackView.addArrangedSubview(cardView)
-            NSLayoutConstraint.activate([
-                cardView.widthAnchor.constraint(equalToConstant: 150),
-                cardView.heightAnchor.constraint(equalToConstant: 170),
-            ])
-        }
+        let ids = projects.map(\.id).joined(separator: ",")
+        self.onSelect = onSelect
+        guard ids != currentIDs else { return }
+        currentIDs = ids
+        self.projects = projects
+        collectionView?.reloadData()
     }
 }
 
-private final class CarouselCardButton: UIControl {
-    private let hostingController: UIHostingController<ProjectCarouselCard>
-    private let project: VideoProject
-    private let onSelect: (VideoProject) -> Void
+extension CarouselCollectionVC: UICollectionViewDataSource {
+    func collectionView(_ cv: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        projects.count
+    }
 
-    init(project: VideoProject, onSelect: @escaping (VideoProject) -> Void) {
-        self.project = project
-        self.onSelect = onSelect
-        hostingController = UIHostingController(rootView: ProjectCarouselCard(project: project))
-        super.init(frame: .zero)
+    func collectionView(_ cv: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = cv.dequeueReusableCell(withReuseIdentifier: CarouselCardCell.reuseID, for: indexPath) as! CarouselCardCell
+        cell.set(project: projects[indexPath.item])
+        return cell
+    }
+}
 
-        translatesAutoresizingMaskIntoConstraints = false
-        backgroundColor = .clear
+extension CarouselCollectionVC: UICollectionViewDelegate {
+    func collectionView(_ cv: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        onSelect?(projects[indexPath.item])
+    }
+}
 
-        let hostedView = hostingController.view!
-        hostedView.translatesAutoresizingMaskIntoConstraints = false
-        hostedView.backgroundColor = .clear
-        hostedView.isUserInteractionEnabled = false
+private final class CarouselCardCell: UICollectionViewCell {
+    static let reuseID = "CarouselCardCell"
+    private var hostingController: UIHostingController<ProjectCarouselCard>?
 
-        addSubview(hostedView)
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        hostingController?.view.removeFromSuperview()
+        hostingController?.removeFromParent()
+        hostingController = nil
+    }
+
+    func set(project: VideoProject) {
+        prepareForReuse()
+
+        let hc = UIHostingController(rootView: ProjectCarouselCard(project: project))
+        hc.view.translatesAutoresizingMaskIntoConstraints = false
+        hc.view.backgroundColor = .clear
+        // タッチをセルに透過させる（didSelectItemAtが発火するように）
+        hc.view.isUserInteractionEnabled = false
+
+        contentView.addSubview(hc.view)
         NSLayoutConstraint.activate([
-            hostedView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            hostedView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            hostedView.topAnchor.constraint(equalTo: topAnchor),
-            hostedView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            hc.view.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            hc.view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            hc.view.topAnchor.constraint(equalTo: contentView.topAnchor),
+            hc.view.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
         ])
-
-        addTarget(self, action: #selector(handleTap), for: .touchUpInside)
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    @objc
-    private func handleTap() {
-        onSelect(project)
+        hostingController = hc
     }
 }

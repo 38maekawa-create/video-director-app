@@ -623,6 +623,16 @@ struct DashboardSummary: Codable {
         recentFeedbacks = try container.decodeIfPresent([FeedbackItem].self, forKey: .recentFeedbacks) ?? []
         unsentFeedbackCount = try container.decodeIfPresent(Int.self, forKey: .unsentFeedbackCount) ?? 0
     }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(totalProjects, forKey: .totalProjects)
+        try container.encode(withAssets, forKey: .withAssets)
+        try container.encodeIfPresent(avgQualityScore, forKey: .avgQualityScore)
+        try container.encode(statusCounts, forKey: .statusCounts)
+        try container.encode(recentFeedbacks, forKey: .recentFeedbacks)
+        try container.encode(unsentFeedbackCount, forKey: .unsentFeedbackCount)
+    }
 }
 
 struct QualityTrendItem: Codable, Identifiable {

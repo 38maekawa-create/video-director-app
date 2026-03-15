@@ -1,0 +1,1099 @@
+{
+  "patterns": [
+    {
+      "id": "vpat_20260316054444_0",
+      "category": "cutting",
+      "pattern": "スポーツ報道+対談ハイブリッド — マイアミ中継+スタジオ+データ画面のマルチレイヤー",
+      "source_count": 1,
+      "source_video_ids": [
+        "FY1ozxiOoyY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=FY1ozxiOoyY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.885198",
+      "updated_at": "2026-03-16T05:44:44.885203"
+    },
+    {
+      "id": "vpat_20260316054444_1",
+      "category": "color",
+      "pattern": "スタジオ暖色系+現地映像ナチュラル — PIVOT標準ルック",
+      "source_count": 1,
+      "source_video_ids": [
+        "FY1ozxiOoyY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=FY1ozxiOoyY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.885220",
+      "updated_at": "2026-03-16T05:44:44.885222"
+    },
+    {
+      "id": "vpat_20260316054444_2",
+      "category": "tempo",
+      "pattern": "テンポ速め — データ根拠→分析→結論の高速サイクル、4名パネルで話者切替頻繁",
+      "source_count": 3,
+      "source_video_ids": [
+        "FY1ozxiOoyY",
+        "UTyzo9FI1fs",
+        "MwR_PNBPrNY"
+      ],
+      "confidence": 1.0,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=FY1ozxiOoyY",
+        "https://www.youtube.com/watch?v=UTyzo9FI1fs",
+        "https://www.youtube.com/watch?v=MwR_PNBPrNY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.885233",
+      "updated_at": "2026-03-16T05:44:44.907826"
+    },
+    {
+      "id": "vpat_20260316054444_3",
+      "category": "composition",
+      "pattern": "イベント振り返り型 — 試合経過→データ分析→敗因3要素→今後の課題の時系列構成",
+      "source_count": 1,
+      "source_video_ids": [
+        "FY1ozxiOoyY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=FY1ozxiOoyY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.885243",
+      "updated_at": "2026-03-16T05:44:44.885244"
+    },
+    {
+      "id": "vpat_20260316054444_4",
+      "category": "technique",
+      "pattern": "現地中継との同時接続で臨場感",
+      "source_count": 1,
+      "source_video_ids": [
+        "FY1ozxiOoyY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=FY1ozxiOoyY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.885265",
+      "updated_at": "2026-03-16T05:44:44.885267"
+    },
+    {
+      "id": "vpat_20260316054444_5",
+      "category": "technique",
+      "pattern": "データ可視化（出塁率78%等）で説得力",
+      "source_count": 1,
+      "source_video_ids": [
+        "FY1ozxiOoyY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=FY1ozxiOoyY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.885289",
+      "updated_at": "2026-03-16T05:44:44.885291"
+    },
+    {
+      "id": "vpat_20260316054444_6",
+      "category": "technique",
+      "pattern": "パネルディスカッション形式で多角的分析",
+      "source_count": 1,
+      "source_video_ids": [
+        "FY1ozxiOoyY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=FY1ozxiOoyY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.885314",
+      "updated_at": "2026-03-16T05:44:44.885315"
+    },
+    {
+      "id": "vpat_20260316054444_7",
+      "category": "technique",
+      "pattern": "冒頭で結論（敗退3要因）を提示する構成",
+      "source_count": 1,
+      "source_video_ids": [
+        "FY1ozxiOoyY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=FY1ozxiOoyY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.885330",
+      "updated_at": "2026-03-16T05:44:44.885332"
+    },
+    {
+      "id": "vpat_20260316054444_8",
+      "category": "technique",
+      "pattern": "[応用] 専門家パネル+データ可視化の組み合わせでTEKO対談の情報密度を上げる",
+      "source_count": 20,
+      "source_video_ids": [
+        "FY1ozxiOoyY",
+        "r0jicguWKTE",
+        "WctEltSFf0M",
+        "4oYsoLHXP9g",
+        "6MlMoGB1cHo",
+        "xEuP2QqOoEY",
+        "UTyzo9FI1fs",
+        "NWa3BHEejhg",
+        "MwR_PNBPrNY",
+        "MM8jFd198gU"
+      ],
+      "confidence": 1.0,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=FY1ozxiOoyY",
+        "https://www.youtube.com/watch?v=r0jicguWKTE",
+        "https://www.youtube.com/watch?v=WctEltSFf0M",
+        "https://www.youtube.com/watch?v=4oYsoLHXP9g",
+        "https://www.youtube.com/watch?v=6MlMoGB1cHo",
+        "https://www.youtube.com/watch?v=xEuP2QqOoEY",
+        "https://www.youtube.com/watch?v=UTyzo9FI1fs",
+        "https://www.youtube.com/watch?v=NWa3BHEejhg",
+        "https://www.youtube.com/watch?v=MwR_PNBPrNY",
+        "https://www.youtube.com/watch?v=MM8jFd198gU"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.885348",
+      "updated_at": "2026-03-16T05:44:44.911594"
+    },
+    {
+      "id": "vpat_20260316054444_9",
+      "category": "technique",
+      "pattern": "[参考] データアナリストの専門知識が視聴価値を高めている",
+      "source_count": 30,
+      "source_video_ids": [
+        "FY1ozxiOoyY",
+        "r0jicguWKTE",
+        "WctEltSFf0M",
+        "4oYsoLHXP9g",
+        "6MlMoGB1cHo",
+        "xEuP2QqOoEY",
+        "UTyzo9FI1fs",
+        "NWa3BHEejhg",
+        "MwR_PNBPrNY",
+        "MM8jFd198gU"
+      ],
+      "confidence": 1.0,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=FY1ozxiOoyY",
+        "https://www.youtube.com/watch?v=r0jicguWKTE",
+        "https://www.youtube.com/watch?v=WctEltSFf0M",
+        "https://www.youtube.com/watch?v=4oYsoLHXP9g",
+        "https://www.youtube.com/watch?v=6MlMoGB1cHo",
+        "https://www.youtube.com/watch?v=xEuP2QqOoEY",
+        "https://www.youtube.com/watch?v=UTyzo9FI1fs",
+        "https://www.youtube.com/watch?v=NWa3BHEejhg",
+        "https://www.youtube.com/watch?v=MwR_PNBPrNY",
+        "https://www.youtube.com/watch?v=MM8jFd198gU"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.885427",
+      "updated_at": "2026-03-16T05:44:44.911628"
+    },
+    {
+      "id": "vpat_20260316054444_10",
+      "category": "cutting",
+      "pattern": "プレゼン+対談ハイブリッド — スライド画面とスタジオ対談の切替、SaaS系のUIデモ挿入",
+      "source_count": 1,
+      "source_video_ids": [
+        "r0jicguWKTE"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=r0jicguWKTE"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.887327",
+      "updated_at": "2026-03-16T05:44:44.887332"
+    },
+    {
+      "id": "vpat_20260316054444_11",
+      "category": "color",
+      "pattern": "クール系 — PIVOTスタジオ標準、青白基調のスライドが多い",
+      "source_count": 1,
+      "source_video_ids": [
+        "r0jicguWKTE"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=r0jicguWKTE"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.887350",
+      "updated_at": "2026-03-16T05:44:44.887352"
+    },
+    {
+      "id": "vpat_20260316054444_12",
+      "category": "tempo",
+      "pattern": "中速テンポ — プレゼン→質疑→深掘りの3段構成、説明パートはやや長め",
+      "source_count": 2,
+      "source_video_ids": [
+        "r0jicguWKTE",
+        "4oYsoLHXP9g"
+      ],
+      "confidence": 0.6666666666666666,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=r0jicguWKTE",
+        "https://www.youtube.com/watch?v=4oYsoLHXP9g"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.887365",
+      "updated_at": "2026-03-16T05:44:44.891750"
+    },
+    {
+      "id": "vpat_20260316054444_13",
+      "category": "composition",
+      "pattern": "課題提起→ソリューション提示型 — 顧客分析の課題→AIエージェント解説→実例→将来展望",
+      "source_count": 1,
+      "source_video_ids": [
+        "r0jicguWKTE"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=r0jicguWKTE"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.887378",
+      "updated_at": "2026-03-16T05:44:44.887379"
+    },
+    {
+      "id": "vpat_20260316054444_14",
+      "category": "technique",
+      "pattern": "冒頭に挑発的な問いかけ（自社顧客課題Top5言えますか?）",
+      "source_count": 1,
+      "source_video_ids": [
+        "r0jicguWKTE"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=r0jicguWKTE"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.887402",
+      "updated_at": "2026-03-16T05:44:44.887404"
+    },
+    {
+      "id": "vpat_20260316054444_15",
+      "category": "technique",
+      "pattern": "実際のUI画面で具体性を担保",
+      "source_count": 1,
+      "source_video_ids": [
+        "r0jicguWKTE"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=r0jicguWKTE"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.887422",
+      "updated_at": "2026-03-16T05:44:44.887423"
+    },
+    {
+      "id": "vpat_20260316054444_16",
+      "category": "technique",
+      "pattern": "受動型→能動型の概念転換で新規性を訴求",
+      "source_count": 1,
+      "source_video_ids": [
+        "r0jicguWKTE"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=r0jicguWKTE"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.887502",
+      "updated_at": "2026-03-16T05:44:44.887505"
+    },
+    {
+      "id": "vpat_20260316054444_17",
+      "category": "cutting",
+      "pattern": "教育系対談 — 大学キャンパス映像+スタジオ対談+データグラフの3層構成",
+      "source_count": 1,
+      "source_video_ids": [
+        "WctEltSFf0M"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=WctEltSFf0M"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.888945",
+      "updated_at": "2026-03-16T05:44:44.888949"
+    },
+    {
+      "id": "vpat_20260316054444_18",
+      "category": "color",
+      "pattern": "ナチュラル系 — キャンパスロケの自然光+スタジオ照明",
+      "source_count": 1,
+      "source_video_ids": [
+        "WctEltSFf0M"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=WctEltSFf0M"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.888969",
+      "updated_at": "2026-03-16T05:44:44.888970"
+    },
+    {
+      "id": "vpat_20260316054444_19",
+      "category": "tempo",
+      "pattern": "ゆったり — 学術テーマゆえに丁寧な説明、一人の発言が長め",
+      "source_count": 2,
+      "source_video_ids": [
+        "WctEltSFf0M",
+        "xEuP2QqOoEY"
+      ],
+      "confidence": 0.6666666666666666,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=WctEltSFf0M",
+        "https://www.youtube.com/watch?v=xEuP2QqOoEY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.888984",
+      "updated_at": "2026-03-16T05:44:44.896999"
+    },
+    {
+      "id": "vpat_20260316054444_20",
+      "category": "composition",
+      "pattern": "問題提起→現場報告→解決提案型 — 日本の科学力低下→大学改革の現場→博士人材活用の提言",
+      "source_count": 1,
+      "source_video_ids": [
+        "WctEltSFf0M"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=WctEltSFf0M"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.888998",
+      "updated_at": "2026-03-16T05:44:44.889000"
+    },
+    {
+      "id": "vpat_20260316054444_21",
+      "category": "technique",
+      "pattern": "Google等の具体企業名を出して課題を身近にする",
+      "source_count": 1,
+      "source_video_ids": [
+        "WctEltSFf0M"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=WctEltSFf0M"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.889024",
+      "updated_at": "2026-03-16T05:44:44.889026"
+    },
+    {
+      "id": "vpat_20260316054444_22",
+      "category": "technique",
+      "pattern": "大学の現場キーパーソンへの直接取材で一次情報",
+      "source_count": 1,
+      "source_video_ids": [
+        "WctEltSFf0M"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=WctEltSFf0M"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.889048",
+      "updated_at": "2026-03-16T05:44:44.889049"
+    },
+    {
+      "id": "vpat_20260316054444_23",
+      "category": "technique",
+      "pattern": "研究→ビジネスの出口戦略という切り口",
+      "source_count": 1,
+      "source_video_ids": [
+        "WctEltSFf0M"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=WctEltSFf0M"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.889071",
+      "updated_at": "2026-03-16T05:44:44.889072"
+    },
+    {
+      "id": "vpat_20260316054444_24",
+      "category": "cutting",
+      "pattern": "ビジネス分析対談 — Netflix UI画面+WBC映像+スタジオの3層",
+      "source_count": 1,
+      "source_video_ids": [
+        "4oYsoLHXP9g"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=4oYsoLHXP9g"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.891715",
+      "updated_at": "2026-03-16T05:44:44.891718"
+    },
+    {
+      "id": "vpat_20260316054444_25",
+      "category": "color",
+      "pattern": "PIVOT標準 — スタジオのクール照明",
+      "source_count": 2,
+      "source_video_ids": [
+        "4oYsoLHXP9g",
+        "6MlMoGB1cHo"
+      ],
+      "confidence": 0.6666666666666666,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=4oYsoLHXP9g",
+        "https://www.youtube.com/watch?v=6MlMoGB1cHo"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.891738",
+      "updated_at": "2026-03-16T05:44:44.893636"
+    },
+    {
+      "id": "vpat_20260316054444_26",
+      "category": "composition",
+      "pattern": "ニュース起点分析型 — WBC×Netflix独占という時事ネタ→戦略分析→日本企業への提言",
+      "source_count": 1,
+      "source_video_ids": [
+        "4oYsoLHXP9g"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=4oYsoLHXP9g"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.891768",
+      "updated_at": "2026-03-16T05:44:44.891770"
+    },
+    {
+      "id": "vpat_20260316054444_27",
+      "category": "technique",
+      "pattern": "時事ネタ（WBC）を入口に業界構造を分析",
+      "source_count": 1,
+      "source_video_ids": [
+        "4oYsoLHXP9g"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=4oYsoLHXP9g"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.891799",
+      "updated_at": "2026-03-16T05:44:44.891801"
+    },
+    {
+      "id": "vpat_20260316054444_28",
+      "category": "technique",
+      "pattern": "大谷翔平の具体エピソードで視聴者の興味を引く",
+      "source_count": 1,
+      "source_video_ids": [
+        "4oYsoLHXP9g"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=4oYsoLHXP9g"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.891902",
+      "updated_at": "2026-03-16T05:44:44.891905"
+    },
+    {
+      "id": "vpat_20260316054444_29",
+      "category": "technique",
+      "pattern": "コンテンツ産業の構造変化を分かりやすく解説",
+      "source_count": 1,
+      "source_video_ids": [
+        "4oYsoLHXP9g"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=4oYsoLHXP9g"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.891944",
+      "updated_at": "2026-03-16T05:44:44.891946"
+    },
+    {
+      "id": "vpat_20260316054444_30",
+      "category": "cutting",
+      "pattern": "深掘り対談 — 地政学マップ+スタジオ2名の標準対談フォーマット",
+      "source_count": 1,
+      "source_video_ids": [
+        "6MlMoGB1cHo"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=6MlMoGB1cHo"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.893617",
+      "updated_at": "2026-03-16T05:44:44.893620"
+    },
+    {
+      "id": "vpat_20260316054444_31",
+      "category": "tempo",
+      "pattern": "中速 — エミン・ユルマズの語り+MC質問のシンプルな掛け合い",
+      "source_count": 3,
+      "source_video_ids": [
+        "6MlMoGB1cHo",
+        "NWa3BHEejhg",
+        "MM8jFd198gU"
+      ],
+      "confidence": 1.0,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=6MlMoGB1cHo",
+        "https://www.youtube.com/watch?v=NWa3BHEejhg",
+        "https://www.youtube.com/watch?v=MM8jFd198gU"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.893653",
+      "updated_at": "2026-03-16T05:44:44.911278"
+    },
+    {
+      "id": "vpat_20260316054444_32",
+      "category": "composition",
+      "pattern": "専門家一人語り型 — 大テーマ提示→論点別解説→結論の流れ、エミン氏の持論展開が中心",
+      "source_count": 1,
+      "source_video_ids": [
+        "6MlMoGB1cHo"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=6MlMoGB1cHo"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.893728",
+      "updated_at": "2026-03-16T05:44:44.893860"
+    },
+    {
+      "id": "vpat_20260316054444_33",
+      "category": "technique",
+      "pattern": "著名エコノミストの独自視点で差別化",
+      "source_count": 1,
+      "source_video_ids": [
+        "6MlMoGB1cHo"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=6MlMoGB1cHo"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.893897",
+      "updated_at": "2026-03-16T05:44:44.893899"
+    },
+    {
+      "id": "vpat_20260316054444_34",
+      "category": "technique",
+      "pattern": "中東・米国・日本の地政学的関係を俯瞰",
+      "source_count": 1,
+      "source_video_ids": [
+        "6MlMoGB1cHo"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=6MlMoGB1cHo"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.893928",
+      "updated_at": "2026-03-16T05:44:44.893929"
+    },
+    {
+      "id": "vpat_20260316054444_35",
+      "category": "technique",
+      "pattern": "軍需産業という挑発的テーマで視聴者を引く",
+      "source_count": 1,
+      "source_video_ids": [
+        "6MlMoGB1cHo"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=6MlMoGB1cHo"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.893958",
+      "updated_at": "2026-03-16T05:44:44.893960"
+    },
+    {
+      "id": "vpat_20260316054444_36",
+      "category": "cutting",
+      "pattern": "人生ドキュメンタリー対談 — ロケ映像+テロップ多用+スタジオ対談の長尺構成",
+      "source_count": 1,
+      "source_video_ids": [
+        "xEuP2QqOoEY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=xEuP2QqOoEY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.896597",
+      "updated_at": "2026-03-16T05:44:44.896602"
+    },
+    {
+      "id": "vpat_20260316054444_37",
+      "category": "color",
+      "pattern": "暖色系 — 楽待標準の情報番組ルック、テロップ強調",
+      "source_count": 3,
+      "source_video_ids": [
+        "xEuP2QqOoEY",
+        "UTyzo9FI1fs",
+        "MM8jFd198gU"
+      ],
+      "confidence": 1.0,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=xEuP2QqOoEY",
+        "https://www.youtube.com/watch?v=UTyzo9FI1fs",
+        "https://www.youtube.com/watch?v=MM8jFd198gU"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.896963",
+      "updated_at": "2026-03-16T05:44:44.910995"
+    },
+    {
+      "id": "vpat_20260316054444_38",
+      "category": "composition",
+      "pattern": "時系列人生ストーリー型 — 就活失敗→うつ病→選挙芸人への転身を順を追って語る",
+      "source_count": 1,
+      "source_video_ids": [
+        "xEuP2QqOoEY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=xEuP2QqOoEY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.897029",
+      "updated_at": "2026-03-16T05:44:44.897030"
+    },
+    {
+      "id": "vpat_20260316054444_39",
+      "category": "technique",
+      "pattern": "人生の転機を具体エピソードで描く",
+      "source_count": 1,
+      "source_video_ids": [
+        "xEuP2QqOoEY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=xEuP2QqOoEY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.897504",
+      "updated_at": "2026-03-16T05:44:44.897511"
+    },
+    {
+      "id": "vpat_20260316054444_40",
+      "category": "technique",
+      "pattern": "須田慎一郎のインタビュー力でゲストの本音を引き出す",
+      "source_count": 1,
+      "source_video_ids": [
+        "xEuP2QqOoEY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=xEuP2QqOoEY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.897568",
+      "updated_at": "2026-03-16T05:44:44.897570"
+    },
+    {
+      "id": "vpat_20260316054444_41",
+      "category": "technique",
+      "pattern": "楽待の定型フォーマット（楽待人生）で差別化",
+      "source_count": 1,
+      "source_video_ids": [
+        "xEuP2QqOoEY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=xEuP2QqOoEY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.897610",
+      "updated_at": "2026-03-16T05:44:44.897611"
+    },
+    {
+      "id": "vpat_20260316054444_42",
+      "category": "technique",
+      "pattern": "テロップで要点を強調し離脱を防ぐ",
+      "source_count": 1,
+      "source_video_ids": [
+        "xEuP2QqOoEY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=xEuP2QqOoEY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.897645",
+      "updated_at": "2026-03-16T05:44:44.897647"
+    },
+    {
+      "id": "vpat_20260316054444_43",
+      "category": "cutting",
+      "pattern": "情報バラエティ対談 — テロップ+図解+スタジオの楽待標準フォーマット",
+      "source_count": 1,
+      "source_video_ids": [
+        "UTyzo9FI1fs"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=UTyzo9FI1fs"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.900322",
+      "updated_at": "2026-03-16T05:44:44.900324"
+    },
+    {
+      "id": "vpat_20260316054444_44",
+      "category": "composition",
+      "pattern": "主張先行型 — 冒頭で強い主張（DIE WITH ZEROはバカ）→根拠提示→法則紹介→実践提言",
+      "source_count": 1,
+      "source_video_ids": [
+        "UTyzo9FI1fs"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=UTyzo9FI1fs"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.900462",
+      "updated_at": "2026-03-16T05:44:44.900465"
+    },
+    {
+      "id": "vpat_20260316054444_45",
+      "category": "technique",
+      "pattern": "冒頭の強い否定フック（人気書籍への反論）で視聴者を引く",
+      "source_count": 1,
+      "source_video_ids": [
+        "UTyzo9FI1fs"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=UTyzo9FI1fs"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.900516",
+      "updated_at": "2026-03-16T05:44:44.900517"
+    },
+    {
+      "id": "vpat_20260316054444_46",
+      "category": "technique",
+      "pattern": "442の法則という具体的フレームワーク提示",
+      "source_count": 1,
+      "source_video_ids": [
+        "UTyzo9FI1fs"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=UTyzo9FI1fs"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.900754",
+      "updated_at": "2026-03-16T05:44:44.900758"
+    },
+    {
+      "id": "vpat_20260316054444_47",
+      "category": "technique",
+      "pattern": "具体数字（年収500万→2000万貯金）で実践イメージ",
+      "source_count": 1,
+      "source_video_ids": [
+        "UTyzo9FI1fs"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=UTyzo9FI1fs"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.900944",
+      "updated_at": "2026-03-16T05:44:44.900947"
+    },
+    {
+      "id": "vpat_20260316054444_48",
+      "category": "cutting",
+      "pattern": "ニュース解説対談 — データグラフ+テロップ+スタジオの楽待標準",
+      "source_count": 1,
+      "source_video_ids": [
+        "NWa3BHEejhg"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=NWa3BHEejhg"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.904614",
+      "updated_at": "2026-03-16T05:44:44.904617"
+    },
+    {
+      "id": "vpat_20260316054444_49",
+      "category": "color",
+      "pattern": "ニュートラル — 楽待スタジオ標準",
+      "source_count": 1,
+      "source_video_ids": [
+        "NWa3BHEejhg"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=NWa3BHEejhg"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.904645",
+      "updated_at": "2026-03-16T05:44:44.904647"
+    },
+    {
+      "id": "vpat_20260316054444_50",
+      "category": "composition",
+      "pattern": "時事解説型 — 高市財政政策→問題点指摘→対米投資→トランプ関税→提言の多論点構成",
+      "source_count": 1,
+      "source_video_ids": [
+        "NWa3BHEejhg"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=NWa3BHEejhg"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.904689",
+      "updated_at": "2026-03-16T05:44:44.904691"
+    },
+    {
+      "id": "vpat_20260316054444_51",
+      "category": "technique",
+      "pattern": "元日銀理事の肩書きで専門的権威を担保",
+      "source_count": 1,
+      "source_video_ids": [
+        "NWa3BHEejhg"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=NWa3BHEejhg"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.904783",
+      "updated_at": "2026-03-16T05:44:44.904802"
+    },
+    {
+      "id": "vpat_20260316054444_52",
+      "category": "technique",
+      "pattern": "政治テーマを経済の視点で切る差別化",
+      "source_count": 1,
+      "source_video_ids": [
+        "NWa3BHEejhg"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=NWa3BHEejhg"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.904896",
+      "updated_at": "2026-03-16T05:44:44.904898"
+    },
+    {
+      "id": "vpat_20260316054444_53",
+      "category": "technique",
+      "pattern": "トランプ関税の違憲判決など最新ニュースとの接続",
+      "source_count": 1,
+      "source_video_ids": [
+        "NWa3BHEejhg"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=NWa3BHEejhg"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.904962",
+      "updated_at": "2026-03-16T05:44:44.904964"
+    },
+    {
+      "id": "vpat_20260316054444_54",
+      "category": "cutting",
+      "pattern": "相談回答型 — ロケ+テロップの楽待ショート企画フォーマット",
+      "source_count": 1,
+      "source_video_ids": [
+        "MwR_PNBPrNY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=MwR_PNBPrNY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.907756",
+      "updated_at": "2026-03-16T05:44:44.907766"
+    },
+    {
+      "id": "vpat_20260316054444_55",
+      "category": "color",
+      "pattern": "ナチュラル — 現場感のあるロケ映像、テロップ補足",
+      "source_count": 1,
+      "source_video_ids": [
+        "MwR_PNBPrNY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=MwR_PNBPrNY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.907816",
+      "updated_at": "2026-03-16T05:44:44.907818"
+    },
+    {
+      "id": "vpat_20260316054444_56",
+      "category": "composition",
+      "pattern": "相談回答型 — 地方投資の悩み提示→専門家アドバイス→結論の明確な3部構成",
+      "source_count": 1,
+      "source_video_ids": [
+        "MwR_PNBPrNY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=MwR_PNBPrNY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.908044",
+      "updated_at": "2026-03-16T05:44:44.908046"
+    },
+    {
+      "id": "vpat_20260316054444_57",
+      "category": "technique",
+      "pattern": "11分のコンパクト構成で視聴完了率を高める",
+      "source_count": 1,
+      "source_video_ids": [
+        "MwR_PNBPrNY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=MwR_PNBPrNY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.908100",
+      "updated_at": "2026-03-16T05:44:44.908102"
+    },
+    {
+      "id": "vpat_20260316054444_58",
+      "category": "technique",
+      "pattern": "視聴者の共感を呼ぶ「あるある」の悩みを入口に",
+      "source_count": 1,
+      "source_video_ids": [
+        "MwR_PNBPrNY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=MwR_PNBPrNY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.908147",
+      "updated_at": "2026-03-16T05:44:44.908148"
+    },
+    {
+      "id": "vpat_20260316054444_59",
+      "category": "technique",
+      "pattern": "地方vs都市の具体比較で実践的",
+      "source_count": 1,
+      "source_video_ids": [
+        "MwR_PNBPrNY"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=MwR_PNBPrNY"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.908297",
+      "updated_at": "2026-03-16T05:44:44.908299"
+    },
+    {
+      "id": "vpat_20260316054444_60",
+      "category": "cutting",
+      "pattern": "定期番組型 — MCが回すスタジオ対談、テロップ+データ画面のレイヤー構成",
+      "source_count": 1,
+      "source_video_ids": [
+        "MM8jFd198gU"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=MM8jFd198gU"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.910911",
+      "updated_at": "2026-03-16T05:44:44.910913"
+    },
+    {
+      "id": "vpat_20260316054444_61",
+      "category": "composition",
+      "pattern": "多トピック巡回型 — 株価下落→米雇用統計→イラン情勢→プライベートクレジット→決算短信と複数テーマを順に解説",
+      "source_count": 1,
+      "source_video_ids": [
+        "MM8jFd198gU"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=MM8jFd198gU"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.911392",
+      "updated_at": "2026-03-16T05:44:44.911395"
+    },
+    {
+      "id": "vpat_20260316054444_62",
+      "category": "technique",
+      "pattern": "定期番組フォーマット（ザ岡崎に聞け!）でファン固定",
+      "source_count": 1,
+      "source_video_ids": [
+        "MM8jFd198gU"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=MM8jFd198gU"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.911461",
+      "updated_at": "2026-03-16T05:44:44.911463"
+    },
+    {
+      "id": "vpat_20260316054444_63",
+      "category": "technique",
+      "pattern": "MC+専門家の安定した掛け合いパターン",
+      "source_count": 1,
+      "source_video_ids": [
+        "MM8jFd198gU"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=MM8jFd198gU"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.911511",
+      "updated_at": "2026-03-16T05:44:44.911512"
+    },
+    {
+      "id": "vpat_20260316054444_64",
+      "category": "technique",
+      "pattern": "時事ニュースの多面的解説で情報量確保",
+      "source_count": 1,
+      "source_video_ids": [
+        "MM8jFd198gU"
+      ],
+      "confidence": 0.25,
+      "example_urls": [
+        "https://www.youtube.com/watch?v=MM8jFd198gU"
+      ],
+      "is_active": true,
+      "created_at": "2026-03-16T05:44:44.911562",
+      "updated_at": "2026-03-16T05:44:44.911564"
+    }
+  ],
+  "updated_at": "2026-03-16T05:44:44.912004"
+}

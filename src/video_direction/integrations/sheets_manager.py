@@ -141,8 +141,9 @@ class SheetsManager:
                 # MEMBER_MASTER.jsonでcanonical_nameに解決
                 canonical = _resolve_via_member_master(name)
                 key = canonical if canonical else name
-                # 最初にマッチしたカテゴリを優先（同一ゲストが複数行にある場合）
-                if key not in result:
+                # カテゴリ値がある方を優先（同一ゲストが複数行にある場合）
+                # 例: けーさんが「単独インタビュー」(None)と「対談」(teko_member)の両方に存在する場合、teko_memberを採用
+                if key not in result or (result[key] is None and category is not None):
                     result[key] = category
 
         return result
@@ -225,25 +226,57 @@ def _extract_names_from_title(title: str) -> list[str]:
     B列のフォーマット例:
     - "INT001_ブンさん"
     - "53.izuさん"
+    - "62やーまんさん"  （番号直結・区切り文字なし）
+    - "13 ないべいさん"  （番号+スペース）
     - "コテツさん：31歳製造業..."
     - "ゲスト氏（里芋、トーマス）さん：..."
     - "ハオさん：30代前半..."
+    - "リール_001_タイトル..."  （リール系 → ゲスト名なし）
     """
     names = []
     title_clean = unicodedata.normalize("NFKC", title.strip())
 
+    # リール系タイトルはゲスト名を含まない → 空で返す
+    if re.match(r"^リール[_\-]", title_clean):
+        return []
+
+    # 「大阪オフ会」等のイベント名はゲスト名を含まない → 空で返す
+    if re.match(r"^大阪オフ会", title_clean):
+        return []
+
     # INT番号形式: "INT001_ブンさん"
-    match = re.search(r"INT\d+[_\s]+(.+?)(?:さん|氏)?(?:：|:|$)", title_clean)
+    match = re.search(r"INT\d+[_\s]+(.+?)(?:さん|氏|くん|ちゃん)?(?:：|:|$)", title_clean)
     if match:
         names.append(match.group(1).strip())
 
-    # 番号+名前形式: "53.izuさん", "53_izuさん"
-    num_match = re.search(r"^\d+[._]\s*(.+?)(?:さん|氏)?(?:：|:|$)", title_clean)
+    # 番号+区切り+名前形式: "53.izuさん", "53_izuさん", "25 けーさん"
+    num_match = re.search(r"^\d+[._\s]\s*(.+?)(?:さん|氏|くん|ちゃん)?(?:：|:|$)", title_clean)
     if num_match:
-        names.append(num_match.group(1).strip())
+        candidate = num_match.group(1).strip()
+        # "y.yさん（2回目）" のようなケースで2回目等をクリーンアップ
+        candidate = re.sub(r"[（(].+?[）)]", "", candidate).strip()
+        if candidate:
+            names.append(candidate)
+
+    # 番号直結+日本語名前形式: "62やーまんさん", "15ソトマさん", "16りつさん"
+    # 番号の後に区切り文字なしで日本語（ひらがな・カタカナ・漢字）が続くパターン
+    direct_match = re.match(r"^\d+([ぁ-んァ-ヶ一-龯ー].+?)(?:さん|氏|くん|ちゃん|夫妻)?(?:：|:|$)", title_clean)
+    if direct_match:
+        candidate = direct_match.group(1).strip()
+        candidate = re.sub(r"[（(].+?[）)]", "", candidate).strip()
+        if candidate:
+            names.append(candidate)
+
+    # 番号直結+英語名前形式: 数字の後にアルファベットが続く場合（"14y.yさん"等）
+    direct_alpha_match = re.match(r"^\d+([a-zA-Z].+?)(?:さん|氏|くん|ちゃん)?(?:：|:|$)", title_clean)
+    if direct_alpha_match:
+        candidate = direct_alpha_match.group(1).strip()
+        candidate = re.sub(r"[（(].+?[）)]", "", candidate).strip()
+        if candidate:
+            names.append(candidate)
 
     # 先頭の名前抽出（括弧・敬称・属性の前まで）
-    head_match = re.match(r"(?:INT\d+[_\s]+|\d+[._]\s*)?(.+?)(?:さん|氏)?(?:：|:|[\d０-９])", title_clean)
+    head_match = re.match(r"(?:INT\d+[_\s]+|\d+[._\s]\s*|\d+)?(.+?)(?:さん|氏)?(?:：|:|[\d０-９])", title_clean)
     if head_match:
         candidate = head_match.group(1).strip()
         if candidate and len(candidate) >= 1:
@@ -258,17 +291,19 @@ def _extract_names_from_title(title: str) -> list[str]:
     paren_match = re.search(r"[（(](.+?)[）)]", title_clean)
     if paren_match:
         paren_content = paren_match.group(1)
-        # カンマ・読点で分割して各名前を候補に
-        for alias in re.split(r"[、,]", paren_content):
-            alias = alias.strip()
-            if alias and len(alias) >= 2:
-                names.append(alias)
+        # 「2回目」等の回数表記は名前ではない
+        if not re.match(r"^\d+回目$", paren_content.strip()):
+            # カンマ・読点で分割して各名前を候補に
+            for alias in re.split(r"[、,]", paren_content):
+                alias = alias.strip()
+                if alias and len(alias) >= 2:
+                    names.append(alias)
 
     # タイトル先頭セグメントからフォールバック抽出
     first_segment = re.split(r"[：:|]", title_clean, maxsplit=1)[0].strip()
-    first_segment = re.sub(r"^(?:INT\d+[_\s]+|\d+[._]\s*)", "", first_segment, flags=re.IGNORECASE)
+    first_segment = re.sub(r"^(?:INT\d+[_\s]+|\d+[._\s]\s*|\d+)", "", first_segment, flags=re.IGNORECASE)
     first_segment = re.sub(r"^\d{8}撮影[_\s]*", "", first_segment)
-    first_segment = re.sub(r"(さん|氏|くん|ちゃん|様|先生).*$", "", first_segment).strip()
+    first_segment = re.sub(r"(さん|氏|くん|ちゃん|様|先生|夫妻).*$", "", first_segment).strip()
     if first_segment:
         names.append(first_segment)
 
@@ -277,6 +312,15 @@ def _extract_names_from_title(title: str) -> list[str]:
     for n in names:
         norm = _normalize_name(n)
         if not norm or norm in seen:
+            continue
+        # 数字だけのゴミエントリをフィルタリング（"1", "2", "62" 等）
+        if re.fullmatch(r"\d+", norm):
+            continue
+        # 1文字だけのアルファベット（"h", "K", "N" 等）をフィルタリング
+        if re.fullmatch(r"[a-z]", norm):
+            continue
+        # "INT" はスプシのINT番号プレフィックスの残骸で名前ではない
+        if norm == "int":
             continue
         seen.add(norm)
         deduped.append(n.strip())

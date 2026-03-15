@@ -491,17 +491,61 @@ def sync_categories_from_sheet():
     skipped = []
     now = datetime.now(timezone.utc).isoformat()
 
+    from .sheets_manager import _normalize_name, _resolve_via_member_master, _to_hiragana, _to_katakana
+
     for proj in projects:
         proj_id = proj["id"]
         guest_name = proj["guest_name"] or ""
         title = proj["title"] or ""
 
-        # ゲスト名でスプシカテゴリマップから直接マッチ
+        # 多段階マッチング: 精度の高い方法から順に試す
         matched_category = None
+        db_norm = _normalize_name(guest_name)
+
+        # ステージ1: 正規化後の完全一致
         for sheet_guest, cat in sheet_categories.items():
-            if _match_guest_name(guest_name, sheet_guest) or _match_guest_name(sheet_guest, title):
+            sheet_norm = _normalize_name(sheet_guest)
+            if db_norm and sheet_norm and db_norm == sheet_norm:
                 matched_category = cat
                 break
+
+        # ステージ2: MEMBER_MASTER.jsonのcanonical_name解決
+        if matched_category is None:
+            db_canonical = _resolve_via_member_master(guest_name)
+            if db_canonical:
+                db_can_norm = _normalize_name(db_canonical)
+                for sheet_guest, cat in sheet_categories.items():
+                    sheet_canonical = _resolve_via_member_master(sheet_guest)
+                    if sheet_canonical and db_can_norm == _normalize_name(sheet_canonical):
+                        matched_category = cat
+                        break
+
+        # ステージ3: ひらがな/カタカナ変換後の完全一致
+        if matched_category is None and db_norm:
+            db_hira = _to_hiragana(db_norm)
+            db_kata = _to_katakana(db_norm)
+            for sheet_guest, cat in sheet_categories.items():
+                sheet_norm = _normalize_name(sheet_guest)
+                if not sheet_norm:
+                    continue
+                sheet_hira = _to_hiragana(sheet_norm)
+                if db_hira == sheet_hira or db_kata == _to_katakana(sheet_norm):
+                    matched_category = cat
+                    break
+
+        # ステージ4: _match_guest_nameによる柔軟マッチング（部分一致含む）
+        # ただしカテゴリがNoneのエントリとの部分一致はスキップ（誤爆防止）
+        if matched_category is None:
+            for sheet_guest, cat in sheet_categories.items():
+                if _match_guest_name(guest_name, sheet_guest):
+                    # 部分一致でカテゴリNoneにマッチした場合は、それが本当の一致か検証
+                    if cat is not None:
+                        matched_category = cat
+                        break
+                    # カテゴリNoneでも正規化完全一致なら信頼できる
+                    if _normalize_name(guest_name) == _normalize_name(sheet_guest):
+                        matched_category = cat
+                        break
 
         if matched_category is not None:
             conn.execute(

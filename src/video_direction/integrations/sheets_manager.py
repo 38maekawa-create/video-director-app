@@ -57,6 +57,46 @@ def _resolve_via_member_master(name: str) -> str | None:
     return alias_map.get(normalized)
 
 
+# --- MEMBER_MASTER.json default_category キャッシュ ---
+_MEMBER_DEFAULT_CATEGORY_MAP: dict[str, str] | None = None
+
+
+def _load_member_default_category_map() -> dict[str, str]:
+    """MEMBER_MASTER.jsonからcanonical_name→default_categoryのマップを構築する（遅延ロード）"""
+    global _MEMBER_DEFAULT_CATEGORY_MAP
+    if _MEMBER_DEFAULT_CATEGORY_MAP is not None:
+        return _MEMBER_DEFAULT_CATEGORY_MAP
+
+    _MEMBER_DEFAULT_CATEGORY_MAP = {}
+    master_path = Path.home() / "TEKO" / "knowledge" / "people" / "MEMBER_MASTER.json"
+    if not master_path.exists():
+        return _MEMBER_DEFAULT_CATEGORY_MAP
+
+    try:
+        data = json.loads(master_path.read_text(encoding="utf-8"))
+        for m in data.get("members", []):
+            canonical = m.get("canonical_name", "")
+            default_cat = m.get("default_category")
+            if canonical and default_cat:
+                _MEMBER_DEFAULT_CATEGORY_MAP[canonical] = default_cat
+    except Exception:
+        pass
+
+    return _MEMBER_DEFAULT_CATEGORY_MAP
+
+
+def _get_member_default_category(name: str) -> str | None:
+    """ゲスト名からMEMBER_MASTER.jsonのdefault_categoryを取得する。
+
+    canonical_nameに解決後、default_categoryフィールドを参照する。
+    """
+    canonical = _resolve_via_member_master(name)
+    if not canonical:
+        return None
+    cat_map = _load_member_default_category_map()
+    return cat_map.get(canonical)
+
+
 SPREADSHEET_ID = "1bW_qb13p747xoa2yf7RHaccNVTFCMxV8a5CjGdNqI6I"
 TAB_NAME = "【インタビュー対談動画】管理"
 SCOPES = [
@@ -130,6 +170,10 @@ class SheetsManager:
             title_val = title_cells[row_idx].strip() if row_idx < len(title_cells) else ""
 
             if not title_val:
+                continue
+
+            # テストゲストをスキップ（ゲスト名に「テスト」を含む行は除外）
+            if "テスト" in title_val:
                 continue
 
             # カテゴリを決定

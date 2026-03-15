@@ -14,32 +14,37 @@ struct QualityDashboardView: View {
     @State private var toolProjectsLoaded = false
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 20) {
-                Picker("表示切替", selection: $viewModel.selectedSection) {
-                    ForEach(DashboardViewModel.Section.allCases) { section in
-                        Text(section.rawValue).tag(section)
-                    }
-                }
-                .pickerStyle(.segmented)
-
-                if let message = viewModel.errorMessage {
-                    infoBanner(message)
-                }
-
-                switch viewModel.selectedSection {
-                case .quality:
-                    qualitySection
-                case .tracking:
-                    VideoTrackingView(viewModel: trackingViewModel)
-                case .editors:
-                    EditorManagementView(viewModel: editorViewModel)
-                case .tools:
-                    toolsSection
+        VStack(spacing: 0) {
+            // セグメントコントロール（固定・スクロールしない）
+            Picker("表示切替", selection: $viewModel.selectedSection) {
+                ForEach(DashboardViewModel.Section.allCases) { section in
+                    Text(section.rawValue).tag(section)
                 }
             }
+            .pickerStyle(.segmented)
             .padding(.horizontal, 16)
-            .padding(.bottom, 40)
+            .padding(.vertical, 8)
+
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 20) {
+                    if let message = viewModel.errorMessage {
+                        infoBanner(message)
+                    }
+
+                    switch viewModel.selectedSection {
+                    case .quality:
+                        qualitySection
+                    case .tracking:
+                        VideoTrackingView(viewModel: trackingViewModel)
+                    case .editors:
+                        EditorManagementView(viewModel: editorViewModel)
+                    case .tools:
+                        toolsSection
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 40)
+            }
         }
         .background(AppTheme.background.ignoresSafeArea())
         .task {

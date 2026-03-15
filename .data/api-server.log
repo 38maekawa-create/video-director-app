@@ -471,3 +471,13 @@ INFO:     100.113.28.70:49964 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
 INFO:     100.113.28.70:49965 - "GET /api/tracking/insights HTTP/1.1" 200 OK
 INFO:     100.113.28.70:49964 - "GET /api/learning/summary HTTP/1.1" 200 OK
 INFO:     100.113.28.70:62393 - "GET /api/v1/projects/p-20260101-%E3%82%B3%E3%82%B9%E3%83%88%E6%B0%8F/feedbacks-with-timecodes HTTP/1.1" 404 Not Found
+INFO:     100.113.28.70:53674 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:53675 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65508 - "GET /api/projects/p-20260215-%E3%82%AF%E3%83%9E%E3%82%AD%E3%81%8F%E3%81%BE%E3%81%99%E3%81%91/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57567 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57569 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57568 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57567 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57567 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:51628 - "GET /api/v1/projects/p-20260101-%E3%82%B3%E3%82%B9%E3%83%88%E6%B0%8F/transcript-diff HTTP/1.1" 200 OK
+INFO:     100.113.28.70:51629 - "GET /api/v1/projects/p-20260101-%E3%82%B3%E3%82%B9%E3%83%88%E6%B0%8F/before-after HTTP/1.1" 200 OK

@@ -1,14 +1,27 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-16 （TASK_P1_VOICE_FB_VIMEO.md実施 — 音声FB→Vimeoレビューコメント連携完成）
-<!-- authored: T3/兵隊A/AI開発10/2026-03-16 [TASK_P1_VOICE_FB_VIMEO指示書に基づく] -->
+2026-03-16 （TASK_P1_VOICE_FB_UI.md実施 — 音声FB→Vimeo連携のUI組み込み完了）
+<!-- authored: T3/兵隊A/AI開発10/2026-03-16 [TASK_P1_VOICE_FB_UI指示書に基づく] -->
 
 ## 現在の作業状態
-**音声FB→Vimeoレビューコメント連携完成（dry-runモードまで）**
+**音声FB→Vimeo連携UI組み込み完了（dry-run + 本番投稿UI）**
 
-音声FB録音→STT→タイムコードマッピング→Vimeoコメント投稿の一気通貫フローが完成。
-dry-runモードでAPIエンドポイント疎通確認済み。テスト562件全PASS（新規24件追加）。
+VoiceFeedbackView.swiftにVimeo投稿UIを追加。動画ID入力→dry-runプレビュー→本番投稿の
+一連のフローをUI上で操作可能に。BUILD SUCCEEDED確認済み。
+
+### TASK_P1_VOICE_FB_UI.md 実施結果（2026-03-16）
+
+**VoiceFeedbackView.swift にVimeo投稿UI追加（完了）**
+- Vimeo動画ID入力フィールド（テキストフィールド、数値キーボード）
+- 「Vimeo投稿プレビュー」ボタン（dry-runモード）— 動画ID未入力時はグレーアウト
+- dry-run結果表示: 投稿予定コメント一覧（タイムコード・優先度emoji・テキスト）
+- dry-run成功後に「Vimeoに本番投稿する」ボタン表示（緑色）
+- 本番投稿結果表示: 成功/失敗件数
+- 投稿中ローディング表示（ProgressView）
+- 既存の送信セクション（「この指示を送信」ボタン）は一切変更なし
+- AppThemeの色・フォント定義に完全準拠
+- **ビルド結果: BUILD SUCCEEDED**
 
 ### TASK_P1_VOICE_FB_VIMEO.md 実施結果（2026-03-16）
 

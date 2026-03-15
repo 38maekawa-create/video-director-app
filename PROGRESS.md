@@ -1,15 +1,43 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-15（テスト実行・品質確認: 524件全PASS）
+2026-03-15（webapp YouTube素材UI完成・524件全PASS）
 
 ## 現在の作業状態
-**待機中（Mac1（hime）でのTestFlight配布実行待ち）**
+**完了（webapp YouTube素材3機能UI追加済み）**
 
-全開発フェーズ完了。Python 524テスト全PASS。iOSアプリビルド成功。TestFlight配布に必要なスクリプト・設定は全て用意済み。Mac1（hime）での手動実行ステップのみ残存。
+webapp/app.js・webapp/styles.css に YouTube素材3機能UIを追加。既存コードへの削除・変更なし（追加のみ）。Python 524テスト全PASS。
+
+### webapp YouTube素材UI追加内容（2026-03-15 最新）
+<!-- authored: T3/兵隊B/AI開発10/2026-03-15 [TASK指示書に基づく] -->
+
+**変更ファイル:**
+- `webapp/app.js`: YouTube素材タブ追加 + 描画関数群追加
+- `webapp/styles.css`: YouTube素材UI用CSSクラス追加
+
+**追加した3機能:**
+1. **サムネ生成ディレクション（Z型4ゾーン指示書）**
+   - `renderYouTubeAssets()` が API `GET /api/projects/{id}/youtube-assets` からデータ取得
+   - `thumbnail_design` の4ゾーン（top_left/top_right/diagonal/bottom_right）をカードUIで表示
+   - 各ゾーンに色分け（①赤=左上フック、②青=右上人物、③黄=対角テーマ、④緑=右下CTA）
+   - APIオフライン時はプロジェクトデータからローカル生成（フォールバック）
+
+2. **タイトル案（タップでコピー）**
+   - `title_proposals.candidates` を縦リスト表示（推薦案には「推薦」バッジ）
+   - タップで `navigator.clipboard.writeText()` → 古いブラウザは `execCommand` フォールバック
+   - コピー完了時に「✓ コピー完了！」表示（2秒後に元に戻る）
+
+3. **概要欄テキスト**
+   - `description_edited` または `description_original` を `<pre>` でテキスト整形保持
+   - 右上の「コピー」ボタンでワンタップコピー
+
+**実装方針（既存コード無変更）:**
+- `renderReportTabs()` 内のtabs配列に `'YouTube素材'` を追記
+- click handlerに `else if (tabName === 'YouTube素材')` を追記
+- 新関数群は全てIIFEのクロージング直前に追記
 
 ### テスト実行結果（2026-03-15 最新）
-- **総テスト件数: 524件 全PASS（所要時間: 約23秒）**
+- **総テスト件数: 524件 全PASS（所要時間: 約25秒）**
 - テストファイル数: 36ファイル（tests/内）
 - 備考: `test_api_phase3_4.py`・`test_feedback_learning_api.py` の2ファイルは `fastapi` パッケージが必要（python3.11環境にインストール済みで実行可能）
 - warnings: 2件（fastapiの `on_event` 非推奨警告、動作には影響なし）

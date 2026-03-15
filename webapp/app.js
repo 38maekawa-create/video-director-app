@@ -228,6 +228,8 @@
     if (knowledgePage) {
       tabs.push('ナレッジ');
     }
+    // YouTube素材タブ（追加: 2026-03-15）
+    tabs.push('YouTube素材');
 
     const container = document.getElementById('report-tabs');
     container.innerHTML = tabs.map((t, i) => `
@@ -244,6 +246,9 @@
         const tabName = btn.dataset.tabName;
         if (tabName === 'ナレッジ') {
           renderKnowledgePage(knowledgePage);
+        } else if (tabName === 'YouTube素材') {
+          // YouTube素材タブ（追加: 2026-03-15）
+          renderYouTubeAssets(currentProject);
         } else {
           renderReportSection(parseInt(btn.dataset.index));
         }
@@ -704,5 +709,270 @@
       drawTrendChart();
     }
   });
+
+  // ===== YouTube素材3機能（追加: 2026-03-15） =====
+
+  // YouTube素材タブのメイン描画
+  function renderYouTubeAssets(project) {
+    const container = document.getElementById('report-sections');
+    if (!project) {
+      container.innerHTML = '<div class="yt-empty">プロジェクトが選択されていません</div>';
+      return;
+    }
+
+    // ローディング表示
+    container.innerHTML = '<div class="yt-loading"><div class="yt-loading-text">YouTube素材を読み込み中...</div></div>';
+
+    // APIからfetch（失敗時はローカル生成でフォールバック）
+    fetch('http://localhost:8210/api/projects/' + encodeURIComponent(project.id) + '/youtube-assets')
+      .then(function(r) {
+        if (!r.ok) throw new Error('not found');
+        return r.json();
+      })
+      .then(function(data) {
+        container.innerHTML = buildYouTubeAssetsHTML(data);
+        setupYouTubeCopyHandlers(container);
+      })
+      .catch(function() {
+        // APIなし or データなし: プロジェクト情報からローカル生成
+        var localData = buildLocalYouTubeAssets(project);
+        container.innerHTML = buildYouTubeAssetsHTML(localData);
+        setupYouTubeCopyHandlers(container);
+      });
+  }
+
+  // プロジェクト情報からYouTube素材をローカル生成（フォールバック）
+  function buildLocalYouTubeAssets(project) {
+    var name = project.guestName || 'ゲスト';
+    var age = project.guestAge;
+    var occ = project.guestOccupation || '会社員';
+    var ageLabel = age ? (age + '歳') : '';
+
+    return {
+      thumbnail_design: {
+        overall_concept: name + 'さんの対談動画 — ' + occ + 'が不動産投資を選んだ理由',
+        font_suggestion: 'ヒラギノ角ゴ Pro W6 / Noto Sans JP Bold — 視認性重視',
+        background_suggestion: 'ダークグラデーション（#1a1a2e → #16213e）+ ゲスト写真右配置',
+        top_left: {
+          role: 'フック（数字 or パンチライン）',
+          content: ageLabel ? (ageLabel + ' ' + occ) : occ,
+          color_suggestion: '白文字 + 黄色アクセント（年収部分）',
+          notes: 'Z型の起点。最も目を引くゾーン。文字サイズ最大'
+        },
+        top_right: {
+          role: '人物シルエット＋属性',
+          content: ageLabel ? (name + 'さん（' + ageLabel + '）') : (name + 'さん'),
+          color_suggestion: '写真 + 白テキストオーバーレイ',
+          notes: 'ゲスト写真を配置。名前と属性を重ねる'
+        },
+        diagonal: {
+          role: 'コンテンツ要素（対談のテーマ）',
+          content: '本業×不動産投資の両立法',
+          color_suggestion: '薄い青系バッジ',
+          notes: 'Z型の対角線。視線誘導の中継点'
+        },
+        bottom_right: {
+          role: 'ベネフィット（視聴者への約束）',
+          content: '不動産投資のリアルが分かる',
+          color_suggestion: '赤 or オレンジのCTAカラー',
+          notes: 'Z型の終点。次のアクション（再生）を促す'
+        }
+      },
+      title_proposals: {
+        candidates: [
+          {
+            title: (ageLabel ? '【' + ageLabel + '】' : '') + occ + 'が語る「会社員×不動産投資」のリアル',
+            appeal_type: 'ストーリー系',
+            target_segment: '本業を持ちながら投資を検討している層',
+            rationale: 'リアルなストーリーへの期待感を醸成'
+          },
+          {
+            title: 'なぜ' + occ + 'は不動産投資を選んだのか？' + name + 'さんの決断',
+            appeal_type: '問いかけ系',
+            target_segment: '投資手法を比較検討中の層',
+            rationale: '「なぜ」で視聴者の知的好奇心を刺激'
+          },
+          {
+            title: name + 'さん対談 — ' + occ + 'の不動産投資ジャーニー【TEKO】',
+            appeal_type: 'ブランド系',
+            target_segment: 'TEKOチャンネル視聴者全般',
+            rationale: 'チャンネルブランドと紐付けた信頼訴求'
+          }
+        ],
+        recommended_index: 0
+      },
+      description_original: (ageLabel ? ageLabel + '、' : '') + occ + 'の' + name + 'さんが語る不動産投資のリアル。\n本業を持ちながら不動産投資に挑戦する' + name + 'さんの考え方や決断の背景に迫ります。\n\n▼ ゲストプロフィール\n・名前: ' + name + 'さん\n' + (age ? '・年齢: ' + ageLabel + '\n' : '') + (occ ? '・職業: ' + occ + '\n' : '') + '\n▼ チャプター\n0:00 オープニング・自己紹介\n※ 編集完了後にタイムスタンプを追加\n\n▼ TEKOについて\n不動産投資コミュニティ「TEKO」の対談シリーズです。\nメンバーのリアルな声をお届けしています。\n\n#不動産投資 #TEKO #対談 #サラリーマン投資家'
+    };
+  }
+
+  // YouTube素材HTMLを組み立てる
+  function buildYouTubeAssetsHTML(data) {
+    var td = data.thumbnail_design || {};
+    var tp = data.title_proposals || {};
+    var desc = data.description_edited || data.description_original || '';
+    var candidates = tp.candidates || [];
+    var recommendedIdx = tp.recommended_index || 0;
+
+    // Z型4ゾーン定義（左上→右上→対角→右下）
+    var zones = [
+      { key: 'top_left',     num: '①', pos: '左上',    colorClass: 'yt-zone-1', arrow: '→' },
+      { key: 'top_right',    num: '②', pos: '右上',    colorClass: 'yt-zone-2', arrow: '↙' },
+      { key: 'diagonal',     num: '③', pos: '中央対角', colorClass: 'yt-zone-3', arrow: '→' },
+      { key: 'bottom_right', num: '④', pos: '右下',    colorClass: 'yt-zone-4', arrow: '' }
+    ];
+
+    // ゾーンカードHTML
+    var zonesHTML = zones.map(function(z, i) {
+      var zd = td[z.key] || {};
+      return '<div class="yt-zone-card ' + z.colorClass + '">' +
+        '<div class="yt-zone-header">' +
+          '<span class="yt-zone-num">' + z.num + '</span>' +
+          '<span class="yt-zone-pos">' + z.pos + '</span>' +
+          (z.arrow ? '<span class="yt-zone-arrow">' + z.arrow + '</span>' : '') +
+        '</div>' +
+        '<div class="yt-zone-role">' + (zd.role || '') + '</div>' +
+        '<div class="yt-zone-content">' + (zd.content || '') + '</div>' +
+        (zd.color_suggestion ? '<div class="yt-zone-color"><span class="yt-zone-color-dot"></span>' + zd.color_suggestion + '</div>' : '') +
+        (zd.notes ? '<div class="yt-zone-notes">' + zd.notes + '</div>' : '') +
+      '</div>';
+    }).join('');
+
+    // タイトル案HTML
+    var titlesHTML = candidates.map(function(c, i) {
+      var isRec = (i === recommendedIdx);
+      return '<div class="yt-title-item' + (isRec ? ' yt-title-rec' : '') + '" data-copy-text="' + escapeAttr(c.title) + '">' +
+        '<div class="yt-title-badges">' +
+          (isRec ? '<span class="yt-badge yt-badge-rec">推薦</span>' : '') +
+          '<span class="yt-badge yt-badge-type">' + (c.appeal_type || '') + '</span>' +
+        '</div>' +
+        '<div class="yt-title-text">' + escapeHTML(c.title) + '</div>' +
+        (c.target_segment ? '<div class="yt-title-segment">' + escapeHTML(c.target_segment) + '</div>' : '') +
+        '<div class="yt-title-copy-hint">タップでコピー</div>' +
+      '</div>';
+    }).join('');
+
+    // 概要欄HTML（pre要素でテキスト整形を保持）
+    var descText = escapeHTML(desc);
+
+    return '<div class="yt-assets-wrap">' +
+
+      // 1. サムネイル指示書
+      '<div class="yt-section">' +
+        '<div class="yt-section-header">' +
+          '<span class="yt-section-icon yt-icon-thumb">YT</span>' +
+          '<span class="yt-section-title">サムネ生成ディレクション</span>' +
+        '</div>' +
+        (td.overall_concept ? '<div class="yt-concept">' + escapeHTML(td.overall_concept) + '</div>' : '') +
+        '<div class="yt-meta-rows">' +
+          (td.font_suggestion ? '<div class="yt-meta-row"><span class="yt-meta-label">フォント</span><span class="yt-meta-val">' + escapeHTML(td.font_suggestion) + '</span></div>' : '') +
+          (td.background_suggestion ? '<div class="yt-meta-row"><span class="yt-meta-label">背景</span><span class="yt-meta-val">' + escapeHTML(td.background_suggestion) + '</span></div>' : '') +
+        '</div>' +
+        '<div class="yt-z-label">Z型視線誘導レイアウト</div>' +
+        '<div class="yt-zones-grid">' + zonesHTML + '</div>' +
+      '</div>' +
+
+      // 2. タイトル案
+      '<div class="yt-section">' +
+        '<div class="yt-section-header">' +
+          '<span class="yt-section-icon yt-icon-title">T</span>' +
+          '<span class="yt-section-title">タイトル案</span>' +
+          '<span class="yt-section-sub">タップでコピー</span>' +
+        '</div>' +
+        '<div class="yt-titles-list">' + titlesHTML + '</div>' +
+      '</div>' +
+
+      // 3. 概要欄
+      '<div class="yt-section">' +
+        '<div class="yt-section-header">' +
+          '<span class="yt-section-icon yt-icon-desc">D</span>' +
+          '<span class="yt-section-title">概要欄テキスト</span>' +
+          '<button class="yt-copy-btn" data-copy-desc="1">コピー</button>' +
+        '</div>' +
+        '<pre class="yt-desc-pre" id="yt-desc-content">' + descText + '</pre>' +
+      '</div>' +
+
+    '</div>';
+  }
+
+  // コピー機能のセットアップ
+  function setupYouTubeCopyHandlers(container) {
+    // タイトルアイテムのタップコピー
+    container.querySelectorAll('.yt-title-item[data-copy-text]').forEach(function(item) {
+      item.addEventListener('click', function() {
+        var text = item.getAttribute('data-copy-text');
+        var hint = item.querySelector('.yt-title-copy-hint');
+        ytCopyToClipboard(text, function(ok) {
+          if (ok) {
+            item.classList.add('yt-copied');
+            if (hint) hint.textContent = '✓ コピー完了！';
+            setTimeout(function() {
+              item.classList.remove('yt-copied');
+              if (hint) hint.textContent = 'タップでコピー';
+            }, 2000);
+          }
+        });
+      });
+    });
+
+    // 概要欄コピーボタン
+    container.querySelectorAll('.yt-copy-btn[data-copy-desc]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var target = document.getElementById('yt-desc-content');
+        if (!target) return;
+        var text = target.textContent;
+        ytCopyToClipboard(text, function(ok) {
+          if (ok) {
+            btn.textContent = '✓ コピー完了！';
+            btn.classList.add('yt-btn-copied');
+            setTimeout(function() {
+              btn.textContent = 'コピー';
+              btn.classList.remove('yt-btn-copied');
+            }, 2000);
+          }
+        });
+      });
+    });
+  }
+
+  // クリップボードコピーのユーティリティ
+  function ytCopyToClipboard(text, callback) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(function() { callback(true); })
+        .catch(function() { ytCopyFallback(text, callback); });
+    } else {
+      ytCopyFallback(text, callback);
+    }
+  }
+
+  // クリップボードコピーのフォールバック（古いブラウザ向け）
+  function ytCopyFallback(text, callback) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    callback(ok);
+  }
+
+  // HTML文字列エスケープ
+  function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  // HTML属性値エスケープ
+  function escapeAttr(str) {
+    if (!str) return '';
+    return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
 
 })();

@@ -15,6 +15,7 @@ struct YouTubeAssetsView: View {
     @State private var showUpdateBanner = false
     @State private var lastKnownEditedBy: String?
     @State private var pollingTimer: Timer?
+    @State private var copiedItemId: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -46,6 +47,8 @@ struct YouTubeAssetsView: View {
             stopPolling()
         }
     }
+
+    // MARK: - ローディング・空状態
 
     private var loadingCard: some View {
         HStack(spacing: 12) {
@@ -84,38 +87,61 @@ struct YouTubeAssetsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 
+    // MARK: - サムネイル指示書セクション（Z型4ゾーン）
+
     private func thumbnailSection(_ assets: YouTubeAssets) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            sectionTitle("サムネイル指示書", icon: "rectangle.on.rectangle")
+            HStack {
+                sectionTitle("サムネイル指示書", icon: "rectangle.on.rectangle")
+                Spacer()
+                // サムネ指示書全体コピーボタン
+                if let design = assets.thumbnailDesign {
+                    copyButton(id: "thumbnail-all") {
+                        thumbnailDesignAsText(design)
+                    }
+                }
+            }
 
             if let design = assets.thumbnailDesign {
-                metadataPill(title: "全体コンセプト", value: design.overallConcept)
-                metadataPill(title: "フォント", value: design.fontSuggestion)
-                metadataPill(title: "背景", value: design.backgroundSuggestion)
+                // 全体コンセプト
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("全体コンセプト")
+                        .font(AppTheme.labelFont(11))
+                        .foregroundStyle(AppTheme.accent)
+                    Text(design.overallConcept)
+                        .font(AppTheme.bodyFont(14, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(AppTheme.cardBackgroundLight)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
 
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    ForEach(Array(design.zones.enumerated()), id: \.element.id) { index, zone in
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(zonePositionLabel(for: index))
-                                .font(AppTheme.labelFont(10))
-                                .foregroundStyle(AppTheme.textMuted)
+                // メタデータ（フォント・背景）横並び
+                HStack(spacing: 10) {
+                    metadataPill(title: "フォント", value: design.fontSuggestion)
+                    metadataPill(title: "背景", value: design.backgroundSuggestion)
+                }
 
-                            Text(zone.role)
-                                .font(AppTheme.labelFont(12))
-                                .foregroundStyle(.white)
-                            Text(zone.content)
-                                .font(AppTheme.bodyFont(14, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .fixedSize(horizontal: false, vertical: true)
-                            Text(zone.notes)
-                                .font(AppTheme.bodyFont(12))
-                                .foregroundStyle(AppTheme.textSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
+                // Z型4ゾーンレイアウト（Z字の読み順を示す矢印付き）
+                VStack(spacing: 4) {
+                    HStack(spacing: 4) {
+                        Text("Z型レイアウト")
+                            .font(AppTheme.labelFont(11))
+                            .foregroundStyle(AppTheme.textMuted)
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 9))
+                            .foregroundStyle(AppTheme.textMuted)
+                        Spacer()
+                    }
+                    .padding(.bottom, 4)
+
+                    // Z型: 左上→右上 / 対角 / 右下
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                        ForEach(Array(design.zones.enumerated()), id: \.element.id) { index, zone in
+                            zoneCard(zone: zone, index: index)
                         }
-                        .padding(14)
-                        .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
-                        .background(zoneColor(zone.colorSuggestion))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                 }
             } else {
@@ -128,6 +154,65 @@ struct YouTubeAssetsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 
+    private func zoneCard(zone: ThumbnailZone, index: Int) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            // ゾーン位置ラベル + Z字順番号
+            HStack(spacing: 6) {
+                Text("\(index + 1)")
+                    .font(.system(size: 10, weight: .heavy, design: .rounded))
+                    .foregroundStyle(.black)
+                    .frame(width: 18, height: 18)
+                    .background(Color(hex: 0xD4AF37))
+                    .clipShape(Circle())
+
+                Text(zonePositionLabel(for: index))
+                    .font(AppTheme.labelFont(10))
+                    .foregroundStyle(AppTheme.textMuted)
+
+                Spacer()
+            }
+
+            // 役割
+            Text(zone.role)
+                .font(AppTheme.labelFont(12))
+                .foregroundStyle(AppTheme.accent)
+
+            // コンテンツ（メインテキスト）
+            Text(zone.content)
+                .font(AppTheme.bodyFont(14, weight: .bold))
+                .foregroundStyle(.white)
+                .fixedSize(horizontal: false, vertical: true)
+
+            // 補足ノート
+            if !zone.notes.isEmpty {
+                Text(zone.notes)
+                    .font(AppTheme.bodyFont(11))
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            // 色指定
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(zoneColor(zone.colorSuggestion))
+                    .frame(width: 10, height: 10)
+                Text(zone.colorSuggestion)
+                    .font(AppTheme.bodyFont(10))
+                    .foregroundStyle(AppTheme.textMuted)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, minHeight: 120, alignment: .topLeading)
+        .background(zoneColor(zone.colorSuggestion).opacity(0.15))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(zoneColor(zone.colorSuggestion).opacity(0.4), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: - タイトル案セクション
+
     private func titleSection(_ assets: YouTubeAssets) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             sectionTitle("タイトル案", icon: "text.quote")
@@ -136,9 +221,13 @@ struct YouTubeAssetsView: View {
                 ForEach(Array(proposals.candidates.enumerated()), id: \.offset) { index, candidate in
                     VStack(alignment: .leading, spacing: 10) {
                         HStack(alignment: .top, spacing: 10) {
+                            // 選択ラジオ
                             Image(systemName: selectedTitleIndex == index ? "largecircle.fill.circle" : "circle")
                                 .foregroundStyle(selectedTitleIndex == index ? AppTheme.accent : AppTheme.textMuted)
+                                .font(.system(size: 20))
+
                             VStack(alignment: .leading, spacing: 8) {
+                                // バッジ行
                                 HStack(spacing: 8) {
                                     if proposals.recommendedIndex == index {
                                         Text("推奨")
@@ -152,17 +241,25 @@ struct YouTubeAssetsView: View {
                                     Text(candidate.appealType)
                                         .font(AppTheme.labelFont(11))
                                         .foregroundStyle(AppTheme.textMuted)
+                                    Spacer()
+                                    // コピーボタン
+                                    copyButton(id: "title-\(index)") {
+                                        candidate.title
+                                    }
                                 }
 
+                                // タイトルテキスト
                                 Text(candidate.title)
                                     .font(AppTheme.bodyFont(15, weight: .bold))
                                     .foregroundStyle(.white)
                                     .fixedSize(horizontal: false, vertical: true)
 
+                                // 対象セグメント
                                 Text("対象: \(candidate.targetSegment)")
                                     .font(AppTheme.bodyFont(12))
                                     .foregroundStyle(AppTheme.textSecondary)
 
+                                // 理由
                                 Text(candidate.rationale)
                                     .font(AppTheme.bodyFont(12))
                                     .foregroundStyle(AppTheme.textMuted)
@@ -177,6 +274,7 @@ struct YouTubeAssetsView: View {
                             }
                         }
 
+                        // 選択時の編集・確定UI
                         if selectedTitleIndex == index {
                             TextField("選択タイトルを微修正", text: $editedTitle)
                                 .textFieldStyle(.plain)
@@ -186,27 +284,49 @@ struct YouTubeAssetsView: View {
                                 .background(AppTheme.cardBackgroundLight)
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
 
-                            Button {
-                                Task { await saveSelectedTitle() }
-                            } label: {
-                                HStack {
-                                    if isSavingTitle {
-                                        ProgressView().tint(.white)
+                            HStack(spacing: 10) {
+                                // 編集後のタイトルをコピー
+                                Button {
+                                    let text = editedTitle.isEmpty ? candidate.title : editedTitle
+                                    UIPasteboard.general.string = text
+                                    showCopiedFeedback(id: "title-edited-\(index)")
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: copiedItemId == "title-edited-\(index)" ? "checkmark" : "doc.on.doc")
+                                            .font(.system(size: 12))
+                                        Text("コピー")
                                     }
-                                    Text("このタイトルで確定")
                                 }
-                                .font(AppTheme.labelFont(13))
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(AppTheme.accent)
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .buttonStyle(SecondaryActionButtonStyle())
+
+                                Button {
+                                    Task { await saveSelectedTitle() }
+                                } label: {
+                                    HStack {
+                                        if isSavingTitle {
+                                            ProgressView().tint(.white)
+                                        }
+                                        Text("このタイトルで確定")
+                                    }
+                                }
+                                .buttonStyle(PrimaryActionButtonStyle())
+                                .disabled(isSavingTitle)
                             }
-                            .disabled(isSavingTitle)
                         }
                     }
                     .padding(14)
-                    .background(AppTheme.cardBackgroundLight)
+                    .background(
+                        selectedTitleIndex == index
+                            ? AppTheme.accent.opacity(0.08)
+                            : AppTheme.cardBackgroundLight.opacity(1)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(
+                                selectedTitleIndex == index ? AppTheme.accent.opacity(0.4) : Color.clear,
+                                lineWidth: 1
+                            )
+                    )
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             } else {
@@ -219,9 +339,18 @@ struct YouTubeAssetsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 
+    // MARK: - 概要欄セクション
+
     private func descriptionSection(_ assets: YouTubeAssets) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            sectionTitle("概要欄", icon: "doc.text")
+            HStack {
+                sectionTitle("概要欄", icon: "doc.text")
+                Spacer()
+                // 概要欄全体コピーボタン
+                copyButton(id: "description-all") {
+                    descriptionText
+                }
+            }
 
             TextEditor(text: $descriptionText)
                 .scrollContentBackground(.hidden)
@@ -233,9 +362,16 @@ struct YouTubeAssetsView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12))
 
             HStack(spacing: 10) {
-                Button("コピー") {
+                Button {
                     UIPasteboard.general.string = descriptionText
+                    showCopiedFeedback(id: "description-copy")
                     bannerMessage = "概要欄をクリップボードにコピーしました"
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: copiedItemId == "description-copy" ? "checkmark" : "doc.on.doc")
+                            .font(.system(size: 12))
+                        Text("コピー")
+                    }
                 }
                 .buttonStyle(SecondaryActionButtonStyle())
 
@@ -270,6 +406,64 @@ struct YouTubeAssetsView: View {
         .background(AppTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
+
+    // MARK: - コピーボタン共通コンポーネント
+
+    private func copyButton(id: String, text: @escaping () -> String) -> some View {
+        Button {
+            UIPasteboard.general.string = text()
+            showCopiedFeedback(id: id)
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: copiedItemId == id ? "checkmark.circle.fill" : "doc.on.doc")
+                    .font(.system(size: 13))
+                Text(copiedItemId == id ? "コピー済" : "コピー")
+                    .font(AppTheme.labelFont(11))
+            }
+            .foregroundStyle(copiedItemId == id ? AppTheme.statusComplete : AppTheme.textSecondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(AppTheme.cardBackgroundLight)
+            .clipShape(Capsule())
+        }
+    }
+
+    private func showCopiedFeedback(id: String) {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            copiedItemId = id
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                if copiedItemId == id {
+                    copiedItemId = nil
+                }
+            }
+        }
+    }
+
+    // MARK: - サムネ指示書テキスト化（コピー用）
+
+    private func thumbnailDesignAsText(_ design: ThumbnailDesign) -> String {
+        var lines: [String] = []
+        lines.append("【サムネイル指示書】")
+        lines.append("コンセプト: \(design.overallConcept)")
+        lines.append("フォント: \(design.fontSuggestion)")
+        lines.append("背景: \(design.backgroundSuggestion)")
+        lines.append("")
+        for (index, zone) in design.zones.enumerated() {
+            let pos = zonePositionLabel(for: index)
+            lines.append("[\(pos)] \(zone.role)")
+            lines.append("  テキスト: \(zone.content)")
+            if !zone.notes.isEmpty {
+                lines.append("  補足: \(zone.notes)")
+            }
+            lines.append("  色: \(zone.colorSuggestion)")
+            lines.append("")
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    // MARK: - データ取得・保存
 
     private func loadAssets() async {
         isLoading = true
@@ -328,6 +522,7 @@ struct YouTubeAssetsView: View {
                 applyLoadedAssets(latest)
             }
         } catch {
+            // ポーリング失敗は静かに無視
         }
     }
 
@@ -370,6 +565,8 @@ struct YouTubeAssetsView: View {
             bannerMessage = "概要欄保存に失敗しました: \(error.localizedDescription)"
         }
     }
+
+    // MARK: - UI部品
 
     private var updateBanner: some View {
         HStack {
@@ -458,6 +655,8 @@ struct YouTubeAssetsView: View {
         return "\(interval / 86400)日前"
     }
 }
+
+// MARK: - ボタンスタイル
 
 private struct PrimaryActionButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {

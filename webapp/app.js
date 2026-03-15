@@ -243,6 +243,8 @@
     // 編集FB / Vimeoレビュータブ（追加: 2026-03-16）
     tabs.push('編集FB');
     tabs.push('レビュー');
+    // フレーム評価タブ（追加: C-1）
+    tabs.push('フレーム評価');
 
     const container = document.getElementById('report-tabs');
     container.innerHTML = tabs.map((t, i) => `
@@ -268,6 +270,9 @@
         } else if (tabName === 'レビュー') {
           // Vimeoレビュータブ（追加: 2026-03-16）
           openVimeoReview(currentProject);
+        } else if (tabName === 'フレーム評価') {
+          // フレーム評価タブ（C-1）
+          renderFrameEvaluation(currentProject);
         } else {
           renderReportSection(parseInt(btn.dataset.index));
         }
@@ -681,38 +686,211 @@
     }
   }
 
-  // ===== 録音モーダル =====
+  // ===== 録音モーダル（MediaRecorder API + Vimeo連携） =====
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let recordingStartTime = 0;
+  let recordingTimer = null;
+
   function createRecordingModal() {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
     modal.id = 'recording-modal';
     modal.innerHTML = `
-      <div class="modal-content">
+      <div class="modal-content rec-modal-content">
         <div class="modal-text">音声フィードバック</div>
-        <div class="modal-subtext">タップして録音を開始</div>
+        <div class="modal-subtext" id="rec-subtext">タップして録音を開始</div>
+        <div class="rec-timer" id="rec-timer">00:00</div>
         <button class="modal-record-btn" id="modal-record-btn">
           <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
         </button>
+        <!-- 録音完了後のフロー -->
+        <div class="rec-result-area" id="rec-result-area" style="display:none;">
+          <div class="rec-result-label">録音完了</div>
+          <div class="rec-convert-section">
+            <button class="rec-convert-btn" id="rec-convert-btn">LLMで変換する</button>
+            <div class="rec-converting" id="rec-converting" style="display:none;">変換中...</div>
+          </div>
+          <div class="rec-converted-text" id="rec-converted-text" style="display:none;"></div>
+          <div class="rec-post-section" id="rec-post-section" style="display:none;">
+            <div class="rec-dryrun-toggle">
+              <label class="rec-toggle-label">
+                <input type="checkbox" id="rec-dryrun-check" checked>
+                <span class="rec-toggle-text">Dry Run（テスト送信）</span>
+              </label>
+            </div>
+            <button class="rec-post-btn" id="rec-post-btn">Vimeoレビューに投稿</button>
+            <div class="rec-post-status" id="rec-post-status" style="display:none;"></div>
+          </div>
+        </div>
         <button class="modal-close" id="modal-close">閉じる</button>
       </div>
     `;
     document.body.appendChild(modal);
 
-    document.getElementById('modal-close').addEventListener('click', () => {
+    document.getElementById('modal-close').addEventListener('click', function() {
       showRecordingModal(false);
     });
 
-    document.getElementById('modal-record-btn').addEventListener('click', () => {
-      isRecording = !isRecording;
-      const btn = document.getElementById('modal-record-btn');
-      btn.classList.toggle('recording', isRecording);
-      document.querySelector('.modal-subtext').textContent = isRecording ? '録音中... タップして停止' : 'タップして録音を開始';
+    document.getElementById('modal-record-btn').addEventListener('click', function() {
+      if (!isRecording) {
+        startRecording();
+      } else {
+        stopRecording();
+      }
+    });
+
+    document.getElementById('rec-convert-btn').addEventListener('click', function() {
+      convertRecordedAudio();
+    });
+
+    document.getElementById('rec-post-btn').addEventListener('click', function() {
+      postToVimeoReview();
     });
 
     // 背景クリックで閉じる
-    modal.addEventListener('click', (e) => {
+    modal.addEventListener('click', function(e) {
       if (e.target === modal) showRecordingModal(false);
     });
+  }
+
+  function startRecording() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      document.getElementById('rec-subtext').textContent = 'このブラウザはマイク録音に対応していません';
+      return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(function(stream) {
+        audioChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = function(e) {
+          if (e.data.size > 0) audioChunks.push(e.data);
+        };
+        mediaRecorder.onstop = function() {
+          stream.getTracks().forEach(function(t) { t.stop(); });
+        };
+        mediaRecorder.start();
+        isRecording = true;
+        recordingStartTime = Date.now();
+
+        var btn = document.getElementById('modal-record-btn');
+        btn.classList.add('recording');
+        document.getElementById('rec-subtext').textContent = '録音中... タップして停止';
+        document.getElementById('rec-result-area').style.display = 'none';
+
+        // タイマー更新
+        recordingTimer = setInterval(function() {
+          var elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+          var m = Math.floor(elapsed / 60);
+          var s = elapsed % 60;
+          document.getElementById('rec-timer').textContent =
+            (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+        }, 1000);
+      })
+      .catch(function(err) {
+        document.getElementById('rec-subtext').textContent = 'マイクへのアクセスが拒否されました';
+      });
+  }
+
+  function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+    }
+    isRecording = false;
+    clearInterval(recordingTimer);
+
+    var btn = document.getElementById('modal-record-btn');
+    btn.classList.remove('recording');
+    document.getElementById('rec-subtext').textContent = '録音完了';
+    document.getElementById('rec-result-area').style.display = 'block';
+    document.getElementById('rec-converted-text').style.display = 'none';
+    document.getElementById('rec-post-section').style.display = 'none';
+    document.getElementById('rec-post-status').style.display = 'none';
+  }
+
+  function convertRecordedAudio() {
+    if (audioChunks.length === 0) return;
+
+    var blob = new Blob(audioChunks, { type: 'audio/webm' });
+    var formData = new FormData();
+    formData.append('audio', blob, 'feedback.webm');
+    if (currentProject) {
+      formData.append('project_id', currentProject.id);
+    }
+
+    document.getElementById('rec-convert-btn').style.display = 'none';
+    document.getElementById('rec-converting').style.display = 'block';
+
+    fetch('http://localhost:8210/api/v1/feedback/convert', {
+      method: 'POST',
+      body: formData
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        document.getElementById('rec-converting').style.display = 'none';
+        var converted = data.converted_text || data.convertedText || data.text || '';
+        var rawText = data.raw_text || data.rawText || '';
+        var html = '';
+        if (rawText) {
+          html += '<div class="rec-raw-label">音声認識結果:</div>' +
+                  '<div class="rec-raw-text">' + escapeHTML(rawText) + '</div>';
+        }
+        html += '<div class="rec-conv-label">LLM変換結果:</div>' +
+                '<div class="rec-conv-text">' + escapeHTML(converted) + '</div>';
+        document.getElementById('rec-converted-text').innerHTML = html;
+        document.getElementById('rec-converted-text').style.display = 'block';
+        document.getElementById('rec-post-section').style.display = 'block';
+        // 変換結果をdata属性に保持
+        document.getElementById('rec-post-btn').dataset.convertedText = converted;
+      })
+      .catch(function() {
+        document.getElementById('rec-converting').style.display = 'none';
+        document.getElementById('rec-convert-btn').style.display = 'block';
+        document.getElementById('rec-converted-text').innerHTML =
+          '<div class="rec-error">変換に失敗しました。サーバーが起動しているか確認してください。</div>';
+        document.getElementById('rec-converted-text').style.display = 'block';
+      });
+  }
+
+  function postToVimeoReview() {
+    var postBtn = document.getElementById('rec-post-btn');
+    var convertedText = postBtn.dataset.convertedText || '';
+    var dryRun = document.getElementById('rec-dryrun-check').checked;
+    var statusEl = document.getElementById('rec-post-status');
+
+    if (!convertedText) return;
+
+    postBtn.disabled = true;
+    statusEl.style.display = 'block';
+    statusEl.className = 'rec-post-status';
+    statusEl.textContent = '投稿中...';
+
+    var url = 'http://localhost:8210/api/v1/vimeo/post-review' + (dryRun ? '?dry_run=true' : '');
+
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        project_id: currentProject ? currentProject.id : '',
+        feedback_text: convertedText
+      })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        postBtn.disabled = false;
+        statusEl.className = 'rec-post-status rec-post-success';
+        if (dryRun) {
+          statusEl.textContent = 'Dry Run成功: レビューコメントは送信されていません（テストモード）';
+        } else {
+          statusEl.textContent = '投稿完了: Vimeoレビューにコメントが追加されました';
+        }
+      })
+      .catch(function() {
+        postBtn.disabled = false;
+        statusEl.className = 'rec-post-status rec-post-error';
+        statusEl.textContent = '投稿に失敗しました。サーバー接続を確認してください。';
+      });
   }
 
   function showRecordingModal(show) {
@@ -720,9 +898,19 @@
     if (modal) {
       modal.classList.toggle('visible', show);
       if (!show) {
+        // 録音中なら停止
+        if (isRecording) {
+          stopRecording();
+        }
         isRecording = false;
-        const btn = document.getElementById('modal-record-btn');
+        var btn = document.getElementById('modal-record-btn');
         if (btn) btn.classList.remove('recording');
+        // UI初期化
+        document.getElementById('rec-timer').textContent = '00:00';
+        document.getElementById('rec-subtext').textContent = 'タップして録音を開始';
+        document.getElementById('rec-result-area').style.display = 'none';
+        document.getElementById('rec-convert-btn').style.display = 'block';
+        document.getElementById('rec-converting').style.display = 'none';
       }
     }
   }

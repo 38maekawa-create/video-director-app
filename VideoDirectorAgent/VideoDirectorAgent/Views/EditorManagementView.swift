@@ -34,7 +34,7 @@ struct EditorManagementView: View {
                                         .background(statusColor(editor.status))
                                         .clipShape(Capsule())
                                 }
-                                Text("\(editor.activeProjects)件進行中 / 累計\(editor.totalCompleted)件")
+                                Text("\(editor.activeProjectCount)件進行中 / 累計\(editor.completedCount)件")
                                     .font(.caption)
                                     .foregroundStyle(AppTheme.textSecondary)
                                 Text(editor.contractType ?? "契約種別未設定")

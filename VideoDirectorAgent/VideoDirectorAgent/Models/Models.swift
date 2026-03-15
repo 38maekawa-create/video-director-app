@@ -659,10 +659,58 @@ struct Editor: Identifiable, Codable {
     let status: String
     let contractType: String?
     let skills: EditorSkills?
-    let activeProjects: Int
-    let totalCompleted: Int
+    let activeProjectCount: Int
+    let completedCount: Int
     let avgQualityScore: Double?
     let createdAt: String
+
+    // 通常のイニシャライザ（MockData用）
+    init(
+        id: String, name: String, contactInfo: String?, status: String,
+        contractType: String?, skills: EditorSkills?,
+        activeProjectCount: Int, completedCount: Int,
+        avgQualityScore: Double?, createdAt: String
+    ) {
+        self.id = id; self.name = name; self.contactInfo = contactInfo
+        self.status = status; self.contractType = contractType; self.skills = skills
+        self.activeProjectCount = activeProjectCount; self.completedCount = completedCount
+        self.avgQualityScore = avgQualityScore; self.createdAt = createdAt
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, contactInfo, status, contractType, skills
+        case activeProjects, activeProjectCount
+        case completedCount, totalCompleted
+        case avgQualityScore, createdAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        contactInfo = try container.decodeIfPresent(String.self, forKey: .contactInfo)
+        status = try container.decode(String.self, forKey: .status)
+        contractType = try container.decodeIfPresent(String.self, forKey: .contractType)
+        skills = try container.decodeIfPresent(EditorSkills.self, forKey: .skills)
+        avgQualityScore = try container.decodeIfPresent(Double.self, forKey: .avgQualityScore)
+        createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt) ?? ""
+
+        // activeProjects: APIは配列[]を返す場合があるのでInt/Array両対応
+        if let count = try? container.decode(Int.self, forKey: .activeProjects) {
+            activeProjectCount = count
+        } else if let arr = try? container.decode([String].self, forKey: .activeProjects) {
+            activeProjectCount = arr.count
+        } else if let count = try? container.decode(Int.self, forKey: .activeProjectCount) {
+            activeProjectCount = count
+        } else {
+            activeProjectCount = 0
+        }
+
+        // completedCount: APIキー名のバリエーション対応
+        completedCount = try container.decodeIfPresent(Int.self, forKey: .completedCount)
+            ?? container.decodeIfPresent(Int.self, forKey: .totalCompleted)
+            ?? 0
+    }
 }
 
 struct EditorSkills: Codable {
@@ -673,6 +721,26 @@ struct EditorSkills: Codable {
     let cameraWork: Double
     let composition: Double
     let tempo: Double
+
+    // 通常のイニシャライザ（MockData用）
+    init(cutting: Double, color: Double, telop: Double, bgm: Double,
+         cameraWork: Double, composition: Double, tempo: Double) {
+        self.cutting = cutting; self.color = color; self.telop = telop
+        self.bgm = bgm; self.cameraWork = cameraWork
+        self.composition = composition; self.tempo = tempo
+    }
+
+    // 空オブジェクト{}の場合デフォルト0.0で初期化
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        cutting = try container.decodeIfPresent(Double.self, forKey: .cutting) ?? 0.0
+        color = try container.decodeIfPresent(Double.self, forKey: .color) ?? 0.0
+        telop = try container.decodeIfPresent(Double.self, forKey: .telop) ?? 0.0
+        bgm = try container.decodeIfPresent(Double.self, forKey: .bgm) ?? 0.0
+        cameraWork = try container.decodeIfPresent(Double.self, forKey: .cameraWork) ?? 0.0
+        composition = try container.decodeIfPresent(Double.self, forKey: .composition) ?? 0.0
+        tempo = try container.decodeIfPresent(Double.self, forKey: .tempo) ?? 0.0
+    }
 }
 
 struct TrackedVideo: Identifiable, Codable {

@@ -306,8 +306,8 @@ https://teko-lp.com/
             status: "active",
             contractType: "freelance",
             skills: .init(cutting: 4.7, color: 4.2, telop: 4.8, bgm: 4.0, cameraWork: 3.8, composition: 4.3, tempo: 4.9),
-            activeProjects: 4,
-            totalCompleted: 81,
+            activeProjectCount: 4,
+            completedCount: 81,
             avgQualityScore: 87.4,
             createdAt: "2025-11-01T09:00:00Z"
         ),
@@ -318,8 +318,8 @@ https://teko-lp.com/
             status: "on_leave",
             contractType: "freelance",
             skills: .init(cutting: 4.2, color: 4.6, telop: 4.1, bgm: 4.4, cameraWork: 4.0, composition: 4.5, tempo: 3.9),
-            activeProjects: 1,
-            totalCompleted: 54,
+            activeProjectCount: 1,
+            completedCount: 54,
             avgQualityScore: 84.1,
             createdAt: "2025-08-21T09:00:00Z"
         )

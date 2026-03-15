@@ -129,7 +129,7 @@ struct VimeoTimelineView: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(AppTheme.card)
+        .background(AppTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .transition(.opacity.combined(with: .move(edge: .bottom)))
         .animation(.easeInOut(duration: 0.25), value: item.id)

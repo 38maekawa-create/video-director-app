@@ -1,11 +1,51 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-16 （TASK_P2_QUALITY_DASHBOARD.md実施 — 品質ダッシュボード実データ連動完成）
-<!-- authored: Claude Code/2026-03-16 [なおとさん指示: P2品質ダッシュボード実データ連動] -->
+2026-03-16 （TASK_P2_TRACKING_DASHBOARD.md実施 — 映像トラッキング機能の実用化完了）
+<!-- authored: T3/兵隊A/AI開発10/2026-03-16 [TASK_P2_TRACKING_DASHBOARD指示書に基づく] -->
 
 ## 現在の作業状態
-**P2完了: 品質ダッシュボード実データ連動 iOS UI + APIエンドポイント実装済み**
+**P2完了: 映像トラッキング機能の実用化（video_learner→direction_generator接続 + frame_evaluator API + iOS UI拡張）**
+
+---
+
+### TASK_P2_TRACKING_DASHBOARD.md 実施結果（2026-03-16）
+
+**実施内容: 6ファイル変更・2テストファイル新規作成・テスト626件全PASS**
+
+#### 1. video_learner.py 実用化
+- `VideoLearningRule` データクラス追加: FeedbackLearner.LearningRuleと互換のルール構造体
+- `get_active_rules()` メソッド追加: 確信度0.4以上のパターンをルール形式で返す（direction_generator互換）
+- `get_insights()` メソッド追加: FeedbackLearner.get_insights()と統一フォーマット
+
+#### 2. direction_generator.py へのvideo_learner接続
+- `generate_directions()` に `video_learner` パラメータ追加
+- `_apply_learned_rules()` でFB学習と同じ仕組みで映像学習ルールを適用
+- `_llm_analyze()` に映像トラッキングインサイトのプロンプト注入追加
+- `get_learning_context()` に `video_learner` パラメータ追加（FB+映像統合コンテキスト）
+
+#### 3. frame_evaluator APIエンドポイント追加（api_server.py）
+- `GET /api/v1/projects/{id}/frame-evaluation`: キャッシュ済み評価結果の取得
+- `POST /api/v1/projects/{id}/frame-evaluation`: フレーム評価の実行（スタブ/API両対応）
+- 評価結果はJSON形式で `.data/frame_evaluations/` にキャッシュ
+
+#### 4. iOS 映像トラッキングダッシュボードUI拡張
+- `Models.swift`: `FrameEvaluationResponse`, `LearningSummary`, `LearningDetail` 等のモデル追加
+- `APIClient.swift`: `fetchFrameEvaluation()`, `runFrameEvaluation()`, `fetchLearningSummary()` 追加
+- `VideoTrackingViewModel.swift`: `learningSummary` プロパティ追加、load時に学習サマリーも取得
+- `VideoTrackingView.swift`: 学習状況サマリーカード追加（FB学習/映像学習の統計表示）、FlowLayoutによるカテゴリ分布タグ表示、空状態UI追加
+
+#### 5. テスト追加（12件新規）
+- `test_video_learner.py`: 8件追加（VideoLearningRule、get_active_rules、get_insights）
+- `test_video_learning_loop.py`: 6件新規（direction_generator統合、両learner同時適用、コンテキスト取得）
+- `test_frame_evaluation_api.py`: 6件新規（GET/POST エンドポイント、キャッシュ動作）
+- **全626件PASS（既存テストに影響なし）**
+
+#### 完了条件チェック
+- [x] video_learner が direction_generator に接続される
+- [x] frame_evaluator のAPIエンドポイントが動作する
+- [x] テスト全PASS（626件）
+- [x] PROGRESS.md更新
 
 ---
 

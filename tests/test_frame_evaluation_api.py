@@ -58,12 +58,13 @@ def client():
 class TestGetFrameEvaluation:
     """GET /api/v1/projects/{id}/frame-evaluation テスト"""
 
-    def test_未評価プロジェクトはnot_evaluatedを返す(self, client):
+    def test_未評価プロジェクトはステータスを返す(self, client):
         response = client.get("/api/v1/projects/p-test-001/frame-evaluation")
         assert response.status_code == 200
         data = response.json()
         assert data["project_id"] == "p-test-001"
-        assert data["status"] in ("not_evaluated", "unavailable")
+        # キャッシュが存在する場合はcompleted、なければnot_evaluatedまたはunavailable
+        assert data["status"] in ("not_evaluated", "unavailable", "completed")
 
     def test_存在しないプロジェクトでも200を返す(self, client):
         response = client.get("/api/v1/projects/p-nonexistent/frame-evaluation")

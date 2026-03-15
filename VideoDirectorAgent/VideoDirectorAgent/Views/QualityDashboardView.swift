@@ -24,6 +24,7 @@ struct QualityDashboardView: View {
             .pickerStyle(.segmented)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
+            .background(AppTheme.background) // 背景色をセットして視覚的に分離
 
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 20) {
@@ -44,7 +45,9 @@ struct QualityDashboardView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 40)
+                .contentShape(Rectangle()) // 横スワイプジェスチャの伝播を防止
             }
+            .scrollBounceBehavior(.basedOnSize) // コンテンツサイズに基づくバウンス制御
         }
         .background(AppTheme.background.ignoresSafeArea())
         .task {

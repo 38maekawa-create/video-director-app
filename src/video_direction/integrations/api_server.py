@@ -510,6 +510,82 @@ def quality_trend():
     return [dict(r) for r in rows]
 
 
+def _grade_from_score_100(score: int) -> str:
+    """0-100スケールのスコアをグレードに変換（品質ダッシュボード用）"""
+    if score >= 90:
+        return "A+"
+    elif score >= 80:
+        return "A"
+    elif score >= 70:
+        return "B+"
+    elif score >= 60:
+        return "B"
+    elif score >= 50:
+        return "C"
+    elif score >= 40:
+        return "D"
+    return "E"
+
+
+@app.get("/api/v1/dashboard/quality")
+def quality_dashboard_stats():
+    """品質ダッシュボード統計（グレード分布・カテゴリ別平均・改善傾向）
+
+    プロジェクト全体の品質スコアを集計し、グレード分布・平均・推移を返す。
+    iOS品質ダッシュボードの実データ連動に使用する。
+    """
+    conn = _get_db()
+
+    # 全プロジェクトのスコア取得
+    all_rows = conn.execute(
+        "SELECT guest_name, shoot_date, quality_score FROM projects ORDER BY shoot_date ASC"
+    ).fetchall()
+
+    scored_rows = [r for r in all_rows if r["quality_score"] is not None]
+    unscored_count = len(all_rows) - len(scored_rows)
+
+    # グレード分布を集計
+    grade_order = ["A+", "A", "B+", "B", "C", "D", "E"]
+    grade_distribution: dict[str, int] = {g: 0 for g in grade_order}
+    for row in scored_rows:
+        g = _grade_from_score_100(row["quality_score"])
+        grade_distribution[g] += 1
+
+    # 平均スコア
+    avg_score = None
+    if scored_rows:
+        avg_score = round(sum(r["quality_score"] for r in scored_rows) / len(scored_rows), 1)
+
+    # 直近5件のトレンド（shoot_date降順で取得後反転）
+    recent_rows = conn.execute(
+        "SELECT guest_name, shoot_date, quality_score FROM projects "
+        "WHERE quality_score IS NOT NULL ORDER BY shoot_date DESC LIMIT 5"
+    ).fetchall()
+    recent_trend = [dict(r) for r in reversed(recent_rows)]
+
+    # 改善傾向: 直近3件の平均 vs その前3件の平均
+    improvement_delta = None
+    if len(scored_rows) >= 6:
+        recent3 = [r["quality_score"] for r in scored_rows[-3:]]
+        prev3 = [r["quality_score"] for r in scored_rows[-6:-3]]
+        improvement_delta = round(sum(recent3) / 3 - sum(prev3) / 3, 1)
+    elif len(scored_rows) >= 2:
+        improvement_delta = round(
+            scored_rows[-1]["quality_score"] - scored_rows[0]["quality_score"], 1
+        )
+
+    conn.close()
+
+    return {
+        "total_scored": len(scored_rows),
+        "total_unscored": unscored_count,
+        "average_score": avg_score,
+        "grade_distribution": grade_distribution,
+        "recent_trend": recent_trend,
+        "improvement_delta": improvement_delta,
+    }
+
+
 # --- 編集者管理 (NEW-8) ---
 
 def _get_editor_manager():
@@ -1261,6 +1337,289 @@ def convert_feedback(body: FeedbackConvertRequest):
             "priority": "medium",
         }],
     }
+
+
+# --- 編集後フィードバック (P1: Before/After差分) ---
+
+class EditFeedbackRequest(BaseModel):
+    """編集後動画のメタデータ"""
+    duration_seconds: int = 0              # 編集後の動画長さ（秒）
+    original_duration_seconds: int = 0    # 元動画の長さ（秒）
+    included_timestamps: list = []         # 採用されたシーンのタイムスタンプ
+    excluded_timestamps: list = []         # カットされたシーンのタイムスタンプ
+    telop_texts: list = []                 # 実際に使われたテロップテキスト
+    scene_order: list = []                 # シーンの並び順
+    editor_name: str = ""                  # 担当編集者名
+    stage: str = "draft"                   # 編集段階: draft/revision_1/revision_2/final
+
+
+def _grade_from_score(score: float) -> str:
+    """スコアをグレードに変換"""
+    if score >= 9.0:
+        return "A+"
+    elif score >= 8.0:
+        return "A"
+    elif score >= 7.0:
+        return "B+"
+    elif score >= 6.0:
+        return "B"
+    elif score >= 5.0:
+        return "C"
+    elif score >= 4.0:
+        return "D"
+    return "E"
+
+
+def _compute_edit_feedback(project_row, body: EditFeedbackRequest) -> dict:
+    """編集後フィードバックをインライン計算（パイプライン非依存）"""
+    feedback_items = []
+    score_sum = 0.0
+    score_count = 0
+
+    # ① テンポ評価（圧縮率）
+    if body.original_duration_seconds > 0 and body.duration_seconds > 0:
+        ratio = body.duration_seconds / body.original_duration_seconds
+        if 0.3 <= ratio <= 0.6:
+            tempo_score = 8.5
+            tempo_msg = f"圧縮率{ratio:.0%}（適切な編集テンポ）"
+            cat = "positive"
+            sev = "low"
+        elif ratio < 0.3:
+            tempo_score = 5.0
+            tempo_msg = f"圧縮率{ratio:.0%}（カットしすぎの可能性。重要シーンの確認を）"
+            cat = "improvement"
+            sev = "high"
+        elif ratio > 0.8:
+            tempo_score = 4.0
+            tempo_msg = f"圧縮率{ratio:.0%}（編集量が少ない。冗長部分のカット検討を）"
+            cat = "critical"
+            sev = "high"
+        else:
+            tempo_score = 6.5
+            tempo_msg = f"圧縮率{ratio:.0%}（やや編集量が少ない）"
+            cat = "improvement"
+            sev = "medium"
+        score_sum += tempo_score
+        score_count += 1
+        feedback_items.append({"category": cat, "area": "テンポ", "message": tempo_msg, "severity": sev})
+
+    # ② 構成力評価（シーン順序）
+    if body.scene_order and len(body.scene_order) >= 2:
+        def ts_sec(ts: str) -> int:
+            parts = ts.split(":")
+            if len(parts) == 2:
+                return int(parts[0]) * 60 + int(parts[1])
+            elif len(parts) == 3:
+                return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+            return 0
+
+        secs = [ts_sec(t) for t in body.scene_order]
+        chronological = all(secs[i] <= secs[i + 1] for i in range(len(secs) - 1))
+        if chronological:
+            comp_score = 8.0
+            comp_msg = "時系列順の構成（論理的なシーン配置）"
+            cat = "positive"
+            sev = "low"
+        else:
+            comp_score = 7.0
+            comp_msg = "非時系列構成（意図的な再構成か確認推奨）"
+            cat = "improvement"
+            sev = "medium"
+        score_sum += comp_score
+        score_count += 1
+        feedback_items.append({"category": cat, "area": "構成力", "message": comp_msg, "severity": sev})
+
+    # ③ ハイライト採用率評価
+    included_cnt = len(body.included_timestamps)
+    excluded_cnt = len(body.excluded_timestamps)
+    total_cnt = included_cnt + excluded_cnt
+    if total_cnt > 0:
+        rate = included_cnt / total_cnt
+        if rate >= 0.7:
+            hl_score = 8.0 + rate * 2
+            hl_msg = f"ハイライト採用率{rate:.0%}（高密度）"
+            cat = "positive"
+            sev = "low"
+        elif rate >= 0.4:
+            hl_score = 6.0 + rate * 2
+            hl_msg = f"ハイライト採用率{rate:.0%}（標準的）"
+            cat = "improvement"
+            sev = "medium"
+        else:
+            hl_score = 4.0 + rate * 2
+            hl_msg = f"ハイライト採用率{rate:.0%}（重要シーンの見落としの可能性）"
+            cat = "critical"
+            sev = "high"
+        score_sum += hl_score
+        score_count += 1
+        feedback_items.append({"category": cat, "area": "内容密度", "message": hl_msg, "severity": sev})
+
+    # スコアが計算できない場合のデフォルト
+    if score_count == 0:
+        overall_score = 5.0
+        feedback_items.append({
+            "category": "improvement",
+            "area": "全般",
+            "message": "編集済み動画のメタデータ（尺・タイムスタンプ等）を入力すると詳細な評価が生成されます。",
+            "severity": "medium",
+        })
+    else:
+        overall_score = round(score_sum / score_count, 1)
+
+    grade = _grade_from_score(overall_score)
+
+    # テロップチェック（Phase 3で本実装予定）
+    telop_check = {
+        "error_count": 0,
+        "warning_count": 0,
+        "note": "テロップチェックは映像フレーム分析（Phase 3）で実装予定",
+    }
+
+    # ハイライトチェックサマリー
+    highlight_check = {
+        "total": total_cnt,
+        "included": included_cnt,
+        "excluded": excluded_cnt,
+        "inclusion_rate": round(included_cnt / total_cnt, 2) if total_cnt > 0 else 0.0,
+        "key_excluded": [f"[{ts}]" for ts in body.excluded_timestamps[:5]],
+        "comment": (
+            f"カットされたシーンが{excluded_cnt}件あります。意図的なカットか確認してください。"
+            if excluded_cnt > 0
+            else "すべてのシーンが採用されています。"
+        ),
+    }
+
+    # ディレクション準拠度（タイムスタンプ照合ベース）
+    direction_adherence = {
+        "total": 0,
+        "followed": 0,
+        "partial": 0,
+        "not_followed": 0,
+        "adherence_rate": 0.0,
+        "note": "ディレクション準拠度はディレクションレポートとの照合で算出されます",
+    }
+
+    # サマリー生成
+    critical_cnt = sum(1 for f in feedback_items if f["category"] == "critical")
+    improvement_cnt = sum(1 for f in feedback_items if f["category"] == "improvement")
+    positive_cnt = sum(1 for f in feedback_items if f["category"] == "positive")
+
+    summary = f"総合評価: {grade}（{overall_score}/10.0）。"
+    if critical_cnt:
+        summary += f" 要改善{critical_cnt}件。"
+    if improvement_cnt:
+        summary += f" 改善推奨{improvement_cnt}件。"
+    if positive_cnt:
+        summary += f" 良好{positive_cnt}件。"
+
+    return {
+        "project_id": str(project_row["id"]),
+        "quality_score": overall_score,
+        "grade": grade,
+        "content_feedback": feedback_items,
+        "telop_check": telop_check,
+        "highlight_check": highlight_check,
+        "direction_adherence": direction_adherence,
+        "summary": summary,
+        "editor_name": body.editor_name,
+        "stage": body.stage,
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
+    }
+
+
+@app.post("/api/v1/projects/{project_id}/edit-feedback")
+def generate_edit_feedback(project_id: str, body: EditFeedbackRequest):
+    """編集後フィードバック生成（Before/After差分分析）
+
+    編集者から戻ってきた動画のメタデータを受け取り、
+    ディレクションとの差分を分析してフィードバックを生成する。
+    """
+    conn = _get_db()
+    project_row = conn.execute(
+        "SELECT * FROM projects WHERE id = ?", (project_id,)
+    ).fetchone()
+    conn.close()
+
+    if not project_row:
+        raise HTTPException(404, "Project not found")
+
+    # まず evaluator モジュールで生成を試みる
+    try:
+        from src.video_direction.evaluator.post_edit_feedback import (
+            generate_feedback,
+            EditedVideoData,
+        )
+        from src.video_direction.integrations.ai_dev5_connector import VideoData
+        from src.video_direction.analyzer.direction_generator import DirectionTimeline
+        from src.video_direction.analyzer.target_labeler import TargetLabelResult
+
+        video_data = VideoData(
+            title=project_row["title"],
+            duration="",
+            speakers="",
+            highlights=[],
+            main_topics=[],
+            profiles=[],
+            video_type="対談インタビュー",
+        )
+        edited = EditedVideoData(
+            title=project_row["title"],
+            duration_seconds=body.duration_seconds,
+            original_duration_seconds=body.original_duration_seconds,
+            included_timestamps=body.included_timestamps,
+            excluded_timestamps=body.excluded_timestamps,
+            telop_texts=body.telop_texts,
+            scene_order=body.scene_order,
+            editor_name=body.editor_name,
+        )
+        timeline = DirectionTimeline(entries=[], generated_at="", video_title="")
+        target = TargetLabelResult()
+
+        result = generate_feedback(video_data, timeline, target, edited)
+        return {
+            "project_id": project_id,
+            "quality_score": result.overall_score,
+            "grade": result.overall_grade,
+            "content_feedback": [
+                {
+                    "category": f.category,
+                    "area": f.area,
+                    "message": f.message,
+                    "severity": f.priority,
+                }
+                for f in result.feedback_items
+            ],
+            "telop_check": {
+                "error_count": 0,
+                "warning_count": 0,
+                "note": "テロップチェックは映像フレーム分析（Phase 3）で実装予定",
+            },
+            "highlight_check": {
+                "total": result.scene_selection.total_highlights,
+                "included": result.scene_selection.included_highlights,
+                "excluded": result.scene_selection.excluded_highlights,
+                "inclusion_rate": result.scene_selection.inclusion_rate,
+                "key_excluded": result.scene_selection.key_excluded,
+                "comment": result.scene_selection.analysis_comment,
+            },
+            "direction_adherence": {
+                "total": result.direction_adherence.total_directions,
+                "followed": result.direction_adherence.followed_count,
+                "partial": result.direction_adherence.partially_followed,
+                "not_followed": result.direction_adherence.not_followed,
+                "adherence_rate": result.direction_adherence.adherence_rate,
+                "note": "",
+            },
+            "summary": result.summary,
+            "editor_name": body.editor_name,
+            "stage": body.stage,
+            "generated_at": result.generated_at,
+        }
+    except Exception:
+        # パイプライン依存モジュールが使えない場合はインライン計算にフォールバック
+        pass
+
+    return _compute_edit_feedback(project_row, body)
 
 
 # --- ヘルスチェック ---

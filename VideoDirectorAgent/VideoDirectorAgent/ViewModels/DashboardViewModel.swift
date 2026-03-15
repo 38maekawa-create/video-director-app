@@ -18,6 +18,7 @@ final class DashboardViewModel: ObservableObject {
     @Published var alerts: [QualityAlert] = []
     @Published var latestAudit: AuditReport?
     @Published var auditHistory: [AuditReport] = []
+    @Published var qualityStats: QualityStats?
     @Published var isLoading = false
     @Published var errorMessage: String?
     private var hasLoaded = false
@@ -48,6 +49,7 @@ final class DashboardViewModel: ObservableObject {
         var fetchedTrend: [QualityTrendItem] = []
         var fetchedAudit: AuditReport?
         var fetchedAuditHistory: [AuditReport] = []
+        var fetchedQualityStats: QualityStats?
 
         do {
             fetchedSummary = try await APIClient.shared.fetchDashboardSummary()
@@ -73,6 +75,12 @@ final class DashboardViewModel: ObservableObject {
             errors.append("監査履歴")
         }
 
+        do {
+            fetchedQualityStats = try await APIClient.shared.fetchQualityStats()
+        } catch {
+            errors.append("品質統計")
+        }
+
         // 取得成功したデータのみ更新（既存データを保持）
         if let s = fetchedSummary {
             summary = s
@@ -91,6 +99,9 @@ final class DashboardViewModel: ObservableObject {
         }
         if !fetchedAuditHistory.isEmpty {
             auditHistory = fetchedAuditHistory
+        }
+        if let qs = fetchedQualityStats {
+            qualityStats = qs
         }
 
         // カテゴリスコア等の派生データを更新

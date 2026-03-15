@@ -1001,3 +1001,183 @@ enum JSONValue: Codable {
         return nil
     }
 }
+
+// MARK: - 品質ダッシュボード統計モデル（P2: 実データ連動）
+
+/// グレード分布1件（グレードラベル + 件数）
+struct GradeDistEntry: Identifiable {
+    let id = UUID()
+    let grade: String
+    let count: Int
+
+    /// グレードに対応するAppTheme準拠カラー
+    var color: Color {
+        switch grade {
+        case "A+", "A": return AppTheme.statusComplete
+        case "B+", "B": return Color(hex: 0x4A90D9)
+        case "C": return Color(hex: 0xF5A623)
+        default: return AppTheme.accent
+        }
+    }
+}
+
+/// `/api/v1/dashboard/quality` レスポンス
+struct QualityStats: Codable {
+    let totalScored: Int
+    let totalUnscored: Int
+    let averageScore: Double?
+    let gradeDistribution: [String: Int]
+    let recentTrend: [QualityTrendItem]
+    let improvementDelta: Double?
+
+    /// gradeDistribution をUIに使いやすい順序付き配列に変換
+    var sortedGradeEntries: [GradeDistEntry] {
+        let order = ["A+", "A", "B+", "B", "C", "D", "E"]
+        return order.map { GradeDistEntry(grade: $0, count: gradeDistribution[$0] ?? 0) }
+    }
+
+    /// 改善傾向ラベル（+/-付き文字列）
+    var deltaLabel: String {
+        guard let d = improvementDelta else { return "-" }
+        return d >= 0 ? String(format: "+%.1f", d) : String(format: "%.1f", d)
+    }
+}
+
+// MARK: - 編集後フィードバックモデル（P1: Before/After差分）
+
+/// APIリクエストボディ（編集済み動画のメタデータ）
+struct EditFeedbackRequestBody: Encodable {
+    let durationSeconds: Int
+    let originalDurationSeconds: Int
+    let includedTimestamps: [String]
+    let excludedTimestamps: [String]
+    let telopTexts: [String]
+    let sceneOrder: [String]
+    let editorName: String
+    let stage: String
+
+    init(
+        durationSeconds: Int = 0,
+        originalDurationSeconds: Int = 0,
+        includedTimestamps: [String] = [],
+        excludedTimestamps: [String] = [],
+        telopTexts: [String] = [],
+        sceneOrder: [String] = [],
+        editorName: String = "",
+        stage: String = "draft"
+    ) {
+        self.durationSeconds = durationSeconds
+        self.originalDurationSeconds = originalDurationSeconds
+        self.includedTimestamps = includedTimestamps
+        self.excludedTimestamps = excludedTimestamps
+        self.telopTexts = telopTexts
+        self.sceneOrder = sceneOrder
+        self.editorName = editorName
+        self.stage = stage
+    }
+}
+
+/// コンテンツフィードバック1件
+struct ContentFeedbackEntry: Identifiable, Decodable {
+    var id: String { "\(area)_\(category)" }
+    let category: String   // "positive" / "improvement" / "critical"
+    let area: String
+    let message: String
+    let severity: String   // "high" / "medium" / "low"
+
+    enum CodingKeys: String, CodingKey {
+        case category, area, message, severity
+    }
+
+    /// severity に応じたAppTheme準拠カラー
+    var severityColor: Color {
+        switch severity {
+        case "high": return AppTheme.accent
+        case "medium": return Color(hex: 0xF5A623)
+        default: return Color(hex: 0x4A90D9)
+        }
+    }
+
+    /// category に応じた表示色
+    var categoryColor: Color {
+        switch category {
+        case "positive": return AppTheme.statusComplete
+        case "critical": return AppTheme.accent
+        default: return Color(hex: 0xF5A623)
+        }
+    }
+
+    /// category に応じた日本語ラベル
+    var categoryLabel: String {
+        switch category {
+        case "positive": return "良好"
+        case "critical": return "要改善"
+        default: return "改善推奨"
+        }
+    }
+}
+
+/// テロップチェックサマリー
+struct TelopCheckSummary: Decodable {
+    let errorCount: Int
+    let warningCount: Int
+    let note: String
+}
+
+/// ハイライトチェックサマリー
+struct HighlightCheckSummary: Decodable {
+    let total: Int
+    let included: Int
+    let excluded: Int
+    let inclusionRate: Double
+    let keyExcluded: [String]
+    let comment: String
+
+    var inclusionPercent: String {
+        "\(Int(inclusionRate * 100))%"
+    }
+}
+
+/// ディレクション準拠度サマリー
+struct DirectionAdherenceSummary: Decodable {
+    let total: Int
+    let followed: Int
+    let partial: Int
+    let notFollowed: Int
+    let adherenceRate: Double
+    let note: String?
+
+    var adherencePercent: String {
+        "\(Int(adherenceRate * 100))%"
+    }
+}
+
+/// 編集後フィードバックAPIレスポンス全体
+struct EditFeedbackResponse: Decodable {
+    let projectId: String
+    let qualityScore: Double
+    let grade: String
+    let contentFeedback: [ContentFeedbackEntry]
+    let telopCheck: TelopCheckSummary
+    let highlightCheck: HighlightCheckSummary
+    let directionAdherence: DirectionAdherenceSummary
+    let summary: String
+    let editorName: String
+    let stage: String
+    let generatedAt: String
+
+    /// グレードに対応するAppTheme準拠カラー
+    var gradeColor: Color {
+        switch grade {
+        case "A+", "A": return AppTheme.statusComplete
+        case "B+", "B": return Color(hex: 0x4A90D9)
+        case "C": return Color(hex: 0xF5A623)
+        default: return AppTheme.accent
+        }
+    }
+
+    /// 0-10スコアを0-1の進捗値に変換（ゲージ表示用）
+    var scoreProgress: Double {
+        min(max(qualityScore / 10.0, 0.0), 1.0)
+    }
+}

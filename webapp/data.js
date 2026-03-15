@@ -15,7 +15,8 @@ const MockData = {
       statusLabel: 'レビュー待ち',
       unreviewedCount: 3,
       qualityScore: 78,
-      hasUnsentFeedback: true
+      hasUnsentFeedback: true,
+      category: 'teko_realestate'
     },
     {
       id: 'p2',
@@ -29,7 +30,8 @@ const MockData = {
       statusLabel: '編集中',
       unreviewedCount: 1,
       qualityScore: 82,
-      hasUnsentFeedback: true
+      hasUnsentFeedback: true,
+      category: 'teko_member'
     },
     {
       id: 'p3',
@@ -43,7 +45,8 @@ const MockData = {
       statusLabel: 'ディレクション済',
       unreviewedCount: 0,
       qualityScore: 91,
-      hasUnsentFeedback: false
+      hasUnsentFeedback: false,
+      category: 'teko_member'
     },
     {
       id: 'p4',
@@ -57,7 +60,8 @@ const MockData = {
       statusLabel: '公開',
       unreviewedCount: 0,
       qualityScore: 88,
-      hasUnsentFeedback: false
+      hasUnsentFeedback: false,
+      category: 'teko_member'
     },
     {
       id: 'p5',
@@ -71,7 +75,8 @@ const MockData = {
       statusLabel: '公開',
       unreviewedCount: 0,
       qualityScore: 85,
-      hasUnsentFeedback: false
+      hasUnsentFeedback: false,
+      category: 'teko_realestate'
     }
   ],
 

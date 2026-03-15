@@ -210,6 +210,27 @@ final class APIClient: ObservableObject {
         )
     }
 
+    // MARK: - 素材動画（Source Videos）
+
+    /// プロジェクトに紐づく素材動画一覧を取得
+    func fetchSourceVideos(projectId: String) async throws -> SourceVideosResponse {
+        try await request(
+            SourceVideosResponse.self,
+            path: "/api/v1/projects/\(projectId)/source-videos"
+        )
+    }
+
+    /// 素材動画を手動登録
+    func addSourceVideo(projectId: String, youtubeURL: String, title: String?, qualityStatus: String = "pending") async throws -> SourceVideoItem {
+        let body = SourceVideoCreateBody(youtubeUrl: youtubeURL, title: title, qualityStatus: qualityStatus)
+        return try await request(
+            SourceVideoItem.self,
+            path: "/api/v1/projects/\(projectId)/source-videos",
+            method: "POST",
+            body: body
+        )
+    }
+
     // MARK: - カテゴリ
 
     /// カテゴリ別プロジェクト一覧を取得
@@ -400,4 +421,41 @@ private struct TitleSelectionPayload: Encodable {
 
 struct CategoryUpdateBody: Encodable {
     let category: String?
+}
+
+// MARK: - 素材動画モデル
+
+struct SourceVideoItem: Codable, Identifiable {
+    let id: Int?
+    let projectId: String
+    let youtubeUrl: String
+    let videoId: String
+    let title: String?
+    let duration: String?
+    let qualityStatus: String?
+    let source: String?
+    let knowledgeFile: String?
+    let createdAt: String?
+
+    /// YouTube埋め込みURL
+    var embedURL: String {
+        "https://www.youtube.com/embed/\(videoId)?playsinline=1&rel=0"
+    }
+
+    /// YouTube視聴URL
+    var watchURL: String {
+        "https://www.youtube.com/watch?v=\(videoId)"
+    }
+}
+
+struct SourceVideosResponse: Codable {
+    let projectId: String
+    let total: Int
+    let videos: [SourceVideoItem]
+}
+
+struct SourceVideoCreateBody: Encodable {
+    let youtubeUrl: String
+    let title: String?
+    let qualityStatus: String
 }

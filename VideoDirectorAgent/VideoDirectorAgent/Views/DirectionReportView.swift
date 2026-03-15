@@ -326,64 +326,7 @@ struct DirectionReportView: View {
     }
 
     private var sourceVideoSection: some View {
-        VStack(spacing: 12) {
-            overviewCard(
-                title: "撮影素材",
-                icon: "video.badge.waveform",
-                items: [
-                    "ゲスト: \(project.guestName)",
-                    "撮影日: \(project.shootDate)"
-                ]
-            )
-            if let url = project.sourceVideoURL,
-               !url.isEmpty {
-                if isYouTubeURL(url) {
-                    // YouTube: アプリ内埋め込み再生
-                    VStack(spacing: 8) {
-                        YouTubePlayerView(videoURL: url)
-                            .frame(height: 220)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-
-                        if let destination = URL(string: url) {
-                            Link(destination: destination) {
-                                HStack {
-                                    Image(systemName: "play.rectangle.fill")
-                                    Text("素材動画を再生（YouTube）")
-                                }
-                                .font(.subheadline)
-                                .fontWeight(.bold)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(Color(hex: 0xFF0000))
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                            }
-                        }
-                    }
-                } else if let destination = URL(string: url) {
-                    // Vimeo等: 外部リンクで開く
-                    Link(destination: destination) {
-                        HStack {
-                            Image(systemName: "play.rectangle.fill")
-                            Text("素材動画を開く（Vimeo）")
-                        }
-                        .font(.subheadline)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Color(hex: 0x1AB7EA))
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                    }
-                }
-            } else {
-                overviewCard(
-                    title: "素材動画",
-                    icon: "link.badge.plus",
-                    items: ["AI開発5と連携して自動登録できます"]
-                )
-            }
-        }
+        SourceVideosSubTabView(project: project)
     }
 
     private var editedVideoSection: some View {

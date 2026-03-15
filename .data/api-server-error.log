@@ -1903,3 +1903,9 @@ INFO:     Finished server process [69221]
 INFO:     Started server process [69451]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+INFO:     Will watch for changes in these directories: ['/Users/maekawanaoto/AI開発10']
+INFO:     Uvicorn running on http://0.0.0.0:8210 (Press CTRL+C to quit)
+INFO:     Started reloader process [94613] using StatReload
+INFO:     Started server process [94620]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

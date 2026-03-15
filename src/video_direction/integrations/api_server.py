@@ -86,6 +86,19 @@ def init_db():
             learning_effect TEXT,
             created_at TEXT DEFAULT (datetime('now'))
         );
+
+        CREATE TABLE IF NOT EXISTS source_videos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id TEXT NOT NULL REFERENCES projects(id),
+            youtube_url TEXT NOT NULL,
+            video_id TEXT NOT NULL,
+            title TEXT,
+            duration TEXT,
+            quality_status TEXT DEFAULT 'pending',
+            source TEXT DEFAULT 'manual',
+            knowledge_file TEXT,
+            created_at TEXT DEFAULT (datetime('now'))
+        );
     """)
     conn.commit()
 
@@ -141,6 +154,14 @@ class TitleSelect(BaseModel):
     index: int
     edited_title: Optional[str] = None
     by: str
+
+
+class SourceVideoCreate(BaseModel):
+    """素材動画の手動登録リクエスト"""
+    youtube_url: str
+    title: Optional[str] = None
+    duration: Optional[str] = None
+    quality_status: str = "pending"  # good_audio / pending / poor_audio
 
 
 class FeedbackCreate(BaseModel):
@@ -2808,6 +2829,148 @@ def get_guest_knowledge(guest_name: str):
         "guest_name": guest_name,
         "total": len(results),
         "pages": results,
+    }
+
+
+# --- プロジェクト別 素材動画 CRUD ---
+
+
+def _extract_video_id(url: str) -> str:
+    """YouTube URLからvideo_idを抽出する"""
+    import re
+    # https://www.youtube.com/watch?v=XXXX
+    m = re.search(r"[?&]v=([A-Za-z0-9_-]+)", url)
+    if m:
+        return m.group(1)
+    # https://youtu.be/XXXX
+    m = re.search(r"youtu\.be/([A-Za-z0-9_-]+)", url)
+    if m:
+        return m.group(1)
+    # https://www.youtube.com/embed/XXXX
+    m = re.search(r"youtube\.com/embed/([A-Za-z0-9_-]+)", url)
+    if m:
+        return m.group(1)
+    return ""
+
+
+@app.get("/api/v1/projects/{project_id}/source-videos")
+def list_project_source_videos(project_id: str):
+    """プロジェクトに紐づく素材YouTube動画一覧を返す。
+
+    source_videosテーブルと、既存のprojects.source_video JSONの両方を統合して返す。
+    """
+    conn = _get_db()
+
+    # プロジェクト存在チェック
+    proj = conn.execute("SELECT id, source_video FROM projects WHERE id = ?", (project_id,)).fetchone()
+    if not proj:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    videos = []
+
+    # 1. source_videosテーブルから取得
+    rows = conn.execute(
+        "SELECT * FROM source_videos WHERE project_id = ? ORDER BY created_at DESC",
+        (project_id,),
+    ).fetchall()
+    for row in rows:
+        videos.append({
+            "id": row["id"],
+            "project_id": row["project_id"],
+            "youtube_url": row["youtube_url"],
+            "video_id": row["video_id"],
+            "title": row["title"],
+            "duration": row["duration"],
+            "quality_status": row["quality_status"],
+            "source": row["source"],
+            "knowledge_file": row["knowledge_file"],
+            "created_at": row["created_at"],
+        })
+
+    # 2. projects.source_video JSON（レガシー互換）がテーブルに未登録なら追加表示
+    legacy = proj["source_video"]
+    if legacy:
+        try:
+            data = json.loads(legacy) if isinstance(legacy, str) else legacy
+            if data and data.get("url"):
+                legacy_url = data["url"]
+                legacy_vid = _extract_video_id(legacy_url)
+                # 重複チェック: 既にsource_videosテーブルに同じvideo_idがあればスキップ
+                if legacy_vid and not any(v["video_id"] == legacy_vid for v in videos):
+                    videos.append({
+                        "id": None,
+                        "project_id": project_id,
+                        "youtube_url": legacy_url,
+                        "video_id": legacy_vid,
+                        "title": None,
+                        "duration": None,
+                        "quality_status": data.get("quality", "pending"),
+                        "source": data.get("source", "ai_dev5"),
+                        "knowledge_file": data.get("knowledge_file"),
+                        "created_at": data.get("linked_at"),
+                    })
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    conn.close()
+    return {
+        "project_id": project_id,
+        "total": len(videos),
+        "videos": videos,
+    }
+
+
+@app.post("/api/v1/projects/{project_id}/source-videos")
+def add_project_source_video(project_id: str, req: SourceVideoCreate):
+    """素材動画URLを手動登録する"""
+    conn = _get_db()
+
+    # プロジェクト存在チェック
+    proj = conn.execute("SELECT id FROM projects WHERE id = ?", (project_id,)).fetchone()
+    if not proj:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    video_id = _extract_video_id(req.youtube_url)
+    if not video_id:
+        conn.close()
+        raise HTTPException(status_code=400, detail="Invalid YouTube URL: could not extract video_id")
+
+    # 重複チェック
+    existing = conn.execute(
+        "SELECT id FROM source_videos WHERE project_id = ? AND video_id = ?",
+        (project_id, video_id),
+    ).fetchone()
+    if existing:
+        conn.close()
+        raise HTTPException(status_code=409, detail="This video is already registered for this project")
+
+    conn.execute(
+        """INSERT INTO source_videos (project_id, youtube_url, video_id, title, duration, quality_status, source)
+           VALUES (?, ?, ?, ?, ?, ?, 'manual')""",
+        (project_id, req.youtube_url, video_id, req.title, req.duration, req.quality_status),
+    )
+    conn.commit()
+
+    # 登録したレコードを返す
+    row = conn.execute(
+        "SELECT * FROM source_videos WHERE project_id = ? AND video_id = ?",
+        (project_id, video_id),
+    ).fetchone()
+    conn.close()
+
+    return {
+        "id": row["id"],
+        "project_id": row["project_id"],
+        "youtube_url": row["youtube_url"],
+        "video_id": row["video_id"],
+        "title": row["title"],
+        "duration": row["duration"],
+        "quality_status": row["quality_status"],
+        "source": row["source"],
+        "knowledge_file": row["knowledge_file"],
+        "created_at": row["created_at"],
     }
 
 

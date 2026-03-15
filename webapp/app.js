@@ -238,6 +238,8 @@
     if (knowledgePage) {
       tabs.push('ナレッジ');
     }
+    // 素材動画タブ（YouTube埋め込み再生）
+    tabs.push('素材動画');
     // YouTube素材タブ（追加: 2026-03-15）
     tabs.push('YouTube素材');
     // 編集FB / Vimeoレビュータブ（追加: 2026-03-16）
@@ -261,6 +263,9 @@
         const tabName = btn.dataset.tabName;
         if (tabName === 'ナレッジ') {
           renderKnowledgePage(knowledgePage);
+        } else if (tabName === '素材動画') {
+          // 素材動画タブ（YouTube埋め込み再生）
+          renderSourceVideos(currentProject);
         } else if (tabName === 'YouTube素材') {
           // YouTube素材タブ（追加: 2026-03-15）
           renderYouTubeAssets(currentProject);
@@ -1561,6 +1566,230 @@
     try { ok = document.execCommand('copy'); } catch (e) {}
     document.body.removeChild(ta);
     callback(ok);
+  }
+
+  // ===== 素材動画タブ（YouTube埋め込み再生） =====
+
+  function renderSourceVideos(project) {
+    var container = document.getElementById('report-sections');
+    if (!project) {
+      container.innerHTML = '<div class="sv-empty">プロジェクトが選択されていません</div>';
+      return;
+    }
+
+    container.innerHTML = '<div class="sv-loading"><div class="sv-loading-text">素材動画を読み込み中...</div></div>';
+
+    // APIから素材動画一覧を取得
+    fetch('/api/v1/projects/' + encodeURIComponent(project.id) + '/source-videos')
+      .then(function(r) {
+        if (!r.ok) throw new Error('not found');
+        return r.json();
+      })
+      .then(function(data) {
+        container.innerHTML = buildSourceVideosHTML(data, project);
+        setupSourceVideoHandlers(container, project);
+      })
+      .catch(function() {
+        // APIなし: プロジェクトのsourceVideoURLからフォールバック表示
+        var fallbackData = buildFallbackSourceVideos(project);
+        container.innerHTML = buildSourceVideosHTML(fallbackData, project);
+        setupSourceVideoHandlers(container, project);
+      });
+  }
+
+  function extractVideoId(url) {
+    if (!url) return '';
+    var m = url.match(/[?&]v=([A-Za-z0-9_-]+)/);
+    if (m) return m[1];
+    m = url.match(/youtu\.be\/([A-Za-z0-9_-]+)/);
+    if (m) return m[1];
+    m = url.match(/youtube\.com\/embed\/([A-Za-z0-9_-]+)/);
+    if (m) return m[1];
+    return '';
+  }
+
+  function buildFallbackSourceVideos(project) {
+    // 既存のsourceVideoURLフィールドからフォールバック構築
+    var videos = [];
+    var sourceUrl = project.sourceVideoURL || project.sourceVideo || '';
+    if (typeof sourceUrl === 'object' && sourceUrl !== null) {
+      sourceUrl = sourceUrl.url || '';
+    }
+    if (sourceUrl) {
+      var vid = extractVideoId(sourceUrl);
+      if (vid) {
+        videos.push({
+          id: null,
+          youtube_url: sourceUrl,
+          video_id: vid,
+          title: null,
+          quality_status: 'pending',
+          source: 'legacy',
+          created_at: null
+        });
+      }
+    }
+    return {
+      project_id: project.id,
+      total: videos.length,
+      videos: videos
+    };
+  }
+
+  function buildSourceVideosHTML(data, project) {
+    var videos = data.videos || [];
+    var html = '<div class="sv-wrap">';
+
+    // ヘッダー
+    html += '<div class="sv-section">';
+    html += '<div class="sv-section-header">';
+    html += '<span class="sv-section-icon">▶</span>';
+    html += '<span class="sv-section-title">素材動画</span>';
+    html += '<span class="sv-count">' + videos.length + '件</span>';
+    html += '</div>';
+
+    if (videos.length === 0) {
+      html += '<div class="sv-empty-card">';
+      html += '<div class="sv-empty-icon">🎬</div>';
+      html += '<div class="sv-empty-text">素材動画がまだ登録されていません</div>';
+      html += '<div class="sv-empty-sub">AI開発5のナレッジ連携で自動登録、または下のフォームから手動登録できます</div>';
+      html += '</div>';
+    }
+
+    // 動画カード
+    videos.forEach(function(v, i) {
+      var vid = v.video_id;
+      var embedUrl = 'https://www.youtube.com/embed/' + vid + '?rel=0';
+      var watchUrl = 'https://www.youtube.com/watch?v=' + vid;
+      var qualityBadge = '';
+      if (v.quality_status === 'good_audio') {
+        qualityBadge = '<span class="sv-badge sv-badge-good">音質◎</span>';
+      } else if (v.quality_status === 'poor_audio') {
+        qualityBadge = '<span class="sv-badge sv-badge-poor">音質△</span>';
+      } else {
+        qualityBadge = '<span class="sv-badge sv-badge-pending">未確認</span>';
+      }
+      var sourceBadge = v.source === 'ai_dev5'
+        ? '<span class="sv-badge sv-badge-auto">自動連携</span>'
+        : (v.source === 'manual' ? '<span class="sv-badge sv-badge-manual">手動登録</span>' : '');
+
+      html += '<div class="sv-video-card">';
+
+      // YouTube 埋め込みプレーヤー（16:9）
+      html += '<div class="sv-player-wrap">';
+      html += '<iframe src="' + embedUrl + '" ';
+      html += 'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ';
+      html += 'allowfullscreen class="sv-player-iframe"></iframe>';
+      html += '</div>';
+
+      // 動画情報
+      html += '<div class="sv-video-info">';
+      html += '<div class="sv-video-badges">' + qualityBadge + sourceBadge + '</div>';
+      if (v.title) {
+        html += '<div class="sv-video-title">' + escapeHTML(v.title) + '</div>';
+      }
+      html += '<div class="sv-video-meta">';
+      html += '<a href="' + watchUrl + '" target="_blank" rel="noopener" class="sv-youtube-link">';
+      html += 'YouTubeで開く ↗</a>';
+      if (v.duration) {
+        html += '<span class="sv-duration">' + escapeHTML(v.duration) + '</span>';
+      }
+      if (v.created_at) {
+        html += '<span class="sv-date">' + v.created_at.substring(0, 10) + '</span>';
+      }
+      html += '</div>';
+      html += '</div>';
+
+      html += '</div>';
+    });
+
+    html += '</div>'; // sv-section
+
+    // 手動登録フォーム
+    html += '<div class="sv-section sv-add-section">';
+    html += '<div class="sv-section-header">';
+    html += '<span class="sv-section-icon">+</span>';
+    html += '<span class="sv-section-title">素材動画を手動登録</span>';
+    html += '</div>';
+    html += '<div class="sv-add-form">';
+    html += '<input type="text" id="sv-add-url" class="sv-input" placeholder="YouTube URL（例: https://www.youtube.com/watch?v=...）" />';
+    html += '<input type="text" id="sv-add-title" class="sv-input" placeholder="タイトル（任意）" />';
+    html += '<select id="sv-add-quality" class="sv-input sv-select">';
+    html += '<option value="pending">音質: 未確認</option>';
+    html += '<option value="good_audio">音質: 良好</option>';
+    html += '<option value="poor_audio">音質: 不良</option>';
+    html += '</select>';
+    html += '<button class="sv-add-btn" id="sv-add-submit">登録する</button>';
+    html += '<div class="sv-add-result" id="sv-add-result"></div>';
+    html += '</div>';
+    html += '</div>';
+
+    html += '</div>'; // sv-wrap
+    return html;
+  }
+
+  function setupSourceVideoHandlers(container, project) {
+    var submitBtn = container.querySelector('#sv-add-submit');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', function() {
+        var urlInput = document.getElementById('sv-add-url');
+        var titleInput = document.getElementById('sv-add-title');
+        var qualitySelect = document.getElementById('sv-add-quality');
+        var resultDiv = document.getElementById('sv-add-result');
+
+        var url = (urlInput.value || '').trim();
+        if (!url) {
+          resultDiv.textContent = 'YouTube URLを入力してください';
+          resultDiv.className = 'sv-add-result sv-add-error';
+          return;
+        }
+
+        var vid = extractVideoId(url);
+        if (!vid) {
+          resultDiv.textContent = '正しいYouTube URLを入力してください';
+          resultDiv.className = 'sv-add-result sv-add-error';
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = '登録中...';
+
+        fetch('/api/v1/projects/' + encodeURIComponent(project.id) + '/source-videos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            youtube_url: url,
+            title: titleInput.value.trim() || null,
+            quality_status: qualitySelect.value
+          })
+        })
+        .then(function(r) {
+          if (r.status === 409) {
+            resultDiv.textContent = 'この動画は既に登録済みです';
+            resultDiv.className = 'sv-add-result sv-add-error';
+            return null;
+          }
+          if (!r.ok) throw new Error('登録に失敗しました');
+          return r.json();
+        })
+        .then(function(data) {
+          if (data) {
+            resultDiv.textContent = '登録しました！';
+            resultDiv.className = 'sv-add-result sv-add-success';
+            // 一覧を再描画
+            setTimeout(function() { renderSourceVideos(project); }, 800);
+          }
+        })
+        .catch(function(err) {
+          resultDiv.textContent = err.message;
+          resultDiv.className = 'sv-add-result sv-add-error';
+        })
+        .finally(function() {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '登録する';
+        });
+      });
+    }
   }
 
   // ===================================================================

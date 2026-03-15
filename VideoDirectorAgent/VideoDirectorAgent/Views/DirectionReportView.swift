@@ -71,7 +71,7 @@ struct DirectionReportView: View {
     @State private var showKnowledgePage = false
     @State private var showBeforeAfter = false
 
-    private let tabTitles = ["概要", "ディレクション", "YouTube素材", "素材", "FB・評価", "ナレッジ", "レビュー"]
+    private let tabTitles = ["概要", "ディレクション", "YouTube素材", "素材", "編集後", "FB・評価", "ナレッジ", "レビュー"]
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -267,10 +267,12 @@ struct DirectionReportView: View {
             case 3:
                 sourceVideoSection
             case 4:
-                feedbackListSection
+                editedVideoSection
             case 5:
-                knowledgeDetailSection
+                feedbackListSection
             case 6:
+                knowledgeDetailSection
+            case 7:
                 VimeoReviewTabView(projectId: project.id, editedVideoURL: project.editedVideoURL)
             default:
                 EmptyView()

@@ -219,6 +219,7 @@ struct VimeoReviewTabView: View {
     @StateObject private var viewModel = VimeoReviewViewModel()
     @State private var reviewComment: String = ""
     @State private var reviewComments: [ReviewComment] = []
+    @State private var isCommentExpanded: Bool = false
 
     /// Vimeo URLからvideo_idを抽出するヘルパー
     private var vimeoVideoId: String? {
@@ -266,51 +267,77 @@ struct VimeoReviewTabView: View {
                 .frame(height: 60)
             }
 
-            // レビューコメント入力エリア
+            // レビューコメント入力エリア（折りたたみ可能）
             VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Image(systemName: "bubble.left.and.bubble.right")
-                        .foregroundStyle(AppTheme.accent)
-                    Text("レビューコメント")
-                        .font(AppTheme.sectionFont(16))
-                        .foregroundStyle(.white)
-                }
-
-                TextEditor(text: $reviewComment)
-                    .font(AppTheme.bodyFont(14))
-                    .foregroundStyle(.white)
-                    .scrollContentBackground(.hidden)
-                    .frame(minHeight: 80, maxHeight: 120)
-                    .padding(10)
-                    .background(AppTheme.cardBackgroundLight)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .strokeBorder(AppTheme.textMuted.opacity(0.3), lineWidth: 1)
-                    )
-
-                HStack {
-                    if viewModel.currentTime > 0 {
-                        Text("タイムコード: \(formatTimestamp(viewModel.currentTime))")
-                            .font(AppTheme.bodyFont(12))
-                            .foregroundStyle(AppTheme.accent)
-                    }
-                    Spacer()
-                    Button {
-                        submitComment()
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "paperplane.fill")
-                            Text("送信")
+                Button {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        isCommentExpanded.toggle()
+                        // 折りたたみ時にキーボードを閉じる
+                        if !isCommentExpanded {
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         }
-                        .font(AppTheme.labelFont(14))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(reviewComment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AppTheme.textMuted : AppTheme.accent)
-                        .clipShape(Capsule())
                     }
-                    .disabled(reviewComment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                } label: {
+                    HStack {
+                        Image(systemName: "bubble.left.and.bubble.right")
+                            .foregroundStyle(AppTheme.accent)
+                        Text("レビューコメント")
+                            .font(AppTheme.sectionFont(16))
+                            .foregroundStyle(.white)
+                        if !reviewComment.isEmpty {
+                            Circle()
+                                .fill(AppTheme.accent)
+                                .frame(width: 8, height: 8)
+                        }
+                        Spacer()
+                        Image(systemName: isCommentExpanded ? "chevron.up" : "chevron.down")
+                            .font(.caption)
+                            .foregroundStyle(AppTheme.textMuted)
+                    }
+                }
+                .buttonStyle(.plain)
+
+                if isCommentExpanded {
+                    TextEditor(text: $reviewComment)
+                        .font(AppTheme.bodyFont(14))
+                        .foregroundStyle(.white)
+                        .scrollContentBackground(.hidden)
+                        .frame(minHeight: 80, maxHeight: 120)
+                        .padding(10)
+                        .background(AppTheme.cardBackgroundLight)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .strokeBorder(AppTheme.textMuted.opacity(0.3), lineWidth: 1)
+                        )
+
+                    HStack {
+                        if viewModel.currentTime > 0 {
+                            Text("タイムコード: \(formatTimestamp(viewModel.currentTime))")
+                                .font(AppTheme.bodyFont(12))
+                                .foregroundStyle(AppTheme.accent)
+                        }
+                        Spacer()
+                        Button {
+                            submitComment()
+                            // 送信後に折りたたむ
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                isCommentExpanded = false
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "paperplane.fill")
+                                Text("送信")
+                            }
+                            .font(AppTheme.labelFont(14))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(reviewComment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AppTheme.textMuted : AppTheme.accent)
+                            .clipShape(Capsule())
+                        }
+                        .disabled(reviewComment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
                 }
             }
             .padding(14)

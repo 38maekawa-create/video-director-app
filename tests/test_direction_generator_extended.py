@@ -31,9 +31,10 @@ class TestExtractPunchline:
         assert _extract_punchline(text) == text
 
     def test_文末句点で切り出す(self):
-        text = "これが大事です。それ以外はあまり重要ではありません。補足説明。"
+        # 全体が50文字超になるようにする（先頭の文が50文字以内なら最初の文が返る）
+        text = "これが最も大事なポイントです。" + "あ" * 50
         result = _extract_punchline(text)
-        assert result == "これが大事です"
+        assert result == "これが最も大事なポイントです"
 
     def test_50文字超は省略記号を付与(self):
         text = "あ" * 55
@@ -112,14 +113,17 @@ class TestApplyLearnedRules:
         self.classification = ClassificationResult(
             tier="a",
             tier_label="超高年収層",
-            income_range="3000万円以上",
-            confidence=0.9,
-            reasoning="",
+            reason="テスト",
+            presentation_template="強調",
+            confidence="high",
         )
         self.income_eval = IncomeEvaluation(
-            emphasis_level="strong",
+            income_value=3000,
+            age_bracket="30代",
+            threshold=800,
+            emphasize=True,
             emphasis_reason="高年収",
-            suggested_visuals=[],
+            telop_suggestion="年収3000万円以上",
         )
 
     def _make_video_data(self, highlights: list) -> VideoData:
@@ -189,16 +193,19 @@ class TestGenerateForHighlight:
         return ClassificationResult(
             tier=tier,
             tier_label="層a",
-            income_range="1000万円以上",
-            confidence=0.9,
-            reasoning="",
+            reason="テスト",
+            presentation_template="強調",
+            confidence="high",
         )
 
     def _make_income_eval(self) -> IncomeEvaluation:
         return IncomeEvaluation(
-            emphasis_level="strong",
+            income_value=1000,
+            age_bracket="30代",
+            threshold=800,
+            emphasize=True,
             emphasis_reason="高年収",
-            suggested_visuals=[],
+            telop_suggestion="年収1000万円台",
         )
 
     def test_実績数字カテゴリでtelopエントリを生成(self):

@@ -50,7 +50,10 @@ struct VimeoPlayerView: UIViewRepresentable {
     // MARK: - Vimeo Player HTML 生成
 
     private func buildPlayerHTML(videoId: String) -> String {
-        """
+        // 限定公開動画はハッシュ付きembed URLが必要
+        let hashParam = privacyHash.map { "?h=\($0)" } ?? ""
+        let embedUrl = "https://player.vimeo.com/video/\(videoId)\(hashParam)"
+        return """
         <!DOCTYPE html>
         <html>
         <head>
@@ -70,8 +73,7 @@ struct VimeoPlayerView: UIViewRepresentable {
         <script src="https://player.vimeo.com/api/player.js"></script>
         <script>
           var player = new Vimeo.Player('player', {
-            id: \(videoId),
-            \(privacyHash.map { "h: '\($0)'," } ?? "// no privacy hash needed")
+            url: '\(embedUrl)',
             width: '100%',
             responsive: true,
             title: false,

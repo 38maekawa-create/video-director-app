@@ -33,7 +33,8 @@ struct VimeoPlayerView: UIViewRepresentable {
 
         // Vimeo iframe Player HTML を読み込む
         let html = buildPlayerHTML(videoId: videoId)
-        webView.loadHTMLString(html, baseURL: URL(string: "https://vimeo.com"))
+        // baseURLをnilにする（vimeo.comだとiframe読み込み時にオリジン問題が発生する可能性）
+        webView.loadHTMLString(html, baseURL: nil)
 
         context.coordinator.webView = webView
         return webView
@@ -198,7 +199,8 @@ struct VimeoEmbedPlayerView: UIViewRepresentable {
         </body>
         </html>
         """
-        webView.loadHTMLString(html, baseURL: URL(string: "https://vimeo.com"))
+        // baseURLをnilにする（vimeo.comだとiframe読み込み時にオリジン問題が発生する可能性）
+        webView.loadHTMLString(html, baseURL: nil)
         return webView
     }
 

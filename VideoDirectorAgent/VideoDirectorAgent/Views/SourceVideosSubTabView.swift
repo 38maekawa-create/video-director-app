@@ -111,8 +111,9 @@ struct SourceVideosSubTabView: View {
     private func sourceVideoCard(_ video: SourceVideoItem) -> some View {
         VStack(spacing: 0) {
             // YouTube埋め込みプレーヤー（16:9）
+            // WKWebViewはintrinsicContentSizeを持たないため、明示的にframe指定
             YouTubePlayerView(videoURL: video.watchURL)
-                .aspectRatio(16.0 / 9.0, contentMode: .fit)
+                .frame(height: (UIScreen.main.bounds.width - 32) * 9.0 / 16.0)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .onTapGesture {
                     selectedVideo = video

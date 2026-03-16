@@ -114,25 +114,31 @@ struct BeforeAfterView: View {
 
     // 上下2段レイアウトで動画比較
     private var videoComparisonSection: some View {
-        VStack(spacing: 2) {
-            // 上段
-            VStack(spacing: 4) {
-                upperVideoLabel
-                upperVideoPlayer
-                    .aspectRatio(16.0 / 9.0, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-            .padding(.horizontal, 16)
+        GeometryReader { geo in
+            let videoWidth = geo.size.width - 32 // padding 16*2
+            let videoHeight = videoWidth * 9.0 / 16.0
+            VStack(spacing: 2) {
+                // 上段
+                VStack(spacing: 4) {
+                    upperVideoLabel
+                    upperVideoPlayer
+                        .frame(width: videoWidth, height: videoHeight)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .padding(.horizontal, 16)
 
-            // 下段
-            VStack(spacing: 4) {
-                lowerVideoLabel
-                lowerVideoPlayer
-                    .aspectRatio(16.0 / 9.0, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                // 下段
+                VStack(spacing: 4) {
+                    lowerVideoLabel
+                    lowerVideoPlayer
+                        .frame(width: videoWidth, height: videoHeight)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .padding(.horizontal, 16)
             }
-            .padding(.horizontal, 16)
         }
+        // GeometryReaderの高さを明示（ラベル含む上下2段分）
+        .frame(height: (UIScreen.main.bounds.width - 32) * 9.0 / 16.0 * 2 + 60)
         .padding(.vertical, 8)
     }
 

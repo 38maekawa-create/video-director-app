@@ -129,43 +129,52 @@ def _fallback_titles(
     classification: ClassificationResult,
     income_eval: IncomeEvaluation,
 ) -> TitleProposals:
-    """フォールバック（ルールベース）"""
+    """フォールバック（ルールベース — TEKO統一フォーマット）"""
     profile = video_data.profiles[0] if video_data.profiles else None
 
     # ゲスト属性から基本要素を抽出
+    name = profile.name if profile else "ゲスト"
     age = profile.age if profile else ""
     occupation = profile.occupation if profile else "会社員"
     income = profile.income if profile else ""
 
-    attr = f"{age}{occupation}" if age else occupation
-    if income and income_eval.emphasize:
-        attr = f"年収{income}の{attr}"
+    # 年収フック（判明時は必ず先頭配置）
+    income_prefix = f"年収{income}" if income and income_eval.emphasize else ""
+
+    # パンチラインの代替（ハイライトから抽出試行）
+    punchline = ""
+    for h in video_data.highlights:
+        if h.category in ("パンチライン", "実績数字"):
+            punchline = h.text[:30]
+            break
+    if not punchline:
+        punchline = "新しい選択肢を見つけた"
 
     candidates = [
         TitleCandidate(
-            title=f"【対談】{attr}が語る不動産投資のリアル",
-            target_segment="不動産投資に興味がある会社員",
-            appeal_type="属性系",
-            rationale="ゲスト属性でターゲットの共感を引く基本パターン",
+            title=f"{income_prefix}{age}{occupation}「{punchline}」{name}さんが語るキャリア戦略とは【TEKO独占インタビュー】",
+            target_segment="同世代・同属性のハイキャリア層",
+            appeal_type="数字系",
+            rationale="TEKO統一フォーマット: 年収フック + 属性 + パンチライン + 実名",
         ),
         TitleCandidate(
-            title=f"{attr}はなぜ不動産投資を始めたのか？",
-            target_segment="投資を検討中の同世代",
-            appeal_type="問いかけ系",
-            rationale="理由を問うフォーマットで好奇心を刺激",
-        ),
-        TitleCandidate(
-            title=f"不動産投資のリアルを{attr}に聞いてみた",
-            target_segment="投資の実態を知りたい層",
+            title=f"{income_prefix}{age}{occupation}「{punchline}」{name}さんが語る人生総取り戦略とは【TEKO独占インタビュー】",
+            target_segment="キャリアと資産形成の両立を目指す層",
             appeal_type="ストーリー系",
-            rationale="カジュアルなトーンで親近感を演出",
+            rationale="テーマバリエーション: 人生総取り戦略",
+        ),
+        TitleCandidate(
+            title=f"{income_prefix}{age}{occupation}「{punchline}」{name}さんが語る将来設計とは【TEKO独占インタビュー】",
+            target_segment="将来に漠然とした不安を持つ層",
+            appeal_type="問いかけ系",
+            rationale="テーマバリエーション: 将来設計",
         ),
     ]
 
     return TitleProposals(
         candidates=candidates,
         recommended_index=0,
-        llm_raw_response="[フォールバック: ルールベース生成]",
+        llm_raw_response="[フォールバック: ルールベース生成（TEKO統一フォーマット）]",
     )
 
 

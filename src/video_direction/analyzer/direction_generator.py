@@ -397,24 +397,137 @@ def _llm_analyze(
         except Exception:
             pass
 
+    # タイムラインコンテキストの構築
+    total_duration = video_data.duration if video_data.duration else "不明"
+    highlight_count = len(video_data.highlights)
+
+    # ハイライト密度分析
+    highlight_density = "不明"
+    timestamps_sec = []
+    if video_data.highlights and len(video_data.highlights) >= 3:
+        for h in video_data.highlights:
+            parts = h.timestamp.replace("[", "").replace("]", "").split(":")
+            try:
+                if len(parts) == 2:
+                    timestamps_sec.append(int(parts[0]) * 60 + int(parts[1]))
+                elif len(parts) == 3:
+                    timestamps_sec.append(int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2]))
+            except (ValueError, IndexError):
+                pass
+        if timestamps_sec:
+            mid = max(timestamps_sec) / 2
+            first_half = sum(1 for t in timestamps_sec if t <= mid)
+            second_half = sum(1 for t in timestamps_sec if t > mid)
+            if first_half > second_half * 1.5:
+                highlight_density = "前半密集型（前半にハイライトが集中）"
+            elif second_half > first_half * 1.5:
+                highlight_density = "後半盛り上がり型（後半にハイライトが集中）"
+            else:
+                highlight_density = "均等分散型（全体にバランスよく分布）"
+
+    # ハイライト間ギャップの検出
+    gap_warnings = []
+    if len(timestamps_sec) >= 2:
+        sorted_ts = sorted(timestamps_sec)
+        for i in range(1, len(sorted_ts)):
+            gap = sorted_ts[i] - sorted_ts[i - 1]
+            if gap > 300:  # 5分以上のギャップ
+                gap_min = gap // 60
+                gap_warnings.append(f"  - [{sorted_ts[i-1]//60:02d}:{sorted_ts[i-1]%60:02d}]〜[{sorted_ts[i]//60:02d}:{sorted_ts[i]%60:02d}] に約{gap_min}分のギャップあり → つなぎ演出を検討")
+
+    gap_text = ""
+    if gap_warnings:
+        gap_text = "\n\nハイライト間の大きなギャップ（つなぎ演出が必要な箇所）:\n" + "\n".join(gap_warnings)
+
+    # ゲストの代替の強み情報
+    alt_strengths_text = ""
+    if income_eval.alternative_strengths:
+        strengths_lines = [f"  - {s.category}: {s.description}" for s in income_eval.alternative_strengths]
+        alt_strengths_text = "\n- 代替の強み:\n" + "\n".join(strengths_lines)
+
+    # ゲストプロフィール情報
+    guest_profile_text = ""
+    if video_data.guest_summary:
+        guest_profile_text = f"\n- ゲスト概要: {video_data.guest_summary}"
+    if video_data.profiles:
+        for p in video_data.profiles[:3]:
+            name = getattr(p, "name", "")
+            role = getattr(p, "role", "")
+            desc = getattr(p, "description", "")
+            if name and name != "前川":
+                guest_profile_text += f"\n- ゲストプロフィール: {name} / {role} / {desc}"
+
+    # 層別の訴求軸指示
+    tier_direction = {
+        "a": """【層a演出方針（年収2000万〜）】
+- 権威性・専門性・ブランド力を前面に出す。「この人だから言える」感を最大化する
+- テロップは洗練されたデザイン。過度な派手さよりも"格"を演出する
+- 発言の重みを活かす: 間を長めに取り、視聴者に考えさせる編集
+- BGMは落ち着いたトーン。安っぽい盛り上げは逆効果""",
+        "b": """【層b演出方針（年収1000-2000万）】
+- 転機・ストーリー・成長過程を強調する。共感と憧れのバランスが最重要
+- Before/After構成を意識: 過去の苦労→現在の成功を対比させるカット編集
+- テロップは感情に訴える言葉を大きく、数字は補助的に使う
+- BGMは起承転結を意識し、ストーリーの流れに合わせてトーンを変える""",
+        "c": """【層c演出方針（年収〜1000万）】
+- 等身大感・行動のきっかけ・「自分もできそう」を最優先で演出する
+- 視聴者との距離感を縮める: 親しみやすいテロップデザイン、カジュアルなフォント
+- 具体的な行動ステップや意思決定の瞬間にフォーカスする
+- BGMは明るく前向き。挑戦・一歩踏み出す感を演出する""",
+    }
+    tier_text = tier_direction.get(classification.tier, tier_direction["b"])
+
+    # 強さの根拠に基づく演出ポイント
+    strength_direction = """
+【ゲストの「強さの根拠」ごとの演出指示】
+以下のパターンに該当する場合、対応する演出を必ず検討すること:
+- 企業ブランド（元アクセンチュア、元ゴールドマン等）→ 社名をテロップで大きく表示。ロゴ風デザインで権威性を視覚化。初登場時に「元○○」を画面下部にキャプション表示
+- 年収実績が強調対象の場合 → 数字を画面の30%以上のサイズでテロップ表示。パンチライン化して視聴者の目を引く。数字が出る瞬間にSE（効果音）を入れる
+- 転職・キャリアチェンジの場合 → Before/After構成を意識した編集。過去の状況と現在を交互にカットで見せる。色温度を寒色（過去）→暖色（現在）に変化させる
+- 副業・複業成功の場合 → 本業との二面性をカット切り替えで演出。「昼は○○、夜は○○」的な対比構成。テロップで二つの顔を並列表示"""
+
     prompt = f"""以下はTEKO対談インタビュー動画のハイライトシーンです。
-動画編集者向けに、追加の演出ディレクション提案を3〜5個生成してください。
+動画編集者向けに、追加の演出ディレクション提案を5〜8個生成してください。
 
-ゲスト情報:
-- 分類: {classification.tier_label}
-- 年収演出: {income_eval.emphasis_reason}
+## 動画メタ情報
 - タイトル: {video_data.title}
+- 全体尺: {total_duration}
+- ハイライト数: {highlight_count}個
+- ハイライト密度: {highlight_density}
 
-ハイライトシーン:
-{highlights_text}{learned_rules_text}{video_insights_text}
+## ゲスト情報
+- ゲスト分類: {classification.tier_label}
+- 分類理由: {classification.reason}
+- 見せ方テンプレート: {classification.presentation_template}
+- 年収演出判断: {income_eval.emphasis_reason}
+- テロップ提案: {income_eval.telop_suggestion}{guest_profile_text}{alt_strengths_text}
 
+## 層別演出方針（この方針に必ず従うこと）
+{tier_text}
+{strength_direction}
+
+## ハイライトシーン
+{highlights_text}{gap_text}{learned_rules_text}{video_insights_text}
+
+## 出力フォーマット
 以下のフォーマットで、具体的なタイムスタンプと演出指示を出してください:
-[MM:SS] 演出タイプ（テロップ/画角/色変え）: 具体的な指示内容
+[MM:SS] 演出タイプ（テロップ/カット割り/色彩/BGM/テンポ/画角）: 具体的な指示内容
 
-注意:
+## 演出・映像技法の具体性基準
+各ディレクションには以下のレベルの具体性を持たせること:
+- カット割り: 「ゲストのアップ→引きのカット切り替え」「2ショット→ゲスト単独に切り替え」等、具体的なカメラワークを指定
+- 色彩: 「パンチライン出現時にフラッシュ効果」「重要発言で色温度を暖色に変化」「Before区間は寒色系フィルター」等
+- テロップ: 「年収数字は画面の30%以上のサイズで」「引用や名言は手書き風フォント」「企業名はロゴ風デザインで」等
+- BGM: 「ここでBGMのトーンをマイナー→メジャーに切り替え」「静寂→盛り上がりの緩急をつける」「SE（効果音）で数字出現を強調」等
+- テンポ: 「ここは間を2秒取って重みを出す」「ここはテンポよく0.5秒カットで畳み掛ける」「沈黙を活かして余韻を残す」等
+
+## 注意事項
 - ディレクションマニュアルの原則に従うこと
-- 年収以外の強さ（企業ブランド・勤務形態等）も活用すること
+- 年収以外の強さ（企業ブランド・勤務形態・キャリアパス等）も積極的に活用すること
 - 固有名詞の扱いに注意（迷ったら伏せる）
+- ハイライト間のギャップが大きい箇所には「つなぎ演出」（ダイジェストカット、ナレーション挿入、チャプタータイトル等）を提案すること
+- 過去のFB学習ルールが注入されている場合、それらを優先的に反映し、どのルールを適用したか明示すること
+- 映像トラッキングインサイトがある場合、外部映像で成功している演出パターンを積極的に取り入れること
 """
 
     response = client.messages.create(

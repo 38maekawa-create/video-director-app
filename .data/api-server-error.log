@@ -3034,3 +3034,30 @@ INFO:     Started reloader process [62805] using StatReload
 INFO:     Started server process [62808]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/analyzer/title_generator.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [62808]
+INFO:     Started server process [65563]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/integrations/api_server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [65563]
+INFO:     Started server process [65878]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [65878]
+INFO:     Stopping reloader process [62805]
+INFO:     Will watch for changes in these directories: ['/Users/maekawanaoto/AI開発10']
+INFO:     Uvicorn running on http://0.0.0.0:8210 (Press CTRL+C to quit)
+INFO:     Started reloader process [65911] using StatReload
+INFO:     Started server process [65914]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

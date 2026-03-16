@@ -2863,12 +2863,14 @@ def run_e2e_pipeline(project_id: str, body: E2EPipelineRequest = E2EPipelineRequ
             )
 
         # knowledgeからプロフィール情報をVideoDataに補完
-        knowledge_json = project_data.get("knowledge")
-        if knowledge_json and not video_data.profiles:
+        if not video_data.profiles:
             try:
                 from ..integrations.ai_dev5_connector import PersonProfile
-                kd = json.loads(knowledge_json) if isinstance(knowledge_json, str) else knowledge_json
-                profiles_data = kd.get("profiles", [])
+                knowledge_json = project_data.get("knowledge")
+                profiles_data = []
+                if knowledge_json:
+                    kd = json.loads(knowledge_json) if isinstance(knowledge_json, str) else knowledge_json
+                    profiles_data = kd.get("profiles", [])
                 if profiles_data:
                     p = profiles_data[0]
                     video_data.profiles = [PersonProfile(

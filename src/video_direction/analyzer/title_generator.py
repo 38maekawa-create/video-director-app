@@ -158,8 +158,17 @@ def _fallback_titles(
     punchline = ""
     for h in video_data.highlights:
         if h.category in ("パンチライン", "実績数字"):
-            # 発言者がゲスト本人のものを優先
-            punchline = h.text[:40]
+            # 文の区切りの良いところで切る（句読点・助詞の後）
+            text = h.text
+            if len(text) > 50:
+                # 最初の句読点・「」・助詞で切る
+                for sep_pos in range(35, min(60, len(text))):
+                    if text[sep_pos] in "。、」！？":
+                        text = text[:sep_pos + 1]
+                        break
+                else:
+                    text = text[:40]
+            punchline = text
             break
     if not punchline:
         # デフォルトのパンチラインは使わない。具体的な動画内容がないと意味がない

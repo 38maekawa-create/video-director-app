@@ -2833,6 +2833,90 @@ def run_e2e_pipeline(project_id: str, body: E2EPipelineRequest = E2EPipelineRequ
     else:
         pipeline_steps["step4_5_edit_learning"] = {"status": "unavailable"}
 
+    # --- Step 4.6: YouTube素材（タイトル・概要欄・サムネ指示書）再生成 ---
+    try:
+        from ..analyzer.title_generator import generate_title_proposals
+        from ..analyzer.description_writer import generate_description
+        from ..analyzer.thumbnail_designer import generate_thumbnail_design
+        from ..knowledge.loader import KnowledgeLoader
+
+        knowledge_ctx = KnowledgeLoader().load()
+
+        # Step 4で作成済みの video_data, classification, income_eval を再利用
+        # （Step 4が失敗した場合は再構築）
+        if 'video_data' not in dir() or video_data is None:
+            from ..integrations.ai_dev5_connector import VideoData
+            from ..analyzer.guest_classifier import ClassificationResult
+            from ..analyzer.income_evaluator import IncomeEvaluation
+            video_data = VideoData(
+                title=project_data.get("title", ""),
+                speakers=project_data.get("guest_name", ""),
+            )
+            classification = ClassificationResult(
+                tier="c", tier_label="層c",
+                reason="APIデフォルト分類", presentation_template="標準テンプレート",
+                confidence="low",
+            )
+            income_eval = IncomeEvaluation(
+                income_value=None, age_bracket="不明", threshold=0,
+                emphasize=False, emphasis_reason="デフォルト", telop_suggestion="",
+            )
+
+        # knowledgeからプロフィール情報をVideoDataに補完
+        knowledge_json = project_data.get("knowledge")
+        if knowledge_json and not video_data.profiles:
+            try:
+                from ..integrations.ai_dev5_connector import GuestProfile
+                kd = json.loads(knowledge_json) if isinstance(knowledge_json, str) else knowledge_json
+                profiles_data = kd.get("profiles", [])
+                if profiles_data:
+                    p = profiles_data[0]
+                    video_data.profiles = [GuestProfile(
+                        name=p.get("name", project_data.get("guest_name", "")),
+                        age=p.get("age", str(project_data.get("guest_age", "")) if project_data.get("guest_age") else ""),
+                        occupation=p.get("occupation", project_data.get("guest_occupation", "")),
+                        income=p.get("income", ""),
+                        side_business=p.get("side_business", ""),
+                    )]
+                elif project_data.get("guest_name"):
+                    video_data.profiles = [GuestProfile(
+                        name=project_data.get("guest_name", ""),
+                        age=str(project_data.get("guest_age", "")) if project_data.get("guest_age") else "",
+                        occupation=project_data.get("guest_occupation", ""),
+                        income="",
+                        side_business="",
+                    )]
+            except Exception:
+                pass
+
+        # 年収情報があればincomeを強調に設定
+        if video_data.profiles and video_data.profiles[0].income:
+            income_eval = IncomeEvaluation(
+                income_value=None, age_bracket="不明", threshold=0,
+                emphasize=True, emphasis_reason="年収情報あり", telop_suggestion="",
+            )
+
+        yt_titles = generate_title_proposals(video_data, classification, income_eval, knowledge_ctx)
+        yt_description = generate_description(video_data, classification, income_eval, knowledge_ctx)
+        yt_thumbnail = generate_thumbnail_design(video_data, classification, income_eval, knowledge_ctx)
+
+        # DB更新
+        assets = YouTubeAssetsUpsert(
+            thumbnail_design=json.loads(yt_thumbnail.to_json()) if hasattr(yt_thumbnail, 'to_json') else {"raw": str(yt_thumbnail)},
+            title_proposals={"candidates": [{"title": c.title, "target_segment": c.target_segment, "appeal_type": c.appeal_type, "rationale": c.rationale} for c in yt_titles.candidates], "recommended_index": yt_titles.recommended_index} if yt_titles.candidates else None,
+            description_original=yt_description.full_text if yt_description else None,
+        )
+        upsert_youtube_assets(project_id, assets)
+
+        pipeline_steps["step4_6_youtube_assets"] = {
+            "status": "ok",
+            "title_count": len(yt_titles.candidates) if yt_titles.candidates else 0,
+            "description_length": len(yt_description.full_text) if yt_description and yt_description.full_text else 0,
+        }
+    except Exception as e:
+        pipeline_steps["step4_6_youtube_assets"] = {"status": "error", "error": str(e)}
+        errors.append(f"YouTube素材再生成エラー: {e}")
+
     # --- Step 5: Vimeoレビューコメント投稿 ---
     vimeo_result = None
     if body.vimeo_video_id and direction_result and direction_result.get("entries"):

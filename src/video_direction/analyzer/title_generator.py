@@ -6,10 +6,8 @@ TEKO対談動画のYouTubeタイトル案を3-5個提案する。
 """
 
 import json
-import os
 import re
 from dataclasses import dataclass, field
-from pathlib import Path
 from ..integrations.ai_dev5_connector import VideoData
 from ..analyzer.guest_classifier import ClassificationResult
 from ..analyzer.income_evaluator import IncomeEvaluation
@@ -40,11 +38,7 @@ def generate_title_proposals(
     income_eval: IncomeEvaluation,
     knowledge_ctx: KnowledgeContext,
 ) -> TitleProposals:
-    """タイトル案を生成する"""
-
-    api_key = _get_api_key()
-    if not api_key:
-        return _fallback_titles(video_data, classification, income_eval)
+    """タイトル案を生成する（teko_core.llm経由 — MAX定額内）"""
 
     profile = video_data.profiles[0] if video_data.profiles else None
 
@@ -198,14 +192,3 @@ def _fallback_titles(
     )
 
 
-def _get_api_key() -> str:
-    """Anthropic APIキーを取得"""
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        env_file = Path.home() / ".config" / "maekawa" / "api-keys.env"
-        if env_file.exists():
-            for line in env_file.read_text().split("\n"):
-                if line.startswith("ANTHROPIC_API_KEY="):
-                    api_key = line.split("=", 1)[1].strip()
-                    break
-    return api_key

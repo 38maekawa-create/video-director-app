@@ -129,52 +129,61 @@ def _fallback_titles(
     classification: ClassificationResult,
     income_eval: IncomeEvaluation,
 ) -> TitleProposals:
-    """フォールバック（ルールベース — TEKO統一フォーマット）"""
+    """フォールバック（ルールベース — TEKO実投稿済みフォーマット準拠）
+
+    パターンA（パンチライン先頭型・最近の主流）:
+    「[パンチライン]」[年代]年収[金額][職業]の[名前]さんが語る[テーマ]とは？【TEKO独占インタビュー】
+    """
     profile = video_data.profiles[0] if video_data.profiles else None
 
-    # ゲスト属性から基本要素を抽出
-    name = profile.name if profile else "ゲスト"
-    age = profile.age if profile else ""
+    # ゲスト属性から基本要素を抽出（「さん」二重付与防止）
+    raw_name = profile.name if profile else "ゲスト"
+    name = raw_name.rstrip("さん")
+    age = profile.age if profile else "30代"
     occupation = profile.occupation if profile else "会社員"
     income = profile.income if profile else ""
 
-    # 年収フック（判明時は必ず先頭配置）
-    income_prefix = f"年収{income}" if income and income_eval.emphasize else ""
+    # 年収テキスト
+    income_text = f"年収{income}" if income else ""
 
-    # パンチラインの代替（ハイライトから抽出試行）
+    # パンチライン抽出（ハイライトから最もインパクトのあるフレーズを選ぶ）
     punchline = ""
     for h in video_data.highlights:
         if h.category in ("パンチライン", "実績数字"):
-            punchline = h.text[:30]
+            # 発言者がゲスト本人のものを優先
+            punchline = h.text[:40]
             break
     if not punchline:
-        punchline = "新しい選択肢を見つけた"
+        # デフォルトのパンチラインは使わない。具体的な動画内容がないと意味がない
+        punchline = ""
 
-    candidates = [
-        TitleCandidate(
-            title=f"{income_prefix}{age}{occupation}「{punchline}」{name}さんが語るキャリア戦略とは【TEKO独占インタビュー】",
-            target_segment="同世代・同属性のハイキャリア層",
-            appeal_type="数字系",
-            rationale="TEKO統一フォーマット: 年収フック + 属性 + パンチライン + 実名",
-        ),
-        TitleCandidate(
-            title=f"{income_prefix}{age}{occupation}「{punchline}」{name}さんが語る人生総取り戦略とは【TEKO独占インタビュー】",
-            target_segment="キャリアと資産形成の両立を目指す層",
-            appeal_type="ストーリー系",
-            rationale="テーマバリエーション: 人生総取り戦略",
-        ),
-        TitleCandidate(
-            title=f"{income_prefix}{age}{occupation}「{punchline}」{name}さんが語る将来設計とは【TEKO独占インタビュー】",
-            target_segment="将来に漠然とした不安を持つ層",
-            appeal_type="問いかけ系",
-            rationale="テーマバリエーション: 将来設計",
-        ),
+    # テーマのバリエーション
+    themes = [
+        "キャリア戦略",
+        "『本業×複業』で得た真の安定",
+        "キャリアプラン",
     ]
+
+    candidates = []
+    for i, theme in enumerate(themes):
+        if punchline:
+            # パターンA: パンチライン先頭型（最近のTEKOで主流）
+            title = f"「{punchline}」{age}{income_text}{occupation}の{name}さんが語る{theme}とは？【TEKO独占インタビュー】"
+        else:
+            # パンチラインがない場合はパターンB: 年収先頭型
+            title = f"{income_text}{age}{occupation}{name}さんが語る{theme}とは【TEKO独占インタビュー】"
+
+        candidates.append(TitleCandidate(
+            title=title,
+            target_segment="同世代・同属性のハイキャリア層",
+            appeal_type=["数字系", "ストーリー系", "問いかけ系"][i],
+            rationale=f"TEKO実投稿済みフォーマット準拠: テーマ={theme}",
+        ))
 
     return TitleProposals(
         candidates=candidates,
         recommended_index=0,
-        llm_raw_response="[フォールバック: ルールベース生成（TEKO統一フォーマット）]",
+        llm_raw_response="[フォールバック: TEKO実投稿済みフォーマット準拠]",
     )
 
 

@@ -2120,20 +2120,13 @@ def convert_feedback(body: FeedbackConvertRequest):
     category = classify_feedback_category(raw)
 
     try:
-        import anthropic
         import re
+        from teko_core.llm import ask
 
-        client = anthropic.Anthropic()
         system_prompt = build_system_prompt(category)
         user_prompt = build_conversion_prompt(raw, category)
 
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=2048,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_prompt}],
-        )
-        text = response.content[0].text
+        text = ask(user_prompt, system=system_prompt, model="sonnet", max_tokens=2048, timeout=120)
         # JSONブロックを抽出
         json_match = re.search(r'\{[\s\S]*\}', text)
         if json_match:
@@ -2141,7 +2134,7 @@ def convert_feedback(body: FeedbackConvertRequest):
             # カテゴリ情報を付与
             result["detected_category"] = category
             return result
-    except (ImportError, Exception):
+    except Exception:
         pass
 
     # フォールバック: 簡易変換（LLM不使用）
@@ -3065,40 +3058,22 @@ def convert_feedback_enhanced(body: FeedbackConvertEnhancedRequest):
     category = classify_feedback_category(raw)
 
     try:
-        import anthropic
-        import os
         import re
+        from teko_core.llm import ask
 
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-        if not api_key:
-            env_file = Path.home() / ".config" / "maekawa" / "api-keys.env"
-            if env_file.exists():
-                for line in env_file.read_text().split("\n"):
-                    if line.startswith("ANTHROPIC_API_KEY="):
-                        api_key = line.split("=", 1)[1].strip()
-                        break
+        system_prompt = build_system_prompt(category)
+        user_prompt = build_conversion_prompt(
+            raw, category, learned_rules_text, tracking_refs_text
+        )
 
-        if api_key:
-            client = anthropic.Anthropic(api_key=api_key)
-            system_prompt = build_system_prompt(category)
-            user_prompt = build_conversion_prompt(
-                raw, category, learned_rules_text, tracking_refs_text
-            )
-
-            response = client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=2048,
-                system=system_prompt,
-                messages=[{"role": "user", "content": user_prompt}],
-            )
-            text = response.content[0].text
-            json_match = re.search(r'\{[\s\S]*\}', text)
-            if json_match:
-                result = json.loads(json_match.group())
-                result["detected_category"] = category
-                result["tracking_references"] = tracking_references
-                result["learning_rules_applied"] = bool(learned_rules_text)
-                return result
+        text = ask(user_prompt, system=system_prompt, model="sonnet", max_tokens=2048, timeout=120)
+        json_match = re.search(r'\{[\s\S]*\}', text)
+        if json_match:
+            result = json.loads(json_match.group())
+            result["detected_category"] = category
+            result["tracking_references"] = tracking_references
+            result["learning_rules_applied"] = bool(learned_rules_text)
+            return result
     except Exception:
         pass
 

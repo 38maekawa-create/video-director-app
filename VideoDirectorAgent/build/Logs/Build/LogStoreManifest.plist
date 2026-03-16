@@ -6,7 +6,7 @@
 	<integer>12</integer>
 	<key>logs</key>
 	<dict>
-		<key>370C5E56-0B7C-4477-A929-B8BA3819F533</key>
+		<key>3BE23DDC-B3F9-46FA-9941-2E5B315D1619</key>
 		<dict>
 			<key>className</key>
 			<string>IDECommandLineBuildLog</string>
@@ -15,13 +15,13 @@
 			<key>domainType</key>
 			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
 			<key>fileName</key>
-			<string>370C5E56-0B7C-4477-A929-B8BA3819F533.xcactivitylog</string>
+			<string>3BE23DDC-B3F9-46FA-9941-2E5B315D1619.xcactivitylog</string>
 			<key>hasPrimaryLog</key>
 			<true/>
 			<key>primaryObservable</key>
 			<dict>
 				<key>highLevelStatus</key>
-				<string>S</string>
+				<string>W</string>
 				<key>totalNumberOfAnalyzerIssues</key>
 				<integer>0</integer>
 				<key>totalNumberOfErrors</key>
@@ -29,7 +29,7 @@
 				<key>totalNumberOfTestFailures</key>
 				<integer>0</integer>
 				<key>totalNumberOfWarnings</key>
-				<integer>0</integer>
+				<integer>11</integer>
 			</dict>
 			<key>schemeIdentifier-containerName</key>
 			<string>VideoDirectorAgent project</string>
@@ -38,15 +38,15 @@
 			<key>schemeIdentifier-sharedScheme</key>
 			<integer>1</integer>
 			<key>signature</key>
-			<string>Cleaning project VideoDirectorAgent with scheme VideoDirectorAgent</string>
+			<string>Building project VideoDirectorAgent with scheme VideoDirectorAgent</string>
 			<key>timeStartedRecording</key>
-			<real>795338943.73235297</real>
+			<real>795381578.34357798</real>
 			<key>timeStoppedRecording</key>
-			<real>795338943.99456501</real>
+			<real>795381602.064713</real>
 			<key>title</key>
-			<string>Cleaning project VideoDirectorAgent with scheme VideoDirectorAgent</string>
+			<string>Building project VideoDirectorAgent with scheme VideoDirectorAgent</string>
 			<key>uniqueIdentifier</key>
-			<string>370C5E56-0B7C-4477-A929-B8BA3819F533</string>
+			<string>3BE23DDC-B3F9-46FA-9941-2E5B315D1619</string>
 		</dict>
 		<key>7D13C216-76F9-4BEF-B3C8-791464162461</key>
 		<dict>

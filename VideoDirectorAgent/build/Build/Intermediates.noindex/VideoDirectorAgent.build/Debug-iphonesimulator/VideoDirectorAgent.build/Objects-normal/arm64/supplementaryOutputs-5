@@ -1,0 +1,30 @@
+{
+  "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/VideoDirectorAgent/Views/EditorManagementView.swift" : {
+    "const-values" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/EditorManagementView.swiftconstvalues",
+    "dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/EditorManagementView.d",
+    "diagnostics" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/EditorManagementView.dia",
+    "object" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/EditorManagementView.o",
+    "swift-dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/EditorManagementView.swiftdeps"
+  },
+  "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/VideoDirectorAgent/Views/NotificationSettingsView.swift" : {
+    "const-values" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/NotificationSettingsView.swiftconstvalues",
+    "dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/NotificationSettingsView.d",
+    "diagnostics" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/NotificationSettingsView.dia",
+    "object" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/NotificationSettingsView.o",
+    "swift-dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/NotificationSettingsView.swiftdeps"
+  },
+  "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/VideoDirectorAgent/Views/QualityDashboardView.swift" : {
+    "const-values" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/QualityDashboardView.swiftconstvalues",
+    "dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/QualityDashboardView.d",
+    "diagnostics" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/QualityDashboardView.dia",
+    "object" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/QualityDashboardView.o",
+    "swift-dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/QualityDashboardView.swiftdeps"
+  },
+  "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/VideoDirectorAgent/Views/VideoTrackingView.swift" : {
+    "const-values" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/VideoTrackingView.swiftconstvalues",
+    "dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/VideoTrackingView.d",
+    "diagnostics" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/VideoTrackingView.dia",
+    "object" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/VideoTrackingView.o",
+    "swift-dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphonesimulator/VideoDirectorAgent.build/Objects-normal/arm64/VideoTrackingView.swiftdeps"
+  }
+}

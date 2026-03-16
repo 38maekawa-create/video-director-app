@@ -1,0 +1,160 @@
+{
+  "source": "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/VideoDirectorAgent/Views/DirectionReportView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "埋め込み再生が制限されています",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 76
+        }
+      },
+      {
+        "comment": "",
+        "key": "YouTubeで開く",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 90
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld歳",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 295
+        }
+      },
+      {
+        "comment": "",
+        "key": "ビフォーアフター",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 311
+        }
+      },
+      {
+        "comment": "",
+        "key": "閲覧ページ",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 332
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 352
+        }
+      },
+      {
+        "comment": "",
+        "key": "品質スコア",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 355
+        }
+      },
+      {
+        "comment": "",
+        "key": "手修正ツール",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 496
+        }
+      },
+      {
+        "comment": "",
+        "key": "ディレクションを編集",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 569
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vimeoで開く",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 633
+        }
+      },
+      {
+        "comment": "",
+        "key": "品質改善サイクル",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 760
+        }
+      },
+      {
+        "comment": "",
+        "key": "音声フィードバックを追加",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 807
+        }
+      },
+      {
+        "comment": "",
+        "key": "閉じる",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 891
+        }
+      },
+      {
+        "comment": "",
+        "key": "動画ナレッジ",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 901
+        }
+      },
+      {
+        "comment": "",
+        "key": "Safari",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 910
+        }
+      },
+      {
+        "comment": "",
+        "key": "プロの指示に変換",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 1038
+        }
+      },
+      {
+        "comment": "",
+        "key": "閉じる",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 1073
+        }
+      },
+      {
+        "comment": "",
+        "key": "送信",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 1106
+        }
+      },
+      {
+        "comment": "",
+        "key": "フィードバックを送信しました",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 1145
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1967,7 +1967,60 @@
     return html;
   }
 
+  // YouTube埋め込みエラー時にサムネ+リンクにフォールバックする初期化関数
+  function initYouTubeEmbedFallbacks(container) {
+    var iframes = container.querySelectorAll('.sv-player-iframe');
+    iframes.forEach(function(iframe, i) {
+      var wrapEl = container.querySelector('#sv-player-wrap-' + i);
+      var playerEl = container.querySelector('#sv-yt-player-' + i);
+      var fallbackEl = container.querySelector('#sv-fallback-' + i);
+      if (!wrapEl || !playerEl || !fallbackEl) return;
+
+      // YouTube IFrame Player APIのpostMessage経由でエラーを検出
+      function showFallback() {
+        if (playerEl) playerEl.style.display = 'none';
+        if (fallbackEl) fallbackEl.style.display = 'block';
+      }
+
+      // iframeの読み込みエラー検出（ネットワークエラー等）
+      iframe.addEventListener('error', showFallback);
+
+      // YouTube IFrame Player APIのonErrorをpostMessage経由で検出
+      window.addEventListener('message', function(event) {
+        if (!event.data || typeof event.data !== 'string') return;
+        try {
+          var msg = JSON.parse(event.data);
+          // YouTube IFrame APIのエラーイベント形式
+          if (msg.event === 'onError' && msg.info !== undefined) {
+            // エラーコード: 2, 5, 100, 101, 150, 152, 153
+            var errorCodes = [2, 5, 100, 101, 150, 152, 153];
+            if (errorCodes.indexOf(msg.info) !== -1) {
+              // iframe srcからvideo_idを抽出して照合
+              var iframeSrc = iframe.getAttribute('src') || '';
+              var fallbackVid = fallbackEl.getAttribute('data-vid');
+              if (fallbackVid && iframeSrc.indexOf(fallbackVid) !== -1) {
+                showFallback();
+              }
+            }
+          }
+        } catch(e) { /* JSON解析失敗は無視 */ }
+      });
+
+      // 追加: 5秒後にiframeの高さが0かどうかで読み込み失敗を検出
+      setTimeout(function() {
+        try {
+          if (iframe.offsetHeight === 0 || iframe.clientHeight === 0) {
+            showFallback();
+          }
+        } catch(e) { /* ignore */ }
+      }, 5000);
+    });
+  }
+
   function setupSourceVideoHandlers(container, project) {
+    // YouTube埋め込みエラー時のフォールバック初期化
+    initYouTubeEmbedFallbacks(container);
+
     var submitBtn = container.querySelector('#sv-add-submit');
     if (submitBtn) {
       submitBtn.addEventListener('click', function() {

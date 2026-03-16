@@ -1,0 +1,120 @@
+{
+  "source": "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/VideoDirectorAgent/Views/TelopCheckView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "テロップチェック実行中...",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 22
+        }
+      },
+      {
+        "comment": "",
+        "key": "テロップチェック",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 48
+        }
+      },
+      {
+        "comment": "",
+        "key": "プロジェクト選択",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 62
+        }
+      },
+      {
+        "comment": "",
+        "key": "チェック中...",
+        "location": {
+          "startingColumn": 44,
+          "startingLine": 125
+        }
+      },
+      {
+        "comment": "",
+        "key": "テロップチェック実行",
+        "location": {
+          "startingColumn": 67,
+          "startingLine": 125
+        }
+      },
+      {
+        "comment": "",
+        "key": "チェック日時: %@",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 183
+        }
+      },
+      {
+        "comment": "",
+        "key": "テロップ品質スコア",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 147
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 151
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 199
+        }
+      },
+      {
+        "comment": "",
+        "key": "問題は検出されませんでした",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 226
+        }
+      },
+      {
+        "comment": "",
+        "key": "検出された問題",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 215
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld件",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 220
+        }
+      },
+      {
+        "comment": "",
+        "key": "場所: %@",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 269
+        }
+      },
+      {
+        "comment": "",
+        "key": "提案: %@",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 275
+        }
+      }
+    ]
+  },
+  "version": 1
+}

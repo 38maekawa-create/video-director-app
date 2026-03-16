@@ -1,0 +1,120 @@
+{
+  "source": "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/VideoDirectorAgent/Views/DirectionEditView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "ディレクション編集",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 104
+        }
+      },
+      {
+        "comment": "",
+        "key": "手修正モード",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 137
+        }
+      },
+      {
+        "comment": "",
+        "key": "編集者",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 164
+        }
+      },
+      {
+        "comment": "",
+        "key": "編集者",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 159
+        }
+      },
+      {
+        "comment": "",
+        "key": "修正理由やメモを入力",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 237
+        }
+      },
+      {
+        "comment": "",
+        "key": "編集メモ（任意）",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 232
+        }
+      },
+      {
+        "comment": "",
+        "key": "変更差分",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 256
+        }
+      },
+      {
+        "comment": "",
+        "key": "変更なし",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 279
+        }
+      },
+      {
+        "comment": "",
+        "key": "保存",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 325
+        }
+      },
+      {
+        "comment": "",
+        "key": "保存しました",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 354
+        }
+      },
+      {
+        "comment": "",
+        "key": "編集履歴",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 397
+        }
+      },
+      {
+        "comment": "",
+        "key": "編集履歴はまだありません",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 381
+        }
+      },
+      {
+        "comment": "",
+        "key": "閉じる",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 402
+        }
+      },
+      {
+        "comment": "",
+        "key": "レポートを読み込み中...",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 445
+        }
+      }
+    ]
+  },
+  "version": 1
+}

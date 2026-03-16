@@ -1409,3 +1409,6 @@ INFO:     100.113.28.70:54142 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.113.28.70:54447 - "GET /api/projects/p-20260101-%E3%83%A1%E3%82%A4%E3%82%B8/youtube-assets HTTP/1.1" 200 OK
 INFO:     100.113.28.70:55389 - "GET /api/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/youtube-assets HTTP/1.1" 200 OK
 INFO:     100.113.28.70:62493 - "GET /api/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64359 - "GET /api/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57623 - "GET /api/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.113.28.70:51318 - "GET /api/projects/p-20260215-%E3%83%AD%E3%82%AD/youtube-assets HTTP/1.1" 200 OK

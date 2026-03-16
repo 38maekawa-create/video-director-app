@@ -179,6 +179,40 @@ def find_knowledge_page_url(guest_name: str, shoot_date: Optional[str] = None) -
     return None
 
 
+def _extract_video_urls(d: dict) -> dict:
+    """edited_video / source_video からURLを抽出し、edited_video_url / source_video_url を追加する。
+    iOS側の decodeNestedURL が primary key（editedVideoURL / sourceVideoURL）で直接マッチできるようにする。"""
+    for video_field in ("edited_video", "source_video"):
+        url_key = f"{video_field}_url"
+        if url_key in d and d[url_key]:
+            continue  # 既にある場合はスキップ
+        raw = d.get(video_field)
+        if not raw:
+            continue
+        # raw が既にdict（json.loadsされた後）の場合
+        if isinstance(raw, dict):
+            for k in ("url", "vimeo_url", "video_url", "link"):
+                if raw.get(k):
+                    d[url_key] = raw[k]
+                    break
+        elif isinstance(raw, str):
+            # JSON文字列の場合
+            try:
+                parsed = json.loads(raw)
+                if isinstance(parsed, dict):
+                    for k in ("url", "vimeo_url", "video_url", "link"):
+                        if parsed.get(k):
+                            d[url_key] = parsed[k]
+                            break
+                elif isinstance(parsed, str):
+                    d[url_key] = parsed
+            except (json.JSONDecodeError, TypeError):
+                # プレーンURL文字列の場合
+                if "vimeo.com" in raw or "http" in raw:
+                    d[url_key] = raw
+    return d
+
+
 def _enrich_project_with_knowledge_url(d: dict) -> dict:
     """プロジェクト辞書にknowledge_page_urlフィールドを追加する"""
     guest_name = d.get("guest_name", "")
@@ -331,6 +365,9 @@ def list_projects(category: Optional[str] = None):
                     d[json_field] = json.loads(d[json_field])
                 except (json.JSONDecodeError, TypeError):
                     pass  # JSON以外の文字列はそのまま保持
+        # edited_video / source_video からURLを抽出してトップレベルに追加
+        # iOS側の decodeNestedURL が primary key で直接マッチできるようにする
+        _extract_video_urls(d)
         _enrich_project_with_knowledge_url(d)
         result.append(d)
     return result
@@ -354,6 +391,7 @@ def get_project(project_id: str):
             except (json.JSONDecodeError, TypeError):
                 # プレーンURL文字列の場合はそのまま返す
                 pass
+    _extract_video_urls(d)
     _enrich_project_with_knowledge_url(d)
     return d
 

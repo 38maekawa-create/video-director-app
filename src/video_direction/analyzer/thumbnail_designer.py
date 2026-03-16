@@ -54,12 +54,23 @@ def generate_thumbnail_design(
         for h in video_data.highlights[:5]
     ])
 
+    # ゲスト名クリーニング（括弧内ニックネーム優先）
+    import re as _re
+    raw_guest_name = profile.name if profile else "不明"
+    paren_match = _re.search(r'[（(]([^）)]+)[）)]', raw_guest_name)
+    if paren_match:
+        inner = paren_match.group(1)
+        inner = _re.sub(r'^(ニックネーム|NN|通称)[：:]?\s*', '', inner)
+        clean_guest_name = inner
+    else:
+        clean_guest_name = raw_guest_name
+
     prompt = THUMBNAIL_DESIGN_PROMPT.format(
         z_theory_summary=knowledge_ctx.z_theory_summary,
         z_theory_detailed=knowledge_ctx.z_theory_detailed,
         marketing_principles=knowledge_ctx.marketing_principles,
         video_title=video_data.title or "不明",
-        guest_name=profile.name if profile else "不明",
+        guest_name=clean_guest_name,
         guest_age=profile.age if profile else "不明",
         guest_occupation=profile.occupation if profile else "不明",
         guest_income=profile.income if profile else "不明",

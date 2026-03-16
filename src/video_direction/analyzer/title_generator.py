@@ -57,12 +57,25 @@ def generate_title_proposals(
         for h in key_highlights[:8]
     ]) or "なし"
 
+    # ゲスト名のクリーニング（文字起こし由来の本名・括弧を除去）
+    raw_guest_name = profile.name if profile else "不明"
+    # 「クマキ（くますけ）」→ 括弧内のニックネームを優先
+    import re as _re
+    paren_match = _re.search(r'[（(]([^）)]+)[）)]', raw_guest_name)
+    if paren_match:
+        inner = paren_match.group(1)
+        # 「ニックネーム：」等のプレフィックスを除去
+        inner = _re.sub(r'^(ニックネーム|NN|通称)[：:]?\s*', '', inner)
+        clean_guest_name = inner
+    else:
+        clean_guest_name = raw_guest_name
+
     prompt = TITLE_GENERATION_PROMPT.format(
         marketing_principles=knowledge_ctx.marketing_principles,
         z_theory_summary=knowledge_ctx.z_theory_summary,
         past_titles_text=past_titles_text,
         video_title=video_data.title or "不明",
-        guest_name=profile.name if profile else "不明",
+        guest_name=clean_guest_name,
         guest_age=profile.age if profile else "不明",
         guest_occupation=profile.occupation if profile else "不明",
         guest_income=profile.income if profile else "不明",
@@ -133,8 +146,14 @@ def _fallback_titles(
     """
     profile = video_data.profiles[0] if video_data.profiles else None
 
-    # ゲスト属性から基本要素を抽出（「さん」二重付与防止）
+    # ゲスト属性から基本要素を抽出（「さん」二重付与防止 + 括弧内ニックネーム優先）
     raw_name = profile.name if profile else "ゲスト"
+    # 括弧付きの場合は括弧内を優先（例: 「クマキ（くますけ）」→「くますけ」）
+    paren_match = re.search(r'[（(]([^）)]+)[）)]', raw_name)
+    if paren_match:
+        inner = paren_match.group(1)
+        inner = re.sub(r'^(ニックネーム|NN|通称)[：:]?\s*', '', inner)
+        raw_name = inner
     name = raw_name.rstrip("さん")
     raw_age = profile.age if profile else "30代"
     # 数字のみの場合は「歳」を付与、「代」「歳」が付いていればそのまま

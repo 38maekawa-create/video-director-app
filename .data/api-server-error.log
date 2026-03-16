@@ -3504,3 +3504,11 @@ INFO:     Finished server process [98437]
 INFO:     Started server process [1427]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/knowledge/prompts.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1427]
+INFO:     Started server process [4576]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

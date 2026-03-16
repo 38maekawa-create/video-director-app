@@ -349,7 +349,7 @@ struct KnowledgeHTMLView: UIViewRepresentable {
         </body>
         </html>
         """
-        webView.loadHTMLString(styledHTML, baseURL: nil)
+        webView.loadHTMLString(styledHTML, baseURL: URL(string: "https://www.youtube.com"))
     }
 }
 

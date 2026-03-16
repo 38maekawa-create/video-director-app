@@ -48,48 +48,6 @@
 			<key>uniqueIdentifier</key>
 			<string>3BE23DDC-B3F9-46FA-9941-2E5B315D1619</string>
 		</dict>
-		<key>7D13C216-76F9-4BEF-B3C8-791464162461</key>
-		<dict>
-			<key>className</key>
-			<string>IDECommandLineBuildLog</string>
-			<key>documentTypeString</key>
-			<string>&lt;nil&gt;</string>
-			<key>domainType</key>
-			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
-			<key>fileName</key>
-			<string>7D13C216-76F9-4BEF-B3C8-791464162461.xcactivitylog</string>
-			<key>hasPrimaryLog</key>
-			<true/>
-			<key>primaryObservable</key>
-			<dict>
-				<key>highLevelStatus</key>
-				<string>W</string>
-				<key>totalNumberOfAnalyzerIssues</key>
-				<integer>0</integer>
-				<key>totalNumberOfErrors</key>
-				<integer>0</integer>
-				<key>totalNumberOfTestFailures</key>
-				<integer>0</integer>
-				<key>totalNumberOfWarnings</key>
-				<integer>11</integer>
-			</dict>
-			<key>schemeIdentifier-containerName</key>
-			<string>VideoDirectorAgent project</string>
-			<key>schemeIdentifier-schemeName</key>
-			<string>VideoDirectorAgent</string>
-			<key>schemeIdentifier-sharedScheme</key>
-			<integer>1</integer>
-			<key>signature</key>
-			<string>Building project VideoDirectorAgent with scheme VideoDirectorAgent</string>
-			<key>timeStartedRecording</key>
-			<real>795338943.99761605</real>
-			<key>timeStoppedRecording</key>
-			<real>795338967.69001997</real>
-			<key>title</key>
-			<string>Building project VideoDirectorAgent with scheme VideoDirectorAgent</string>
-			<key>uniqueIdentifier</key>
-			<string>7D13C216-76F9-4BEF-B3C8-791464162461</string>
-		</dict>
 	</dict>
 </dict>
 </plist>

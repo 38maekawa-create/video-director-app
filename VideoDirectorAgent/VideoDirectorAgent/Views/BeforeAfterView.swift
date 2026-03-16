@@ -504,6 +504,6 @@ struct IframePlayerView: UIViewRepresentable {
         </body>
         </html>
         """
-        webView.loadHTMLString(html, baseURL: nil)
+        webView.loadHTMLString(html, baseURL: URL(string: "https://www.youtube.com"))
     }
 }

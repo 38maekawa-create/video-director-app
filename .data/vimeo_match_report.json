@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-03-16T13:16:04.978151",
+  "generated_at": "2026-03-16T14:18:24.756193",
   "summary": {
     "total_members": 29,
     "matched": 14,
     "unmatched": 15,
-    "total_vimeo_videos": 352,
-    "taidan_videos": 77
+    "total_vimeo_videos": 353,
+    "taidan_videos": 78
   },
   "matched": [
     {
@@ -213,6 +213,18 @@
       "guest_name": "しおさん",
       "videos": [
         {
+          "title": "しおさん　対談  ボイチェン",
+          "vimeo_url": "https://vimeo.com/1173887724",
+          "status": "available",
+          "created": "2026-03-16"
+        },
+        {
+          "title": "しおさんボイチェン_対談_修正_大胡",
+          "vimeo_url": "https://vimeo.com/1173747716",
+          "status": "available",
+          "created": "2026-03-15"
+        },
+        {
           "title": "しおさん_対談_修正_大胡",
           "vimeo_url": "https://vimeo.com/1169268479",
           "status": "available",
@@ -229,12 +241,6 @@
     {
       "guest_name": "ゆきもるさん",
       "videos": [
-        {
-          "title": "57_ゆきもるさん_ボイチャ変更_初稿_大胡",
-          "vimeo_url": "https://vimeo.com/1173747716",
-          "status": "available",
-          "created": "2026-03-15"
-        },
         {
           "title": "57_ゆきもるさん_初稿_坂野",
           "vimeo_url": "https://vimeo.com/1163547512",
@@ -411,10 +417,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "くまき",
         "クマキ",
-        "くますけ",
-        "クマスケ"
+        "くまき",
+        "クマスケ",
+        "くますけ"
       ],
       "near_candidates": [
         {
@@ -457,8 +463,8 @@
     {
       "guest_name": "アンディさん",
       "search_keys": [
-        "あんでぃ",
-        "アンディ"
+        "アンディ",
+        "あんでぃ"
       ],
       "near_candidates": [
         {
@@ -548,9 +554,9 @@
       "guest_name": "コテさん",
       "search_keys": [
         "コテツ",
-        "コテ",
         "こて",
-        "こてつ"
+        "こてつ",
+        "コテ"
       ],
       "near_candidates": [
         {
@@ -565,9 +571,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
+        "コスト",
         "kos",
-        "こすと",
-        "コスト"
+        "こすと"
       ],
       "near_candidates": [
         {
@@ -603,22 +609,15 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
-        "サトイモ",
-        "さといも・とーます",
-        "とーます",
-        "サトイモ・トーマス",
+        "さといも",
         "さといも・トーマス",
+        "さといも・とーます",
         "トーマス",
-        "さといも"
+        "サトイモ",
+        "とーます",
+        "サトイモ・トーマス"
       ],
       "near_candidates": [
-        {
-          "title": "57_ゆきもるさん_ボイチャ変更_初稿_大胡",
-          "matched_keys": [
-            "さといも"
-          ],
-          "status": "available"
-        },
         {
           "title": "こもさん_対談_完成_大胡",
           "matched_keys": [
@@ -646,15 +645,22 @@
             "さといも"
           ],
           "status": "available"
+        },
+        {
+          "title": "57_ゆきもるさん_初稿_坂野",
+          "matched_keys": [
+            "さといも"
+          ],
+          "status": "available"
         }
       ]
     },
     {
       "guest_name": "ハオさん",
       "search_keys": [
-        "はお",
         "羽生",
-        "ハオ"
+        "ハオ",
+        "はお"
       ],
       "near_candidates": []
     }

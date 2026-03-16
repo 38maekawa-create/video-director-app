@@ -1494,3 +1494,4 @@ INFO:     100.113.28.70:55302 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.113.28.70:55301 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.113.28.70:55303 - "GET /api/v1/projects/p-20251213-PAY/feedbacks-with-timecodes HTTP/1.1" 404 Not Found
 INFO:     100.113.28.70:59066 - "GET /api/v1/projects/p-20251123-hirai%E3%81%95%E3%82%93/feedbacks-with-timecodes HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60988 - "GET /api/projects HTTP/1.1" 200 OK

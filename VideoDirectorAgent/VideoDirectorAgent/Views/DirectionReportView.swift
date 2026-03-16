@@ -564,8 +564,10 @@ struct DirectionReportView: View {
 
     private var editedVideoSection: some View {
         VStack(spacing: 12) {
+            let _ = print("🎬 editedVideoURL: \(project.editedVideoURL ?? "nil")")
             if let url = project.editedVideoURL,
                !url.isEmpty {
+                let _ = print("🎬 Vimeo URL detected: \(url), videoId: \(VimeoURLParser.extractVideoId(from: url) ?? "nil")")
                 overviewCard(
                     title: "編集後動画",
                     icon: "sparkles.rectangle.stack",

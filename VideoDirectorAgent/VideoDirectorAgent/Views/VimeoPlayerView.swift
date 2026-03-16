@@ -33,8 +33,8 @@ struct VimeoPlayerView: UIViewRepresentable {
 
         // Vimeo iframe Player HTML を読み込む
         let html = buildPlayerHTML(videoId: videoId)
-        // baseURLをnilにする（vimeo.comだとiframe読み込み時にオリジン問題が発生する可能性）
-        webView.loadHTMLString(html, baseURL: nil)
+        // baseURLは外部ドメインを使用（vimeo.comやnilだとiframe/JS読み込みがブロックされる）
+        webView.loadHTMLString(html, baseURL: URL(string: "https://video-director.app/"))
 
         context.coordinator.webView = webView
         return webView
@@ -165,6 +165,7 @@ struct VimeoPlayerView: UIViewRepresentable {
 
 // MARK: - シンプル埋め込みプレイヤー（編集後タブ等で使用、バインド不要版）
 /// 再生位置のバインドが不要なシンプルなVimeo埋め込みプレイヤー
+/// YouTube同様、直接URLRequestでVimeo embed URLを読み込む方式
 struct VimeoEmbedPlayerView: UIViewRepresentable {
     let videoId: String
 
@@ -178,29 +179,13 @@ struct VimeoEmbedPlayerView: UIViewRepresentable {
         webView.backgroundColor = .black
         webView.isOpaque = false
 
-        let html = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { background: #000; overflow: hidden; }
-          .container { position: relative; width: 100%; padding-bottom: 56.25%; overflow: hidden; }
-          iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-        </style>
-        </head>
-        <body>
-        <div class="container">
-          <iframe src="https://player.vimeo.com/video/\(videoId)?title=0&byline=0&portrait=0&color=1694F5"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowfullscreen></iframe>
-        </div>
-        </body>
-        </html>
-        """
-        // baseURLをnilにする（vimeo.comだとiframe読み込み時にオリジン問題が発生する可能性）
-        webView.loadHTMLString(html, baseURL: nil)
+        // Vimeo embed URLを直接読み込む（loadHTMLString + iframeだとbaseURL問題でブロックされる）
+        let embedURLString = "https://player.vimeo.com/video/\(videoId)?title=0&byline=0&portrait=0&color=1694F5&playsinline=1"
+        if let url = URL(string: embedURLString) {
+            var request = URLRequest(url: url)
+            request.setValue("https://video-director.app/", forHTTPHeaderField: "Referer")
+            webView.load(request)
+        }
         return webView
     }
 

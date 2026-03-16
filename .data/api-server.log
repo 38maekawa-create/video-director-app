@@ -755,3 +755,9 @@ INFO:     127.0.0.1:57368 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:57722 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:57725 - "POST /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/e2e-pipeline HTTP/1.1" 200 OK
 INFO:     127.0.0.1:57730 - "POST /api/v1/projects/p-20260215-%E3%82%AF%E3%83%9E%E3%82%AD%E3%81%8F%E3%81%BE%E3%81%99%E3%81%91/e2e-pipeline HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64249 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64250 - "GET /api/projects/p-20251123-hirai%E3%81%95%E3%82%93/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.113.28.70:60872 - "GET /api/projects/p-20251123-hirai%E3%81%95%E3%82%93/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.113.28.70:60872 - "GET /api/v1/projects/p-20251123-hirai%E3%81%95%E3%82%93/source-videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:60872 - "GET /api/projects/p-20251123-hirai%E3%81%95%E3%82%93/feedbacks HTTP/1.1" 200 OK
+INFO:     100.113.28.70:60872 - "GET /api/v1/projects/p-20251123-hirai%E3%81%95%E3%82%93/feedbacks-with-timecodes HTTP/1.1" 404 Not Found

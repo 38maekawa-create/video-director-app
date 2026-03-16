@@ -126,8 +126,8 @@ def _fallback_description(
     # ハッシュタグ生成（動画内容に合わせて）
     hashtag_parts = []
     if profile and profile.occupation:
-        # 職業からハッシュタグ候補を生成
-        occ = profile.occupation
+        # 職業からハッシュタグ候補を生成（長い場合は最初の区切りまで）
+        occ = re.split(r'[。（]', profile.occupation)[0][:20]
         hashtag_parts.append(f"#{occ.replace(' ', '')}")
     if profile and profile.income:
         hashtag_parts.append(f"#年収{profile.income}")

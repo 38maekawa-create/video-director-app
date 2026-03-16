@@ -139,8 +139,16 @@ def _fallback_titles(
     # ゲスト属性から基本要素を抽出（「さん」二重付与防止）
     raw_name = profile.name if profile else "ゲスト"
     name = raw_name.rstrip("さん")
-    age = profile.age if profile else "30代"
-    occupation = profile.occupation if profile else "会社員"
+    raw_age = profile.age if profile else "30代"
+    # 数字のみの場合は「歳」を付与、「代」「歳」が付いていればそのまま
+    age = raw_age
+    if raw_age and raw_age.isdigit():
+        age = f"{raw_age}歳"
+    elif raw_age and not any(s in raw_age for s in ("代", "歳")):
+        age = f"{raw_age}歳"
+    raw_occupation = profile.occupation if profile else "会社員"
+    # 職業テキストが長すぎる場合は最初の句点・括弧閉じまでで切り詰め
+    occupation = re.split(r'[。（]', raw_occupation)[0][:30] if raw_occupation else "会社員"
     income = profile.income if profile else ""
 
     # 年収テキスト

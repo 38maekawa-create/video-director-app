@@ -1398,3 +1398,8 @@ INFO:     100.113.28.70:51946 - "GET /api/audit/history HTTP/1.1" 200 OK
 INFO:     100.113.28.70:51947 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
 INFO:     100.113.28.70:51946 - "GET /api/tracking/insights HTTP/1.1" 200 OK
 INFO:     100.113.28.70:51946 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65081 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65079 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65080 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65079 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65079 - "GET /api/learning/summary HTTP/1.1" 200 OK

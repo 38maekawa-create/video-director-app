@@ -171,26 +171,26 @@ struct VideoProject: Identifiable, Codable, Hashable {
 
     enum CodingKeys: String, CodingKey {
         case id
-        case guestName = "guest_name"
+        case guestName
         case title
-        case thumbnailSymbol = "thumbnail_symbol"
-        case shootDate = "shoot_date"
-        case guestAge = "guest_age"
-        case guestOccupation = "guest_occupation"
+        case thumbnailSymbol
+        case shootDate
+        case guestAge
+        case guestOccupation
         case status
-        case unreviewedCount = "unreviewed_count"
-        case qualityScore = "quality_score"
-        case hasUnsentFeedback = "has_unsent_feedback"
-        case directionReportURL = "direction_report_url"
-        case sourceVideoURL = "source_video_url"
-        case editedVideoURL = "edited_video_url"
+        case unreviewedCount
+        case qualityScore
+        case hasUnsentFeedback
+        case directionReportURL
+        case sourceVideoURL
+        case editedVideoURL
         case knowledge
         case category
-        case knowledgePageUrl = "knowledge_page_url"
+        case knowledgePageUrl
         // デコード専用キー（APIレスポンスのネスト構造を展開するため）
-        case sourceVideo = "source_video"
-        case editedVideo = "edited_video"
-        case feedbackSummary = "feedback_summary"
+        case sourceVideo
+        case editedVideo
+        case feedbackSummary
     }
 
     func encode(to encoder: Encoder) throws {

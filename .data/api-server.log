@@ -1406,3 +1406,4 @@ INFO:     100.113.28.70:65079 - "GET /api/learning/summary HTTP/1.1" 200 OK
 INFO:     100.113.28.70:54142 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.113.28.70:54143 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.113.28.70:54142 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:54447 - "GET /api/projects/p-20260101-%E3%83%A1%E3%82%A4%E3%82%B8/youtube-assets HTTP/1.1" 200 OK

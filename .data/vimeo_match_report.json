@@ -1,0 +1,662 @@
+{
+  "generated_at": "2026-03-16T11:30:07.477711",
+  "summary": {
+    "total_members": 29,
+    "matched": 14,
+    "unmatched": 15,
+    "total_vimeo_videos": 352,
+    "taidan_videos": 77
+  },
+  "matched": [
+    {
+      "guest_name": "hiraiさん",
+      "videos": [
+        {
+          "title": "hiraiさん_対談_修正2_大胡",
+          "vimeo_url": "https://vimeo.com/1145126331",
+          "status": "available",
+          "created": "2025-12-10"
+        },
+        {
+          "title": "hiraiさん_対談_修正1_大胡",
+          "vimeo_url": "https://vimeo.com/1144114029",
+          "status": "available",
+          "created": "2025-12-06"
+        },
+        {
+          "title": "hiraiさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1143066266",
+          "status": "available",
+          "created": "2025-12-03"
+        }
+      ]
+    },
+    {
+      "guest_name": "真生さん",
+      "videos": [
+        {
+          "title": "54_真生さん_対談_FB修正2_坂野",
+          "vimeo_url": "https://vimeo.com/1170557032",
+          "status": "uploading",
+          "created": "2026-03-05"
+        },
+        {
+          "title": "54_真生さん_対談_FB修正1_坂野",
+          "vimeo_url": "https://vimeo.com/1167662227",
+          "status": "available",
+          "created": "2026-02-24"
+        },
+        {
+          "title": "54_真生さん_対談_初稿_坂野",
+          "vimeo_url": "https://vimeo.com/1162021681",
+          "status": "available",
+          "created": "2026-02-05"
+        }
+      ]
+    },
+    {
+      "guest_name": "PAYさん",
+      "videos": [
+        {
+          "title": "payさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1172567733",
+          "status": "available",
+          "created": "2026-03-11"
+        }
+      ]
+    },
+    {
+      "guest_name": "Izuさん",
+      "videos": [
+        {
+          "title": "lzuさん　対談修正5",
+          "vimeo_url": "https://vimeo.com/1159068862",
+          "status": "available",
+          "created": "2026-01-28"
+        },
+        {
+          "title": "lzuさん　対談修正4",
+          "vimeo_url": "https://vimeo.com/1158926795",
+          "status": "available",
+          "created": "2026-01-27"
+        },
+        {
+          "title": "lzuさん　対談修正3",
+          "vimeo_url": "https://vimeo.com/1158434261",
+          "status": "available",
+          "created": "2026-01-26"
+        },
+        {
+          "title": "luzさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1149664208",
+          "status": "available",
+          "created": "2025-12-27"
+        }
+      ]
+    },
+    {
+      "guest_name": "こもさん",
+      "videos": [
+        {
+          "title": "こもさん_対談_完成_大胡",
+          "vimeo_url": "https://vimeo.com/1172578539",
+          "status": "available",
+          "created": "2026-03-11"
+        },
+        {
+          "title": "こもさん_対談_修正_大胡",
+          "vimeo_url": "https://vimeo.com/1169268050",
+          "status": "available",
+          "created": "2026-03-01"
+        },
+        {
+          "title": "こもさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1165580078",
+          "status": "available",
+          "created": "2026-02-17"
+        },
+        {
+          "title": "こもさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1157182051",
+          "status": "available",
+          "created": "2026-01-22"
+        }
+      ]
+    },
+    {
+      "guest_name": "てぃーひろさん",
+      "videos": [
+        {
+          "title": "てぃーひろさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1147585650",
+          "status": "available",
+          "created": "2025-12-18"
+        }
+      ]
+    },
+    {
+      "guest_name": "りょうすけさん",
+      "videos": [
+        {
+          "title": "50_りょうすけさん_対談_FB修正3_坂野",
+          "vimeo_url": "https://vimeo.com/1171320916",
+          "status": "available",
+          "created": "2026-03-07"
+        },
+        {
+          "title": "50_りょうすけさん_対談_FB修正2_坂野",
+          "vimeo_url": "https://vimeo.com/1162151609",
+          "status": "available",
+          "created": "2026-02-05"
+        },
+        {
+          "title": "50_りょうすけさん_対談_FB修正1_坂野",
+          "vimeo_url": "https://vimeo.com/1150065716",
+          "status": "available",
+          "created": "2025-12-29"
+        },
+        {
+          "title": "50_りょうすけさん_対談_初稿_坂野",
+          "vimeo_url": "https://vimeo.com/1148948564",
+          "status": "available",
+          "created": "2025-12-23"
+        }
+      ]
+    },
+    {
+      "guest_name": "さるビールさん",
+      "videos": [
+        {
+          "title": "55_さるビールさん_対談_FB修正2_坂野",
+          "vimeo_url": "https://vimeo.com/1171266349",
+          "status": "available",
+          "created": "2026-03-07"
+        },
+        {
+          "title": "55_さるビールさん_対談_FB修正1_坂野",
+          "vimeo_url": "https://vimeo.com/1158706792",
+          "status": "available",
+          "created": "2026-01-27"
+        },
+        {
+          "title": "55_さるビールさん_対談_初稿_坂野",
+          "vimeo_url": "https://vimeo.com/1153868700",
+          "status": "available",
+          "created": "2026-01-13"
+        },
+        {
+          "title": "_さるビールさん_インタビュー修正 (1)",
+          "vimeo_url": "https://vimeo.com/1117071304",
+          "status": "available",
+          "created": "2025-09-09"
+        }
+      ]
+    },
+    {
+      "guest_name": "みんてぃあさん",
+      "videos": [
+        {
+          "title": "みんてぃあさん_対談_完成",
+          "vimeo_url": "https://vimeo.com/1169268352",
+          "status": "available",
+          "created": "2026-03-01"
+        },
+        {
+          "title": "みんてぃあさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1160244243",
+          "status": "available",
+          "created": "2026-01-30"
+        }
+      ]
+    },
+    {
+      "guest_name": "しおさん",
+      "videos": [
+        {
+          "title": "しおさん_対談_修正_大胡",
+          "vimeo_url": "https://vimeo.com/1169268479",
+          "status": "available",
+          "created": "2026-03-01"
+        },
+        {
+          "title": "しおさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1165580488",
+          "status": "available",
+          "created": "2026-02-17"
+        }
+      ]
+    },
+    {
+      "guest_name": "ゆきもるさん",
+      "videos": [
+        {
+          "title": "57_ゆきもるさん_ボイチャ変更_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1173747716",
+          "status": "available",
+          "created": "2026-03-15"
+        },
+        {
+          "title": "57_ゆきもるさん_初稿_坂野",
+          "vimeo_url": "https://vimeo.com/1163547512",
+          "status": "available",
+          "created": "2026-02-10"
+        },
+        {
+          "title": "57_ゆきもるさん_初稿_坂野",
+          "vimeo_url": "https://vimeo.com/1163547171",
+          "status": "uploading_error",
+          "created": "2026-02-10"
+        }
+      ]
+    },
+    {
+      "guest_name": "スリマンさん",
+      "videos": [
+        {
+          "title": "59_スリマンさん_初稿_坂野",
+          "vimeo_url": "https://vimeo.com/1166171271",
+          "status": "available",
+          "created": "2026-02-18"
+        }
+      ]
+    },
+    {
+      "guest_name": "けーさん",
+      "videos": [
+        {
+          "title": "けーさん_修正",
+          "vimeo_url": "https://vimeo.com/1124561861",
+          "status": "available",
+          "created": "2025-10-05"
+        }
+      ]
+    },
+    {
+      "guest_name": "メンイチさん",
+      "videos": [
+        {
+          "title": "メンイチ夫妻　インタビュー",
+          "vimeo_url": "https://vimeo.com/1118716330",
+          "status": "available",
+          "created": "2025-09-15"
+        },
+        {
+          "title": "メンイチさんインタビュー1",
+          "vimeo_url": "https://vimeo.com/1114204802",
+          "status": "available",
+          "created": "2025-08-29"
+        }
+      ]
+    }
+  ],
+  "unmatched": [
+    {
+      "guest_name": "RYOさん",
+      "search_keys": [
+        "RYO"
+      ],
+      "near_candidates": []
+    },
+    {
+      "guest_name": "やーまんさん",
+      "search_keys": [
+        "ヤーマン",
+        "やーまん"
+      ],
+      "near_candidates": [
+        {
+          "title": "55_さるビールさん_対談_FB修正2_坂野",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "59_スリマンさん_初稿_坂野",
+          "matched_keys": [
+            "ヤーマン"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "55_さるビールさん_対談_FB修正1_坂野",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "55_さるビールさん_対談_初稿_坂野",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "てぃーひろさん_対談_初稿_大胡",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "available"
+        }
+      ]
+    },
+    {
+      "guest_name": "ろくさん",
+      "search_keys": [
+        "ロク",
+        "ろく"
+      ],
+      "near_candidates": []
+    },
+    {
+      "guest_name": "ひろきょうさん",
+      "search_keys": [
+        "ヒロキョウ",
+        "ひろきょう"
+      ],
+      "near_candidates": []
+    },
+    {
+      "guest_name": "松本さん",
+      "search_keys": [
+        "松本"
+      ],
+      "near_candidates": []
+    },
+    {
+      "guest_name": "あさかつさん",
+      "search_keys": [
+        "アサカツ",
+        "あさかつ"
+      ],
+      "near_candidates": [
+        {
+          "title": "みんてぃあさん_対談_完成",
+          "matched_keys": [
+            "あさかつ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "みんてぃあさん_対談_初稿_大胡",
+          "matched_keys": [
+            "あさかつ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "りつさん　インタビュー修正",
+          "matched_keys": [
+            "あさかつ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "N1インタビューまどかさん",
+          "matched_keys": [
+            "あさかつ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "そのかさん 初稿",
+          "matched_keys": [
+            "あさかつ"
+          ],
+          "status": "available"
+        }
+      ]
+    },
+    {
+      "guest_name": "くますけさん",
+      "search_keys": [
+        "くまき",
+        "くますけ",
+        "クマスケ",
+        "クマキ"
+      ],
+      "near_candidates": [
+        {
+          "title": "50_りょうすけさん_対談_FB修正3_坂野",
+          "matched_keys": [
+            "くますけ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "59_スリマンさん_初稿_坂野",
+          "matched_keys": [
+            "クマスケ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "50_りょうすけさん_対談_FB修正2_坂野",
+          "matched_keys": [
+            "くますけ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "50_りょうすけさん_対談_FB修正1_坂野",
+          "matched_keys": [
+            "くますけ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "50_りょうすけさん_対談_初稿_坂野",
+          "matched_keys": [
+            "くますけ"
+          ],
+          "status": "available"
+        }
+      ]
+    },
+    {
+      "guest_name": "アンディさん",
+      "search_keys": [
+        "アンディ",
+        "あんでぃ"
+      ],
+      "near_candidates": [
+        {
+          "title": "みんてぃあさん_対談_完成",
+          "matched_keys": [
+            "あんでぃ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "みんてぃあさん_対談_初稿_大胡",
+          "matched_keys": [
+            "あんでぃ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "てぃーひろさん_対談_初稿_大胡",
+          "matched_keys": [
+            "あんでぃ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "ゆってぃさん　インタビュー 修正",
+          "matched_keys": [
+            "あんでぃ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "ゆってぃさんインタビュー",
+          "matched_keys": [
+            "あんでぃ"
+          ],
+          "status": "available"
+        }
+      ]
+    },
+    {
+      "guest_name": "ロキさん",
+      "search_keys": [
+        "ろき",
+        "ロキ"
+      ],
+      "near_candidates": []
+    },
+    {
+      "guest_name": "さくらさん",
+      "search_keys": [
+        "サクラ",
+        "さくら"
+      ],
+      "near_candidates": [
+        {
+          "title": "くらぴさん_修正版",
+          "matched_keys": [
+            "さくら"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "アサヒ×タクヤ対談アーカイブ卸、メーカー仕入れ勉強会",
+          "matched_keys": [
+            "サクラ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "ワークバランス・デザイン特別対談　ヘルシーな働き方とは？",
+          "matched_keys": [
+            "サクラ"
+          ],
+          "status": "available"
+        }
+      ]
+    },
+    {
+      "guest_name": "ゆりかさん",
+      "search_keys": [
+        "ユリカ",
+        "ゆりか"
+      ],
+      "near_candidates": []
+    },
+    {
+      "guest_name": "コテさん",
+      "search_keys": [
+        "こてつ",
+        "コテツ",
+        "コテ",
+        "こて"
+      ],
+      "near_candidates": [
+        {
+          "title": "【スペース】 トップマーケッター対談　LIVE配信戦略について語る　（9/15小西）",
+          "matched_keys": [
+            "こてつ"
+          ],
+          "status": "available"
+        }
+      ]
+    },
+    {
+      "guest_name": "kosさん",
+      "search_keys": [
+        "コスト",
+        "kos",
+        "こすと"
+      ],
+      "near_candidates": [
+        {
+          "title": "20250731_tekoインタビュー動画ベル様_修正稿 (1080p)",
+          "matched_keys": [
+            "kos"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "20250711_tekoインタビューベル様_2稿 (1080p)",
+          "matched_keys": [
+            "kos"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "20250624_tekoインタビュー｜ベルさん_初稿 (540p)",
+          "matched_keys": [
+            "kos"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "【スペース】 トップマーケッター対談　LIVE配信戦略について語る　（9/15小西）",
+          "matched_keys": [
+            "コスト"
+          ],
+          "status": "available"
+        }
+      ]
+    },
+    {
+      "guest_name": "さといも・トーマスさん",
+      "search_keys": [
+        "サトイモ・トーマス",
+        "さといも",
+        "サトイモ",
+        "とーます",
+        "さといも・トーマス",
+        "トーマス",
+        "さといも・とーます"
+      ],
+      "near_candidates": [
+        {
+          "title": "57_ゆきもるさん_ボイチャ変更_初稿_大胡",
+          "matched_keys": [
+            "さといも"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "こもさん_対談_完成_大胡",
+          "matched_keys": [
+            "さといも"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "こもさん_対談_修正_大胡",
+          "matched_keys": [
+            "さといも"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "59_スリマンさん_初稿_坂野",
+          "matched_keys": [
+            "トーマス"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "こもさん_対談_初稿_大胡",
+          "matched_keys": [
+            "さといも"
+          ],
+          "status": "available"
+        }
+      ]
+    },
+    {
+      "guest_name": "ハオさん",
+      "search_keys": [
+        "はお",
+        "羽生",
+        "ハオ"
+      ],
+      "near_candidates": []
+    }
+  ]
+}

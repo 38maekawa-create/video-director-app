@@ -102,7 +102,7 @@ def fetch_vimeo_videos(token: str, max_pages: int = 4) -> list[dict]:
                 "-H", f"Authorization: bearer {token}",
                 f"https://api.vimeo.com/me/videos?per_page=100&sort=date&direction=desc&page={page}",
             ],
-            capture_output=True, text=True, timeout=30,
+            capture_output=True, text=True, timeout=120,
         )
         if result.returncode != 0:
             break

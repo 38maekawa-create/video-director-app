@@ -3171,3 +3171,11 @@ INFO:     Started reloader process [92847] using StatReload
 INFO:     Started server process [92850]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'scripts/sync_vimeo_edited_videos.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [92850]
+INFO:     Started server process [1043]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

@@ -3552,3 +3552,29 @@ INFO:     Finished server process [32013]
 INFO:     Started server process [32575]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'scripts/regenerate_titles_matsumoto.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [32575]
+INFO:     Started server process [99923]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'scripts/regenerate_titles_matsumoto.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [99923]
+INFO:     Started server process [99929]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'scripts/regenerate_titles_matsumoto.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [99929]
+INFO:     Started server process [458]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'scripts/regenerate_titles_matsumoto.py'. Reloading...
+INFO:     Shutting down

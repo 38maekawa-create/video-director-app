@@ -332,12 +332,100 @@ struct DirectionReportView: View {
                     "未送信FB: \(project.hasUnsentFeedback ? "あり" : "なし")"
                 ]
             )
+
+            // 手修正ツール導線
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Image(systemName: "wrench.and.screwdriver.fill")
+                        .foregroundStyle(AppTheme.accent)
+                    Text("手修正ツール")
+                        .font(AppTheme.sectionFont(18))
+                        .foregroundStyle(.white)
+                }
+
+                NavigationLink {
+                    TitleDescriptionEditView(
+                        projectId: project.id,
+                        projectTitle: project.title
+                    )
+                } label: {
+                    editToolRow(icon: "character.cursor.ibeam", title: "タイトル・概要欄を編集")
+                }
+
+                NavigationLink {
+                    ThumbnailEditView(
+                        projectId: project.id,
+                        projectTitle: project.title
+                    )
+                } label: {
+                    editToolRow(icon: "photo.artframe", title: "サムネ指示書を編集")
+                }
+
+                NavigationLink {
+                    DirectionEditView(
+                        projectId: project.id,
+                        projectTitle: project.title
+                    )
+                } label: {
+                    editToolRow(icon: "pencil.and.outline", title: "ディレクションを編集")
+                }
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+
             pdcaCard
         }
     }
 
+    private func editToolRow(icon: String, title: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .foregroundStyle(AppTheme.accent)
+                .frame(width: 24)
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundStyle(.white)
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundStyle(AppTheme.textMuted)
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(AppTheme.cardBackgroundLight)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
     private var directionReportSection: some View {
-        Group {
+        VStack(spacing: 12) {
+            // 手修正ボタン
+            NavigationLink {
+                DirectionEditView(
+                    projectId: project.id,
+                    projectTitle: project.title
+                )
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "pencil.and.outline")
+                        .font(.system(size: 14, weight: .bold))
+                    Text("ディレクションを編集")
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(AppTheme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .strokeBorder(AppTheme.accent.opacity(0.5), lineWidth: 1)
+                )
+            }
+
             if let urlString = project.directionReportURL,
                let url = URL(string: urlString) {
                 WebViewRepresentable(url: url)

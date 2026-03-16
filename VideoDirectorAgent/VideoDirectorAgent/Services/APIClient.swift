@@ -405,7 +405,7 @@ final class APIClient: ObservableObject {
     // クエリパラメータ付きパスを正しくURLに変換するヘルパー
     // URL.appending(path:) はクエリ文字列の ? を %3F にエンコードしてしまうため
     // 日本語を含むパス（プロジェクトID等）もパーセントエンコーディングで対応
-    private func buildURL(base: URL, path: String) -> URL {
+    func buildURL(base: URL, path: String) -> URL {
         let fullString = base.absoluteString + path
         // まず直接URLを試みる
         if let url = URL(string: fullString) {
@@ -478,4 +478,179 @@ struct SourceVideoCreateBody: Encodable {
     let youtubeUrl: String
     let title: String?
     let qualityStatus: String
+}
+
+// MARK: - 手修正APIリクエストボディ
+
+private struct DirectionEditBody: Encodable {
+    let editedContent: String
+    let editedBy: String
+    let editNotes: String?
+}
+
+private struct AssetEditBody: Encodable {
+    let editedContent: String
+    let editedBy: String
+}
+
+// MARK: - 手修正API（APIClient拡張）
+
+extension APIClient {
+
+    /// ディレクションレポートを更新（PUT）
+    func updateDirectionReport(
+        projectId: String,
+        editedContent: String,
+        editedBy: String,
+        editNotes: String? = nil
+    ) async throws -> [String: Any] {
+        let body = DirectionEditBody(
+            editedContent: editedContent,
+            editedBy: editedBy,
+            editNotes: editNotes
+        )
+        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/direction-report")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.timeoutInterval = 12
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.server(statusCode: httpResponse.statusCode)
+        }
+        return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
+    }
+
+    /// ディレクション編集履歴を取得
+    func fetchDirectionEditHistory(projectId: String) async throws -> [[String: Any]] {
+        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/direction-report/history")
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 12
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.server(statusCode: httpResponse.statusCode)
+        }
+        return (try? JSONSerialization.jsonObject(with: data) as? [[String: Any]]) ?? []
+    }
+
+    /// ディレクション編集diff（元 vs 修正）を取得
+    func fetchDirectionEditDiff(projectId: String) async throws -> [String: Any] {
+        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/direction-report/diff")
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 12
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.server(statusCode: httpResponse.statusCode)
+        }
+        return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
+    }
+
+    /// タイトルを更新
+    func updateTitle(projectId: String, editedContent: String, editedBy: String) async throws -> [String: Any] {
+        let body = AssetEditBody(editedContent: editedContent, editedBy: editedBy)
+        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/assets/title")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.timeoutInterval = 12
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.server(statusCode: httpResponse.statusCode)
+        }
+        return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
+    }
+
+    /// 概要欄を更新（手修正API用 — 既存のupdateDescriptionとは別エンドポイント）
+    func updateDescription(projectId: String, editedContent: String, editedBy: String) async throws -> [String: Any] {
+        let body = AssetEditBody(editedContent: editedContent, editedBy: editedBy)
+        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/assets/description")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.timeoutInterval = 12
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.server(statusCode: httpResponse.statusCode)
+        }
+        return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
+    }
+
+    /// サムネ指示書を更新
+    func updateThumbnailInstruction(projectId: String, editedContent: String, editedBy: String) async throws -> [String: Any] {
+        let body = AssetEditBody(editedContent: editedContent, editedBy: editedBy)
+        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/assets/thumbnail")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.timeoutInterval = 12
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.server(statusCode: httpResponse.statusCode)
+        }
+        return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
+    }
+
+    /// アセット編集履歴を取得（タイトル/概要/サムネ共通）
+    func fetchAssetEditHistory(projectId: String, assetType: String) async throws -> [[String: Any]] {
+        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/assets/\(assetType)/history")
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 12
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.server(statusCode: httpResponse.statusCode)
+        }
+        return (try? JSONSerialization.jsonObject(with: data) as? [[String: Any]]) ?? []
+    }
+
+    /// アセット編集diff（元 vs 修正）を取得（タイトル/概要/サムネ共通）
+    func fetchAssetEditDiff(projectId: String, assetType: String) async throws -> [String: Any] {
+        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/assets/\(assetType)/diff")
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 12
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.server(statusCode: httpResponse.statusCode)
+        }
+        return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
+    }
 }

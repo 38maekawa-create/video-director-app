@@ -1,23 +1,136 @@
 import SwiftUI
 import WebKit
 
-// MARK: - YouTube埋め込みプレイヤー
-struct YouTubePlayerView: UIViewRepresentable {
+// MARK: - YouTube動画IDの抽出ユーティリティ
+private func extractYouTubeVideoId(from url: String) -> String? {
+    // https://www.youtube.com/watch?v=XXXX
+    if let range = url.range(of: "v=") {
+        let start = range.upperBound
+        let remaining = String(url[start...])
+        return String(remaining.prefix(while: { $0 != "&" && $0 != "#" }))
+    }
+    // https://youtu.be/XXXX
+    if url.contains("youtu.be/") {
+        if let range = url.range(of: "youtu.be/") {
+            let start = range.upperBound
+            let remaining = String(url[start...])
+            return String(remaining.prefix(while: { $0 != "?" && $0 != "#" }))
+        }
+    }
+    return nil
+}
+
+// MARK: - YouTube埋め込みプレイヤー（エラー時フォールバック付き）
+struct YouTubePlayerView: View {
     let videoURL: String
+
+    @State private var embedError = false
+
+    private var videoId: String? {
+        extractYouTubeVideoId(from: videoURL)
+    }
+
+    var body: some View {
+        if embedError, let vid = videoId {
+            // フォールバック: サムネイル + 「YouTubeで開く」ボタン
+            YouTubeFallbackView(videoId: vid)
+        } else {
+            YouTubeWebPlayerView(videoURL: videoURL, onEmbedError: {
+                embedError = true
+            })
+        }
+    }
+}
+
+// MARK: - フォールバック表示（サムネ + YouTubeで開くボタン）
+struct YouTubeFallbackView: View {
+    let videoId: String
+
+    var body: some View {
+        ZStack {
+            // サムネイル画像（16:9）
+            AsyncImage(url: URL(string: "https://img.youtube.com/vi/\(videoId)/hqdefault.jpg")) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(16.0 / 9.0, contentMode: .fit)
+                case .failure:
+                    Color.black
+                        .aspectRatio(16.0 / 9.0, contentMode: .fit)
+                case .empty:
+                    Color.black
+                        .aspectRatio(16.0 / 9.0, contentMode: .fit)
+                        .overlay(ProgressView().tint(.white))
+                @unknown default:
+                    Color.black
+                        .aspectRatio(16.0 / 9.0, contentMode: .fit)
+                }
+            }
+
+            // オーバーレイ: エラーメッセージ + ボタン
+            VStack(spacing: 12) {
+                Spacer()
+
+                // エラーメッセージ
+                Text("埋め込み再生が制限されています")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.black.opacity(0.7))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+
+                // YouTubeで開くボタン
+                Link(destination: URL(string: "https://www.youtube.com/watch?v=\(videoId)")!) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "play.rectangle.fill")
+                            .font(.system(size: 16, weight: .bold))
+                        Text("YouTubeで開く")
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(Color(red: 1.0, green: 0.0, blue: 0.0))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+
+                Spacer()
+                    .frame(height: 16)
+            }
+        }
+    }
+}
+
+// MARK: - WKWebViewベースのYouTubeプレーヤー（IFrame Player API + エラー検出）
+struct YouTubeWebPlayerView: UIViewRepresentable {
+    let videoURL: String
+    var onEmbedError: (() -> Void)?
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onEmbedError: onEmbedError)
+    }
 
     func makeUIView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
         config.allowsInlineMediaPlayback = true
         config.mediaTypesRequiringUserActionForPlayback = []
+        // JavaScript→Swift通信用のメッセージハンドラを登録
+        config.userContentController.add(context.coordinator, name: "ytError")
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.scrollView.isScrollEnabled = false
         webView.isOpaque = false
         webView.backgroundColor = .clear
+        webView.navigationDelegate = context.coordinator
         return webView
     }
 
     func updateUIView(_ webView: WKWebView, context: Context) {
         guard let videoId = extractYouTubeVideoId(from: videoURL) else { return }
+        // YouTube IFrame Player APIを使い、onErrorイベントをpostMessageで通知
         let embedHTML = """
         <!DOCTYPE html>
         <html>
@@ -25,38 +138,80 @@ struct YouTubePlayerView: UIViewRepresentable {
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
         <style>
             body { margin: 0; padding: 0; background: #000; }
-            .container { position: relative; width: 100%; padding-bottom: 56.25%; }
-            iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+            #player { width: 100%; aspect-ratio: 16/9; }
         </style>
         </head>
         <body>
-        <div class="container">
-            <iframe src="https://www.youtube.com/embed/\(videoId)?playsinline=1&rel=0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen></iframe>
-        </div>
+        <div id="player"></div>
+        <script>
+            var tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            var firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+            var player;
+            function onYouTubeIframeAPIReady() {
+                player = new YT.Player('player', {
+                    videoId: '\(videoId)',
+                    playerVars: {
+                        'playsinline': 1,
+                        'rel': 0
+                    },
+                    events: {
+                        'onError': onPlayerError
+                    }
+                });
+            }
+            function onPlayerError(event) {
+                // エラーコード: 2, 5, 100, 101, 150, 152, 153
+                window.webkit.messageHandlers.ytError.postMessage({
+                    code: event.data,
+                    videoId: '\(videoId)'
+                });
+            }
+            // IFrame API読み込み失敗時のフォールバック（5秒タイムアウト）
+            setTimeout(function() {
+                if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+                    window.webkit.messageHandlers.ytError.postMessage({
+                        code: -1,
+                        videoId: '\(videoId)'
+                    });
+                }
+            }, 5000);
+        </script>
         </body>
         </html>
         """
-        webView.loadHTMLString(embedHTML, baseURL: nil)
+        webView.loadHTMLString(embedHTML, baseURL: URL(string: "https://www.youtube.com"))
     }
 
-    private func extractYouTubeVideoId(from url: String) -> String? {
-        // https://www.youtube.com/watch?v=XXXX
-        if let range = url.range(of: "v=") {
-            let start = range.upperBound
-            let remaining = String(url[start...])
-            return String(remaining.prefix(while: { $0 != "&" && $0 != "#" }))
+    // MARK: - Coordinator（WKScriptMessageHandler + WKNavigationDelegate）
+    class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
+        var onEmbedError: (() -> Void)?
+
+        init(onEmbedError: (() -> Void)?) {
+            self.onEmbedError = onEmbedError
         }
-        // https://youtu.be/XXXX
-        if url.contains("youtu.be/") {
-            if let range = url.range(of: "youtu.be/") {
-                let start = range.upperBound
-                let remaining = String(url[start...])
-                return String(remaining.prefix(while: { $0 != "?" && $0 != "#" }))
+
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            if message.name == "ytError" {
+                DispatchQueue.main.async { [weak self] in
+                    self?.onEmbedError?()
+                }
             }
         }
-        return nil
+
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            DispatchQueue.main.async { [weak self] in
+                self?.onEmbedError?()
+            }
+        }
+
+        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+            DispatchQueue.main.async { [weak self] in
+                self?.onEmbedError?()
+            }
+        }
     }
 }
 

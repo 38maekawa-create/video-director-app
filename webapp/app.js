@@ -1904,11 +1904,21 @@
 
       html += '<div class="sv-video-card">';
 
-      // YouTube 埋め込みプレーヤー（16:9）
-      html += '<div class="sv-player-wrap">';
-      html += '<iframe src="' + embedUrl + '" ';
+      // YouTube 埋め込みプレーヤー（16:9）+ エラー時フォールバック
+      html += '<div class="sv-player-wrap" id="sv-player-wrap-' + i + '">';
+      html += '<div id="sv-yt-player-' + i + '">';
+      html += '<iframe id="sv-iframe-' + i + '" src="' + embedUrl + '&enablejsapi=1&origin=' + encodeURIComponent(window.location.origin) + '" ';
       html += 'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ';
       html += 'allowfullscreen class="sv-player-iframe"></iframe>';
+      html += '</div>';
+      // フォールバック表示（非表示で待機）
+      html += '<div id="sv-fallback-' + i + '" class="sv-fallback" style="display:none;" data-vid="' + vid + '">';
+      html += '<img src="https://img.youtube.com/vi/' + vid + '/hqdefault.jpg" class="sv-fallback-thumb" alt="サムネイル" />';
+      html += '<div class="sv-fallback-overlay">';
+      html += '<div class="sv-fallback-msg">埋め込み再生が制限されています</div>';
+      html += '<a href="' + watchUrl + '" target="_blank" rel="noopener" class="sv-fallback-btn">▶ YouTubeで開く</a>';
+      html += '</div>';
+      html += '</div>';
       html += '</div>';
 
       // 動画情報

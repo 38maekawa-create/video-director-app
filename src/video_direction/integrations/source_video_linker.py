@@ -205,18 +205,44 @@ class SourceVideoLinker:
 
     @staticmethod
     def _extract_speaker_names(speakers_str: str) -> list[str]:
-        """話者文字列から名前リストを抽出"""
+        """話者文字列から名前リストを抽出（括弧内のカンマは分割しない）"""
         if not speakers_str:
             return []
-        # "hirai, インタビュアー" → ["hirai"]
-        # "前川, Izu" → ["前川", "Izu"]
+        # 括弧内のカンマを一時的に置換して保護
+        protected = re.sub(r"[（(][^）)]*[）)]", lambda m: m.group().replace(",", "\x00").replace("、", "\x01"), speakers_str)
         names = []
-        for name in re.split(r"[,、/]", speakers_str):
-            name = name.strip()
+        for name in re.split(r"[,、/]", protected):
+            name = name.strip().replace("\x00", ",").replace("\x01", "、")
             # 「インタビュアー」「ナレーター」等の汎用話者は除外
             if name and name not in ("インタビュアー", "ナレーター", "MC", "司会", "司会者"):
                 names.append(name)
         return names
+
+    # MEMBER_MASTER.jsonの文字起こし誤変換+エイリアスから構築した名寄せマップ
+    # キー: 正規化名（小文字）、値: そのメンバーの全表記バリエーション（小文字）
+    _NAME_ALIASES: dict[str, set[str]] = {
+        "kos": {"kos", "コスト", "コスト氏"},
+        "メンイチ": {"メンイチ", "メイジ", "メイチ"},
+        "さといも・トーマス": {"さといも・トーマス", "さといも", "トーマス", "里芋", "柚山", "ゲスト氏（里芋、トーマス）", "里芋、トーマス"},
+        "ハオ": {"ハオ", "羽生", "羽生氏"},
+        "hirai": {"hirai", "平井"},
+        "こも": {"こも", "小本"},
+        "ゆきもる": {"ゆきもる", "雪村", "雪森"},
+        "しお": {"しお", "シオ"},
+        "コテ": {"コテ", "コテツ"},
+        "Izu": {"izu", "飯泉"},
+    }
+
+    @staticmethod
+    def _resolve_alias(name: str) -> set[str]:
+        """名前のエイリアス（別表記）を全て返す"""
+        name_lower = name.lower().strip()
+        name_clean = re.sub(r"さん$", "", name_lower)
+        for canonical, aliases in SourceVideoLinker._NAME_ALIASES.items():
+            aliases_lower = {a.lower() for a in aliases}
+            if name_clean in aliases_lower or name_lower in aliases_lower:
+                return aliases_lower
+        return set()
 
     @staticmethod
     def _name_match(project_guest: str, knowledge_speakers: list[str]) -> float:
@@ -224,8 +250,10 @@ class SourceVideoLinker:
         if not project_guest or not knowledge_speakers:
             return 0.0
         guest_lower = project_guest.lower().strip()
+        guest_clean = re.sub(r"さん$", "", guest_lower)
         for speaker in knowledge_speakers:
             speaker_lower = speaker.lower().strip()
+            speaker_clean = re.sub(r"さん$", "", speaker_lower)
             # 完全一致
             if guest_lower == speaker_lower:
                 return 1.0
@@ -233,13 +261,23 @@ class SourceVideoLinker:
             if guest_lower in speaker_lower or speaker_lower in guest_lower:
                 return 0.8
             # 「さん」付け除去して比較
-            guest_clean = re.sub(r"さん$", "", guest_lower)
-            speaker_clean = re.sub(r"さん$", "", speaker_lower)
             if guest_clean and speaker_clean:
                 if guest_clean == speaker_clean:
                     return 1.0
                 if guest_clean in speaker_clean or speaker_clean in guest_clean:
                     return 0.8
+            # エイリアスマッチ（文字起こし誤変換・別名対応）
+            guest_aliases = SourceVideoLinker._resolve_alias(guest_lower)
+            if guest_aliases:
+                speaker_aliases = SourceVideoLinker._resolve_alias(speaker_lower)
+                if speaker_aliases and guest_aliases & speaker_aliases:
+                    return 0.9  # エイリアス経由の一致
+                # speaker自体がguestのエイリアスに含まれるか
+                if speaker_clean in guest_aliases:
+                    return 0.9
+            speaker_aliases = SourceVideoLinker._resolve_alias(speaker_lower)
+            if speaker_aliases and guest_clean in speaker_aliases:
+                return 0.9
         return 0.0
 
     def _match_project_to_knowledge(

@@ -1367,3 +1367,5 @@ INFO:     127.0.0.1:49535 - "GET /docs HTTP/1.1" 200 OK
 INFO:     127.0.0.1:49537 - "GET /health HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:49539 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     127.0.0.1:49542 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53372 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     172.16.0.125:53390 - "GET /api/projects HTTP/1.1" 200 OK

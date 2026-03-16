@@ -1,11 +1,53 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-16 07:30 セッション8→9引き継ぎ: バッチ生成29件全件成功 + 引き継ぎドキュメント作成完了
+2026-03-16 12:00 セッション10: 18モデル並列デプロイ Wave 1-2 全完了 + importエラー修正 + 29/29全件E2E成功
 <!-- authored: T1/副官A/バティ/2026-03-16 -->
 
 ## 現在の作業状態
-**バッチ生成29件全件成功 ✅ → 次フェーズ: 手修正+自己学習機能の実装**
+**手修正+自己学習機能 バックエンド+iOS UI 全実装完了 ✅ → 実機ビルド待ち**
+
+### 2026-03-16 セッション10 完了タスク（18モデル並列デプロイ）
+
+| # | タスク | 状態 |
+|---|--------|------|
+| 1 | 手修正API: ディレクションレポート（PUT/GET history/GET diff） | ✅ edit_direction_routes.py |
+| 2 | 手修正API: タイトル・概要欄・サムネ（9エンドポイント） | ✅ edit_assets_routes.py |
+| 3 | diff分析エンジン（difflib、LLM不使用） | ✅ edit_diff_analyzer.py |
+| 4 | EditLearner 手修正学習DB | ✅ edit_learner.py |
+| 5 | プロンプト3種改修（TEKO統一フォーマット+Z理論+CTA冒頭） | ✅ prompts.py |
+| 6 | トラッキング分析粒度強化（direction_generator大幅強化） | ✅ direction_generator.py |
+| 7 | FB変換強化（TEKO美的基準+ゲストtier+あいまいFBルール） | ✅ feedback_converter.py |
+| 8 | Vimeoマッチング改善（複合名分割+かな変換+レポート出力） | ✅ sync_vimeo_edited_videos.py |
+| 9 | ルーター統合（api_server.pyにedit_direction/edit_assets登録） | ✅ |
+| 10 | api_server.py importエラー修正（絶対→相対import） | ✅ ModuleNotFoundError解消 |
+| 11 | E2Eバッチ再生成 29/29件成功（あさかつ・くますけ含む） | ✅ |
+| 12 | iOS: DirectionEditView（4セクション折りたたみ式） | ✅ |
+| 13 | iOS: TitleDescriptionEditView（独立保存+diff表示） | ✅ |
+| 14 | iOS: ThumbnailEditView（Z型4ゾーン色分けカード） | ✅ |
+| 15 | iOS: APIClient 8メソッド追加 | ✅ |
+| 16 | iOS: DirectionReportView 導線追加 | ✅ |
+| 17 | テスト73件全PASS（edit系4ファイル） | ✅ |
+
+**新規ファイル（Python 4件）:**
+- `src/video_direction/integrations/edit_direction_routes.py` — ディレクション手修正API
+- `src/video_direction/integrations/edit_assets_routes.py` — タイトル・概要欄・サムネ手修正API
+- `src/video_direction/analyzer/edit_diff_analyzer.py` — diff分析エンジン
+- `src/video_direction/tracker/edit_learner.py` — 手修正学習エンジン
+
+**新規ファイル（Swift 3件）:**
+- `Views/DirectionEditView.swift` — ディレクション編集画面
+- `Views/TitleDescriptionEditView.swift` — タイトル・概要欄編集画面
+- `Views/ThumbnailEditView.swift` — サムネ指示書編集画面（Z理論4ゾーン）
+
+**変更ファイル（Python）:** api_server.py, prompts.py, direction_generator.py, feedback_converter.py, title_generator.py, description_writer.py, thumbnail_designer.py, sync_vimeo_edited_videos.py
+**変更ファイル（Swift）:** APIClient.swift, DirectionReportView.swift
+
+### 次にやるべき作業
+| # | タスク | 状態 |
+|---|--------|------|
+| 1 | 実機ビルド（SwiftUI変更の動作確認） | 未着手 |
+| 2 | Vimeo未マッチ16名の深掘り（名前マッチング精度向上） | 未着手 |
 
 ### 2026-03-16 セッション9 完了タスク
 
@@ -13,8 +55,6 @@
 |---|--------|------|
 | 1 | ディレクションレポート全29件バッチ生成（失敗0件、95.8秒） | ✅ |
 | 2 | 引き継ぎドキュメント作成（HANDOFF_20260316.md） | ✅ |
-
-**引き継ぎドキュメント**: `HANDOFF_20260316.md` — 新規セッションが読むだけで全コンテキストをキャッチアップできる網羅的な引き継ぎ
 
 ### 2026-03-16 セッション8 完了タスク（UIバグ修正+カテゴリ修正）
 

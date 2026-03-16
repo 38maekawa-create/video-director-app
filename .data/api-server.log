@@ -761,3 +761,4 @@ INFO:     100.113.28.70:60872 - "GET /api/projects/p-20251123-hirai%E3%81%95%E3%
 INFO:     100.113.28.70:60872 - "GET /api/v1/projects/p-20251123-hirai%E3%81%95%E3%82%93/source-videos HTTP/1.1" 200 OK
 INFO:     100.113.28.70:60872 - "GET /api/projects/p-20251123-hirai%E3%81%95%E3%82%93/feedbacks HTTP/1.1" 200 OK
 INFO:     100.113.28.70:60872 - "GET /api/v1/projects/p-20251123-hirai%E3%81%95%E3%82%93/feedbacks-with-timecodes HTTP/1.1" 404 Not Found
+INFO:     100.113.28.70:62330 - "GET /api/v1/projects/p-20251123-hirai%E3%81%95%E3%82%93/direction-report/diff HTTP/1.1" 404 Not Found

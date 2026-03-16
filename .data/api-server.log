@@ -1017,3 +1017,4 @@ INFO:     127.0.0.1:60675 - "POST /api/v1/projects/p-20260215-%E3%82%AF%E3%83%9E
   ⚠️ 概要欄文章LLM生成失敗: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZ5uh7wCXvFdSnZJcUqTT'}
   ⚠️ サムネ指示書LLM生成失敗: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZ5uhCP6W9sdqsW1UcLVs'}
 INFO:     127.0.0.1:60680 - "POST /api/v1/projects/p-20260215-%E3%83%AD%E3%82%AD/e2e-pipeline HTTP/1.1" 200 OK
+INFO:     100.113.28.70:50207 - "GET /api/projects HTTP/1.1" 200 OK

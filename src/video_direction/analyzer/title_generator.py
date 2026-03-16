@@ -77,11 +77,20 @@ def generate_title_proposals(
 
     try:
         from teko_core.llm import ask
+        print(f"  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...")
         raw = ask(prompt, model="sonnet", max_tokens=2000, timeout=120)
-        return _parse_title_response(raw)
+        print(f"  🤖 LLM応答取得 ({len(raw)}文字)")
+        result = _parse_title_response(raw)
+        print(f"  🤖 パース結果: {len(result.candidates)}件の候補")
+        if not result.candidates:
+            print(f"  ⚠️ パース失敗、フォールバックへ。生レスポンス冒頭: {raw[:200]}")
+            return _fallback_titles(video_data, classification, income_eval)
+        return result
 
     except Exception as e:
+        import traceback
         print(f"  ⚠️ タイトル考案LLM生成失敗: {e}")
+        traceback.print_exc()
         return _fallback_titles(video_data, classification, income_eval)
 
 

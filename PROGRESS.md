@@ -1,7 +1,7 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-16 15:00 セッション11: タイトル・概要欄修正 + Build 21 + Vimeo連携修正 + 29/29バッチ再生成
+2026-03-16 17:30 セッション12: ナレッジ名前崩壊全件修正 + SourceVideoLinkerエイリアス + Vimeo深掘り + 品質テスト全PASS
 <!-- authored: T1/副官A/バティ/2026-03-16 -->
 
 ## 現在の作業状態
@@ -59,12 +59,28 @@
 **変更ファイル（Python）:** api_server.py, prompts.py, direction_generator.py, feedback_converter.py, title_generator.py, description_writer.py, thumbnail_designer.py, sync_vimeo_edited_videos.py
 **変更ファイル（Swift）:** APIClient.swift, DirectionReportView.swift
 
+### 2026-03-16 セッション12 完了タスク
+
+| # | タスク | 状態 |
+|---|--------|------|
+| 1 | SourceVideoLinkerにエイリアスマッチ追加（ローマ字↔カタカナ、ひらがな↔漢字対応） | ✅ |
+| 2 | _extract_speaker_namesの括弧内カンマ分割保護 | ✅ |
+| 3 | source_video 29/29全件マッチ成功（kos/メンイチ/さといも・トーマス含む） | ✅ |
+| 4 | ナレッジファイル名リネーム5件（コスト氏→kos、メイジ→メンイチ、コテツ→コテ、羽生氏→ハオ、ゲスト氏里芋トーマス→さといも・トーマス） | ✅ |
+| 5 | ナレッジ内部話者名修正 1,193行（sources/video + _refinery/output + _archive_duplicates） | ✅ |
+| 6 | 29/29バッチ再生成（正しい名前でタイトル生成確認済み） | ✅ |
+| 7 | Vimeo連携: 14/29マッチ済み（真生さんavailable版手動設定）。残15名はVimeo未アップ | ✅ |
+| 8 | Vimeo APIタイムアウト改善（30s→120s） | ✅ |
+| 9 | タイトル・概要欄品質テスト 29/29 全項目PASS（TEKO独占/CTA/タイムスタンプ/ハッシュタグ） | ✅ |
+
+**修正ファイル（Python）:** source_video_linker.py, sync_vimeo_edited_videos.py
+**修正ファイル（ナレッジ）:** sources/video/ 7ファイル内部 + 5ファイルリネーム, _refinery/output/ 73ファイル
+
 ### 次にやるべき作業
 | # | タスク | 状態 |
 |---|--------|------|
-| 1 | source_video未マッチ3名（kosさん/メンイチさん/さといも・トーマスさん）の手動マッピング | 未着手 |
-| 2 | Vimeo未マッチ16名の深掘り（名前マッチング精度向上） | 未着手 |
-| 3 | LLM有効時のタイトル・概要欄生成品質テスト | 未着手 |
+| 1 | Vimeo残15名: 編集完了後にsync_vimeo_edited_videos.pyが自動マッチ予定 | 待ち |
+| 2 | LLM有効時のタイトル品質向上テスト（API key設定→LLM生成→フォールバック比較） | 未着手 |
 
 ### 2026-03-16 セッション9 完了タスク
 

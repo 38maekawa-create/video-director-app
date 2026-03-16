@@ -2866,12 +2866,12 @@ def run_e2e_pipeline(project_id: str, body: E2EPipelineRequest = E2EPipelineRequ
         knowledge_json = project_data.get("knowledge")
         if knowledge_json and not video_data.profiles:
             try:
-                from ..integrations.ai_dev5_connector import GuestProfile
+                from ..integrations.ai_dev5_connector import PersonProfile
                 kd = json.loads(knowledge_json) if isinstance(knowledge_json, str) else knowledge_json
                 profiles_data = kd.get("profiles", [])
                 if profiles_data:
                     p = profiles_data[0]
-                    video_data.profiles = [GuestProfile(
+                    video_data.profiles = [PersonProfile(
                         name=p.get("name", project_data.get("guest_name", "")),
                         age=p.get("age", str(project_data.get("guest_age", "")) if project_data.get("guest_age") else ""),
                         occupation=p.get("occupation", project_data.get("guest_occupation", "")),
@@ -2879,7 +2879,7 @@ def run_e2e_pipeline(project_id: str, body: E2EPipelineRequest = E2EPipelineRequ
                         side_business=p.get("side_business", ""),
                     )]
                 elif project_data.get("guest_name"):
-                    video_data.profiles = [GuestProfile(
+                    video_data.profiles = [PersonProfile(
                         name=project_data.get("guest_name", ""),
                         age=str(project_data.get("guest_age", "")) if project_data.get("guest_age") else "",
                         occupation=project_data.get("guest_occupation", ""),

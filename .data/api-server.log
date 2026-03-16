@@ -762,3 +762,18 @@ INFO:     100.113.28.70:60872 - "GET /api/v1/projects/p-20251123-hirai%E3%81%95%
 INFO:     100.113.28.70:60872 - "GET /api/projects/p-20251123-hirai%E3%81%95%E3%82%93/feedbacks HTTP/1.1" 200 OK
 INFO:     100.113.28.70:60872 - "GET /api/v1/projects/p-20251123-hirai%E3%81%95%E3%82%93/feedbacks-with-timecodes HTTP/1.1" 404 Not Found
 INFO:     100.113.28.70:62330 - "GET /api/v1/projects/p-20251123-hirai%E3%81%95%E3%82%93/direction-report/diff HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59846 - "GET /api/v1/health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59880 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59898 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59944 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59980 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60034 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60148 - "GET /openapi.json HTTP/1.1" 200 OK
+  ⚠️ タイトル考案LLM生成失敗: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZ5u2VcbZzjNpLi2jLseK'}
+  ⚠️ 概要欄文章LLM生成失敗: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZ5u2YeARcDr9hsCbZRek'}
+  ⚠️ サムネ指示書LLM生成失敗: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZ5u2bfyd2UVVqc4RWYyd'}
+INFO:     127.0.0.1:60192 - "POST /api/v1/projects/p-20251123-hirai%E3%81%95%E3%82%93/e2e-pipeline HTTP/1.1" 200 OK
+  ⚠️ タイトル考案LLM生成失敗: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZ5u4jJRCdQnNHh6Dpyjj'}
+  ⚠️ 概要欄文章LLM生成失敗: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZ5u4n6bccwgJnSYRQE32'}
+  ⚠️ サムネ指示書LLM生成失敗: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZ5u4qqaAranAUFBVKPnS'}
+INFO:     127.0.0.1:60201 - "POST /api/v1/projects/p-20260124-RYO/e2e-pipeline HTTP/1.1" 200 OK

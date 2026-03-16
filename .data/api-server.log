@@ -1287,3 +1287,8 @@ INFO:     240a:61:52c5:814a:c5e4:9aef:ee4e:4a0f:0 - "GET /api/tracking/insights 
 INFO:     240a:61:52c5:814a:c5e4:9aef:ee4e:4a0f:0 - "GET /api/audit/history HTTP/1.1" 200 OK
 INFO:     240a:61:52c5:814a:c5e4:9aef:ee4e:4a0f:0 - "GET /api/learning/summary HTTP/1.1" 200 OK
 INFO:     240a:61:52c5:814a:c5e4:9aef:ee4e:4a0f:0 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
+INFO:     114.171.166.91:0 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63761 - "GET /api/v2/health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63764 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63766 - "GET /api/ HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63770 - "GET /api/v2/direction/status HTTP/1.1" 404 Not Found

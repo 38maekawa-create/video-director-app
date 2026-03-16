@@ -55,9 +55,10 @@ struct VimeoPlayerView: UIViewRepresentable {
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { background: #000; overflow: hidden; }
-          #player-container { width: 100%; aspect-ratio: 16 / 9; }
-          iframe { width: 100%; height: 100%; border: none; }
+          html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+          #player-container { width: 100%; height: 100%; }
+          #player-container > div { width: 100% !important; height: 100% !important; }
+          iframe { width: 100%; height: 100%; border: none; display: block; }
         </style>
         </head>
         <body>

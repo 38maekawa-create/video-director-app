@@ -227,7 +227,7 @@ struct VimeoReviewTabView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 8) {
             // Vimeoレビューページへの導線（外部リンク）
             if let urlString = editedVideoURL, let url = URL(string: urlString) {
                 Link(destination: url) {

@@ -1,0 +1,96 @@
+{
+  "source": "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/VideoDirectorAgent/Views/VimeoTimelineView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "このタイムコードへジャンプ",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 200
+        }
+      },
+      {
+        "comment": "",
+        "key": "タイムコード付きフィードバックがありません",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 460
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vimeoレビューページを開く",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 242
+        }
+      },
+      {
+        "comment": "",
+        "key": "編集後動画がまだアップロードされていません",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 273
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vimeoにアップロード後、ここで再生・レビューできます",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 276
+        }
+      },
+      {
+        "comment": "",
+        "key": "レビューコメント",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 300
+        }
+      },
+      {
+        "comment": "",
+        "key": "タイムコード: %@",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 332
+        }
+      },
+      {
+        "comment": "",
+        "key": "送信",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 346
+        }
+      },
+      {
+        "comment": "",
+        "key": "コメント履歴",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 369
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld件",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 373
+        }
+      },
+      {
+        "comment": "",
+        "key": "タイムコード付きFB",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 419
+        }
+      }
+    ]
+  },
+  "version": 1
+}

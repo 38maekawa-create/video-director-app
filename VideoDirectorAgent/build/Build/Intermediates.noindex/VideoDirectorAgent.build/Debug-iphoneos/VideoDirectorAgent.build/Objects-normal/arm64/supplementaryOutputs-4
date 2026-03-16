@@ -1,0 +1,30 @@
+{
+  "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/VideoDirectorAgent/Views/FeedbackHistoryView.swift" : {
+    "const-values" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/FeedbackHistoryView.swiftconstvalues",
+    "dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/FeedbackHistoryView.d",
+    "diagnostics" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/FeedbackHistoryView.dia",
+    "object" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/FeedbackHistoryView.o",
+    "swift-dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/FeedbackHistoryView.swiftdeps"
+  },
+  "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/VideoDirectorAgent/Views/VoiceFeedbackView.swift" : {
+    "const-values" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/VoiceFeedbackView.swiftconstvalues",
+    "dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/VoiceFeedbackView.d",
+    "diagnostics" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/VoiceFeedbackView.dia",
+    "object" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/VoiceFeedbackView.o",
+    "swift-dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/VoiceFeedbackView.swiftdeps"
+  },
+  "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/VideoDirectorAgent/Views/WebViewRepresentable.swift" : {
+    "const-values" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/WebViewRepresentable.swiftconstvalues",
+    "dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/WebViewRepresentable.d",
+    "diagnostics" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/WebViewRepresentable.dia",
+    "object" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/WebViewRepresentable.o",
+    "swift-dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/WebViewRepresentable.swiftdeps"
+  },
+  "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/VideoDirectorAgent/Views/YouTubeAssetsView.swift" : {
+    "const-values" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/YouTubeAssetsView.swiftconstvalues",
+    "dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/YouTubeAssetsView.d",
+    "diagnostics" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/YouTubeAssetsView.dia",
+    "object" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/YouTubeAssetsView.o",
+    "swift-dependencies" : "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/build/Build/Intermediates.noindex/VideoDirectorAgent.build/Debug-iphoneos/VideoDirectorAgent.build/Objects-normal/arm64/YouTubeAssetsView.swiftdeps"
+  }
+}

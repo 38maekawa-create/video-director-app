@@ -1,0 +1,16 @@
+{
+  "source": "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/VideoDirectorAgent/Views/RootTabView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "戻る",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 87
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -2853,3 +2853,34 @@ Traceback (most recent call last):
   File "/Users/maekawanaoto/AI開発10/src/video_direction/integrations/api_server.py", line 23, in <module>
     from video_direction.integrations.edit_direction_routes import router as edit_direction_router
 ModuleNotFoundError: No module named 'video_direction'
+WARNING:  StatReload detected changes in 'src/video_direction/integrations/api_server.py'. Reloading...
+INFO:     Started server process [28758]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [28758]
+INFO:     Stopping reloader process [1230]
+INFO:     Will watch for changes in these directories: ['/Users/maekawanaoto/AI開発10']
+INFO:     Uvicorn running on http://0.0.0.0:8210 (Press CTRL+C to quit)
+INFO:     Started reloader process [32587] using StatReload
+INFO:     Started server process [32650]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Will watch for changes in these directories: ['/Users/maekawanaoto/AI開発10']
+INFO:     Uvicorn running on http://0.0.0.0:8210 (Press CTRL+C to quit)
+INFO:     Started reloader process [33849] using StatReload
+INFO:     Started server process [33893]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Will watch for changes in these directories: ['/Users/maekawanaoto/AI開発10']
+ERROR:    [Errno 48] Address already in use
+WARNING:  StatReload detected changes in 'src/video_direction/integrations/api_server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [33893]
+INFO:     Started server process [36713]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

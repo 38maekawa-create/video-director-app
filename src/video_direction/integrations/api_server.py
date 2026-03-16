@@ -20,9 +20,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from video_direction.integrations.edit_direction_routes import router as edit_direction_router
-from video_direction.integrations.edit_assets_routes import router as edit_assets_router
-from video_direction.tracker.edit_learner import EditLearner
+from .edit_direction_routes import router as edit_direction_router
+from .edit_assets_routes import router as edit_assets_router
+from ..tracker.edit_learner import EditLearner
 
 # --- データベース ---
 

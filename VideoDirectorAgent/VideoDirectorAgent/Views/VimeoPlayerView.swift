@@ -5,6 +5,8 @@ import WebKit
 struct VimeoPlayerView: UIViewRepresentable {
     /// 表示するVimeo動画ID
     let videoId: String
+    /// 限定公開動画のプライバシーハッシュ（unlisted動画に必要）
+    var privacyHash: String? = nil
     /// 現在の再生位置（秒）をバインド
     @Binding var currentTime: TimeInterval
     /// 再生中フラグ
@@ -69,6 +71,7 @@ struct VimeoPlayerView: UIViewRepresentable {
         <script>
           var player = new Vimeo.Player('player', {
             id: \(videoId),
+            \(privacyHash.map { "h: '\($0)'," } ?? "// no privacy hash needed")
             width: '100%',
             responsive: true,
             title: false,
@@ -169,6 +172,8 @@ struct VimeoPlayerView: UIViewRepresentable {
 /// YouTube同様、直接URLRequestでVimeo embed URLを読み込む方式
 struct VimeoEmbedPlayerView: UIViewRepresentable {
     let videoId: String
+    /// 限定公開動画のプライバシーハッシュ（unlisted動画に必要）
+    var privacyHash: String? = nil
 
     func makeUIView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
@@ -181,7 +186,9 @@ struct VimeoEmbedPlayerView: UIViewRepresentable {
         webView.isOpaque = false
 
         // Vimeo embed URLを直接読み込む（loadHTMLString + iframeだとbaseURL問題でブロックされる）
-        let embedURLString = "https://player.vimeo.com/video/\(videoId)?title=0&byline=0&portrait=0&color=1694F5&playsinline=1"
+        // 限定公開動画はh=パラメータが必要
+        let hashParam = privacyHash.map { "&h=\($0)" } ?? ""
+        let embedURLString = "https://player.vimeo.com/video/\(videoId)?title=0&byline=0&portrait=0&color=1694F5&playsinline=1\(hashParam)"
         if let url = URL(string: embedURLString) {
             var request = URLRequest(url: url)
             request.setValue("https://video-director.app/", forHTTPHeaderField: "Referer")

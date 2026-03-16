@@ -226,6 +226,11 @@ struct VimeoReviewTabView: View {
         VimeoURLParser.extractVideoId(from: editedVideoURL)
     }
 
+    /// 限定公開動画のプライバシーハッシュ
+    private var vimeoPrivacyHash: String? {
+        VimeoURLParser.extractPrivacyHash(from: editedVideoURL)
+    }
+
     var body: some View {
         VStack(spacing: 8) {
             // Vimeoレビューページへの導線（外部リンク）
@@ -253,6 +258,7 @@ struct VimeoReviewTabView: View {
             if let videoId = vimeoVideoId {
                 VimeoPlayerView(
                     videoId: videoId,
+                    privacyHash: vimeoPrivacyHash,
                     currentTime: $viewModel.currentTime,
                     isPlaying: $viewModel.isPlaying
                 )
@@ -508,10 +514,13 @@ struct ReviewComment: Identifiable {
     let createdAt: String
 }
 
-/// Vimeo URLからvideo_idを抽出するユーティリティ
+/// Vimeo URLからvideo_idとプライバシーハッシュを抽出するユーティリティ
 enum VimeoURLParser {
+    /// URLからvideo_idを抽出
     /// https://vimeo.com/1145126331 → "1145126331"
+    /// https://vimeo.com/1173896594/4718c886cc → "1173896594"
     /// https://player.vimeo.com/video/1145126331 → "1145126331"
+    /// https://player.vimeo.com/video/1173896594?h=4718c886cc → "1173896594"
     static func extractVideoId(from urlString: String?) -> String? {
         guard let urlString = urlString,
               !urlString.isEmpty,
@@ -526,11 +535,51 @@ enum VimeoURLParser {
                 let videoId = pathComponents[1]
                 if videoId.allSatisfy(\.isNumber) { return videoId }
             }
-            // vimeo.com/12345 形式
-            if let last = pathComponents.last, last.allSatisfy(\.isNumber) {
-                return last
+            // vimeo.com/12345 or vimeo.com/12345/hash 形式
+            // 最初の数字のみのセグメントがvideo ID
+            for component in pathComponents {
+                if component.allSatisfy(\.isNumber) {
+                    return component
+                }
             }
         }
+        return nil
+    }
+
+    /// URLから限定公開動画のプライバシーハッシュを抽出
+    /// https://vimeo.com/1173896594/4718c886cc → "4718c886cc"
+    /// https://player.vimeo.com/video/1173896594?h=4718c886cc → "4718c886cc"
+    /// https://vimeo.com/1145126331 → nil（公開動画）
+    static func extractPrivacyHash(from urlString: String?) -> String? {
+        guard let urlString = urlString,
+              !urlString.isEmpty,
+              let url = URL(string: urlString),
+              let host = url.host,
+              host.contains("vimeo.com") else { return nil }
+
+        // クエリパラメータ ?h=xxx 形式
+        if let components = URLComponents(string: urlString),
+           let hParam = components.queryItems?.first(where: { $0.name == "h" })?.value,
+           !hParam.isEmpty {
+            return hParam
+        }
+
+        // パスセグメント vimeo.com/12345/hash 形式
+        let pathComponents = url.pathComponents.filter { $0 != "/" }
+        // video ID の後のセグメントがハッシュ（英数字で数字のみではないもの）
+        var foundVideoId = false
+        for component in pathComponents {
+            if foundVideoId {
+                // video ID の直後のセグメント = ハッシュ
+                if !component.isEmpty && !component.allSatisfy(\.isNumber) {
+                    return component
+                }
+            }
+            if component.allSatisfy(\.isNumber) {
+                foundVideoId = true
+            }
+        }
+
         return nil
     }
 }

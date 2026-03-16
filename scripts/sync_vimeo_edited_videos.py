@@ -327,9 +327,12 @@ def run_sync(dry_run: bool = False):
         if not member:
             continue
 
+        # 限定公開動画はlinkフィールドにハッシュ付きURL（vimeo.com/ID/HASH）が入る
+        # 公開動画はlinkにハッシュなし（vimeo.com/ID）が入る
+        vimeo_link = v.get("link", f"https://vimeo.com/{vid}")
         entry = {
             "vimeo_id": vid,
-            "vimeo_url": f"https://vimeo.com/{vid}",
+            "vimeo_url": vimeo_link,
             "title": title,
             "project_id": member["project_id"],
             "guest_name": member["guest_name"],

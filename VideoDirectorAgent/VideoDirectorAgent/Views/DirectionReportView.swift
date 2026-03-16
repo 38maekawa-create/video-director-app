@@ -575,9 +575,12 @@ struct DirectionReportView: View {
                 // Vimeo埋め込み再生（16:9アスペクト比）
                 // WKWebViewはintrinsicContentSizeを持たないため、画面幅から直接計算
                 if let videoId = VimeoURLParser.extractVideoId(from: url) {
-                    VimeoEmbedPlayerView(videoId: videoId)
-                        .frame(height: (UIScreen.main.bounds.width - 32) * 9.0 / 16.0)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    VimeoEmbedPlayerView(
+                        videoId: videoId,
+                        privacyHash: VimeoURLParser.extractPrivacyHash(from: url)
+                    )
+                    .frame(height: (UIScreen.main.bounds.width - 32) * 9.0 / 16.0)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
 
                 // 外部リンクボタン（Vimeoで直接開く）

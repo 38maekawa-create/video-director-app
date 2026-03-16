@@ -1,0 +1,192 @@
+{
+  "source": "/Users/maekawanaoto/AI開発10/VideoDirectorAgent/VideoDirectorAgent/Views/VoiceFeedbackView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "音声フィードバック",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 86
+        }
+      },
+      {
+        "comment": "",
+        "key": "タイムスタンプ",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 102
+        }
+      },
+      {
+        "comment": "",
+        "key": "/ 10:00",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 117
+        }
+      },
+      {
+        "comment": "",
+        "key": "文字起こし結果",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 270
+        }
+      },
+      {
+        "comment": "",
+        "key": "プロの指示に変換する",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 285
+        }
+      },
+      {
+        "comment": "",
+        "key": "Before → After",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 305
+        }
+      },
+      {
+        "comment": "",
+        "key": "あなたの声",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 315
+        }
+      },
+      {
+        "comment": "",
+        "key": "プロの指示",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 341
+        }
+      },
+      {
+        "comment": "",
+        "key": "送信先",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 393
+        }
+      },
+      {
+        "comment": "",
+        "key": "この指示を送信",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 405
+        }
+      },
+      {
+        "comment": "",
+        "key": "やり直し",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 422
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vimeoレビュー投稿",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 460
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vimeo動画ID",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 468
+        }
+      },
+      {
+        "comment": "",
+        "key": "例: 123456789",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 472
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld件のコメントを投稿予定",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 495
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vimeo投稿プレビュー",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 513
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vimeoに本番投稿する",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 545
+        }
+      },
+      {
+        "comment": "",
+        "key": "投稿プレビュー",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 574
+        }
+      },
+      {
+        "comment": "",
+        "key": "動画: %@",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 579
+        }
+      },
+      {
+        "comment": "",
+        "key": "投稿完了",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 625
+        }
+      },
+      {
+        "comment": "",
+        "key": "一部失敗あり",
+        "location": {
+          "startingColumn": 53,
+          "startingLine": 625
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld件 成功",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 632
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld件 失敗",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 637
+        }
+      }
+    ]
+  },
+  "version": 1
+}

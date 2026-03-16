@@ -129,18 +129,37 @@ class SourceVideoLinker:
 
     @staticmethod
     def _extract_guest_name_from_filename(filepath: str) -> str:
-        """ファイル名からゲスト名を抽出（例: ...撮影_hiraiさん：... → hirai）"""
+        """ファイル名からゲスト名を抽出"""
         basename = Path(filepath).stem
-        # パターン: YYYYMMDD撮影_[名前]さん or YYYYMMDD撮影_[名前]：
+        # パターン1: YYYYMMDD撮影_[名前]さん：... or YYYYMMDD撮影_[名前]：
         m = re.search(r"撮影_(.+?)(?:さん|：|$)", basename)
         if m:
             name = m.group(1).strip()
-            # 「けーさん」のように「さん」が名前の一部の場合は再マッチ
-            if not name:
-                m2 = re.search(r"撮影_(.+?)$", basename)
-                if m2:
-                    name = m2.group(1).strip().rstrip("さん")
-            return name
+            if name:
+                return name
+        # パターン2: 日付_[名前]さん.md（撮影なしパターン）
+        # 例: 2026.02.28_けーさん.md → けー
+        m = re.search(r"\d{4}\.\d{2}\.\d{2}_(.+?)(?:さん|：|_)", basename)
+        if m:
+            name = m.group(1).strip()
+            if name:
+                return name
+        # パターン3: ファイル名中の「[名前]さん：」を後方から探す
+        # 例: 2026.03.06_2月28日 大阪_コテツさん：... → コテツ
+        # 例: 2026.03.07_トップ対談_ハオさん：... → ハオ
+        parts = basename.split("_")
+        for part in reversed(parts):
+            m2 = re.match(r"(.+?)さん(?:：|$)", part)
+            if m2:
+                name = m2.group(1).strip()
+                if name and not re.match(r"^\d", name):
+                    return name
+        # パターン4: ゲスト氏（里芋、トーマス）パターン
+        m = re.search(r"ゲスト氏[（(](.+?)[）)]", basename)
+        if m:
+            name = m.group(1).strip()
+            if name:
+                return name
         return ""
 
     @staticmethod
@@ -269,8 +288,8 @@ class SourceVideoLinker:
                 reason_parts.append(f"日付一致({matched_date})")
                 reason_parts.append(f"名前部分一致(score={name_score})")
             elif name_score >= 0.8:
-                # 日付なしだが名前が強く一致
-                score = name_score * 0.5
+                # 日付なしだが名前が強く一致 — 十分にリンク対象
+                score = 0.5 + name_score * 0.2  # 0.66 - 0.7
                 reason_parts.append(f"名前一致(score={name_score})")
             # 日付のみ一致は誤マッチの可能性が高いためスキップ
 

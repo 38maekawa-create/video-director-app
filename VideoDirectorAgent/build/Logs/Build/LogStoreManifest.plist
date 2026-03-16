@@ -48,7 +48,7 @@
 			<key>uniqueIdentifier</key>
 			<string>6115714E-27E0-43EE-853B-E4CE1EDD0FD0</string>
 		</dict>
-		<key>C0FE9E0D-6B3D-479A-98EC-9013D970437C</key>
+		<key>6656F817-C115-446E-9EE8-549BC751DABF</key>
 		<dict>
 			<key>className</key>
 			<string>IDECommandLineBuildLog</string>
@@ -57,13 +57,13 @@
 			<key>domainType</key>
 			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
 			<key>fileName</key>
-			<string>C0FE9E0D-6B3D-479A-98EC-9013D970437C.xcactivitylog</string>
+			<string>6656F817-C115-446E-9EE8-549BC751DABF.xcactivitylog</string>
 			<key>hasPrimaryLog</key>
 			<true/>
 			<key>primaryObservable</key>
 			<dict>
 				<key>highLevelStatus</key>
-				<string>W</string>
+				<string>S</string>
 				<key>totalNumberOfAnalyzerIssues</key>
 				<integer>0</integer>
 				<key>totalNumberOfErrors</key>
@@ -71,7 +71,7 @@
 				<key>totalNumberOfTestFailures</key>
 				<integer>0</integer>
 				<key>totalNumberOfWarnings</key>
-				<integer>11</integer>
+				<integer>0</integer>
 			</dict>
 			<key>schemeIdentifier-containerName</key>
 			<string>VideoDirectorAgent project</string>
@@ -80,15 +80,15 @@
 			<key>schemeIdentifier-sharedScheme</key>
 			<integer>1</integer>
 			<key>signature</key>
-			<string>Building project VideoDirectorAgent with scheme VideoDirectorAgent</string>
+			<string>Cleaning project VideoDirectorAgent with scheme VideoDirectorAgent and configuration Debug</string>
 			<key>timeStartedRecording</key>
-			<real>795382154.48868299</real>
+			<real>795395889.74707997</real>
 			<key>timeStoppedRecording</key>
-			<real>795382158.38967097</real>
+			<real>795395890.87965202</real>
 			<key>title</key>
-			<string>Building project VideoDirectorAgent with scheme VideoDirectorAgent</string>
+			<string>Cleaning project VideoDirectorAgent with scheme VideoDirectorAgent and configuration Debug</string>
 			<key>uniqueIdentifier</key>
-			<string>C0FE9E0D-6B3D-479A-98EC-9013D970437C</string>
+			<string>6656F817-C115-446E-9EE8-549BC751DABF</string>
 		</dict>
 	</dict>
 </dict>

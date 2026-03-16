@@ -1585,3 +1585,15 @@ INFO:     100.113.28.70:53601 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.113.28.70:53600 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.113.28.70:50329 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/before-after HTTP/1.1" 200 OK
 INFO:     100.113.28.70:50328 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65405 - "GET /api/v1/projects/ HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65412 - "GET /api/v1/projects/ HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65414 - "GET /api/v1/projects/ HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65417 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65419 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65421 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65424 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65430 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65433 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65435 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65438 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/before-after HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65464 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/before-after HTTP/1.1" 200 OK

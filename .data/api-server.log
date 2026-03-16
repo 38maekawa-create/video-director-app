@@ -708,3 +708,13 @@ INFO:     127.0.0.1:54787 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     100.113.28.70:51580 - "GET /api/projects/p-20260124-%E3%82%84%E3%83%BC%E3%81%BE%E3%82%93/youtube-assets HTTP/1.1" 200 OK
 INFO:     100.113.28.70:51580 - "GET /api/v1/projects/p-20260124-%E3%82%84%E3%83%BC%E3%81%BE%E3%82%93/source-videos HTTP/1.1" 200 OK
 INFO:     100.113.28.70:51581 - "GET /api/v1/projects/p-20260124-%E3%82%84%E3%83%BC%E3%81%BE%E3%82%93/feedbacks-with-timecodes HTTP/1.1" 404 Not Found
+INFO:     100.113.28.70:61656 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:61657 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:61658 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:61656 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     100.113.28.70:61656 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:63491 - "GET /api/v1/projects/p-20251123-hirai%E3%81%95%E3%82%93/source-videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:61116 - "GET /api/v1/projects/p-20251123-hirai%E3%81%95%E3%82%93/feedbacks-with-timecodes HTTP/1.1" 404 Not Found
+INFO:     100.113.28.70:64103 - "GET /api/projects/p-20251123-hirai%E3%81%95%E3%82%93/feedbacks HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64103 - "GET /api/v1/projects/p-20251123-hirai%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64104 - "GET /api/v1/projects/p-20251123-hirai%E3%81%95%E3%82%93/before-after HTTP/1.1" 200 OK

@@ -35,11 +35,7 @@ def generate_description(
     income_eval: IncomeEvaluation,
     knowledge_ctx: KnowledgeContext,
 ) -> VideoDescription:
-    """YouTube概要欄テキストを生成する"""
-
-    api_key = _get_api_key()
-    if not api_key:
-        return _fallback_description(video_data, classification, income_eval)
+    """YouTube概要欄テキストを生成する（teko_core.llm経由 — MAX定額内）"""
 
     profile = video_data.profiles[0] if video_data.profiles else None
 
@@ -207,14 +203,3 @@ https://www.instagram.com/yaesu.pro/"""
     )
 
 
-def _get_api_key() -> str:
-    """Anthropic APIキーを取得"""
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        env_file = Path.home() / ".config" / "maekawa" / "api-keys.env"
-        if env_file.exists():
-            for line in env_file.read_text().split("\n"):
-                if line.startswith("ANTHROPIC_API_KEY="):
-                    api_key = line.split("=", 1)[1].strip()
-                    break
-    return api_key

@@ -45,12 +45,7 @@ def generate_thumbnail_design(
     income_eval: IncomeEvaluation,
     knowledge_ctx: KnowledgeContext,
 ) -> ThumbnailDesign:
-    """Z型サムネイル指示書を生成する"""
-
-    # APIキー読み込み
-    api_key = _get_api_key()
-    if not api_key:
-        return _fallback_thumbnail(video_data, classification, income_eval)
+    """Z型サムネイル指示書を生成する（teko_core.llm経由 — MAX定額内）"""
 
     # プロンプト構築
     profile = video_data.profiles[0] if video_data.profiles else None
@@ -181,14 +176,3 @@ def _fallback_thumbnail(
     )
 
 
-def _get_api_key() -> str:
-    """Anthropic APIキーを取得"""
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        env_file = Path.home() / ".config" / "maekawa" / "api-keys.env"
-        if env_file.exists():
-            for line in env_file.read_text().split("\n"):
-                if line.startswith("ANTHROPIC_API_KEY="):
-                    api_key = line.split("=", 1)[1].strip()
-                    break
-    return api_key

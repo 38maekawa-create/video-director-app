@@ -130,12 +130,14 @@ struct YouTubeWebPlayerView: UIViewRepresentable {
 
     func updateUIView(_ webView: WKWebView, context: Context) {
         guard let videoId = extractYouTubeVideoId(from: videoURL) else { return }
-        // 直接embed URLに遷移（origin問題を根本回避）
-        let embedURLString = "https://www.youtube.com/embed/\(videoId)?playsinline=1&rel=0&origin=https://www.youtube.com"
+        // YouTubeは外部サイトのRefererが必須（youtube.com自身やRefererなしだとエラー153）
+        // PLAYABILITY_ERROR_CODE_EMBEDDER_IDENTITY_MISSING_REFERRER 対策
+        let embedURLString = "https://www.youtube.com/embed/\(videoId)?playsinline=1&rel=0"
         if let url = URL(string: embedURLString) {
-            // 既に同じURLを読み込み中なら再読み込みしない
             if webView.url?.absoluteString != embedURLString {
-                webView.load(URLRequest(url: url))
+                var request = URLRequest(url: url)
+                request.setValue("https://video-director.app/", forHTTPHeaderField: "Referer")
+                webView.load(request)
             }
         }
     }

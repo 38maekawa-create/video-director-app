@@ -1226,3 +1226,11 @@ INFO:     100.113.28.70:58945 - "GET /api/tracking/insights HTTP/1.1" 200 OK
 INFO:     100.113.28.70:58946 - "GET /api/audit/history HTTP/1.1" 200 OK
 INFO:     100.113.28.70:58946 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
 INFO:     100.113.28.70:58945 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:49374 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62494 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62495 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62496 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62494 - "GET /api/dashboard/quality-trend HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62494 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62494 - "GET /api/audit/history HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62494 - "GET /api/tracking/insights HTTP/1.1" 200 OK

@@ -349,7 +349,8 @@ struct KnowledgeHTMLView: UIViewRepresentable {
         </body>
         </html>
         """
-        webView.loadHTMLString(styledHTML, baseURL: URL(string: "https://www.youtube.com"))
+        // ナレッジHTMLは外部コンテンツなのでbaseURLはnil（youtube.comだとReferer問題を起こす）
+        webView.loadHTMLString(styledHTML, baseURL: nil)
     }
 }
 

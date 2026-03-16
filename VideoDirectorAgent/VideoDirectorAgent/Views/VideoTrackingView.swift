@@ -331,27 +331,16 @@ struct TrackingYouTubePlayerView: UIViewRepresentable {
 
     func updateUIView(_ webView: WKWebView, context: Context) {
         guard let videoId = extractVideoId(from: videoURL) else { return }
-        let embedHTML = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-        <style>
-            body { margin: 0; padding: 0; background: #000; }
-            .container { position: relative; width: 100%; padding-bottom: 56.25%; }
-            iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-        </style>
-        </head>
-        <body>
-        <div class="container">
-            <iframe src="https://www.youtube.com/embed/\(videoId)?playsinline=1&rel=0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen></iframe>
-        </div>
-        </body>
-        </html>
-        """
-        webView.loadHTMLString(embedHTML, baseURL: URL(string: "https://www.youtube.com"))
+        // YouTubeは外部サイトのRefererが必須（youtube.com自身やRefererなしだとエラー153）
+        // PLAYABILITY_ERROR_CODE_EMBEDDER_IDENTITY_MISSING_REFERRER 対策
+        let embedURLString = "https://www.youtube.com/embed/\(videoId)?playsinline=1&rel=0"
+        if let url = URL(string: embedURLString) {
+            if webView.url?.absoluteString != embedURLString {
+                var request = URLRequest(url: url)
+                request.setValue("https://video-director.app/", forHTTPHeaderField: "Referer")
+                webView.load(request)
+            }
+        }
     }
 
     private func extractVideoId(from url: String) -> String? {

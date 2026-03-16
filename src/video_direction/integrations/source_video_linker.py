@@ -128,6 +128,22 @@ class SourceVideoLinker:
         return ""
 
     @staticmethod
+    def _extract_guest_name_from_filename(filepath: str) -> str:
+        """ファイル名からゲスト名を抽出（例: ...撮影_hiraiさん：... → hirai）"""
+        basename = Path(filepath).stem
+        # パターン: YYYYMMDD撮影_[名前]さん or YYYYMMDD撮影_[名前]：
+        m = re.search(r"撮影_(.+?)(?:さん|：|$)", basename)
+        if m:
+            name = m.group(1).strip()
+            # 「けーさん」のように「さん」が名前の一部の場合は再マッチ
+            if not name:
+                m2 = re.search(r"撮影_(.+?)$", basename)
+                if m2:
+                    name = m2.group(1).strip().rstrip("さん")
+            return name
+        return ""
+
+    @staticmethod
     def _extract_youtube_url(source_str: str) -> str:
         """ソース文字列からYouTube URLを抽出"""
         if not source_str:
@@ -233,8 +249,12 @@ class SourceVideoLinker:
                 date_match = True
                 matched_date = k_file_date
 
-            # 名前マッチング
+            # 名前マッチング（speakersが「不明」の場合はファイル名から抽出）
             speakers = self._extract_speaker_names(kdata.speakers)
+            if not speakers or speakers == ["不明"]:
+                fname_guest = self._extract_guest_name_from_filename(kdata.source_path)
+                if fname_guest:
+                    speakers = [fname_guest]
             name_score = self._name_match(project_guest, speakers)
 
             # スコア算出
@@ -330,20 +350,8 @@ class SourceVideoLinker:
                 ))
                 continue
 
-            # YouTube URLがない場合
-            if not candidate.youtube_url:
-                candidate.skipped = True
-                candidate.skip_reason = "no_youtube_url"
-                result.skipped_no_match.append(candidate)
-                continue
-
-            # 音質フィルタ: YouTube字幕でない場合は音質NG
-            if not self._is_youtube_subtitle(candidate.transcript_method):
-                candidate.skipped = True
-                candidate.skip_reason = "no_audio_quality"
-                result.skipped_no_audio.append(candidate)
-                continue
-
+            # YouTube URLがなくてもナレッジファイルがマッチしていればリンク対象
+            # （素材動画リンクは音質に関係なく有用）
             result.linked.append(candidate)
 
         return result

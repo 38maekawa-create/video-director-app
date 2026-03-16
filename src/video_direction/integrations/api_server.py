@@ -349,7 +349,11 @@ def get_project(project_id: str):
             d[bool_field] = bool(d[bool_field])
     for json_field in ("source_video", "edited_video", "feedback_summary", "knowledge"):
         if d.get(json_field):
-            d[json_field] = json.loads(d[json_field])
+            try:
+                d[json_field] = json.loads(d[json_field])
+            except (json.JSONDecodeError, TypeError):
+                # プレーンURL文字列の場合はそのまま返す
+                pass
     _enrich_project_with_knowledge_url(d)
     return d
 
@@ -607,7 +611,10 @@ def get_youtube_assets(project_id: str):
     d = dict(row)
     for json_field in ("thumbnail_design", "title_proposals"):
         if d.get(json_field):
-            d[json_field] = json.loads(d[json_field])
+            try:
+                d[json_field] = json.loads(d[json_field])
+            except (json.JSONDecodeError, TypeError):
+                pass
     return d
 
 

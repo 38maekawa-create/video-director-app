@@ -21,7 +21,7 @@
     <key>CFBundleVersion</key>
     <string>$(CURRENT_PROJECT_VERSION)</string>
     <key>APIBaseURL</key>
-    <string>http://100.110.206.6:8210</string>
+    <string>https://deals-proper-symantec-imaging.trycloudflare.com</string>
     <key>APIActorName</key>
     <string>ios-client</string>
     <key>NSAppTransportSecurity</key>

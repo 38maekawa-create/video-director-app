@@ -253,22 +253,32 @@ class EditLearner:
         return ratio >= 0.72
 
     def _generate_rules(self):
-        """高確信度パターンからルールを自動生成"""
+        """高確信度パターンからルールを自動生成・更新"""
         for pid, pattern in self._patterns.items():
             if pattern.confidence >= self.RULE_THRESHOLD and pattern.is_active:
-                # 既存ルールがなければ生成
-                rule_exists = any(
-                    pid in r.source_pattern_ids for r in self._rules.values()
-                )
-                if not rule_exists:
-                    freq = pattern.frequency
+                # 既存ルールがあれば更新、なければ生成
+                existing_rule = None
+                for r in self._rules.values():
+                    if pid in r.source_pattern_ids:
+                        existing_rule = r
+                        break
+
+                freq = pattern.frequency
+                new_priority = "high" if pattern.confidence >= 0.8 else "medium"
+                new_rule_text = f"[手修正学習] {pattern.pattern}（{freq}回の手修正から学習）"
+
+                if existing_rule is not None:
+                    # 既存ルールの優先度・テキストを更新
+                    existing_rule.priority = new_priority
+                    existing_rule.rule_text = new_rule_text
+                else:
                     rule = EditLearningRule(
                         id=f"erule_{datetime.now().strftime('%Y%m%d%H%M%S')}_{len(self._rules)}",
-                        rule_text=f"[手修正学習] {pattern.pattern}（{freq}回の手修正から学習）",
+                        rule_text=new_rule_text,
                         asset_type=pattern.asset_type,
                         category=pattern.category,
                         source_pattern_ids=[pid],
-                        priority="high" if pattern.confidence >= 0.8 else "medium",
+                        priority=new_priority,
                     )
                     self._rules[rule.id] = rule
 

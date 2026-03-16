@@ -1602,3 +1602,4 @@ INFO:     100.113.28.70:50686 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.113.28.70:50685 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.113.28.70:52122 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/before-after HTTP/1.1" 200 OK
 INFO:     100.113.28.70:52121 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49307 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/before-after HTTP/1.1" 200 OK

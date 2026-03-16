@@ -250,16 +250,14 @@ struct VimeoReviewTabView: View {
             }
 
             // Vimeo動画埋め込み再生（16:9アスペクト比で画面幅に合わせる）
+            // WKWebViewはintrinsicContentSizeを持たないため、画面幅から直接計算
             if let videoId = vimeoVideoId {
-                GeometryReader { geo in
-                    VimeoPlayerView(
-                        videoId: videoId,
-                        currentTime: $viewModel.currentTime,
-                        isPlaying: $viewModel.isPlaying
-                    )
-                    .frame(width: geo.size.width, height: geo.size.width * 9.0 / 16.0)
-                }
-                .aspectRatio(16.0 / 9.0, contentMode: .fit)
+                VimeoPlayerView(
+                    videoId: videoId,
+                    currentTime: $viewModel.currentTime,
+                    isPlaying: $viewModel.isPlaying
+                )
+                .frame(height: (UIScreen.main.bounds.width - 32) * 9.0 / 16.0)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
                 // 動画未登録時のプレースホルダー

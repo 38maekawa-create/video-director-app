@@ -564,10 +564,8 @@ struct DirectionReportView: View {
 
     private var editedVideoSection: some View {
         VStack(spacing: 12) {
-            let _ = print("🎬 editedVideoURL: \(project.editedVideoURL ?? "nil")")
             if let url = project.editedVideoURL,
                !url.isEmpty {
-                let _ = print("🎬 Vimeo URL detected: \(url), videoId: \(VimeoURLParser.extractVideoId(from: url) ?? "nil")")
                 overviewCard(
                     title: "編集後動画",
                     icon: "sparkles.rectangle.stack",
@@ -575,13 +573,11 @@ struct DirectionReportView: View {
                 )
 
                 // Vimeo埋め込み再生（16:9アスペクト比）
+                // WKWebViewはintrinsicContentSizeを持たないため、画面幅から直接計算
                 if let videoId = VimeoURLParser.extractVideoId(from: url) {
-                    GeometryReader { geo in
-                        VimeoEmbedPlayerView(videoId: videoId)
-                            .frame(width: geo.size.width, height: geo.size.width * 9.0 / 16.0)
-                    }
-                    .aspectRatio(16.0 / 9.0, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    VimeoEmbedPlayerView(videoId: videoId)
+                        .frame(height: (UIScreen.main.bounds.width - 32) * 9.0 / 16.0)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
 
                 // 外部リンクボタン（Vimeoで直接開く）

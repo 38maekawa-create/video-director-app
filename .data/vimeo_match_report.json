@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-03-16T14:18:24.756193",
+  "generated_at": "2026-03-16T15:20:26.448810",
   "summary": {
     "total_members": 29,
     "matched": 14,
     "unmatched": 15,
-    "total_vimeo_videos": 353,
-    "taidan_videos": 78
+    "total_vimeo_videos": 354,
+    "taidan_videos": 79
   },
   "matched": [
     {
@@ -57,6 +57,12 @@
     {
       "guest_name": "PAYさん",
       "videos": [
+        {
+          "title": "payさん_対談_修正_大胡",
+          "vimeo_url": "https://vimeo.com/1173896594",
+          "status": "available",
+          "created": "2026-03-16"
+        },
         {
           "title": "payさん_対談_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1172567733",
@@ -213,16 +219,10 @@
       "guest_name": "しおさん",
       "videos": [
         {
-          "title": "しおさん　対談  ボイチェン",
+          "title": "しおさんボイチェン_対談_修正1_大胡",
           "vimeo_url": "https://vimeo.com/1173887724",
           "status": "available",
           "created": "2026-03-16"
-        },
-        {
-          "title": "しおさんボイチェン_対談_修正_大胡",
-          "vimeo_url": "https://vimeo.com/1173747716",
-          "status": "available",
-          "created": "2026-03-15"
         },
         {
           "title": "しおさん_対談_修正_大胡",
@@ -241,6 +241,12 @@
     {
       "guest_name": "ゆきもるさん",
       "videos": [
+        {
+          "title": "ゆきもるさんボイチェン_対談_修正_大胡",
+          "vimeo_url": "https://vimeo.com/1173747716",
+          "status": "available",
+          "created": "2026-03-15"
+        },
         {
           "title": "57_ゆきもるさん_初稿_坂野",
           "vimeo_url": "https://vimeo.com/1163547512",
@@ -373,8 +379,8 @@
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "アサカツ",
-        "あさかつ"
+        "あさかつ",
+        "アサカツ"
       ],
       "near_candidates": [
         {
@@ -417,10 +423,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "クマキ",
+        "くますけ",
         "くまき",
-        "クマスケ",
-        "くますけ"
+        "クマキ",
+        "クマスケ"
       ],
       "near_candidates": [
         {
@@ -507,8 +513,8 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ろき",
-        "ロキ"
+        "ロキ",
+        "ろき"
       ],
       "near_candidates": []
     },
@@ -545,17 +551,17 @@
     {
       "guest_name": "ゆりかさん",
       "search_keys": [
-        "ユリカ",
-        "ゆりか"
+        "ゆりか",
+        "ユリカ"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "コテツ",
-        "こて",
         "こてつ",
+        "こて",
+        "コテツ",
         "コテ"
       ],
       "near_candidates": [
@@ -609,15 +615,22 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
-        "さといも",
-        "さといも・トーマス",
-        "さといも・とーます",
+        "サトイモ・トーマス",
         "トーマス",
+        "さといも・とーます",
+        "さといも・トーマス",
         "サトイモ",
-        "とーます",
-        "サトイモ・トーマス"
+        "さといも",
+        "とーます"
       ],
       "near_candidates": [
+        {
+          "title": "ゆきもるさんボイチェン_対談_修正_大胡",
+          "matched_keys": [
+            "さといも"
+          ],
+          "status": "available"
+        },
         {
           "title": "こもさん_対談_完成_大胡",
           "matched_keys": [
@@ -641,13 +654,6 @@
         },
         {
           "title": "こもさん_対談_初稿_大胡",
-          "matched_keys": [
-            "さといも"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "57_ゆきもるさん_初稿_坂野",
           "matched_keys": [
             "さといも"
           ],

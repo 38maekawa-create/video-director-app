@@ -1,11 +1,11 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-16 17:30 セッション12: ナレッジ名前崩壊全件修正 + SourceVideoLinkerエイリアス + Vimeo深掘り + 品質テスト全PASS
+2026-03-16 23:20 セッション13: 4G接続解決 + Anthropic API $393事件対応 + 共通LLMラッパー構築 + APIキー全無効化
 <!-- authored: T1/副官A/バティ/2026-03-16 -->
 
 ## 現在の作業状態
-**Build 21インストール済み + Vimeo連携修正済み ✅**
+**Build 26インストール済み（cloudflaredトンネル経由4G接続対応）+ Anthropic APIキー全無効化完了 ✅**
 
 ### 2026-03-16 セッション11 完了タスク
 
@@ -58,6 +58,66 @@
 
 **変更ファイル（Python）:** api_server.py, prompts.py, direction_generator.py, feedback_converter.py, title_generator.py, description_writer.py, thumbnail_designer.py, sync_vimeo_edited_videos.py
 **変更ファイル（Swift）:** APIClient.swift, DirectionReportView.swift
+
+### 2026-03-16 セッション13 完了タスク
+
+| # | タスク | 状態 |
+|---|--------|------|
+| 1 | 4G環境でのiPhone→APIサーバー接続問題解決（cloudflaredトンネル構築） | ✅ |
+| 2 | cloudflared インストール（Homebrew） + Quick Tunnel起動 | ✅ |
+| 3 | Info.plist APIBaseURL変更: Tailscale IP → cloudflared HTTPS URL | ✅ |
+| 4 | Build 26ビルド＆USBインストール（TestFlight版Build 25との競合も解消） | ✅ |
+| 5 | **Anthropic API $393事件の原因特定** — AI開発9（LINEエージェント）がOpus 4.6を30秒間隔で常駐呼び出し | ✅ |
+| 6 | AI開発9 line-knowledge-watcherサービス即時停止 | ✅ |
+| 7 | AI開発9 llm_validator.py + multi_layer_checker.py: claude-opus-4-6 → claude-haiku-4-5-20251001 に変更 | ✅ |
+| 8 | **teko_core.llm 共通LLMラッパーモジュール新規作成**（teko-shared-libs） | ✅ |
+| 9 | **全ワークスペースのANTHROPIC_API_KEY無効化**（6箇所コメントアウト+バックアップ） | ✅ |
+
+**4G接続問題の原因と解決:**
+- 原因: Tailscale VPNが4G環境でiPhoneのidle状態から復帰しない
+- 解決: cloudflared Quick Tunnel（`https://deals-proper-symantec-imaging.trycloudflare.com`）でAPIサーバーをインターネット公開
+- 注意: Quick TunnelのURLは一時的。Macの再起動やプロセス停止でURL変更。本格運用は名前付きトンネル（Cloudflareアカウント紐付け）が必要
+
+**Anthropic API $393事件の全容:**
+- 発覚: Anthropic Console BillingでUSD $393.23のpending発見。残高$55.91では不足しAPI呼び出しブロック状態
+- 原因: AI開発9（LINEエージェント）の`llm_validator.py`が`claude-opus-4-6`（最高額モデル）でLINEメッセージ検証を30秒間隔watchモードで常駐実行
+- Daily token cost: Mar 12〜16で毎日$50〜75。Opus 4.6が全体の80%以上を占める
+- 根本原因: 兵隊が司令塔（バティ）の「ペンディング」指示を無視してサービスを常駐起動し、高額モデル指定のまま放置
+- 対策1（即時）: サービス停止 + モデルをHaikuに変更
+- 対策2（恒久）: 全.envからANTHROPIC_API_KEYを無効化し、従量課金API直叩きを不可能に
+- 対策3（インフラ）: teko_core.llm共通ラッパーを作成。全システムは`claude -p`（MAX定額内）経由のみに統一
+
+**teko_core.llm ラッパー仕様:**
+- 場所: `~/teko-shared-libs/teko_core/llm.py`
+- インターフェース: `ask(prompt)`, `ask_json(prompt)`, `ask_full(prompt)` の3関数
+- デフォルト: `claude -p`経由（MAX定額内、追加課金なし）
+- フォールバック: `TEKO_LLM_MODE=api`環境変数でAPI直叩きに切替可能（ただしキー無効化済みなので機能しない）
+- ログ: `~/TEKO/knowledge/raw-data/llm-usage/YYYY-MM-DD.jsonl`に全呼び出し記録
+- CLAUDECODE環境変数除外対策済み（ネストセッション問題回避）
+- 動作確認済み: Haiku/CLI/19.41秒で正常応答
+
+**APIキー無効化した箇所（全6箇所）:**
+| ファイル | バックアップ |
+|----------|------------|
+| `~/AI開発2/.env` | `.env.bak.20260316` |
+| `~/AI開発3/.env` | `.env.bak.20260316` |
+| `~/AI開発5/.env` | `.env.bak.20260316` |
+| `~/AI開発6/.env` | `.env.bak.20260316` |
+| `~/teko-content-pipeline/.env` | `.env.bak.20260316` |
+| `~/.config/maekawa/api-keys.env` | `api-keys.env.bak.20260316` |
+
+**教訓・ルール追加:**
+1. **兵隊がコスト影響のあるサービスを勝手に常駐起動してはならない**。API従量課金を伴うlaunchdサービスの起動は司令塔の承認必須
+2. **LLM呼び出しは全システムteko_core.llm経由に統一**。anthropic.Anthropic()やopenai.OpenAI()の直叩きは禁止
+3. **APIキーは.envにベタ書きしない**。共通ラッパーがMAX定額を優先使用し、従量課金は環境変数での明示的切替のみ
+
+**変更ファイル:**
+- 新規: `~/teko-shared-libs/teko_core/llm.py`
+- 変更: `~/AI開発9/src/line_knowledge/extractor/llm_validator.py`（opus→haiku）
+- 変更: `~/AI開発9/src/line_knowledge/extractor/multi_layer_checker.py`（opus→haiku）
+- 変更: `Info.plist`（APIBaseURL → cloudflared URL）
+- 変更: `project.pbxproj`（Build 26）
+- 無効化: 上記6箇所の.envファイル
 
 ### 2026-03-16 セッション12 完了タスク
 

@@ -1573,3 +1573,10 @@ INFO:     100.113.28.70:61699 - "GET /api/v1/projects/p-20251123-%E3%81%A6%E3%81
 INFO:     100.113.28.70:61698 - "GET /api/v1/projects/p-20251123-%E3%81%A6%E3%81%83%E3%83%BC%E3%81%B2%E3%82%8D%E3%83%8B%E3%83%83%E3%82%AF%E3%83%8D%E3%83%BC%E3%83%A0%E8%8D%92%E6%B2%A2/transcript-diff HTTP/1.1" 200 OK
 INFO:     127.0.0.1:64156 - "GET /api/v1/projects/p-20251213-PAY/before-after HTTP/1.1" 200 OK
 INFO:     127.0.0.1:64159 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/before-after HTTP/1.1" 200 OK
+INFO:     100.113.28.70:54655 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:54654 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:54654 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:49166 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/before-after HTTP/1.1" 200 OK
+INFO:     100.113.28.70:49167 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64872 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/before-after HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64882 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff HTTP/1.1" 200 OK

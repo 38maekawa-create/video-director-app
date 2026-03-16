@@ -478,6 +478,26 @@ struct BeforeAfterView: View {
 struct IframePlayerView: UIViewRepresentable {
     let embedURL: String
 
+    /// Vimeo embed URLかどうか判定
+    private var isVimeo: Bool { embedURL.contains("player.vimeo.com") }
+
+    /// VimeoのvideoIDとプライバシーハッシュを抽出
+    private var vimeoVideoId: String? {
+        guard isVimeo else { return nil }
+        // https://player.vimeo.com/video/12345?h=abc → "12345"
+        guard let url = URL(string: embedURL) else { return nil }
+        let parts = url.pathComponents.filter { $0 != "/" }
+        if parts.first == "video", parts.count >= 2 {
+            return parts[1]
+        }
+        return nil
+    }
+    private var vimeoHash: String? {
+        guard isVimeo else { return nil }
+        guard let components = URLComponents(string: embedURL) else { return nil }
+        return components.queryItems?.first(where: { $0.name == "h" })?.value
+    }
+
     func makeUIView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
         config.allowsInlineMediaPlayback = true
@@ -490,11 +510,33 @@ struct IframePlayerView: UIViewRepresentable {
     }
 
     func updateUIView(_ webView: WKWebView, context: Context) {
-        // YouTubeは外部サイトのRefererが必須（youtube.com自身やRefererなしだとエラー153）
-        // PLAYABILITY_ERROR_CODE_EMBEDDER_IDENTITY_MISSING_REFERRER 対策
-        // embedURLを直接ロードし、外部ドメインのRefererを設定
-        if let url = URL(string: embedURL) {
-            if webView.url?.absoluteString != embedURL {
+        // 既にロード済みならスキップ
+        if webView.url != nil { return }
+
+        if isVimeo, let videoId = vimeoVideoId {
+            // Vimeo: Player SDK HTML方式（直接URLリクエストだと403になるため）
+            let hashParam = vimeoHash.map { "?h=\($0)" } ?? ""
+            let vimeoEmbedUrl = "https://player.vimeo.com/video/\(videoId)\(hashParam)"
+            let html = """
+            <!DOCTYPE html><html><head>
+            <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+            <style>
+              *{margin:0;padding:0;box-sizing:border-box}
+              html,body{width:100%;height:100%;background:#000;overflow:hidden}
+              #player-container{width:100%;height:100%}
+              #player-container>div{width:100%!important;height:100%!important}
+              iframe{width:100%;height:100%;border:none;display:block}
+            </style></head><body>
+            <div id="player-container"><div id="player"></div></div>
+            <script src="https://player.vimeo.com/api/player.js"></script>
+            <script>
+              new Vimeo.Player('player',{url:'\(vimeoEmbedUrl)',responsive:true,title:false,byline:false,portrait:false,color:'1694F5'});
+            </script></body></html>
+            """
+            webView.loadHTMLString(html, baseURL: URL(string: "https://video-director.app/"))
+        } else {
+            // YouTube: 従来の直接URLリクエスト方式
+            if let url = URL(string: embedURL) {
                 var request = URLRequest(url: url)
                 request.setValue("https://video-director.app/", forHTTPHeaderField: "Referer")
                 webView.load(request)

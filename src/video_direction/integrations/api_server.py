@@ -3475,13 +3475,23 @@ def get_before_after(project_id: str):
 
         if vimeo_url:
             vimeo_id = ""
+            privacy_hash = ""
             m = re.search(r"vimeo\.com/(\d+)", vimeo_url)
             if m:
                 vimeo_id = m.group(1)
+            # ハッシュ付きURL（vimeo.com/ID/HASH）からプライバシーハッシュを抽出
+            m_hash = re.search(r"vimeo\.com/\d+/([a-f0-9]+)", vimeo_url)
+            if m_hash:
+                privacy_hash = m_hash.group(1)
+            # 限定公開動画はembed_urlにもh=パラメータが必要
+            embed_url = None
+            if vimeo_id:
+                hash_param = f"?h={privacy_hash}" if privacy_hash else ""
+                embed_url = f"https://player.vimeo.com/video/{vimeo_id}{hash_param}"
             edited_video = {
                 "vimeo_url": vimeo_url,
                 "vimeo_id": vimeo_id,
-                "embed_url": f"https://player.vimeo.com/video/{vimeo_id}" if vimeo_id else None,
+                "embed_url": embed_url,
                 "version": "v1",
             }
 

@@ -1246,3 +1246,5 @@ INFO:     49.109.146.38:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.113.28.70:61572 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.113.28.70:61574 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     49.109.146.38:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:54647 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240a:61:52c5:814a:c496:5c16:99b5:d04e:0 - "GET /api/dashboard/summary HTTP/1.1" 200 OK

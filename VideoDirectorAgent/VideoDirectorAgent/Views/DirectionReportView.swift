@@ -130,59 +130,14 @@ struct YouTubeWebPlayerView: UIViewRepresentable {
 
     func updateUIView(_ webView: WKWebView, context: Context) {
         guard let videoId = extractYouTubeVideoId(from: videoURL) else { return }
-        // YouTube IFrame Player APIを使い、onErrorイベントをpostMessageで通知
-        let embedHTML = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-        <style>
-            body { margin: 0; padding: 0; background: #000; }
-            #player { width: 100%; aspect-ratio: 16/9; }
-        </style>
-        </head>
-        <body>
-        <div id="player"></div>
-        <script>
-            var tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            var firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-            var player;
-            function onYouTubeIframeAPIReady() {
-                player = new YT.Player('player', {
-                    videoId: '\(videoId)',
-                    playerVars: {
-                        'playsinline': 1,
-                        'rel': 0
-                    },
-                    events: {
-                        'onError': onPlayerError
-                    }
-                });
+        // 直接embed URLに遷移（origin問題を根本回避）
+        let embedURLString = "https://www.youtube.com/embed/\(videoId)?playsinline=1&rel=0&origin=https://www.youtube.com"
+        if let url = URL(string: embedURLString) {
+            // 既に同じURLを読み込み中なら再読み込みしない
+            if webView.url?.absoluteString != embedURLString {
+                webView.load(URLRequest(url: url))
             }
-            function onPlayerError(event) {
-                // エラーコード: 2, 5, 100, 101, 150, 152, 153
-                window.webkit.messageHandlers.ytError.postMessage({
-                    code: event.data,
-                    videoId: '\(videoId)'
-                });
-            }
-            // IFrame API読み込み失敗時のフォールバック（5秒タイムアウト）
-            setTimeout(function() {
-                if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-                    window.webkit.messageHandlers.ytError.postMessage({
-                        code: -1,
-                        videoId: '\(videoId)'
-                    });
-                }
-            }, 5000);
-        </script>
-        </body>
-        </html>
-        """
-        webView.loadHTMLString(embedHTML, baseURL: URL(string: "https://www.youtube.com"))
+        }
     }
 
     // MARK: - Coordinator（WKScriptMessageHandler + WKNavigationDelegate）

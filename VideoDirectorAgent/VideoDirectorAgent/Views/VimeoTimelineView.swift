@@ -250,46 +250,31 @@ struct VimeoReviewTabView: View {
             }
 
             // Vimeo動画埋め込み再生（16:9アスペクト比で画面幅に合わせる）
-            // WKWebViewはintrinsicContentSizeを持たないため、画面幅から直接計算
-            // 動画 + タイムラインをまとめて余白を最小化
-            VStack(spacing: 4) {
-                if let videoId = vimeoVideoId {
-                    VimeoPlayerView(
-                        videoId: videoId,
-                        currentTime: $viewModel.currentTime,
-                        isPlaying: $viewModel.isPlaying
-                    )
-                    .frame(height: (UIScreen.main.bounds.width - 32) * 9.0 / 16.0)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                } else {
-                    // 動画未登録時のプレースホルダー
-                    VStack(spacing: 12) {
-                        Image(systemName: "play.slash.fill")
-                            .font(.system(size: 40))
-                            .foregroundStyle(AppTheme.textMuted)
-                        Text("編集後動画がまだアップロードされていません")
-                            .font(AppTheme.bodyFont(14))
-                            .foregroundStyle(AppTheme.textMuted)
-                        Text("Vimeoにアップロード後、ここで再生・レビューできます")
-                            .font(AppTheme.bodyFont(12))
-                            .foregroundStyle(AppTheme.textMuted.opacity(0.7))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: (UIScreen.main.bounds.width - 32) * 9.0 / 16.0)
-                    .background(AppTheme.cardBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            if let videoId = vimeoVideoId {
+                VimeoPlayerView(
+                    videoId: videoId,
+                    currentTime: $viewModel.currentTime,
+                    isPlaying: $viewModel.isPlaying
+                )
+                .frame(height: (UIScreen.main.bounds.width - 32) * 9.0 / 16.0)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else {
+                // 動画未登録時のプレースホルダー
+                VStack(spacing: 12) {
+                    Image(systemName: "play.slash.fill")
+                        .font(.system(size: 40))
+                        .foregroundStyle(AppTheme.textMuted)
+                    Text("編集後動画がまだアップロードされていません")
+                        .font(AppTheme.bodyFont(14))
+                        .foregroundStyle(AppTheme.textMuted)
+                    Text("Vimeoにアップロード後、ここで再生・レビューできます")
+                        .font(AppTheme.bodyFont(12))
+                        .foregroundStyle(AppTheme.textMuted.opacity(0.7))
                 }
-
-                // タイムライン（動画直下に密着）
-                if !viewModel.feedbacks.isEmpty {
-                    VimeoTimelineView(
-                        feedbacks: viewModel.feedbacks,
-                        duration: viewModel.duration,
-                        currentTime: viewModel.currentTime,
-                        onSeek: { time in viewModel.seek(to: time) }
-                    )
-                    .frame(height: 36)
-                }
+                .frame(maxWidth: .infinity)
+                .frame(height: (UIScreen.main.bounds.width - 32) * 9.0 / 16.0)
+                .background(AppTheme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
             // レビューコメント入力エリア（折りたたみ可能）

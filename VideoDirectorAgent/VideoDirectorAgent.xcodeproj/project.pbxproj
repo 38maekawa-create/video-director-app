@@ -45,6 +45,9 @@
 		A10000010000000000000046 /* AudioEvaluationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000046 /* AudioEvaluationView.swift */; };
 		A10000010000000000000047 /* KnowledgePagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000047 /* KnowledgePagesView.swift */; };
 		A10000010000000000000100 /* BeforeAfterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000100 /* BeforeAfterView.swift */; };
+		A10000010000000000000022 /* DirectionEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000022 /* DirectionEditView.swift */; };
+		A10000010000000000000023 /* TitleDescriptionEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000023 /* TitleDescriptionEditView.swift */; };
+		A10000010000000000000024 /* ThumbnailEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000024 /* ThumbnailEditView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,6 +78,9 @@
 		A20000010000000000000018 /* NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
 		A20000010000000000000019 /* ReportListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportListView.swift; sourceTree = "<group>"; };
 		A20000010000000000000021 /* EditFeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditFeedbackView.swift; sourceTree = "<group>"; };
+		A20000010000000000000022 /* DirectionEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionEditView.swift; sourceTree = "<group>"; };
+		A20000010000000000000023 /* TitleDescriptionEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleDescriptionEditView.swift; sourceTree = "<group>"; };
+		A20000010000000000000024 /* ThumbnailEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailEditView.swift; sourceTree = "<group>"; };
 		A20000010000000000000031 /* VimeoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimeoPlayerView.swift; sourceTree = "<group>"; };
 		A20000010000000000000032 /* VimeoTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimeoTimelineView.swift; sourceTree = "<group>"; };
 		A20000010000000000000033 /* VimeoReviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimeoReviewViewModel.swift; sourceTree = "<group>"; };
@@ -175,6 +181,9 @@
 				A20000010000000000000018 /* NotificationSettingsView.swift */,
 				A20000010000000000000019 /* ReportListView.swift */,
 				A20000010000000000000021 /* EditFeedbackView.swift */,
+				A20000010000000000000022 /* DirectionEditView.swift */,
+				A20000010000000000000023 /* TitleDescriptionEditView.swift */,
+				A20000010000000000000024 /* ThumbnailEditView.swift */,
 				A20000010000000000000031 /* VimeoPlayerView.swift */,
 				A20000010000000000000032 /* VimeoTimelineView.swift */,
 				A20000010000000000000044 /* E2EPipelineView.swift */,
@@ -288,6 +297,9 @@
 				A1000001000000000000000F /* APIClient.swift in Sources */,
 				A10000010000000000000017 /* ReportListView.swift in Sources */,
 				A10000010000000000000021 /* EditFeedbackView.swift in Sources */,
+				A10000010000000000000022 /* DirectionEditView.swift in Sources */,
+				A10000010000000000000023 /* TitleDescriptionEditView.swift in Sources */,
+				A10000010000000000000024 /* ThumbnailEditView.swift in Sources */,
 				A10000010000000000000031 /* VimeoPlayerView.swift in Sources */,
 				A10000010000000000000032 /* VimeoTimelineView.swift in Sources */,
 				A10000010000000000000033 /* VimeoReviewViewModel.swift in Sources */,
@@ -361,7 +373,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 19;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = TT2DA7H5NJ;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = VideoDirectorAgent/Info.plist;
@@ -386,7 +398,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 19;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = TT2DA7H5NJ;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = VideoDirectorAgent/Info.plist;

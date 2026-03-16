@@ -119,7 +119,7 @@ struct BeforeAfterView: View {
             VStack(spacing: 4) {
                 upperVideoLabel
                 upperVideoPlayer
-                    .frame(height: 200)
+                    .aspectRatio(16.0 / 9.0, contentMode: .fit)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .padding(.horizontal, 16)
@@ -128,7 +128,7 @@ struct BeforeAfterView: View {
             VStack(spacing: 4) {
                 lowerVideoLabel
                 lowerVideoPlayer
-                    .frame(height: 200)
+                    .aspectRatio(16.0 / 9.0, contentMode: .fit)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .padding(.horizontal, 16)

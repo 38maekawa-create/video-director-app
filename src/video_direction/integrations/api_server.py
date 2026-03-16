@@ -3420,25 +3420,32 @@ def get_before_after(project_id: str):
             pass
 
     # 編集後動画（Vimeo）
+    # DBにはプレーンURL文字列（"https://vimeo.com/..."）またはJSON（{"url": "..."}）が入る
     edited_video = None
     ev = proj["edited_video"]
     if ev:
+        vimeo_url = None
+        # JSON形式の場合（{"url": "https://vimeo.com/..."}）
         try:
             ev_data = json.loads(ev) if isinstance(ev, str) else ev
-            if ev_data and ev_data.get("url"):
+            if ev_data and isinstance(ev_data, dict) and ev_data.get("url"):
                 vimeo_url = ev_data["url"]
-                vimeo_id = ""
-                m = re.search(r"vimeo\.com/(\d+)", vimeo_url)
-                if m:
-                    vimeo_id = m.group(1)
-                edited_video = {
-                    "vimeo_url": vimeo_url,
-                    "vimeo_id": vimeo_id,
-                    "embed_url": f"https://player.vimeo.com/video/{vimeo_id}" if vimeo_id else None,
-                    "version": "v1",
-                }
         except (json.JSONDecodeError, TypeError):
-            pass
+            # プレーンURL文字列の場合（"https://vimeo.com/12345"）
+            if isinstance(ev, str) and "vimeo.com" in ev:
+                vimeo_url = ev.strip()
+
+        if vimeo_url:
+            vimeo_id = ""
+            m = re.search(r"vimeo\.com/(\d+)", vimeo_url)
+            if m:
+                vimeo_id = m.group(1)
+            edited_video = {
+                "vimeo_url": vimeo_url,
+                "vimeo_id": vimeo_id,
+                "embed_url": f"https://player.vimeo.com/video/{vimeo_id}" if vimeo_id else None,
+                "version": "v1",
+            }
 
     # FB後再編集版（現状はDBにカラムがないため将来拡張用。edited_videoにバージョン情報があれば対応）
     fb_revised_video = None

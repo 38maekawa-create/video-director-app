@@ -112,7 +112,7 @@ struct SourceVideosSubTabView: View {
         VStack(spacing: 0) {
             // YouTube埋め込みプレーヤー（16:9）
             YouTubePlayerView(videoURL: video.watchURL)
-                .frame(height: 220)
+                .aspectRatio(16.0 / 9.0, contentMode: .fit)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .onTapGesture {
                     selectedVideo = video

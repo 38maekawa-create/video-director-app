@@ -274,8 +274,8 @@ struct VimeoReviewTabView: View {
                         .font(AppTheme.bodyFont(12))
                         .foregroundStyle(AppTheme.textMuted.opacity(0.7))
                 }
-                .frame(height: 220)
                 .frame(maxWidth: .infinity)
+                .aspectRatio(16.0 / 9.0, contentMode: .fit)
                 .background(AppTheme.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }

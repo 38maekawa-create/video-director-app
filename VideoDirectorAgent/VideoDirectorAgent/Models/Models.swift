@@ -262,28 +262,21 @@ struct VideoProject: Identifiable, Codable, Hashable {
         key: CodingKeys,
         fallbackKey: CodingKeys
     ) -> String? {
-        // デバッグ: コンテナ内の全キーを出力
-        print("[decodeNestedURL] key=\(key.stringValue), fallback=\(fallbackKey.stringValue), allKeys=\(container.allKeys.map { $0.stringValue })")
         if let direct = try? container.decodeIfPresent(String.self, forKey: key), !direct.isEmpty {
-            print("[decodeNestedURL] primary hit: \(direct)")
             return direct
         }
         // fallbackKeyが文字列URLの場合（例: edited_video が "https://vimeo.com/..." の場合）
         if let directFallback = try? container.decodeIfPresent(String.self, forKey: fallbackKey), !directFallback.isEmpty {
-            print("[decodeNestedURL] fallback hit: \(directFallback)")
             return directFallback
         }
-        print("[decodeNestedURL] fallback String decode failed, trying JSON object...")
         // fallbackKeyがオブジェクトの場合（例: edited_video が { "url": "...", "vimeoUrl": "..." } の場合）
         if let payload = try? container.decodeIfPresent([String: JSONValue].self, forKey: fallbackKey) {
-            print("[decodeNestedURL] JSON object found: \(payload.keys)")
             for candidateKey in ["url", "vimeoUrl", "videoUrl", "link"] {
                 if let value = payload[candidateKey]?.stringValue, !value.isEmpty {
                     return value
                 }
             }
         }
-        print("[decodeNestedURL] returning nil")
         return nil
     }
 

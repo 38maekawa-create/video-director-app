@@ -20,6 +20,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from video_direction.integrations.edit_direction_routes import router as edit_direction_router
+from video_direction.integrations.edit_assets_routes import router as edit_assets_router
+from video_direction.tracker.edit_learner import EditLearner
+
 # --- データベース ---
 
 DB_PATH = Path.home() / "AI開発10" / ".data" / "video_director.db"
@@ -255,6 +259,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(edit_direction_router)
+app.include_router(edit_assets_router)
 
 
 @app.on_event("startup")
@@ -1703,6 +1710,15 @@ def _get_video_learner():
         return None
 
 
+# 手修正学習（EditLearner）グローバルインスタンス
+edit_learner = EditLearner()
+
+
+def _get_edit_learner():
+    """EditLearnerインスタンスを返す"""
+    return edit_learner
+
+
 @app.get("/api/tracking/insights")
 def list_tracking_insights():
     """学習済みインサイト一覧（映像+FB統合）"""
@@ -2514,6 +2530,7 @@ def generate_direction(project_id: str, body: GenerateDirectionRequest = Generat
             income_eval=income_eval,
             feedback_learner=feedback_learner,
             video_learner=video_learner,
+            edit_learner=edit_learner,
         )
     except Exception as e:
         raise HTTPException(500, f"ディレクション生成エラー: {e}")
@@ -2522,6 +2539,7 @@ def generate_direction(project_id: str, body: GenerateDirectionRequest = Generat
     learning_ctx = get_learning_context(
         feedback_learner=feedback_learner,
         video_learner=video_learner,
+        edit_learner=edit_learner,
     )
 
     # トラッキング映像の参考URL+タイムスタンプを収集
@@ -2588,13 +2606,14 @@ class E2EPipelineRequest(BaseModel):
 
 @app.post("/api/v1/projects/{project_id}/e2e-pipeline")
 def run_e2e_pipeline(project_id: str, body: E2EPipelineRequest = E2EPipelineRequest()):
-    """E2Eパイプライン: FB入力→FB学習→映像学習→ディレクション生成→Vimeo投稿
+    """E2Eパイプライン: FB入力→FB学習→映像学習→手修正学習→ディレクション生成→Vimeo投稿
 
     統合フロー全体を1回のAPI呼び出しで実行する:
     1. プロジェクトのFB一覧取得
     2. FB学習ルール確認
     3. 映像学習インサイト取得（トラッキング映像の参考URL+タイムスタンプ含む）
     4. ディレクション生成（LLMで美しい言い回しに変換）
+    4.5. 手修正学習ルール確認（既存editsのdiff分析→学習DB蓄積）
     5. Vimeoレビューコメント投稿（dry_runオプション付き）
     """
     pipeline_steps = {}
@@ -2736,11 +2755,13 @@ def run_e2e_pipeline(project_id: str, body: E2EPipelineRequest = E2EPipelineRequ
             income_eval=income_eval,
             feedback_learner=feedback_learner,
             video_learner=video_learner,
+            edit_learner=edit_learner,
         )
 
         learning_ctx = get_learning_context(
             feedback_learner=feedback_learner,
             video_learner=video_learner,
+            edit_learner=edit_learner,
         )
 
         from dataclasses import asdict
@@ -2763,6 +2784,54 @@ def run_e2e_pipeline(project_id: str, body: E2EPipelineRequest = E2EPipelineRequ
     except Exception as e:
         pipeline_steps["step4_direction"] = {"status": "error", "error": str(e)}
         errors.append(f"ディレクション生成エラー: {e}")
+
+    # --- Step 4.5: 手修正学習ルール確認 ---
+    edit_learner_instance = _get_edit_learner()
+    edit_learning = {}
+    if edit_learner_instance:
+        try:
+            edit_learning = edit_learner_instance.get_insights()
+            # プロジェクトに既存のeditsがあればdiff分析→学習DB蓄積
+            if direction_result:
+                existing_edits = []
+                edit_conn = _get_db()
+                try:
+                    # editsテーブルがあればプロジェクトの手修正履歴を取得
+                    edit_rows = edit_conn.execute(
+                        "SELECT * FROM edits WHERE project_id = ? ORDER BY created_at DESC",
+                        (project_id,)
+                    ).fetchall()
+                    existing_edits = [dict(r) for r in edit_rows]
+                except Exception:
+                    pass
+                finally:
+                    edit_conn.close()
+
+                # 既存editがあればdiff分析→学習DB蓄積
+                for edit_row in existing_edits:
+                    try:
+                        edit_learner_instance.ingest_edit(
+                            project_id=project_id,
+                            asset_type=edit_row.get("asset_type", "direction"),
+                            diff_result=edit_row,
+                        )
+                    except Exception:
+                        pass
+
+                # 学習後に再取得
+                edit_learning = edit_learner_instance.get_insights()
+
+            pipeline_steps["step4_5_edit_learning"] = {
+                "status": "ok",
+                "insights": edit_learning,
+                "edit_rules_count": len(edit_learner_instance.get_active_rules()),
+                "edit_patterns_count": len(edit_learner_instance.get_patterns()),
+            }
+        except Exception as e:
+            pipeline_steps["step4_5_edit_learning"] = {"status": "error", "error": str(e)}
+            errors.append(f"手修正学習ルール取得エラー: {e}")
+    else:
+        pipeline_steps["step4_5_edit_learning"] = {"status": "unavailable"}
 
     # --- Step 5: Vimeoレビューコメント投稿 ---
     vimeo_result = None
@@ -2812,6 +2881,7 @@ def run_e2e_pipeline(project_id: str, body: E2EPipelineRequest = E2EPipelineRequ
         "direction_timeline": direction_result,
         "tracking_references": tracking_references,
         "video_reference_urls": video_reference_urls,
+        "edit_learning": edit_learning,
         "vimeo_result": vimeo_result,
         "errors": errors,
         "success": len(errors) == 0,

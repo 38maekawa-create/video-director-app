@@ -3179,3 +3179,59 @@ INFO:     Finished server process [92850]
 INFO:     Started server process [1043]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/analyzer/title_generator.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1043]
+INFO:     Started server process [66053]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/analyzer/description_writer.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [66053]
+INFO:     Started server process [66059]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/analyzer/thumbnail_designer.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [66059]
+INFO:     Started server process [66063]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/analyzer/direction_generator.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [66063]
+INFO:     Started server process [66123]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/analyzer/direction_generator.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [66123]
+INFO:     Started server process [66212]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/tracker/video_analyzer.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [66212]
+INFO:     Started server process [66502]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/tracker/video_analyzer.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [66502]
+INFO:     Started server process [66586]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

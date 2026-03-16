@@ -367,21 +367,7 @@ def _llm_analyze(
     video_learner=None,
     edit_learner=None,
 ) -> str:
-    """LLM（Claude Sonnet）による追加分析。FB学習ルール+映像学習ルールがあればプロンプトに注入する"""
-    # APIキー読み込み
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        env_file = Path.home() / ".config" / "maekawa" / "api-keys.env"
-        if env_file.exists():
-            for line in env_file.read_text().split("\n"):
-                if line.startswith("ANTHROPIC_API_KEY="):
-                    api_key = line.split("=", 1)[1].strip()
-                    break
-    if not api_key:
-        return ""
-
-    import anthropic
-    client = anthropic.Anthropic(api_key=api_key)
+    """LLM（teko_core.llm経由 — MAX定額内）による追加分析。FB学習ルール+映像学習ルールがあればプロンプトに注入する"""
 
     # ハイライトシーンのサマリー
     highlights_text = "\n".join([
@@ -555,12 +541,8 @@ def _llm_analyze(
 - 映像トラッキングインサイトがある場合、外部映像で成功している演出パターンを積極的に取り入れること
 """
 
-    response = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=2000,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return response.content[0].text
+    from teko_core.llm import ask
+    return ask(prompt, model="sonnet", max_tokens=2000, timeout=120)
 
 
 def get_learning_context(feedback_learner: "FeedbackLearner" = None, video_learner: "VideoLearner" = None, edit_learner: "EditLearner" = None) -> dict:

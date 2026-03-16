@@ -262,25 +262,8 @@ class VideoAnalyzer:
         channel_name: str = None,
         duration_seconds: float = 0.0,
     ) -> VideoAnalysisResult:
-        """LLM（Claude Sonnet）で映像を深掘り分析し、構造化パターンを抽出"""
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-        if not api_key:
-            env_file = Path.home() / ".config" / "maekawa" / "api-keys.env"
-            if env_file.exists():
-                for line in env_file.read_text().split("\n"):
-                    if line.startswith("ANTHROPIC_API_KEY="):
-                        api_key = line.split("=", 1)[1].strip()
-                        break
-        if not api_key:
-            return result
-
-        try:
-            import anthropic
-            client = anthropic.Anthropic(api_key=api_key)
-        except ImportError:
-            return result
-
-        # 字幕は先頭3000文字に制限（コスト最適化）
+        """LLM（teko_core.llm経由 — MAX定額内）で映像を深掘り分析し、構造化パターンを抽出"""
+        # 字幕は先頭3000文字に制限
         transcript_excerpt = (transcript or "")[:3000]
         duration_min = int(duration_seconds / 60) if duration_seconds else 0
 
@@ -318,12 +301,8 @@ class VideoAnalyzer:
 """
 
         try:
-            response = client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=800,
-                messages=[{"role": "user", "content": prompt}],
-            )
-            raw_text = response.content[0].text.strip()
+            from teko_core.llm import ask
+            raw_text = ask(prompt, model="sonnet", max_tokens=800, timeout=120).strip()
 
             # JSON部分を抽出
             parsed = self._extract_json(raw_text)

@@ -73,14 +73,8 @@ def generate_description(
     )
 
     try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=api_key)
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=3000,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        raw = response.content[0].text
+        from teko_core.llm import ask
+        raw = ask(prompt, model="sonnet", max_tokens=3000, timeout=120)
         return _parse_description_response(raw)
 
     except Exception as e:

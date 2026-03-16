@@ -76,16 +76,10 @@ def generate_thumbnail_design(
         highlights_text=highlights_text or "なし",
     )
 
-    # LLM呼び出し
+    # LLM呼び出し（teko_core.llm経由 — MAX定額内）
     try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=api_key)
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=2000,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        raw = response.content[0].text
+        from teko_core.llm import ask
+        raw = ask(prompt, model="sonnet", max_tokens=2000, timeout=120)
 
         # JSONパース
         return _parse_thumbnail_response(raw)

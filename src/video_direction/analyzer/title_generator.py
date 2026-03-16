@@ -82,14 +82,8 @@ def generate_title_proposals(
     )
 
     try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=api_key)
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=2000,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        raw = response.content[0].text
+        from teko_core.llm import ask
+        raw = ask(prompt, model="sonnet", max_tokens=2000, timeout=120)
         return _parse_title_response(raw)
 
     except Exception as e:

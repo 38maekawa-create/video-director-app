@@ -1514,3 +1514,5 @@ INFO:     127.0.0.1:62007 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:62016 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:62020 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:62027 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62036 - "GET /api/v1/project/list HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62038 - "GET /api/projects HTTP/1.1" 200 OK

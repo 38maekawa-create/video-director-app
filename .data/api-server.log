@@ -1215,3 +1215,14 @@ INFO:     127.0.0.1:49614 - "GET /api/projects/p-20251123-Izu/youtube-assets HTT
 INFO:     127.0.0.1:49615 - "GET /api/projects/p-20251123-%E3%81%93%E3%82%82%E3%81%95%E3%82%93/youtube-assets HTTP/1.1" 200 OK
 INFO:     127.0.0.1:49616 - "GET /api/projects/p-20251123-%E3%81%A6%E3%81%83%E3%83%BC%E3%81%B2%E3%82%8D%E3%83%8B%E3%83%83%E3%82%AF%E3%83%8D%E3%83%BC%E3%83%A0%E8%8D%92%E6%B2%A2/youtube-assets HTTP/1.1" 200 OK
 INFO:     127.0.0.1:49617 - "GET /api/projects/p-20251123-%E9%99%BD%E4%BB%8B/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58945 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58945 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58947 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58946 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58948 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58945 - "GET /api/dashboard/quality-trend HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58945 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58945 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58946 - "GET /api/audit/history HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58946 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58945 - "GET /api/learning/summary HTTP/1.1" 200 OK

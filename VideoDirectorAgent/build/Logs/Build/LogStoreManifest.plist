@@ -6,7 +6,7 @@
 	<integer>12</integer>
 	<key>logs</key>
 	<dict>
-		<key>3BE23DDC-B3F9-46FA-9941-2E5B315D1619</key>
+		<key>6115714E-27E0-43EE-853B-E4CE1EDD0FD0</key>
 		<dict>
 			<key>className</key>
 			<string>IDECommandLineBuildLog</string>
@@ -15,7 +15,7 @@
 			<key>domainType</key>
 			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
 			<key>fileName</key>
-			<string>3BE23DDC-B3F9-46FA-9941-2E5B315D1619.xcactivitylog</string>
+			<string>6115714E-27E0-43EE-853B-E4CE1EDD0FD0.xcactivitylog</string>
 			<key>hasPrimaryLog</key>
 			<true/>
 			<key>primaryObservable</key>
@@ -40,13 +40,13 @@
 			<key>signature</key>
 			<string>Building project VideoDirectorAgent with scheme VideoDirectorAgent</string>
 			<key>timeStartedRecording</key>
-			<real>795381578.34357798</real>
+			<real>795382320.882774</real>
 			<key>timeStoppedRecording</key>
-			<real>795381602.064713</real>
+			<real>795382386.326563</real>
 			<key>title</key>
 			<string>Building project VideoDirectorAgent with scheme VideoDirectorAgent</string>
 			<key>uniqueIdentifier</key>
-			<string>3BE23DDC-B3F9-46FA-9941-2E5B315D1619</string>
+			<string>6115714E-27E0-43EE-853B-E4CE1EDD0FD0</string>
 		</dict>
 		<key>C0FE9E0D-6B3D-479A-98EC-9013D970437C</key>
 		<dict>

@@ -4,10 +4,26 @@
     "Localizable": [
       {
         "comment": "",
+        "key": "埋め込み再生が制限されています",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 76
+        }
+      },
+      {
+        "comment": "",
+        "key": "YouTubeで開く",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 90
+        }
+      },
+      {
+        "comment": "",
         "key": "%lld歳",
         "location": {
           "startingColumn": 31,
-          "startingLine": 140
+          "startingLine": 250
         }
       },
       {
@@ -15,7 +31,7 @@
         "key": "ビフォーアフター",
         "location": {
           "startingColumn": 34,
-          "startingLine": 156
+          "startingLine": 266
         }
       },
       {
@@ -23,7 +39,7 @@
         "key": "閲覧ページ",
         "location": {
           "startingColumn": 38,
-          "startingLine": 177
+          "startingLine": 287
         }
       },
       {
@@ -31,7 +47,7 @@
         "key": "%lld",
         "location": {
           "startingColumn": 34,
-          "startingLine": 197
+          "startingLine": 307
         }
       },
       {
@@ -39,7 +55,7 @@
         "key": "品質スコア",
         "location": {
           "startingColumn": 34,
-          "startingLine": 200
+          "startingLine": 310
         }
       },
       {
@@ -47,7 +63,7 @@
         "key": "手修正ツール",
         "location": {
           "startingColumn": 26,
-          "startingLine": 341
+          "startingLine": 451
         }
       },
       {
@@ -55,7 +71,7 @@
         "key": "ディレクションを編集",
         "location": {
           "startingColumn": 26,
-          "startingLine": 414
+          "startingLine": 524
         }
       },
       {
@@ -63,7 +79,7 @@
         "key": "Vimeoで開く",
         "location": {
           "startingColumn": 34,
-          "startingLine": 478
+          "startingLine": 588
         }
       },
       {
@@ -71,7 +87,7 @@
         "key": "品質改善サイクル",
         "location": {
           "startingColumn": 22,
-          "startingLine": 605
+          "startingLine": 715
         }
       },
       {
@@ -79,7 +95,7 @@
         "key": "音声フィードバックを追加",
         "location": {
           "startingColumn": 26,
-          "startingLine": 652
+          "startingLine": 762
         }
       },
       {
@@ -87,7 +103,7 @@
         "key": "閉じる",
         "location": {
           "startingColumn": 34,
-          "startingLine": 736
+          "startingLine": 846
         }
       },
       {
@@ -95,7 +111,7 @@
         "key": "動画ナレッジ",
         "location": {
           "startingColumn": 30,
-          "startingLine": 746
+          "startingLine": 856
         }
       },
       {
@@ -103,7 +119,7 @@
         "key": "Safari",
         "location": {
           "startingColumn": 34,
-          "startingLine": 755
+          "startingLine": 865
         }
       },
       {
@@ -111,7 +127,7 @@
         "key": "プロの指示に変換",
         "location": {
           "startingColumn": 42,
-          "startingLine": 883
+          "startingLine": 993
         }
       },
       {
@@ -119,7 +135,7 @@
         "key": "閉じる",
         "location": {
           "startingColumn": 30,
-          "startingLine": 918
+          "startingLine": 1028
         }
       },
       {
@@ -127,7 +143,7 @@
         "key": "送信",
         "location": {
           "startingColumn": 38,
-          "startingLine": 951
+          "startingLine": 1061
         }
       },
       {
@@ -135,7 +151,7 @@
         "key": "フィードバックを送信しました",
         "location": {
           "startingColumn": 22,
-          "startingLine": 990
+          "startingLine": 1100
         }
       }
     ]

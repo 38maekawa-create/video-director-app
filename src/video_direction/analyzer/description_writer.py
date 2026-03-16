@@ -2,7 +2,7 @@ from __future__ import annotations
 """概要欄文章生成モジュール
 
 そのままYouTubeに貼れる概要欄テキストを生成する。
-構成: 冒頭フック → トークサマリー → タイムスタンプ → CTA → ハッシュタグ
+構成: チャンネル登録CTA → ブランド紹介 → ゲスト紹介フック → トークサマリー → LINE CTA
 """
 
 import json
@@ -116,72 +116,61 @@ def _fallback_description(
     classification: ClassificationResult,
     income_eval: IncomeEvaluation,
 ) -> VideoDescription:
-    """フォールバック（テンプレートベース）"""
+    """フォールバック（テンプレートベース — TEKO統一フォーマット）"""
     profile = video_data.profiles[0] if video_data.profiles else None
 
-    # ゲスト属性テキスト（名前は出さない）
+    # ゲスト名（実名 + さん表記）
+    guest_name = f"{profile.name}さん" if profile and profile.name else "ゲストさん"
+
+    # ゲスト属性テキスト
     attr_parts = []
     if profile:
+        if profile.income and income_eval.emphasize:
+            attr_parts.append(f"年収{profile.income}")
         if profile.age:
             attr_parts.append(profile.age)
         if profile.occupation:
             attr_parts.append(profile.occupation)
-        if profile.income and income_eval.emphasize:
-            attr_parts.append(f"年収{profile.income}")
-    guest_attr = "・".join(attr_parts) if attr_parts else "会社員ゲスト"
+    guest_attr = "・".join(attr_parts) if attr_parts else ""
 
-    # 冒頭フック
-    hook = f"{guest_attr}が語る、不動産投資のリアルな体験談。"
+    # CTA冒頭（絶対位置）
+    channel_cta = "チャンネル登録はこちらから▼\n[チャンネルURL]"
+
+    # ブランド紹介
+    brand_intro = "【TEKO公式メディア】\nハイキャリアパーソンの裏側と本音に迫る対談メディア"
+
+    # ゲスト紹介フック
+    hook = f"今回は{guest_attr}の{guest_name}をお迎えし、キャリアと資産形成のリアルに迫ります。"
 
     # トークサマリー
-    topics = video_data.main_topics[:5] if video_data.main_topics else ["不動産投資について"]
+    topics = video_data.main_topics[:5] if video_data.main_topics else ["キャリア戦略について"]
     summary_lines = "\n".join([f"・{t}" for t in topics])
     summary = f"▼ 今回のトーク内容\n{summary_lines}"
 
-    # タイムスタンプ
-    ts_lines = []
-    for h in video_data.highlights[:8]:
-        ts_lines.append(f"{h.timestamp} {h.category}: {h.text[:40]}")
-    timestamps = "\n".join(ts_lines) if ts_lines else "0:00 オープニング"
+    # LINE公式CTA
+    line_cta = """【運営者：プロパー八重洲とLINEで繋がりませんか？】
+▼パラレルキャリア相談はこちら
+[LINE公式URL]"""
 
-    # CTA
-    cta = """▼ TEKO（テコ）について詳しくはこちら
-https://teko-lp.com/
+    # full_text組み立て（タイムスタンプ・ハッシュタグ・SNSリンクなし）
+    full_text = f"""{channel_cta}
 
-▼ LINE公式アカウント
-[LINE公式リンク]
+{brand_intro}
 
-▼ チャンネル登録お願いします！
-[チャンネル登録リンク]
-
-▼ SNS
-Instagram: [Instagramリンク]
-X (Twitter): [Xリンク]
-TikTok: [TikTokリンク]"""
-
-    # ハッシュタグ
-    hashtags = "#不動産投資 #TEKO #テコ #資産形成 #サラリーマン投資 #対談"
-
-    # full_text組み立て
-    full_text = f"""{hook}
+{hook}
 
 {summary}
 
-▼ タイムスタンプ
-{timestamps}
-
-{cta}
-
-{hashtags}"""
+{line_cta}"""
 
     return VideoDescription(
         full_text=full_text,
         hook=hook,
         summary=summary,
-        timestamps=timestamps,
-        cta=cta,
-        hashtags=hashtags,
-        llm_raw_response="[フォールバック: テンプレート生成]",
+        timestamps="",
+        cta=f"{channel_cta}\n\n{line_cta}",
+        hashtags="",
+        llm_raw_response="[フォールバック: テンプレート生成（TEKO統一フォーマット）]",
     )
 
 

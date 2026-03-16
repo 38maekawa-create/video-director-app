@@ -18,6 +18,7 @@ from .income_evaluator import IncomeEvaluation
 if TYPE_CHECKING:
     from ..tracker.feedback_learner import FeedbackLearner, LearningRule
     from ..tracker.video_learner import VideoLearner, VideoLearningRule
+    from ..tracker.edit_learner import EditLearner, EditLearningRule
 
 
 @dataclass
@@ -44,6 +45,7 @@ def generate_directions(
     income_eval: IncomeEvaluation,
     feedback_learner=None,
     video_learner=None,
+    edit_learner=None,
     project_category: str | None = None,
 ) -> DirectionTimeline:
     """ルールベースで演出ディレクションを生成する
@@ -54,6 +56,7 @@ def generate_directions(
         income_eval: 年収演出判断結果
         feedback_learner: FeedbackLearnerインスタンス（FB学習ルール反映用、Noneなら無視）
         video_learner: VideoLearnerインスタンス（映像トラッキング学習ルール反映用、Noneなら無視）
+        edit_learner: EditLearnerインスタンス（手修正学習ルール反映用、Noneなら無視）
         project_category: プロジェクトカテゴリ（teko_member / teko_realestate / None）
             カテゴリに応じてディレクションのトーン・演出指示を分岐する（将来拡張ポイント）
 
@@ -91,15 +94,24 @@ def generate_directions(
         entries.extend(vl_entries)
         applied_rules.extend(vl_applied)
 
+    # 手修正学習ルールの適用（FBと同じ仕組み。手修正由来は[手修正学習]タグ付き）
+    if edit_learner is not None:
+        el_entries, el_applied = _apply_learned_rules(
+            video_data, classification, income_eval, edit_learner
+        )
+        entries.extend(el_entries)
+        applied_rules.extend(el_applied)
+
     # タイムスタンプ順にソート
     entries.sort(key=lambda e: _timestamp_to_seconds(e.timestamp))
 
-    # LLM分析を試行（APIキーがなければスキップ。FB学習ルール+映像学習ルールをプロンプトに注入）
+    # LLM分析を試行（APIキーがなければスキップ。FB学習ルール+映像学習ルール+手修正学習ルールをプロンプトに注入）
     llm_analysis = ""
     try:
         llm_analysis = _llm_analyze(
             video_data, classification, income_eval,
             feedback_learner=feedback_learner, video_learner=video_learner,
+            edit_learner=edit_learner,
         )
     except Exception:
         pass
@@ -353,6 +365,7 @@ def _llm_analyze(
     income_eval: IncomeEvaluation,
     feedback_learner=None,
     video_learner=None,
+    edit_learner=None,
 ) -> str:
     """LLM（Claude Sonnet）による追加分析。FB学習ルール+映像学習ルールがあればプロンプトに注入する"""
     # APIキー読み込み
@@ -397,33 +410,45 @@ def _llm_analyze(
         except Exception:
             pass
 
+    # 手修正学習ルールもLLMプロンプトに注入
+    edit_rules_text = ""
+    if edit_learner is not None:
+        try:
+            edit_rules = edit_learner.get_active_rules()
+            if edit_rules:
+                edit_lines = [f"- [{r.category}] {r.rule_text} (優先度: {r.priority})" for r in edit_rules[:10]]
+                edit_rules_text = "\n\n手修正から学習した演出ルール（最優先で反映すること。手修正は直接的な品質改善指示である）:\n" + "\n".join(edit_lines)
+        except Exception:
+            pass
+
     # タイムラインコンテキストの構築
     total_duration = video_data.duration if video_data.duration else "不明"
     highlight_count = len(video_data.highlights)
 
-    # ハイライト密度分析
-    highlight_density = "不明"
+    # ハイライトのタイムスタンプを秒数に変換
     timestamps_sec = []
-    if video_data.highlights and len(video_data.highlights) >= 3:
-        for h in video_data.highlights:
-            parts = h.timestamp.replace("[", "").replace("]", "").split(":")
-            try:
-                if len(parts) == 2:
-                    timestamps_sec.append(int(parts[0]) * 60 + int(parts[1]))
-                elif len(parts) == 3:
-                    timestamps_sec.append(int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2]))
-            except (ValueError, IndexError):
-                pass
-        if timestamps_sec:
-            mid = max(timestamps_sec) / 2
-            first_half = sum(1 for t in timestamps_sec if t <= mid)
-            second_half = sum(1 for t in timestamps_sec if t > mid)
-            if first_half > second_half * 1.5:
-                highlight_density = "前半密集型（前半にハイライトが集中）"
-            elif second_half > first_half * 1.5:
-                highlight_density = "後半盛り上がり型（後半にハイライトが集中）"
-            else:
-                highlight_density = "均等分散型（全体にバランスよく分布）"
+    for h in video_data.highlights:
+        parts = h.timestamp.replace("[", "").replace("]", "").split(":")
+        try:
+            if len(parts) == 2:
+                timestamps_sec.append(int(parts[0]) * 60 + int(parts[1]))
+            elif len(parts) == 3:
+                timestamps_sec.append(int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2]))
+        except (ValueError, IndexError):
+            pass
+
+    # ハイライト密度分析（3件以上で判定）
+    highlight_density = "不明"
+    if len(timestamps_sec) >= 3:
+        mid = max(timestamps_sec) / 2
+        first_half = sum(1 for t in timestamps_sec if t <= mid)
+        second_half = sum(1 for t in timestamps_sec if t > mid)
+        if first_half > second_half * 1.5:
+            highlight_density = "前半密集型（前半にハイライトが集中）"
+        elif second_half > first_half * 1.5:
+            highlight_density = "後半盛り上がり型（後半にハイライトが集中）"
+        else:
+            highlight_density = "均等分散型（全体にバランスよく分布）"
 
     # ハイライト間ギャップの検出
     gap_warnings = []
@@ -507,7 +532,7 @@ def _llm_analyze(
 {strength_direction}
 
 ## ハイライトシーン
-{highlights_text}{gap_text}{learned_rules_text}{video_insights_text}
+{highlights_text}{gap_text}{learned_rules_text}{video_insights_text}{edit_rules_text}
 
 ## 出力フォーマット
 以下のフォーマットで、具体的なタイムスタンプと演出指示を出してください:
@@ -532,13 +557,13 @@ def _llm_analyze(
 
     response = client.messages.create(
         model="claude-sonnet-4-20250514",
-        max_tokens=1000,
+        max_tokens=2000,
         messages=[{"role": "user", "content": prompt}],
     )
     return response.content[0].text
 
 
-def get_learning_context(feedback_learner: "FeedbackLearner" = None, video_learner: "VideoLearner" = None) -> dict:
+def get_learning_context(feedback_learner: "FeedbackLearner" = None, video_learner: "VideoLearner" = None, edit_learner: "EditLearner" = None) -> dict:
     """FB学習ルール+映像学習ルールのコンテキストを取得する
 
     ディレクション生成の前に学習状況を確認したり、
@@ -547,13 +572,15 @@ def get_learning_context(feedback_learner: "FeedbackLearner" = None, video_learn
     Args:
         feedback_learner: FeedbackLearnerインスタンス（Noneなら空を返す）
         video_learner: VideoLearnerインスタンス（Noneなら映像学習部分は空）
+        edit_learner: EditLearnerインスタンス（Noneなら手修正学習部分は空）
 
     Returns:
         dict: {
-            "active_rules": [...],  # 有効なルール一覧（FB+映像統合）
+            "active_rules": [...],  # 有効なルール一覧（FB+映像+手修正統合）
             "insights": {...},      # 学習状況サマリー
             "has_rules": bool,      # ルールがあるかどうか
             "video_learning": {...},  # 映像学習状況
+            "edit_learning": {...},   # 手修正学習状況
         }
     """
     all_rules = []
@@ -598,9 +625,30 @@ def get_learning_context(feedback_learner: "FeedbackLearner" = None, video_learn
         except Exception:
             pass
 
+    # 手修正学習ルール
+    edit_learning = {}
+    if edit_learner is not None:
+        try:
+            el_rules = edit_learner.get_active_rules()
+            edit_learning = edit_learner.get_insights()
+            all_rules.extend([
+                {
+                    "id": r.id,
+                    "rule_text": r.rule_text,
+                    "category": r.category,
+                    "priority": r.priority,
+                    "applied_count": r.applied_count,
+                    "source": "edit",
+                }
+                for r in el_rules
+            ])
+        except Exception:
+            pass
+
     return {
         "active_rules": all_rules,
         "insights": insights,
         "has_rules": len(all_rules) > 0,
         "video_learning": video_learning,
+        "edit_learning": edit_learning,
     }

@@ -134,43 +134,56 @@ def _fallback_thumbnail(
     classification: ClassificationResult,
     income_eval: IncomeEvaluation,
 ) -> ThumbnailDesign:
-    """APIキーなし・LLM失敗時のフォールバック（ルールベース）"""
+    """APIキーなし・LLM失敗時のフォールバック（ルールベース・層別フック戦略対応）"""
     profile = video_data.profiles[0] if video_data.profiles else None
 
-    # フック文言の決定
-    hook_text = "年収" + (profile.income if profile and profile.income else "???万円")
-    if not income_eval.emphasize and profile:
-        hook_text = profile.occupation or "会社員"
+    # 層別フック戦略に基づくフック文言の決定
+    tier = classification.tier
+    if tier == "a":
+        # tier a（年収2000万〜）: 数字+権威性でフック
+        hook_text = "年収" + (profile.income if profile and profile.income else "???万円")
+        hook_notes = "0.2秒で目に入る最大フォント。数字+権威性で停止させる。企業ロゴ・役職アイコン等の非言語要素も活用"
+    elif tier == "b":
+        # tier b（年収1000-2000万）: ストーリー+共感でフック
+        hook_text = "年収" + (profile.income if profile and profile.income else "???万円")
+        hook_notes = "0.2秒で目に入る最大フォント。ストーリー性を感じさせる。転職・キャリアチェンジを示すアイコン等の非言語要素も活用"
+    else:
+        # tier c（年収〜1000万）: 行動のきっかけ+等身大感でフック
+        if income_eval.emphasize and profile and profile.income:
+            hook_text = "年収" + profile.income
+        else:
+            hook_text = profile.occupation if profile and profile.occupation else "会社員"
+        hook_notes = "0.2秒で目に入る最大フォント。「自分でもできそう」感を演出。等身大を示すアイコン等の非言語要素も活用"
 
     return ThumbnailDesign(
-        overall_concept=f"Z型レイアウト — {classification.tier_label}のゲスト対談",
-        font_suggestion="ゴシック体・太字（視認性重視）",
+        overall_concept=f"Z型レイアウト（0.2秒視認設計）— {classification.tier_label}のゲスト対談",
+        font_suggestion="ゴシック体・太字（視認性重視）。文字は最小限に抑え、非言語要素で情報伝達",
         background_suggestion="ダークグレー or ネイビー系（高級感）",
         top_left=ThumbnailZone(
-            role="フック",
+            role="フック（0.2秒で勝負を決める最重要ゾーン）",
             content=hook_text,
             color_suggestion="白テキスト on 赤/オレンジ背景",
-            notes="最も大きいフォントサイズ、画面左上1/4に配置",
+            notes=hook_notes,
         ),
         top_right=ThumbnailZone(
             role="人物シルエット＋属性",
             content=f"モザイクシルエット + 「{profile.age if profile else ''}・{profile.occupation if profile else ''}」",
             color_suggestion="シルエットは白 or グレー、属性テキストは黄色",
-            notes="顔はモザイク。シルエットの横に属性テキストを配置",
+            notes="顔はモザイク。シルエットの横に属性テキストを配置。業界ロゴ・企業アイコンで職業を非言語的に伝える",
         ),
         diagonal=ThumbnailZone(
-            role="コンテンツ要素",
-            content="主要トピックのキーワード or アイコン",
+            role="コンテンツ要素（非言語優先）",
+            content="業界アイコン・ロゴ・映像カットで視線誘導",
             color_suggestion="アクセントカラー",
-            notes="左上→右下への視線誘導を意識した斜め配置",
+            notes="文字ではなくアイコン・ロゴで情報を伝える。左上→右下への視線誘導を意識した斜め配置",
         ),
         bottom_right=ThumbnailZone(
             role="ベネフィット",
             content="視聴者が得られる学び・気づきを1行で",
             color_suggestion="黄色 or ゴールド",
-            notes="CTA的な要素、クリック動機に直結",
+            notes="CTA的な要素、クリック動機に直結。テキストは最小限",
         ),
-        llm_raw_response="[フォールバック: ルールベース生成]",
+        llm_raw_response="[フォールバック: ルールベース生成（層別フック戦略・0.2秒視認設計対応）]",
     )
 
 

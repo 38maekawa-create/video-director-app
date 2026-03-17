@@ -1694,3 +1694,6 @@ INFO:     100.113.28.70:53758 - "GET /api/projects/p-20251130-%E3%81%95%E3%82%8B
 INFO:     100.113.28.70:53759 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff HTTP/1.1" 200 OK
 INFO:     100.113.28.70:53758 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/before-after HTTP/1.1" 200 OK
 INFO:     100.113.28.70:50832 - "GET /api/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62554 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62553 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62553 - "GET /api/projects HTTP/1.1" 200 OK

@@ -349,7 +349,35 @@ struct BeforeAfterView: View {
             }
 
             if showTranscript {
-                if let data = transcriptData {
+                // バージョン切り替えPicker
+                if let versions = beforeAfterData?.allVersions, versions.count > 1 {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(versions, id: \.vimeoId) { ver in
+                                let label = ver.versionLabel ?? "不明"
+                                Button {
+                                    selectedVersion = label
+                                    Task { await reloadTranscriptDiff() }
+                                } label: {
+                                    Text(label)
+                                        .font(.system(size: 12, weight: selectedVersion == label ? .bold : .medium))
+                                        .foregroundStyle(selectedVersion == label ? .white : AppTheme.textMuted)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(selectedVersion == label ? AppTheme.accent : AppTheme.cardBackgroundLight)
+                                        .clipShape(Capsule())
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                }
+
+                if isTranscriptLoading {
+                    ProgressView()
+                        .tint(AppTheme.accent)
+                        .frame(maxWidth: .infinity, minHeight: 60)
+                } else if let data = transcriptData {
                     if data.status == "ok" {
                         transcriptLegend
                         transcriptSegmentsView(data.segments)
@@ -490,8 +518,27 @@ struct BeforeAfterView: View {
             let (baResult, tdResult) = try await (ba, td)
             beforeAfterData = baResult
             transcriptData = tdResult
+            // 初期選択: 最新バージョン
+            if let ver = tdResult.compareVersion {
+                selectedVersion = ver
+            }
         } catch {
             errorMessage = "データの取得に失敗しました: \(error.localizedDescription)"
+        }
+    }
+
+    /// バージョン切り替え時の文字起こしdiff再読み込み
+    private func reloadTranscriptDiff() async {
+        isTranscriptLoading = true
+        defer { isTranscriptLoading = false }
+
+        do {
+            transcriptData = try await APIClient.shared.fetchTranscriptDiff(
+                projectId: projectId,
+                version: selectedVersion
+            )
+        } catch {
+            // エラー時は前のデータを維持
         }
     }
 }

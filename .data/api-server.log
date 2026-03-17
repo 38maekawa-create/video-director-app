@@ -1690,3 +1690,7 @@ INFO:     127.0.0.1:52029 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%
 INFO:     127.0.0.1:52032 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/vimeo-comments HTTP/1.1" 500 Internal Server Error
 INFO:     127.0.0.1:52035 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/vimeo-comments HTTP/1.1" 500 Internal Server Error
 INFO:     127.0.0.1:52042 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/vimeo-comments HTTP/1.1" 200 OK
+INFO:     100.113.28.70:53758 - "GET /api/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.113.28.70:53759 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff HTTP/1.1" 200 OK
+INFO:     100.113.28.70:53758 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/before-after HTTP/1.1" 200 OK
+INFO:     100.113.28.70:50832 - "GET /api/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/youtube-assets HTTP/1.1" 200 OK

@@ -360,13 +360,29 @@ struct VimeoReviewTabView: View {
             .background(AppTheme.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            // コメント一覧
+            // Vimeo API接続ステータス
+            if let status = viewModel.statusMessage {
+                HStack(spacing: 8) {
+                    Image(systemName: viewModel.apiConnected == true ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                        .foregroundStyle(viewModel.apiConnected == true ? .green : .orange)
+                    Text(status)
+                        .font(AppTheme.bodyFont(12))
+                        .foregroundStyle(viewModel.apiConnected == true ? AppTheme.textMuted : .orange)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(AppTheme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+
+            // ローカル送信コメント一覧
             if !reviewComments.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Image(systemName: "text.bubble")
                             .foregroundStyle(AppTheme.accent)
-                        Text("コメント履歴")
+                        Text("送信済みコメント")
                             .font(AppTheme.sectionFont(16))
                             .foregroundStyle(.white)
                         Spacer()
@@ -410,57 +426,59 @@ struct VimeoReviewTabView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
-            // FB一覧（タイムコード付きフィードバック）
-            if !viewModel.feedbacks.isEmpty {
+            // Vimeo APIから取得したコメント一覧
+            if !viewModel.vimeoComments.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Image(systemName: "clock.badge.exclamationmark")
+                        Image(systemName: "bubble.left.and.text.bubble.right")
                             .foregroundStyle(AppTheme.accent)
-                        Text("タイムコード付きFB")
+                        Text("Vimeoレビューコメント")
                             .font(AppTheme.sectionFont(16))
                             .foregroundStyle(.white)
+                        Spacer()
+                        Text("\(viewModel.vimeoComments.count)件")
+                            .font(AppTheme.bodyFont(12))
+                            .foregroundStyle(AppTheme.textMuted)
                     }
-                    .padding(.horizontal, 4)
+                    .padding(.horizontal, 14)
+                    .padding(.top, 14)
 
-                    ForEach(viewModel.feedbacks) { fb in
-                        Button {
-                            viewModel.seek(to: fb.timestampMark)
-                        } label: {
-                            HStack(spacing: 12) {
-                                Text(fb.timestampString)
-                                    .font(AppTheme.labelFont(14))
-                                    .foregroundStyle(AppTheme.accent)
-                                    .frame(width: 50, alignment: .leading)
-
-                                Circle()
-                                    .fill(fb.priority.color)
-                                    .frame(width: 8, height: 8)
-
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(fb.element)
-                                        .font(AppTheme.labelFont(13))
-                                        .foregroundStyle(AppTheme.textSecondary)
-                                    Text(fb.note)
-                                        .font(AppTheme.bodyFont(12))
-                                        .foregroundStyle(AppTheme.textMuted)
-                                        .lineLimit(2)
+                    ForEach(viewModel.vimeoComments) { comment in
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                if let tc = comment.timecode {
+                                    Text(tc)
+                                        .font(AppTheme.labelFont(12))
+                                        .foregroundStyle(AppTheme.accent)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(AppTheme.accent.opacity(0.15))
+                                        .clipShape(Capsule())
                                 }
+                                Text(comment.user)
+                                    .font(AppTheme.labelFont(12))
+                                    .foregroundStyle(AppTheme.textSecondary)
                                 Spacer()
+                                if !comment.createdTime.isEmpty {
+                                    Text(formatVimeoDate(comment.createdTime))
+                                        .font(.caption2)
+                                        .foregroundStyle(AppTheme.textMuted)
+                                }
                             }
-                            .padding(12)
-                            .background(AppTheme.cardBackground)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            Text(comment.text)
+                                .font(AppTheme.bodyFont(14))
+                                .foregroundStyle(AppTheme.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                        .buttonStyle(.plain)
+                        .padding(12)
+                        .background(AppTheme.cardBackgroundLight)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .padding(.horizontal, 14)
                     }
+                    .padding(.bottom, 14)
                 }
-            }
-
-            if viewModel.feedbacks.isEmpty && !viewModel.isLoading {
-                Text("タイムコード付きフィードバックがありません")
-                    .font(AppTheme.bodyFont(14))
-                    .foregroundStyle(AppTheme.textMuted)
-                    .padding(.vertical, 40)
+                .background(AppTheme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
             if viewModel.isLoading {
@@ -474,7 +492,7 @@ struct VimeoReviewTabView: View {
             if let videoId = vimeoVideoId {
                 viewModel.vimeoVideoId = videoId
             }
-            await viewModel.loadFeedbacks(projectId: projectId)
+            await viewModel.loadVimeoComments(projectId: projectId)
         }
     }
 
@@ -503,6 +521,25 @@ struct VimeoReviewTabView: View {
         let m = Int(seconds) / 60
         let s = Int(seconds) % 60
         return String(format: "%02d:%02d", m, s)
+    }
+
+    /// Vimeo APIの日時文字列（ISO8601）を表示用に変換
+    private func formatVimeoDate(_ isoString: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = formatter.date(from: isoString) {
+            let display = DateFormatter()
+            display.dateFormat = "yyyy/MM/dd HH:mm"
+            return display.string(from: date)
+        }
+        // フォールバック: fractionalSecondsなし
+        formatter.formatOptions = [.withInternetDateTime]
+        if let date = formatter.date(from: isoString) {
+            let display = DateFormatter()
+            display.dateFormat = "yyyy/MM/dd HH:mm"
+            return display.string(from: date)
+        }
+        return isoString
     }
 }
 

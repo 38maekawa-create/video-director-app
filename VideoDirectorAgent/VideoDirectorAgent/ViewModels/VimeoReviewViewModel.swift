@@ -1,13 +1,52 @@
 import Foundation
 import Combine
 
+/// Vimeo APIコメントのレスポンス
+struct VimeoCommentsResponse: Codable {
+    let projectId: String
+    let total: Int?
+    let comments: [VimeoCommentItem]?
+    let message: String?
+
+    enum CodingKeys: String, CodingKey {
+        case projectId = "project_id"
+        case total, comments, message
+    }
+}
+
+/// Vimeo APIから取得した個別コメント
+struct VimeoCommentItem: Codable, Identifiable {
+    var id: String { uri.isEmpty ? UUID().uuidString : uri }
+    let vimeoId: String
+    let versionLabel: String
+    let text: String
+    let timecode: String?
+    let createdTime: String
+    let user: String
+    let uri: String
+    let error: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case vimeoId = "vimeo_id"
+        case versionLabel = "version_label"
+        case text, timecode
+        case createdTime = "created_time"
+        case user, uri, error
+    }
+}
+
 /// Vimeoレビュー画面のViewModel
-/// - フィードバック一覧の取得・管理
+/// - Vimeo APIからのコメント取得
 /// - 再生状態の保持
+/// - 接続ステータスの表示
 @MainActor
 final class VimeoReviewViewModel: ObservableObject {
-    /// 表示するフィードバック一覧（timestamp_markでソート済み）
-    @Published var feedbacks: [VimeoFeedbackItem] = []
+    /// Vimeo APIから取得したコメント一覧
+    @Published var vimeoComments: [VimeoCommentItem] = []
+    /// API接続ステータスメッセージ
+    @Published var statusMessage: String?
+    /// API接続成功フラグ（nil=未取得、true=成功、false=エラー）
+    @Published var apiConnected: Bool?
     /// 動画の総再生時間（秒）
     @Published var duration: TimeInterval = 0
     /// 現在の再生位置（秒）
@@ -24,22 +63,47 @@ final class VimeoReviewViewModel: ObservableObject {
     /// Vimeo動画ID（VimeoReviewTabViewからeditedVideoURLベースで設定される）
     @Published var vimeoVideoId: String = ""
 
+    // 後方互換: feedbacksを参照している箇所のために残す
+    @Published var feedbacks: [VimeoFeedbackItem] = []
+
     private var baseURL: String { APIClient.shared.baseURL.absoluteString }
 
-    /// APIからフィードバック一覧を取得（失敗時はモックにフォールバック）
-    func loadFeedbacks(projectId: String) async {
+    /// Vimeo APIからコメントを取得
+    func loadVimeoComments(projectId: String) async {
         isLoading = true
         defer { isLoading = false }
 
         do {
-            let fetched = try await fetchFeedbacksFromAPI(projectId: projectId)
-            // timestamp_mark 昇順でソート
-            feedbacks = fetched.sorted { $0.timestampMark < $1.timestampMark }
+            let response = try await fetchVimeoComments(projectId: projectId)
+            vimeoComments = response.comments ?? []
+            apiConnected = true
+
+            if let msg = response.message {
+                // APIからのメッセージ（トークン未設定等）
+                statusMessage = msg
+                apiConnected = false
+            } else if vimeoComments.isEmpty {
+                statusMessage = "Vimeo API接続OK — レビューコメントはまだありません"
+            } else {
+                statusMessage = "Vimeo API接続OK — \(vimeoComments.count)件のコメント"
+            }
+
+            // エラーコメントがあればステータスに反映
+            let errors = vimeoComments.filter { $0.error == true }
+            if !errors.isEmpty {
+                statusMessage = errors.first?.text
+                apiConnected = false
+            }
         } catch {
-            // API未到達時: モックデータにフォールバック
-            feedbacks = MockData.vimeoFeedbacks.sorted { $0.timestampMark < $1.timestampMark }
-            // ローカルAPIのエラーは無視（開発環境前提）
+            apiConnected = false
+            statusMessage = "API接続エラー: \(error.localizedDescription)"
+            vimeoComments = []
         }
+    }
+
+    /// 後方互換: loadFeedbacksを呼ばれたらloadVimeoCommentsに委譲
+    func loadFeedbacks(projectId: String) async {
+        await loadVimeoComments(projectId: projectId)
     }
 
     /// 指定タイムコードへシーク
@@ -50,8 +114,8 @@ final class VimeoReviewViewModel: ObservableObject {
 
     // MARK: - Private
 
-    private func fetchFeedbacksFromAPI(projectId: String) async throws -> [VimeoFeedbackItem] {
-        guard let url = URL(string: "\(baseURL)/api/v1/projects/\(projectId)/feedbacks-with-timecodes") else {
+    private func fetchVimeoComments(projectId: String) async throws -> VimeoCommentsResponse {
+        guard let url = URL(string: "\(baseURL)/api/v1/projects/\(projectId)/vimeo-comments") else {
             throw URLError(.badURL)
         }
         let (data, response) = try await URLSession.shared.data(from: url)
@@ -59,7 +123,8 @@ final class VimeoReviewViewModel: ObservableObject {
               httpResponse.statusCode == 200 else {
             throw URLError(.badServerResponse)
         }
-        let decoded = try JSONDecoder().decode([VimeoFeedbackItem].self, from: data)
+        let decoder = JSONDecoder()
+        let decoded = try decoder.decode(VimeoCommentsResponse.self, from: data)
         return decoded
     }
 }

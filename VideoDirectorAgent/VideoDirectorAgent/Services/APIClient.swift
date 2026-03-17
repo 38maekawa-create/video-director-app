@@ -1,4 +1,5 @@
 import Foundation
+import Network
 
 @MainActor
 final class APIClient: ObservableObject {
@@ -11,6 +12,11 @@ final class APIClient: ObservableObject {
     /// 後方互換: 既存コードが baseURL を参照している箇所向け
     var baseURL: URL { activeBaseURL }
     let actorName: String
+
+    /// ネットワーク状態監視（WiFi↔4G切り替え・復帰を自動検知）
+    private let networkMonitor = NWPathMonitor()
+    private let monitorQueue = DispatchQueue(label: "com.maekawa.networkMonitor")
+    private var lastPathStatus: NWPath.Status = .satisfied
 
     /// フォールバック候補URL一覧（優先順）
     /// 1. クラウドURL（DNS経由） 2. Tailscale（どこからでも） 3. ローカルIP（同一WiFi）
@@ -53,19 +59,50 @@ final class APIClient: ObservableObject {
         primaryURL = url
         actorName = actor
 
-        // フォールバック候補を構築（優先順）
-        var candidates = [url]
+        // フォールバック候補を構築（高速な接続先を優先）
+        // 1. ローカル（同一WiFi時・最速） 2. Tailscale（どこからでも） 3. クラウド（DNS経由・最遅）
+        var candidates: [URL] = []
+        // ローカルネットワーク（同一WiFi時のみ・最速応答）
+        if let local = URL(string: "http://mac-mini-m4.local:8210") {
+            candidates.append(local)
+        }
         // Tailscale経由（VPN越しにどこからでもアクセス可能）
         if let tailscale = URL(string: "http://100.110.206.6:8210") {
             candidates.append(tailscale)
         }
-        // ローカルネットワーク（同一WiFi時のみ）
-        if let local = URL(string: "http://mac-mini-m4.local:8210") {
-            candidates.append(local)
-        }
+        // クラウドURL（DNS経由・外部アクセス用）
+        candidates.append(url)
         candidateURLs = candidates
         // 初期値はプライマリURL（すぐにprobeで上書きされる）
         activeBaseURL = url
+
+        // ネットワーク状態監視を開始（WiFi↔4G切り替え・復帰を自動検知）
+        startNetworkMonitor()
+    }
+
+    /// ネットワーク状態変化を監視し、復帰時に自動再接続
+    private func startNetworkMonitor() {
+        networkMonitor.pathUpdateHandler = { [weak self] path in
+            Task { @MainActor [weak self] in
+                guard let self = self else { return }
+                let wasDisconnected = self.lastPathStatus != .satisfied
+                let isNowConnected = path.status == .satisfied
+                let interfaceChanged = self.lastPathStatus == .satisfied && isNowConnected
+                self.lastPathStatus = path.status
+
+                if isNowConnected && (wasDisconnected || interfaceChanged) {
+                    // ネットワーク復帰またはWiFi↔4G切り替え → 自動再接続
+                    print("📡 ネットワーク変化検知（\(path.availableInterfaces.map { $0.type })）→ 再接続開始")
+                    // 少し待ってからprobeする（ネットワーク安定化のため）
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+                    await self.probeAndConnect()
+                } else if !isNowConnected {
+                    self.connectionStatus = .disconnected
+                    print("📡 ネットワーク切断検知")
+                }
+            }
+        }
+        networkMonitor.start(queue: monitorQueue)
     }
 
     /// アプリ起動時に呼び出し: 到達可能なURLを自動検出

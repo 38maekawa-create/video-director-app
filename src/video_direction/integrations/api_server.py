@@ -2269,6 +2269,8 @@ def convert_feedback(body: FeedbackConvertRequest):
     # --- 自己学習エンジンからルール・参考情報を取得 ---
     learned_rules_text = ""
     tracking_refs_text = ""
+    fb_rules = []
+    vid_rules = []
 
     try:
         fb_learner = FeedbackLearner()
@@ -2316,8 +2318,8 @@ def convert_feedback(body: FeedbackConvertRequest):
             result["detected_category"] = category
             # 学習ルール適用情報を付与
             result["learning_applied"] = {
-                "fb_rules_count": len(fb_rules) if 'fb_rules' in dir() else 0,
-                "video_rules_count": len(vid_rules) if 'vid_rules' in dir() else 0,
+                "fb_rules_count": len(fb_rules),
+                "video_rules_count": len(vid_rules),
             }
 
             # --- 自己学習: 変換結果をFeedbackLearnerに蓄積 ---

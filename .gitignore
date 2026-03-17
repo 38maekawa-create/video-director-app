@@ -6,3 +6,10 @@ __pycache__/
 .pytest_cache/
 output/
 data/
+
+# Xcode
+DerivedData/
+build/
+xcuserdata/
+*.xcuserstate
+*.xcworkspace/xcuserdata/

@@ -317,6 +317,7 @@ def startup():
 def repair_known_shoot_dates():
     """既知の誤投入データを起動時に補正する。"""
     conn = _get_db()
+    # 初期シードデータ（開発用）: 2026/02/28 大阪撮影のゲスト名ハードコード
     conn.execute(
         """UPDATE projects
            SET shoot_date = ?, updated_at = ?
@@ -327,6 +328,7 @@ def repair_known_shoot_dates():
             datetime.now(timezone.utc).isoformat(),
             "2026/01/01",
             "%2月28日 大阪%",
+            # 初期シードデータ（開発用）: 2026/02/28 大阪撮影の参加ゲスト
             "コテさん",
             "kosさん",
             "メンイチさん",
@@ -4394,7 +4396,11 @@ def serve_root_static(filename: str):
     """APIパスでないリクエストを静的ファイルとして配信"""
     if filename.startswith("api/"):
         raise HTTPException(status_code=404)
-    file_path = Path.home() / "AI開発10" / filename
+    # パストラバーサル防止
+    base_dir = Path.home() / "AI開発10"
+    file_path = (base_dir / filename).resolve()
+    if not str(file_path).startswith(str(base_dir.resolve())):
+        raise HTTPException(status_code=403, detail="Access denied")
     if file_path.exists() and file_path.is_file():
         suffix = file_path.suffix
         media_types = {

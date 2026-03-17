@@ -1577,6 +1577,17 @@ struct KnowledgePage: Identifiable, Codable {
     let url: String?
     let summary: String?
 
+    /// 最小限のフォールバック用イニシャライザ
+    init(pageId: String, title: String, guestName: String? = nil, shootDate: String? = nil, createdAt: String? = nil, url: String? = nil, summary: String? = nil) {
+        self.pageId = pageId
+        self.title = title
+        self.guestName = guestName
+        self.shootDate = shootDate
+        self.createdAt = createdAt
+        self.url = url
+        self.summary = summary
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         pageId = try container.decodeIfPresent(String.self, forKey: .pageId) ?? UUID().uuidString

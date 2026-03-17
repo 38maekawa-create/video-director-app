@@ -489,8 +489,8 @@ final class APIClient: ObservableObject {
                 throw APIError.server(statusCode: httpResponse.statusCode)
             }
 
-            if T.self == EmptyResponse.self {
-                return EmptyResponse() as! T
+            if T.self == EmptyResponse.self, let empty = EmptyResponse() as? T {
+                return empty
             }
 
             return try decoder.decode(T.self, from: data)
@@ -527,8 +527,8 @@ final class APIClient: ObservableObject {
                 throw APIError.server(statusCode: httpResponse.statusCode)
             }
 
-            if T.self == EmptyResponse.self {
-                return EmptyResponse() as! T
+            if T.self == EmptyResponse.self, let empty = EmptyResponse() as? T {
+                return empty
             }
 
             return try decoder.decode(T.self, from: data)
@@ -736,7 +736,7 @@ extension APIClient {
     /// タイトルを更新
     func updateTitle(projectId: String, editedContent: String, editedBy: String) async throws -> [String: Any] {
         let body = AssetEditBody(editedContent: editedContent, editedBy: editedBy)
-        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/assets/title")
+        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/title")
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.timeoutInterval = 12
@@ -756,7 +756,7 @@ extension APIClient {
     /// 概要欄を更新（手修正API用 — 既存のupdateDescriptionとは別エンドポイント）
     func updateDescription(projectId: String, editedContent: String, editedBy: String) async throws -> [String: Any] {
         let body = AssetEditBody(editedContent: editedContent, editedBy: editedBy)
-        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/assets/description")
+        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/description")
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.timeoutInterval = 12
@@ -776,7 +776,7 @@ extension APIClient {
     /// サムネ指示書を更新
     func updateThumbnailInstruction(projectId: String, editedContent: String, editedBy: String) async throws -> [String: Any] {
         let body = AssetEditBody(editedContent: editedContent, editedBy: editedBy)
-        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/assets/thumbnail")
+        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/thumbnail-instruction")
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.timeoutInterval = 12
@@ -795,7 +795,9 @@ extension APIClient {
 
     /// アセット編集履歴を取得（タイトル/概要/サムネ共通）
     func fetchAssetEditHistory(projectId: String, assetType: String) async throws -> [[String: Any]] {
-        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/assets/\(assetType)/history")
+        // Python側URLではthumbnailはthumbnail-instructionにマッピング
+        let pathType = assetType == "thumbnail" ? "thumbnail-instruction" : assetType
+        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/\(pathType)/history")
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.timeoutInterval = 12
@@ -812,7 +814,9 @@ extension APIClient {
 
     /// アセット編集diff（元 vs 修正）を取得（タイトル/概要/サムネ共通）
     func fetchAssetEditDiff(projectId: String, assetType: String) async throws -> [String: Any] {
-        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/assets/\(assetType)/diff")
+        // Python側URLではthumbnailはthumbnail-instructionにマッピング
+        let pathType = assetType == "thumbnail" ? "thumbnail-instruction" : assetType
+        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/\(pathType)/diff")
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.timeoutInterval = 12

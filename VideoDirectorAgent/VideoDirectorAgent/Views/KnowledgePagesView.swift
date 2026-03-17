@@ -371,6 +371,10 @@ extension KnowledgePage {
         let fallbackJSON = """
         {"page_id":"\(result.pageId)","title":"\(result.title)"}
         """.data(using: .utf8)!
-        return try! JSONDecoder().decode(KnowledgePage.self, from: fallbackJSON)
+        if let page = try? JSONDecoder().decode(KnowledgePage.self, from: fallbackJSON) {
+            return page
+        }
+        // デコード失敗時はデフォルト値で返す
+        return KnowledgePage(pageId: result.pageId, title: result.title)
     }
 }

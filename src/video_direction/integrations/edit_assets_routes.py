@@ -197,6 +197,21 @@ def _put_asset(project_id: str, asset_type: str, req: AssetEditRequest) -> Asset
         )
         conn.commit()
 
+        # --- EditLearnerに手修正を蓄積（自己学習ループ） ---
+        if compare_base and compare_base != req.edited_content:
+            try:
+                from ..tracker.edit_learner import EditLearner
+                diff_result = analyze_fn(compare_base, req.edited_content)
+                diff_result.edit_id = f"{asset_type}_{project_id}_{cursor.lastrowid}"
+                edit_learner = EditLearner()
+                edit_learner.ingest_edit(
+                    project_id=project_id,
+                    asset_type=asset_type,
+                    diff_result=diff_result,
+                )
+            except Exception:
+                pass  # 学習失敗は修正保存には影響させない
+
         return AssetEditResponse(
             id=cursor.lastrowid,  # type: ignore[arg-type]
             project_id=project_id,

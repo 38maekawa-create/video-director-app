@@ -2314,6 +2314,27 @@ def convert_feedback(body: FeedbackConvertRequest):
             result = json.loads(json_match.group())
             # カテゴリ情報を付与
             result["detected_category"] = category
+            # 学習ルール適用情報を付与
+            result["learning_applied"] = {
+                "fb_rules_count": len(fb_rules) if 'fb_rules' in dir() else 0,
+                "video_rules_count": len(vid_rules) if 'vid_rules' in dir() else 0,
+            }
+
+            # --- 自己学習: 変換結果をFeedbackLearnerに蓄積 ---
+            try:
+                converted = result.get("converted_text", "")
+                if converted:
+                    fb_id = f"fb_{body.project_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+                    fb_learner = FeedbackLearner()
+                    fb_learner.ingest_feedback(
+                        feedback_id=fb_id,
+                        content=raw,
+                        category=category,
+                        created_by="naoto",
+                    )
+            except Exception:
+                pass  # 学習失敗はFB変換自体には影響させない
+
             return result
     except Exception:
         pass

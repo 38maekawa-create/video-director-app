@@ -174,6 +174,21 @@ def update_direction_report(project_id: str, req: DirectionEditRequest):
         )
         conn.commit()
 
+        # --- EditLearnerに手修正を蓄積（自己学習ループ） ---
+        if compare_base and compare_base != req.edited_content:
+            try:
+                from ..tracker.edit_learner import EditLearner
+                diff_result = analyze_direction_diff(compare_base, req.edited_content)
+                diff_result.edit_id = f"dir_{project_id}_{cursor.lastrowid}"
+                edit_learner = EditLearner()
+                edit_learner.ingest_edit(
+                    project_id=project_id,
+                    asset_type="direction",
+                    diff_result=diff_result,
+                )
+            except Exception:
+                pass  # 学習失敗は修正保存には影響させない
+
         return DirectionEditResponse(
             id=cursor.lastrowid,  # type: ignore[arg-type]
             project_id=project_id,

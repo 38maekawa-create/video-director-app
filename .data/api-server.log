@@ -1633,3 +1633,6 @@ INFO:     127.0.0.1:50966 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%
 INFO:     127.0.0.1:50986 - "GET /api/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB HTTP/1.1" 200 OK
 INFO:     127.0.0.1:50991 - "GET /api/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB HTTP/1.1" 200 OK
 INFO:     127.0.0.1:50999 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/direction HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51134 - "GET /api/v1/projects/p-20251130-%E7%9C%9F%E7%94%9F%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51160 - "GET /api/v1/projects/p-20251130-%E7%9C%9F%E7%94%9F%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51164 - "GET /api/v1/projects/p-20251130-%E7%9C%9F%E7%94%9F%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK

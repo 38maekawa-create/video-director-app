@@ -3572,8 +3572,32 @@ def get_before_after(project_id: str):
 KNOWLEDGE_VIDEO_DIR = Path.home() / "TEKO" / "knowledge" / "01_teko" / "sources" / "video"
 
 
+def _fuzzy_match(highlight_text: str, transcript_line: str) -> bool:
+    """ハイライトテキストとトランスクリプト行の部分一致判定。
+    完全包含 or 15文字以上の共通部分文字列があればマッチとみなす。
+    """
+    # 完全包含チェック
+    if highlight_text in transcript_line or transcript_line in highlight_text:
+        return True
+    # 短いテキストは完全包含のみ
+    if len(highlight_text) < 15 or len(transcript_line) < 15:
+        return False
+    # ハイライトテキストの先頭20文字・末尾20文字が行に含まれるかチェック
+    hl_clean = highlight_text.replace("「", "").replace("」", "").replace("『", "").replace("』", "")
+    line_clean = transcript_line.replace("「", "").replace("」", "").replace("『", "").replace("』", "")
+    if len(hl_clean) >= 20:
+        if hl_clean[:20] in line_clean or hl_clean[-20:] in line_clean:
+            return True
+    if len(line_clean) >= 20:
+        if line_clean[:20] in hl_clean or line_clean[-20:] in hl_clean:
+            return True
+    return False
+
+
 def _load_transcript(guest_name: str, shoot_date: Optional[str] = None) -> Optional[str]:
-    """ナレッジファイルから文字起こし全文を読み込む。"""
+    """ナレッジファイルから文字起こし全文を読み込む。
+    「整形済みトランスクリプト（全文）」セクション以降のみ返す（メタデータ除外）。
+    """
     if not KNOWLEDGE_VIDEO_DIR.exists():
         return None
 
@@ -3599,7 +3623,13 @@ def _load_transcript(guest_name: str, shoot_date: Optional[str] = None) -> Optio
     target = best_with_date or best
     if target:
         try:
-            return target.read_text(encoding="utf-8")
+            full_text = target.read_text(encoding="utf-8")
+            # メタデータを除外し、トランスクリプト本文のみ抽出
+            marker = "## 整形済みトランスクリプト（全文）"
+            idx = full_text.find(marker)
+            if idx >= 0:
+                return full_text[idx + len(marker):]
+            return full_text
         except Exception:
             return None
     return None
@@ -3632,7 +3662,8 @@ def get_transcript_diff(project_id: str):
             "segments": [],
         }
 
-    # FBのハイライトテキストとタイムスタンプを取得
+    # ハイライトテキストとパンチラインを収集
+    # ソース1: feedbacksテーブル
     fb_rows = conn.execute(
         "SELECT timestamp_mark, converted_text, category FROM feedbacks "
         "WHERE project_id = ? AND converted_text IS NOT NULL AND converted_text != '' "
@@ -3650,25 +3681,52 @@ def get_transcript_diff(project_id: str):
         else:
             highlight_texts.append(text)
 
+    # ソース2: projects.knowledgeのhighlights（feedbacksが空の場合のフォールバック）
+    if not highlight_texts and not punchline_texts:
+        knowledge_row = conn.execute(
+            "SELECT knowledge FROM projects WHERE id = ?", (project_id,)
+        ).fetchone()
+        if knowledge_row and knowledge_row["knowledge"]:
+            try:
+                knowledge_data = json.loads(knowledge_row["knowledge"]) if isinstance(knowledge_row["knowledge"], str) else knowledge_row["knowledge"]
+                for h in knowledge_data.get("highlights", []):
+                    text = h.get("text", "")
+                    if not text:
+                        continue
+                    cat = (h.get("category", "") or "").lower()
+                    if "punchline" in cat or "パンチライン" in cat:
+                        punchline_texts.append(text)
+                    else:
+                        highlight_texts.append(text)
+            except (json.JSONDecodeError, TypeError, AttributeError):
+                pass
+
     # 文字起こしを行単位でセグメント化し、ステータスを付与
     lines = transcript_text.split("\n")
     segments = []
+
+    # Markdownの見出し行・区切り線を除外するパターン
+    _skip_re = re.compile(r"^(#{1,6}\s|---$)")
+
     for i, line in enumerate(lines):
         stripped = line.strip()
         if not stripped:
             continue
+        # Markdown構造行をスキップ
+        if _skip_re.match(stripped):
+            continue
 
-        # パンチライン判定
+        # パンチライン判定（部分一致: ハイライトテキストの一部が行に含まれるかチェック）
         status = "unused"
         matched_text = None
         for pt in punchline_texts:
-            if pt in stripped or stripped in pt:
+            if _fuzzy_match(pt, stripped):
                 status = "punchline"
                 matched_text = pt
                 break
         if status == "unused":
             for ht in highlight_texts:
-                if ht in stripped or stripped in ht:
+                if _fuzzy_match(ht, stripped):
                     status = "highlight"
                     matched_text = ht
                     break

@@ -52,22 +52,6 @@
       },
       {
         "comment": "",
-        "key": "素材（YouTube）",
-        "location": {
-          "startingColumn": 37,
-          "startingLine": 151
-        }
-      },
-      {
-        "comment": "",
-        "key": "編集後 v1（Vimeo）",
-        "location": {
-          "startingColumn": 61,
-          "startingLine": 151
-        }
-      },
-      {
-        "comment": "",
         "key": "素材",
         "location": {
           "startingColumn": 24,
@@ -84,26 +68,10 @@
       },
       {
         "comment": "",
-        "key": "編集後（Vimeo）",
-        "location": {
-          "startingColumn": 37,
-          "startingLine": 174
-        }
-      },
-      {
-        "comment": "",
-        "key": "FB後 v2（Vimeo）",
-        "location": {
-          "startingColumn": 62,
-          "startingLine": 174
-        }
-      },
-      {
-        "comment": "",
         "key": "FBタイムスタンプ",
         "location": {
           "startingColumn": 26,
-          "startingLine": 249
+          "startingLine": 265
         }
       },
       {
@@ -111,7 +79,7 @@
         "key": "%lld件",
         "location": {
           "startingColumn": 26,
-          "startingLine": 253
+          "startingLine": 269
         }
       },
       {
@@ -119,7 +87,7 @@
         "key": "文字起こしデータを読み込み中...",
         "location": {
           "startingColumn": 26,
-          "startingLine": 345
+          "startingLine": 361
         }
       },
       {
@@ -127,7 +95,7 @@
         "key": "文字起こし比較",
         "location": {
           "startingColumn": 26,
-          "startingLine": 316
+          "startingLine": 332
         }
       },
       {
@@ -135,7 +103,7 @@
         "key": "HL %lld",
         "location": {
           "startingColumn": 22,
-          "startingLine": 357
+          "startingLine": 373
         }
       },
       {
@@ -143,7 +111,7 @@
         "key": "PL %lld",
         "location": {
           "startingColumn": 22,
-          "startingLine": 366
+          "startingLine": 382
         }
       },
       {
@@ -151,7 +119,7 @@
         "key": "%lld",
         "location": {
           "startingColumn": 26,
-          "startingLine": 406
+          "startingLine": 422
         }
       },
       {
@@ -159,7 +127,7 @@
         "key": "CUT",
         "location": {
           "startingColumn": 34,
-          "startingLine": 414
+          "startingLine": 430
         }
       }
     ]

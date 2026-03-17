@@ -148,7 +148,7 @@ struct BeforeAfterView: View {
             Circle()
                 .fill(Color(hex: 0x4A90D9))
                 .frame(width: 8, height: 8)
-            Text(compareMode == 0 ? "素材（YouTube）" : "編集後 v1（Vimeo）")
+            Text(compareMode == 0 ? "素材（YouTube）" : editedVideoLabel)
                 .font(AppTheme.labelFont(13))
                 .foregroundStyle(AppTheme.textSecondary)
             Spacer()
@@ -171,11 +171,27 @@ struct BeforeAfterView: View {
             Circle()
                 .fill(AppTheme.accent)
                 .frame(width: 8, height: 8)
-            Text(compareMode == 0 ? "編集後（Vimeo）" : "FB後 v2（Vimeo）")
+            Text(compareMode == 0 ? editedVideoLabel : fbRevisedVideoLabel)
                 .font(AppTheme.labelFont(13))
                 .foregroundStyle(AppTheme.textSecondary)
             Spacer()
         }
+    }
+
+    /// 編集後動画のラベル（バージョン名を動的表示）
+    private var editedVideoLabel: String {
+        if let label = beforeAfterData?.editedVideo?.versionLabel {
+            return "編集後（\(label)）（Vimeo）"
+        }
+        return "編集後（Vimeo）"
+    }
+
+    /// FB後動画のラベル（バージョン名を動的表示）
+    private var fbRevisedVideoLabel: String {
+        if let label = beforeAfterData?.fbRevisedVideo?.versionLabel {
+            return "FB後（\(label)）（Vimeo）"
+        }
+        return "FB後（Vimeo）"
     }
 
     // 上段プレイヤー

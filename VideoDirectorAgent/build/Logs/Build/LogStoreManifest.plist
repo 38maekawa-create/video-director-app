@@ -48,7 +48,7 @@
 			<key>uniqueIdentifier</key>
 			<string>0496D806-BFD5-48AC-B869-539F799C98D3</string>
 		</dict>
-		<key>6656F817-C115-446E-9EE8-549BC751DABF</key>
+		<key>CBE84BBA-EBA7-488B-9993-E67DF068C3BC</key>
 		<dict>
 			<key>className</key>
 			<string>IDECommandLineBuildLog</string>
@@ -57,13 +57,13 @@
 			<key>domainType</key>
 			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
 			<key>fileName</key>
-			<string>6656F817-C115-446E-9EE8-549BC751DABF.xcactivitylog</string>
+			<string>CBE84BBA-EBA7-488B-9993-E67DF068C3BC.xcactivitylog</string>
 			<key>hasPrimaryLog</key>
 			<true/>
 			<key>primaryObservable</key>
 			<dict>
 				<key>highLevelStatus</key>
-				<string>S</string>
+				<string>W</string>
 				<key>totalNumberOfAnalyzerIssues</key>
 				<integer>0</integer>
 				<key>totalNumberOfErrors</key>
@@ -71,7 +71,7 @@
 				<key>totalNumberOfTestFailures</key>
 				<integer>0</integer>
 				<key>totalNumberOfWarnings</key>
-				<integer>0</integer>
+				<integer>11</integer>
 			</dict>
 			<key>schemeIdentifier-containerName</key>
 			<string>VideoDirectorAgent project</string>
@@ -80,15 +80,15 @@
 			<key>schemeIdentifier-sharedScheme</key>
 			<integer>1</integer>
 			<key>signature</key>
-			<string>Cleaning project VideoDirectorAgent with scheme VideoDirectorAgent and configuration Debug</string>
+			<string>Building project VideoDirectorAgent with scheme VideoDirectorAgent and configuration Debug</string>
 			<key>timeStartedRecording</key>
-			<real>795395889.74707997</real>
+			<real>795399709.63478994</real>
 			<key>timeStoppedRecording</key>
-			<real>795395890.87965202</real>
+			<real>795399745.98035598</real>
 			<key>title</key>
-			<string>Cleaning project VideoDirectorAgent with scheme VideoDirectorAgent and configuration Debug</string>
+			<string>Building project VideoDirectorAgent with scheme VideoDirectorAgent and configuration Debug</string>
 			<key>uniqueIdentifier</key>
-			<string>6656F817-C115-446E-9EE8-549BC751DABF</string>
+			<string>CBE84BBA-EBA7-488B-9993-E67DF068C3BC</string>
 		</dict>
 	</dict>
 </dict>

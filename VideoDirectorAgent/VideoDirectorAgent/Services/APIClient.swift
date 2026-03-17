@@ -419,6 +419,27 @@ final class APIClient: ObservableObject {
     }
 
     /// Vimeoコメントを編集（Vimeo APIのPATCHで直接書き換え）
+    // MARK: - FB指示トラッカー
+
+    func fetchFBTracker(projectId: String) async throws -> FBTrackerResponse {
+        let encoded = projectId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? projectId
+        return try await request(FBTrackerResponse.self, path: "/api/v1/projects/\(encoded)/fb-tracker")
+    }
+
+    func updateFBTrackingStatus(projectId: String, commentUri: String, status: String) async throws {
+        struct StatusBody: Encodable {
+            let status: String
+        }
+        let encodedProject = projectId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? projectId
+        let encodedUri = commentUri.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? commentUri
+        _ = try await request(
+            EmptyResponse.self,
+            path: "/api/v1/projects/\(encodedProject)/fb-tracker/\(encodedUri)",
+            method: "PATCH",
+            body: StatusBody(status: status)
+        )
+    }
+
     func editVimeoComment(commentId: String, videoId: String, newText: String) async throws {
         struct EditBody: Encodable {
             let video_id: String

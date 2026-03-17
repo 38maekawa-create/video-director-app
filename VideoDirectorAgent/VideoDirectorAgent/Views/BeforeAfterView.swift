@@ -18,6 +18,8 @@ struct BeforeAfterView: View {
     @State private var showTranscript = false
     @State private var selectedVersion: String = ""  // 文字起こし比較のバージョン選択
     @State private var isTranscriptLoading = false
+    @State private var fbTrackerData: FBTrackerResponse?
+    @State private var isFBTrackerLoading = false
 
     var body: some View {
         NavigationView {
@@ -32,6 +34,7 @@ struct BeforeAfterView: View {
                         videoComparisonSection
                         diffHighlightsSection
                         transcriptDiffSection
+                        fbTrackerSection
                     }
                     Spacer(minLength: 40)
                 }
@@ -514,6 +517,7 @@ struct BeforeAfterView: View {
         do {
             async let ba = APIClient.shared.fetchBeforeAfter(projectId: projectId)
             async let td = APIClient.shared.fetchTranscriptDiff(projectId: projectId)
+            async let fb = APIClient.shared.fetchFBTracker(projectId: projectId)
 
             let (baResult, tdResult) = try await (ba, td)
             beforeAfterData = baResult
@@ -522,9 +526,159 @@ struct BeforeAfterView: View {
             if let ver = tdResult.compareVersion {
                 selectedVersion = ver
             }
+            // FBトラッカー（失敗してもエラーにしない）
+            if let fbResult = try? await fb {
+                fbTrackerData = fbResult
+            }
         } catch {
             errorMessage = "データの取得に失敗しました: \(error.localizedDescription)"
         }
+    }
+
+    // MARK: - FB指示トラッカー
+
+    private var fbTrackerSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if let tracker = fbTrackerData, !tracker.items.isEmpty {
+                // ヘッダー + サマリー
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "checklist")
+                            .foregroundStyle(AppTheme.accent)
+                        Text("FB指示トラッカー")
+                            .font(AppTheme.sectionFont(16))
+                            .foregroundStyle(.white)
+                        Spacer()
+                    }
+
+                    // サマリーバッジ
+                    HStack(spacing: 8) {
+                        fbSummaryBadge(
+                            "\(tracker.summary.resolved)/\(tracker.summary.total) 対応済み",
+                            color: tracker.summary.pending == 0 ? AppTheme.statusComplete : .orange
+                        )
+                        if tracker.summary.pending > 0 {
+                            fbSummaryBadge("未対応 \(tracker.summary.pending)", color: .orange)
+                        }
+                        // プログレスバー
+                        GeometryReader { geo in
+                            let ratio = tracker.summary.total > 0
+                                ? CGFloat(tracker.summary.resolved) / CGFloat(tracker.summary.total)
+                                : 0
+                            ZStack(alignment: .leading) {
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color.gray.opacity(0.3))
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(tracker.summary.pending == 0 ? AppTheme.statusComplete : .orange)
+                                    .frame(width: geo.size.width * ratio)
+                            }
+                        }
+                        .frame(height: 6)
+                    }
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 14)
+                .padding(.bottom, 8)
+
+                // 各指示アイテム
+                ForEach(tracker.items) { item in
+                    fbTrackerItemRow(item)
+                }
+                .padding(.bottom, 14)
+            } else if let tracker = fbTrackerData, tracker.items.isEmpty {
+                // コメントなし
+                VStack(spacing: 8) {
+                    HStack {
+                        Image(systemName: "checklist")
+                            .foregroundStyle(AppTheme.accent)
+                        Text("FB指示トラッカー")
+                            .font(AppTheme.sectionFont(16))
+                            .foregroundStyle(.white)
+                        Spacer()
+                    }
+                    Text("FB指示がまだありません")
+                        .font(AppTheme.bodyFont(13))
+                        .foregroundStyle(AppTheme.textMuted)
+                }
+                .padding(14)
+            }
+
+            if isFBTrackerLoading {
+                ProgressView()
+                    .tint(AppTheme.accent)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+            }
+        }
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 12)
+        .padding(.top, 12)
+    }
+
+    private func fbSummaryBadge(_ text: String, color: Color) -> some View {
+        Text(text)
+            .font(AppTheme.labelFont(11))
+            .foregroundStyle(color)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(color.opacity(0.15))
+            .clipShape(Capsule())
+    }
+
+    private func fbTrackerItemRow(_ item: FBTrackerItem) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            // チェックボタン
+            Button {
+                Task {
+                    let newStatus = item.status == "resolved" ? "pending" : "resolved"
+                    try? await APIClient.shared.updateFBTrackingStatus(
+                        projectId: projectId,
+                        commentUri: item.uri,
+                        status: newStatus
+                    )
+                    // リロード
+                    if let updated = try? await APIClient.shared.fetchFBTracker(projectId: projectId) {
+                        fbTrackerData = updated
+                    }
+                }
+            } label: {
+                Image(systemName: item.status == "resolved" ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(item.statusColor)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                // タイムコード + バージョン
+                HStack(spacing: 6) {
+                    if let tc = item.timecode {
+                        Text(tc)
+                            .font(AppTheme.labelFont(11))
+                            .foregroundStyle(AppTheme.accent)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(AppTheme.accent.opacity(0.15))
+                            .clipShape(Capsule())
+                    }
+                    Text(item.versionLabel)
+                        .font(.caption2)
+                        .foregroundStyle(AppTheme.textMuted)
+                    Spacer()
+                    Text(item.statusLabel)
+                        .font(AppTheme.labelFont(10))
+                        .foregroundStyle(item.statusColor)
+                }
+
+                // 指示テキスト
+                Text(item.text)
+                    .font(AppTheme.bodyFont(13))
+                    .foregroundStyle(item.status == "resolved" ? AppTheme.textMuted : AppTheme.textSecondary)
+                    .strikethrough(item.status == "resolved", color: AppTheme.textMuted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 6)
     }
 
     /// バージョン切り替え時の文字起こしdiff再読み込み

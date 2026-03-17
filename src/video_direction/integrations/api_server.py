@@ -3738,13 +3738,121 @@ def _load_transcript(guest_name: str, shoot_date: Optional[str] = None) -> Optio
     return None
 
 
+def _fetch_vimeo_captions(vimeo_id: str) -> Optional[str]:
+    """Vimeo APIから自動生成字幕（VTT）を取得し、テキスト部分のみ結合して返す。"""
+    import urllib.request
+    token = os.environ.get("VIMEO_ACCESS_TOKEN", "")
+    if not token:
+        api_keys_path = Path.home() / ".config" / "maekawa" / "api-keys.env"
+        if api_keys_path.exists():
+            for line in api_keys_path.read_text().splitlines():
+                if line.startswith("VIMEO_ACCESS_TOKEN="):
+                    token = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    break
+    if not token:
+        return None
+
+    try:
+        # テキストトラック一覧を取得
+        url = f"https://api.vimeo.com/videos/{vimeo_id}/texttracks"
+        req = urllib.request.Request(url, headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/json",
+        })
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+
+        tracks = data.get("data", [])
+        if not tracks:
+            return None
+
+        # 日本語トラックを優先、なければ最初のトラック
+        ja_track = None
+        for t in tracks:
+            lang = (t.get("language") or "").lower()
+            if "ja" in lang:
+                ja_track = t
+                break
+        track = ja_track or tracks[0]
+        vtt_url = track.get("link")
+        if not vtt_url:
+            return None
+
+        # VTTファイルをダウンロード
+        req2 = urllib.request.Request(vtt_url)
+        with urllib.request.urlopen(req2, timeout=30) as resp2:
+            vtt_text = resp2.read().decode("utf-8")
+
+        # VTTからテキスト行だけ抽出（タイムスタンプ・番号・空行を除去）
+        caption_lines = []
+        _ts_re = re.compile(r"^\d{2}:\d{2}:\d{2}\.\d{3}\s*-->")
+        for line in vtt_text.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            if line == "WEBVTT":
+                continue
+            if line.isdigit():
+                continue
+            if _ts_re.match(line):
+                continue
+            # VTTのスペース区切りを除去して連結
+            cleaned = re.sub(r'\s+', '', line)
+            if cleaned:
+                caption_lines.append(cleaned)
+
+        return "".join(caption_lines) if caption_lines else None
+    except Exception:
+        return None
+
+
+def _match_caption_to_transcript(caption_text: str, transcript_line: str) -> bool:
+    """Vimeo字幕テキスト（連結済み）に素材文字起こしの行が含まれるかファジー判定。
+    記号除去後の4-gramオーバーラップで照合。
+    """
+    _clean_re = re.compile(r'[「」『』【】（）\(\)、。！？!?\s>*\-:：\n\*]+')
+    line_clean = _clean_re.sub('', transcript_line)
+    if len(line_clean) < 4:
+        return False
+
+    # 話者名プレフィックスを除去（**インタビュアー**: 等）
+    speaker_re = re.compile(r'^\*?\*?[^:：*]+\*?\*?\s*[:：]\s*')
+    line_clean = speaker_re.sub('', line_clean)
+    line_clean = _clean_re.sub('', line_clean)
+    if len(line_clean) < 4:
+        return False
+
+    # 完全包含チェック
+    if line_clean in caption_text:
+        return True
+
+    # 先頭・末尾の部分一致
+    check_len = min(15, len(line_clean))
+    if check_len >= 6:
+        if line_clean[:check_len] in caption_text or line_clean[-check_len:] in caption_text:
+            return True
+
+    # 4-gramオーバーラップ
+    if len(line_clean) >= 4:
+        line_ngrams = set(line_clean[i:i+4] for i in range(len(line_clean)-3))
+        # caption_textが巨大なので、行周辺のウィンドウで比較
+        # line_cleanの各4-gramがcaption_textに含まれるか直接チェック
+        hit = sum(1 for ng in line_ngrams if ng in caption_text)
+        if len(line_ngrams) > 0 and hit / len(line_ngrams) >= 0.4:
+            return True
+
+    return False
+
+
 @app.get("/api/v1/projects/{project_id}/transcript-diff")
-def get_transcript_diff(project_id: str):
-    """素材の文字起こし全文に対して、ハイライト採用部分を色分けするためのdiff分析結果を返す。"""
+def get_transcript_diff(project_id: str, version: Optional[str] = None):
+    """素材の文字起こし全文と編集後動画（Vimeo字幕）を照合し、カット/採用の差分を返す。
+    version: 比較対象のバージョン（指定なし=最新版）
+    """
     conn = _get_db()
 
     proj = conn.execute(
-        "SELECT id, guest_name, shoot_date FROM projects WHERE id = ?",
+        "SELECT id, guest_name, shoot_date, edited_video FROM projects WHERE id = ?",
         (project_id,),
     ).fetchone()
     if not proj:
@@ -3754,7 +3862,7 @@ def get_transcript_diff(project_id: str):
     guest_name = proj["guest_name"]
     shoot_date = proj["shoot_date"]
 
-    # 文字起こし全文を読み込み
+    # 素材の文字起こし全文を読み込み
     transcript_text = _load_transcript(guest_name, shoot_date)
     if not transcript_text:
         conn.close()
@@ -3765,98 +3873,94 @@ def get_transcript_diff(project_id: str):
             "segments": [],
         }
 
-    # ハイライトテキストとパンチラインを収集
-    # ソース1: feedbacksテーブル
-    fb_rows = conn.execute(
-        "SELECT timestamp_mark, converted_text, category FROM feedbacks "
-        "WHERE project_id = ? AND converted_text IS NOT NULL AND converted_text != '' "
-        "ORDER BY timestamp_mark",
-        (project_id,),
-    ).fetchall()
-
-    highlight_texts = []
-    punchline_texts = []
-    for fb in fb_rows:
-        text = fb["converted_text"]
-        cat = (fb["category"] or "").lower()
-        if "punchline" in cat or "パンチライン" in cat:
-            punchline_texts.append(text)
-        else:
-            highlight_texts.append(text)
-
-    # ソース2: projects.knowledgeのhighlights（feedbacksが空の場合のフォールバック）
-    if not highlight_texts and not punchline_texts:
-        knowledge_row = conn.execute(
-            "SELECT knowledge FROM projects WHERE id = ?", (project_id,)
+    # 比較対象のVimeo動画IDを取得
+    if version:
+        ver_row = conn.execute(
+            "SELECT vimeo_id, version_label FROM video_versions "
+            "WHERE project_id = ? AND version_label = ?",
+            (project_id, version),
         ).fetchone()
-        if knowledge_row and knowledge_row["knowledge"]:
-            try:
-                knowledge_data = json.loads(knowledge_row["knowledge"]) if isinstance(knowledge_row["knowledge"], str) else knowledge_row["knowledge"]
-                for h in knowledge_data.get("highlights", []):
-                    text = h.get("text", "")
-                    if not text:
-                        continue
-                    cat = (h.get("category", "") or "").lower()
-                    if "punchline" in cat or "パンチライン" in cat:
-                        punchline_texts.append(text)
-                    else:
-                        highlight_texts.append(text)
-            except (json.JSONDecodeError, TypeError, AttributeError):
-                pass
+    else:
+        # 最新版を取得
+        ver_row = conn.execute(
+            "SELECT vimeo_id, version_label FROM video_versions "
+            "WHERE project_id = ? ORDER BY version_order DESC LIMIT 1",
+            (project_id,),
+        ).fetchone()
 
-    # 文字起こしを行単位でセグメント化し、ステータスを付与
+    compare_vimeo_id = None
+    compare_label = "不明"
+    if ver_row and ver_row["vimeo_id"]:
+        compare_vimeo_id = str(ver_row["vimeo_id"])
+        compare_label = ver_row["version_label"]
+    else:
+        # video_versionsにない場合、edited_videoからフォールバック
+        ev = proj["edited_video"] or ""
+        m = re.search(r"vimeo\.com/(\d+)", ev)
+        if m:
+            compare_vimeo_id = m.group(1)
+            compare_label = "最新"
+
+    conn.close()
+
+    # Vimeo字幕を取得
+    caption_text = None
+    caption_status = "no_captions"
+    if compare_vimeo_id:
+        caption_text = _fetch_vimeo_captions(compare_vimeo_id)
+        if caption_text:
+            caption_status = "ok"
+            # 記号除去した連結テキスト
+            _clean_re = re.compile(r'[「」『』【】（）\(\)、。！？!?\s>*\-:：\n\*]+')
+            caption_clean = _clean_re.sub('', caption_text)
+        else:
+            caption_status = "no_captions"
+    else:
+        caption_status = "no_video"
+
+    # 文字起こしを行単位でセグメント化
     lines = transcript_text.split("\n")
     segments = []
-
-    # Markdownの見出し行・区切り線を除外するパターン
     _skip_re = re.compile(r"^(#{1,6}\s|---$)")
 
     for i, line in enumerate(lines):
         stripped = line.strip()
         if not stripped:
             continue
-        # Markdown構造行をスキップ
         if _skip_re.match(stripped):
             continue
 
-        # パンチライン判定（部分一致: ハイライトテキストの一部が行に含まれるかチェック）
-        status = "unused"
-        matched_text = None
-        for pt in punchline_texts:
-            if _fuzzy_match(pt, stripped):
-                status = "punchline"
-                matched_text = pt
-                break
-        if status == "unused":
-            for ht in highlight_texts:
-                if _fuzzy_match(ht, stripped):
-                    status = "highlight"
-                    matched_text = ht
-                    break
+        if caption_text and caption_status == "ok":
+            # Vimeo字幕との照合
+            if _match_caption_to_transcript(caption_clean, stripped):
+                status = "used"
+            else:
+                status = "unused"
+        else:
+            # 字幕取得できない場合は全部unknown
+            status = "unknown"
 
         segments.append({
             "line_number": i + 1,
             "text": stripped,
             "status": status,
-            "matched_feedback": matched_text,
         })
-
-    conn.close()
 
     # 統計
     total = len(segments)
-    used_count = sum(1 for s in segments if s["status"] != "unused")
-    punchline_count = sum(1 for s in segments if s["status"] == "punchline")
-    highlight_count = sum(1 for s in segments if s["status"] == "highlight")
+    used_count = sum(1 for s in segments if s["status"] == "used")
+    unused_count = sum(1 for s in segments if s["status"] == "unused")
 
     return {
         "project_id": project_id,
         "status": "ok",
+        "caption_status": caption_status,
+        "compare_version": compare_label,
+        "compare_vimeo_id": compare_vimeo_id,
         "total_segments": total,
         "used_count": used_count,
-        "highlight_count": highlight_count,
-        "punchline_count": punchline_count,
-        "unused_count": total - used_count,
+        "unused_count": unused_count,
+        "used_ratio": f"{used_count/total*100:.1f}%" if total > 0 else "0%",
         "segments": segments,
     }
 

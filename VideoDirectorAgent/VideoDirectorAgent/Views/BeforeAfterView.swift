@@ -16,6 +16,8 @@ struct BeforeAfterView: View {
     @State private var compareMode = 0  // 0: 素材 vs 編集後, 1: 編集後 vs FB後
     @State private var selectedSourceIndex = 0
     @State private var showTranscript = false
+    @State private var selectedVersion: String = ""  // 文字起こし比較のバージョン選択
+    @State private var isTranscriptLoading = false
 
     var body: some View {
         NavigationView {

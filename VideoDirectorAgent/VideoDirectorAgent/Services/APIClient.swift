@@ -332,9 +332,14 @@ final class APIClient: ObservableObject {
         try await request(BeforeAfterResponse.self, path: "/api/v1/projects/\(projectId)/before-after")
     }
 
-    /// 文字起こしdiff分析結果を取得
-    func fetchTranscriptDiff(projectId: String) async throws -> TranscriptDiffResponse {
-        try await request(TranscriptDiffResponse.self, path: "/api/v1/projects/\(projectId)/transcript-diff")
+    /// 文字起こしdiff分析結果を取得（バージョン指定可能）
+    func fetchTranscriptDiff(projectId: String, version: String? = nil) async throws -> TranscriptDiffResponse {
+        var path = "/api/v1/projects/\(projectId)/transcript-diff"
+        if let ver = version, !ver.isEmpty {
+            let encoded = ver.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ver
+            path += "?version=\(encoded)"
+        }
+        return try await request(TranscriptDiffResponse.self, path: path)
     }
 
     // MARK: - カテゴリ

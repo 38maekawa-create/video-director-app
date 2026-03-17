@@ -1613,3 +1613,4 @@ INFO:     100.113.28.70:51141 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82
 INFO:     100.113.28.70:51142 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/before-after HTTP/1.1" 200 OK
 INFO:     100.113.28.70:51105 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/feedbacks-with-timecodes HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:50056 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50527 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/before-after HTTP/1.1" 200 OK

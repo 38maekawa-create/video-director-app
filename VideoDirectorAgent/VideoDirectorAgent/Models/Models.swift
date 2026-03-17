@@ -1674,6 +1674,9 @@ struct BeforeAfterEditedVideo: Codable {
     let vimeoId: String
     let embedUrl: String?
     let version: String?
+    let versionLabel: String?
+    let versionOrder: Int?
+    let editorName: String?
 }
 
 /// FBハイライト（タイムスタンプ付き差分）
@@ -1693,6 +1696,7 @@ struct BeforeAfterResponse: Codable {
     let sourceVideos: [BeforeAfterSourceVideo]
     let editedVideo: BeforeAfterEditedVideo?
     let fbRevisedVideo: BeforeAfterEditedVideo?
+    let allVersions: [BeforeAfterEditedVideo]?
     let diffHighlights: [DiffHighlight]
 }
 

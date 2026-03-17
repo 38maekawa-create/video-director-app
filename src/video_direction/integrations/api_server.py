@@ -3457,46 +3457,85 @@ def get_before_after(project_id: str):
         except (json.JSONDecodeError, TypeError):
             pass
 
-    # 編集後動画（Vimeo）
-    # DBにはプレーンURL文字列（"https://vimeo.com/..."）またはJSON（{"url": "..."}）が入る
+    # --- video_versionsテーブルからバージョン情報を取得 ---
+    versions = conn.execute(
+        "SELECT * FROM video_versions WHERE project_id = ? ORDER BY version_order ASC",
+        (project_id,),
+    ).fetchall()
+
+    def _build_vimeo_entry(row):
+        """video_versionsの行からVimeo情報を構築"""
+        vimeo_url = row["vimeo_url"] or ""
+        vimeo_id = row["vimeo_id"] or ""
+        privacy_hash = row["privacy_hash"] or ""
+        embed_url = None
+        if vimeo_id:
+            hash_param = f"?h={privacy_hash}" if privacy_hash else ""
+            embed_url = f"https://player.vimeo.com/video/{vimeo_id}{hash_param}"
+        return {
+            "vimeo_url": vimeo_url,
+            "vimeo_id": vimeo_id,
+            "embed_url": embed_url,
+            "version_label": row["version_label"],
+            "version_order": row["version_order"],
+            "editor_name": row["editor_name"],
+        }
+
+    # 編集後動画 = 初稿（version_order=0）
     edited_video = None
-    ev = proj["edited_video"]
-    if ev:
-        vimeo_url = None
-        # JSON形式の場合（{"url": "https://vimeo.com/..."}）
-        try:
-            ev_data = json.loads(ev) if isinstance(ev, str) else ev
-            if ev_data and isinstance(ev_data, dict) and ev_data.get("url"):
-                vimeo_url = ev_data["url"]
-        except (json.JSONDecodeError, TypeError):
-            # プレーンURL文字列の場合（"https://vimeo.com/12345"）
-            if isinstance(ev, str) and "vimeo.com" in ev:
-                vimeo_url = ev.strip()
-
-        if vimeo_url:
-            vimeo_id = ""
-            privacy_hash = ""
-            m = re.search(r"vimeo\.com/(\d+)", vimeo_url)
-            if m:
-                vimeo_id = m.group(1)
-            # ハッシュ付きURL（vimeo.com/ID/HASH）からプライバシーハッシュを抽出
-            m_hash = re.search(r"vimeo\.com/\d+/([a-f0-9]+)", vimeo_url)
-            if m_hash:
-                privacy_hash = m_hash.group(1)
-            # 限定公開動画はembed_urlにもh=パラメータが必要
-            embed_url = None
-            if vimeo_id:
-                hash_param = f"?h={privacy_hash}" if privacy_hash else ""
-                embed_url = f"https://player.vimeo.com/video/{vimeo_id}{hash_param}"
-            edited_video = {
-                "vimeo_url": vimeo_url,
-                "vimeo_id": vimeo_id,
-                "embed_url": embed_url,
-                "version": "v1",
-            }
-
-    # FB後再編集版（現状はDBにカラムがないため将来拡張用。edited_videoにバージョン情報があれば対応）
+    # FB後再編集版 = 最新のFB修正版（version_order最大、ただし初稿以外）
     fb_revised_video = None
+    # 全バージョン一覧
+    all_versions = []
+
+    if versions:
+        for v in versions:
+            all_versions.append(_build_vimeo_entry(v))
+
+        # 初稿を探す（version_order=0）
+        shoko_versions = [v for v in versions if v["version_order"] == 0]
+        if shoko_versions:
+            edited_video = _build_vimeo_entry(shoko_versions[0])
+
+        # FB修正版を探す（version_order > 0 かつ 完成(100)以外、最新=最大order）
+        fb_versions = [v for v in versions if 0 < v["version_order"] < 100]
+        if fb_versions:
+            latest_fb = max(fb_versions, key=lambda v: v["version_order"])
+            fb_revised_video = _build_vimeo_entry(latest_fb)
+    else:
+        # video_versionsにデータがない場合、レガシーのprojects.edited_videoから取得
+        ev = proj["edited_video"]
+        if ev:
+            vimeo_url = None
+            try:
+                ev_data = json.loads(ev) if isinstance(ev, str) else ev
+                if ev_data and isinstance(ev_data, dict) and ev_data.get("url"):
+                    vimeo_url = ev_data["url"]
+            except (json.JSONDecodeError, TypeError):
+                if isinstance(ev, str) and "vimeo.com" in ev:
+                    vimeo_url = ev.strip()
+
+            if vimeo_url:
+                vimeo_id = ""
+                privacy_hash = ""
+                m = re.search(r"vimeo\.com/(\d+)", vimeo_url)
+                if m:
+                    vimeo_id = m.group(1)
+                m_hash = re.search(r"vimeo\.com/\d+/([a-f0-9]+)", vimeo_url)
+                if m_hash:
+                    privacy_hash = m_hash.group(1)
+                embed_url = None
+                if vimeo_id:
+                    hash_param = f"?h={privacy_hash}" if privacy_hash else ""
+                    embed_url = f"https://player.vimeo.com/video/{vimeo_id}{hash_param}"
+                edited_video = {
+                    "vimeo_url": vimeo_url,
+                    "vimeo_id": vimeo_id,
+                    "embed_url": embed_url,
+                    "version_label": "不明",
+                    "version_order": -1,
+                    "editor_name": None,
+                }
 
     # FBタイムスタンプ一覧（diff_highlights）
     fb_rows = conn.execute(
@@ -3523,6 +3562,7 @@ def get_before_after(project_id: str):
         "source_videos": source_videos,
         "edited_video": edited_video,
         "fb_revised_video": fb_revised_video,
+        "all_versions": all_versions,
         "diff_highlights": diff_highlights,
     }
 

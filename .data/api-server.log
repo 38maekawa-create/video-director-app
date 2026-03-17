@@ -1737,3 +1737,9 @@ INFO:     100.113.28.70:64737 - "GET /api/tracking/videos HTTP/1.1" 200 OK
 INFO:     100.113.28.70:64736 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.113.28.70:64737 - "GET /api/tracking/insights HTTP/1.1" 200 OK
 INFO:     100.113.28.70:64737 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62275 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62276 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62277 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62275 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62275 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:57925 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/vimeo-comments HTTP/1.1" 200 OK

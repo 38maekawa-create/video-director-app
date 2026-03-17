@@ -2284,7 +2284,10 @@ def convert_feedback(body: FeedbackConvertRequest):
 
     try:
         vid_learner = VideoLearner()
+        # カテゴリ一致ルールを優先、なければ全カテゴリから上位5件
         vid_rules = vid_learner.get_active_rules(category=category)
+        if not vid_rules:
+            vid_rules = vid_learner.get_active_rules()[:5]
         if vid_rules:
             tracking_refs_text = "\n\n## トラッキング映像から学習した演出パターン（参考として活用すること）:\n"
             for rule in vid_rules:

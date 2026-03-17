@@ -120,6 +120,70 @@ def is_taidan_video(title: str) -> bool:
     return any(k in title for k in keywords)
 
 
+import re as _re
+
+
+def parse_version_info(title: str) -> dict:
+    """動画タイトルからバージョン情報を抽出する。
+
+    返却: {"version_label": str, "version_order": int, "editor_name": str|None}
+
+    パターン例:
+      55_さるビールさん_対談_初稿_坂野          → 初稿, order=0
+      55_さるビールさん_対談_FB修正1_坂野        → FB修正1, order=1
+      55_さるビールさん_対談_FB修正2_坂野        → FB修正2, order=2
+      hiraiさん_対談_修正1_大胡                  → 修正1, order=1
+      hiraiさん_対談_修正2_大胡                  → 修正2, order=2
+      payさん_対談_修正_大胡                     → 修正, order=1
+      しおさんボイチェン_対談_修正1_大胡         → 修正1, order=1
+      lzuさん　対談修正5                         → 修正5, order=5
+    """
+    title_norm = unicodedata.normalize("NFKC", title)
+
+    # 編集者名の抽出（末尾の _坂野 や _大胡）
+    editor_name = None
+    editor_match = _re.search(r"[_＿]([^\d_＿]+)$", title_norm)
+    if editor_match:
+        candidate = editor_match.group(1).strip()
+        # 既知の編集者名
+        if candidate in ("坂野", "大胡"):
+            editor_name = candidate
+
+    # バージョン判定（優先順位: FB修正N → 修正N → 初稿 → 完成）
+    # FB修正N
+    m = _re.search(r"FB修正(\d+)", title_norm)
+    if m:
+        n = int(m.group(1))
+        return {"version_label": f"FB修正{n}", "version_order": n, "editor_name": editor_name}
+
+    # 修正N（FBなし）
+    m = _re.search(r"(?<!FB)修正(\d+)", title_norm)
+    if m:
+        n = int(m.group(1))
+        return {"version_label": f"修正{n}", "version_order": n, "editor_name": editor_name}
+
+    # 修正（番号なし）
+    if "修正" in title_norm and "FB修正" not in title_norm:
+        return {"version_label": "修正", "version_order": 1, "editor_name": editor_name}
+
+    # 初稿
+    if "初稿" in title_norm:
+        return {"version_label": "初稿", "version_order": 0, "editor_name": editor_name}
+
+    # 完成
+    if "完成" in title_norm:
+        return {"version_label": "完成", "version_order": 100, "editor_name": editor_name}
+
+    # 不明
+    return {"version_label": "不明", "version_order": -1, "editor_name": editor_name}
+
+
+def _extract_privacy_hash(url: str) -> str | None:
+    """VimeoのURLからプライバシーハッシュを抽出する"""
+    m = _re.search(r"vimeo\.com/\d+/([a-f0-9]+)", url)
+    return m.group(1) if m else None
+
+
 def build_search_map(projects: list) -> list[dict]:
     """メンバー名の表記揺れマップを構築（ひらがな/カタカナ相互変換対応）"""
     # 追加の表記揺れ定義
@@ -330,6 +394,10 @@ def run_sync(dry_run: bool = False):
         # 限定公開動画はlinkフィールドにハッシュ付きURL（vimeo.com/ID/HASH）が入る
         # 公開動画はlinkにハッシュなし（vimeo.com/ID）が入る
         vimeo_link = v.get("link", f"https://vimeo.com/{vid}")
+
+        # バージョン情報を抽出
+        ver_info = parse_version_info(title)
+
         entry = {
             "vimeo_id": vid,
             "vimeo_url": vimeo_link,
@@ -338,6 +406,10 @@ def run_sync(dry_run: bool = False):
             "guest_name": member["guest_name"],
             "created": v["created_time"][:10],
             "status": status,
+            "version_label": ver_info["version_label"],
+            "version_order": ver_info["version_order"],
+            "editor_name": ver_info["editor_name"],
+            "privacy_hash": _extract_privacy_hash(vimeo_link),
         }
 
         if status != "available":
@@ -389,6 +461,46 @@ def run_sync(dry_run: bool = False):
             )
         updated_count += 1
 
+    # --- video_versionsテーブルへの投入 ---
+    version_insert_count = 0
+    version_skip_count = 0
+    for m in matched:
+        if m["status"] != "available":
+            continue
+        if m["version_order"] < 0:
+            continue  # バージョン不明はスキップ
+
+        # 既存チェック（vimeo_id + project_idで重複回避）
+        existing_ver = conn.execute(
+            "SELECT id FROM video_versions WHERE project_id = ? AND vimeo_id = ?",
+            (m["project_id"], m["vimeo_id"]),
+        ).fetchone()
+
+        if existing_ver:
+            version_skip_count += 1
+            continue
+
+        print(f"{log_prefix}バージョン登録: {m['guest_name']} | {m['version_label']} | {m['vimeo_url']}")
+
+        if not dry_run:
+            conn.execute(
+                """INSERT INTO video_versions
+                   (project_id, version_label, version_order, vimeo_id, vimeo_url,
+                    privacy_hash, editor_name, vimeo_title)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    m["project_id"],
+                    m["version_label"],
+                    m["version_order"],
+                    m["vimeo_id"],
+                    m["vimeo_url"],
+                    m["privacy_hash"],
+                    m["editor_name"],
+                    m["title"],
+                ),
+            )
+        version_insert_count += 1
+
     if not dry_run:
         conn.commit()
 
@@ -401,6 +513,7 @@ def run_sync(dry_run: bool = False):
     unmatched_count = len(search_map) - len(by_member)
     print(f"\n{log_prefix}同期完了 ({now})")
     print(f"  突合: {len(by_member)}名 / 未マッチ: {unmatched_count}名 / 更新: {updated_count}件 / スキップ: {skipped_count}件")
+    print(f"  バージョン登録: {version_insert_count}件 / スキップ: {version_skip_count}件")
 
     # ログファイルに追記
     if not dry_run:

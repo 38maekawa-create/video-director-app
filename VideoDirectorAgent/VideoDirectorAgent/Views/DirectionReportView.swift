@@ -179,6 +179,8 @@ struct DirectionReportView: View {
     @State private var expandedSections: Set<UUID> = []
     @State private var feedbacks: [FeedbackItem] = []
     @State private var isFeedbackLoading = false
+    @State private var editingFeedback: FeedbackItem? = nil
+    @State private var editingText: String = ""
     @State private var showVoiceFeedback = false
     @State private var showKnowledgePage = false
     @State private var showBeforeAfter = false
@@ -648,6 +650,18 @@ struct DirectionReportView: View {
                             .font(.caption2)
                             .foregroundStyle(AppTheme.textMuted)
                         }
+                        // 編集ボタン
+                        HStack {
+                            Spacer()
+                            Button {
+                                editingText = fb.convertedText ?? fb.content
+                                editingFeedback = fb
+                            } label: {
+                                Label("編集", systemImage: "pencil")
+                                    .font(.caption)
+                                    .foregroundStyle(AppTheme.accent)
+                            }
+                        }
                     }
                     .padding(16)
                     .background(AppTheme.cardBackground)
@@ -657,6 +671,20 @@ struct DirectionReportView: View {
         }
         .task(id: project.id) {
             await loadFeedbacks()
+        }
+        .sheet(item: $editingFeedback) { fb in
+            FeedbackEditSheet(
+                feedbackId: fb.id,
+                initialText: editingText,
+                onSave: { newText in
+                    Task {
+                        try? await APIClient.shared.updateConvertedText(
+                            feedbackId: fb.id, newText: newText
+                        )
+                        await loadFeedbacks()
+                    }
+                }
+            )
         }
     }
 
@@ -796,6 +824,48 @@ struct DirectionReportView: View {
             feedbacks = try await APIClient.shared.fetchFeedbacks(projectId: project.id)
         } catch {
             feedbacks = []
+        }
+    }
+}
+
+// MARK: - FB編集シート
+private struct FeedbackEditSheet: View {
+    let feedbackId: String
+    let initialText: String
+    let onSave: (String) -> Void
+
+    @State private var text: String = ""
+    @State private var isSaving = false
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 0) {
+                TextEditor(text: $text)
+                    .font(.body)
+                    .padding(12)
+                    .scrollContentBackground(.hidden)
+                    .background(AppTheme.cardBackground)
+            }
+            .background(AppTheme.background)
+            .navigationTitle("フィードバック編集")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("キャンセル") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("保存") {
+                        isSaving = true
+                        onSave(text)
+                        dismiss()
+                    }
+                    .disabled(text.isEmpty || isSaving)
+                }
+            }
+        }
+        .onAppear {
+            text = initialText
         }
     }
 }

@@ -401,6 +401,18 @@ final class APIClient: ObservableObject {
         )
     }
 
+    func updateConvertedText(feedbackId: String, newText: String) async throws {
+        struct UpdateBody: Encodable {
+            let converted_text: String
+        }
+        _ = try await request(
+            EmptyResponse.self,
+            path: "/api/v1/feedbacks/\(feedbackId)/converted-text",
+            method: "PUT",
+            body: UpdateBody(converted_text: newText)
+        )
+    }
+
     private func request<T: Decodable>(
         _ type: T.Type,
         path: String,

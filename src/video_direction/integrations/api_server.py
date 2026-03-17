@@ -3758,6 +3758,108 @@ def get_transcript_diff(project_id: str):
     }
 
 
+# --- feedbacks-with-timecodes (レビュータブ用) ---
+
+@app.get("/api/v1/projects/{project_id}/feedbacks-with-timecodes")
+def get_feedbacks_with_timecodes(project_id: str):
+    """レビュータブ用: タイムコード付きフィードバック一覧を返す。"""
+    conn = _get_db()
+
+    proj = conn.execute(
+        "SELECT id, edited_video FROM projects WHERE id = ?", (project_id,)
+    ).fetchone()
+    if not proj:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # 最新バージョンのvimeo_idを取得
+    vimeo_id = ""
+    latest_ver = conn.execute(
+        "SELECT vimeo_id FROM video_versions WHERE project_id = ? "
+        "ORDER BY version_order DESC LIMIT 1",
+        (project_id,),
+    ).fetchone()
+    if latest_ver and latest_ver["vimeo_id"]:
+        vimeo_id = latest_ver["vimeo_id"]
+    else:
+        # フォールバック: projects.edited_video
+        ev = proj["edited_video"] or ""
+        m = re.search(r"vimeo\.com/(\d+)", ev)
+        if m:
+            vimeo_id = m.group(1)
+
+    # feedbacksからタイムコード付きのものを取得
+    fb_rows = conn.execute(
+        "SELECT id, timestamp_mark, converted_text, raw_voice_text, category, priority "
+        "FROM feedbacks "
+        "WHERE project_id = ? AND timestamp_mark IS NOT NULL AND timestamp_mark != '' "
+        "ORDER BY timestamp_mark",
+        (project_id,),
+    ).fetchall()
+    conn.close()
+
+    import uuid as _uuid
+    results = []
+    for fb in fb_rows:
+        ts_str = fb["timestamp_mark"] or "0:00"
+        # タイムコード → 秒変換
+        seconds = _parse_timecode_to_seconds(ts_str)
+        note = fb["converted_text"] or fb["raw_voice_text"] or ""
+        category = fb["category"] or "その他"
+        priority = fb["priority"] or "medium"
+
+        results.append({
+            "id": str(_uuid.uuid4()),
+            "timestampMark": seconds,
+            "element": category,
+            "priorityRaw": priority,
+            "note": note,
+            "vimeoVideoId": vimeo_id,
+        })
+
+    return results
+
+
+def _parse_timecode_to_seconds(tc: str) -> float:
+    """タイムコード文字列を秒数に変換。 '1:23', '01:23:45', '90' 等に対応。"""
+    tc = tc.strip()
+    parts = tc.split(":")
+    try:
+        if len(parts) == 3:
+            return int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
+        elif len(parts) == 2:
+            return int(parts[0]) * 60 + float(parts[1])
+        else:
+            return float(tc)
+    except (ValueError, IndexError):
+        return 0.0
+
+
+# --- feedbacks CRUD (FB・評価タブ用) ---
+
+@app.put("/api/v1/feedbacks/{feedback_id}/converted-text")
+def update_feedback_converted_text(feedback_id: int, body: dict):
+    """FB・評価タブ: converted_text（変換後テキスト）を直接編集する。"""
+    new_text = body.get("converted_text", "")
+    if not new_text:
+        raise HTTPException(status_code=400, detail="converted_text is required")
+
+    conn = _get_db()
+    existing = conn.execute("SELECT id FROM feedbacks WHERE id = ?", (feedback_id,)).fetchone()
+    if not existing:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Feedback not found")
+
+    conn.execute(
+        "UPDATE feedbacks SET converted_text = ? WHERE id = ?",
+        (new_text, feedback_id),
+    )
+    conn.commit()
+    conn.close()
+
+    return {"status": "ok", "feedback_id": feedback_id, "converted_text": new_text}
+
+
 # --- ヘルスチェック ---
 
 @app.get("/api/health")

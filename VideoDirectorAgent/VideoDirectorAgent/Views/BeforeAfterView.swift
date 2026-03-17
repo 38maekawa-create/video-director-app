@@ -369,22 +369,31 @@ struct BeforeAfterView: View {
 
     private func transcriptStatsBadges(_ data: TranscriptDiffResponse) -> some View {
         HStack(spacing: 6) {
-            if let hl = data.highlightCount, hl > 0 {
-                Text("HL \(hl)")
+            if let ver = data.compareVersion {
+                Text("vs \(ver)")
                     .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 5)
                     .padding(.vertical, 1)
-                    .background(AppTheme.accent)
+                    .background(AppTheme.accent.opacity(0.6))
                     .clipShape(Capsule())
             }
-            if let pl = data.punchlineCount, pl > 0 {
-                Text("PL \(pl)")
+            if let ratio = data.usedRatio {
+                Text("採用 \(ratio)")
                     .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white)
                     .padding(.horizontal, 5)
                     .padding(.vertical, 1)
-                    .background(Color(hex: 0xFFD700))
+                    .background(Color.green.opacity(0.7))
+                    .clipShape(Capsule())
+            }
+            if let cut = data.unusedCount, cut > 0 {
+                Text("CUT \(cut)")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 1)
+                    .background(Color(hex: 0xFF6B35))
                     .clipShape(Capsule())
             }
         }
@@ -393,10 +402,8 @@ struct BeforeAfterView: View {
     // 凡例
     private var transcriptLegend: some View {
         HStack(spacing: 16) {
-            legendItem(color: AppTheme.textSecondary, label: "通常")
+            legendItem(color: .green.opacity(0.8), label: "採用")
             legendItem(color: Color(hex: 0xFF6B35), label: "カット")
-            legendItem(color: AppTheme.accent, label: "FB修正")
-            legendItem(color: Color(hex: 0xFFD700), label: "パンチライン")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 6)
@@ -438,15 +445,14 @@ struct BeforeAfterView: View {
                         Text(segment.text)
                             .font(.system(size: 12))
                             .foregroundStyle(textColor(for: segment))
-                            .underline(segment.status == "highlight", color: AppTheme.accent)
                     }
                     .padding(.vertical, 2)
                     .padding(.horizontal, segment.status == "unused" ? 4 : 0)
                     .background(
-                        segment.status == "punchline"
-                            ? Color(hex: 0xFFD700).opacity(0.15)
-                            : segment.status == "unused"
-                                ? Color(hex: 0xFF6B35).opacity(0.12)
+                        segment.status == "unused"
+                            ? Color(hex: 0xFF6B35).opacity(0.12)
+                            : segment.status == "used"
+                                ? Color.green.opacity(0.06)
                                 : Color.clear
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 4))
@@ -460,14 +466,12 @@ struct BeforeAfterView: View {
 
     private func textColor(for segment: TranscriptSegment) -> Color {
         switch segment.status {
-        case "punchline":
-            return Color(hex: 0xFFD700)
-        case "highlight":
-            return AppTheme.textSecondary
+        case "used":
+            return .white
         case "unused":
             return Color(hex: 0xFF6B35)
         default:
-            return .white
+            return AppTheme.textMuted
         }
     }
 

@@ -1708,3 +1708,8 @@ INFO:     100.113.28.70:63690 - "GET /api/projects/p-20251130-%E3%81%95%E3%82%8B
 INFO:     127.0.0.1:52737 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52745 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52766 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff?version=%E5%88%9D%E7%A8%BF HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58809 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58808 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58808 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58810 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/before-after HTTP/1.1" 200 OK
+INFO:     100.113.28.70:58811 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff HTTP/1.1" 200 OK

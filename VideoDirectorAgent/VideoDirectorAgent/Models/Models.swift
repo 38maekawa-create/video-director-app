@@ -1707,27 +1707,30 @@ struct TranscriptSegment: Codable, Identifiable {
     var id: Int { lineNumber }
     let lineNumber: Int
     let text: String
-    let status: String        // "unused" / "highlight" / "punchline"
+    let status: String        // "used" / "unused" / "unknown"
     let matchedFeedback: String?
 
     /// ステータスに応じた色
     var statusColor: Color {
         switch status {
-        case "punchline":
-            return Color(hex: 0xFFD700)   // 金色
-        case "highlight":
-            return AppTheme.accent         // Netflix赤
+        case "used":
+            return Color.green.opacity(0.8)    // 採用=緑
+        case "unused":
+            return AppTheme.accent              // カット=赤（Netflix赤）
+        case "unknown":
+            return AppTheme.textMuted.opacity(0.4)
         default:
-            return AppTheme.textMuted.opacity(0.4) // グレー半透明
+            return AppTheme.textMuted.opacity(0.4)
         }
     }
 
     /// ステータスの表示ラベル
     var statusLabel: String {
         switch status {
-        case "punchline": return "パンチライン"
-        case "highlight": return "ハイライト"
-        default: return "未使用"
+        case "used": return "採用"
+        case "unused": return "CUT"
+        case "unknown": return "不明"
+        default: return "不明"
         }
     }
 }
@@ -1736,11 +1739,15 @@ struct TranscriptSegment: Codable, Identifiable {
 struct TranscriptDiffResponse: Codable {
     let projectId: String
     let status: String
+    let captionStatus: String?
+    let compareVersion: String?
+    let compareVimeoId: String?
     let totalSegments: Int?
     let usedCount: Int?
+    let unusedCount: Int?
+    let usedRatio: String?
     let highlightCount: Int?
     let punchlineCount: Int?
-    let unusedCount: Int?
     let segments: [TranscriptSegment]
     let message: String?
 
@@ -1748,11 +1755,15 @@ struct TranscriptDiffResponse: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         projectId = try container.decodeIfPresent(String.self, forKey: .projectId) ?? ""
         status = try container.decodeIfPresent(String.self, forKey: .status) ?? "unknown"
+        captionStatus = try container.decodeIfPresent(String.self, forKey: .captionStatus)
+        compareVersion = try container.decodeIfPresent(String.self, forKey: .compareVersion)
+        compareVimeoId = try container.decodeIfPresent(String.self, forKey: .compareVimeoId)
         totalSegments = try container.decodeIfPresent(Int.self, forKey: .totalSegments)
         usedCount = try container.decodeIfPresent(Int.self, forKey: .usedCount)
+        unusedCount = try container.decodeIfPresent(Int.self, forKey: .unusedCount)
+        usedRatio = try container.decodeIfPresent(String.self, forKey: .usedRatio)
         highlightCount = try container.decodeIfPresent(Int.self, forKey: .highlightCount)
         punchlineCount = try container.decodeIfPresent(Int.self, forKey: .punchlineCount)
-        unusedCount = try container.decodeIfPresent(Int.self, forKey: .unusedCount)
         segments = try container.decodeIfPresent([TranscriptSegment].self, forKey: .segments) ?? []
         message = try container.decodeIfPresent(String.self, forKey: .message)
     }

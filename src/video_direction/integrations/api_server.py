@@ -2248,23 +2248,64 @@ class FeedbackConvertRequest(BaseModel):
 
 @app.post("/api/feedback/convert")
 def convert_feedback(body: FeedbackConvertRequest):
-    """音声テキストをプロのディレクション指示に変換（カテゴリ別専門プロンプト使用）"""
+    """音声テキストをプロのディレクション指示に変換（カテゴリ別専門プロンプト使用）
+
+    自己学習エンジン接続済み:
+    - FeedbackLearner: 過去のFBパターンからルールを取得しプロンプトに注入
+    - VideoLearner: トラッキング映像の演出パターンを引用付きでプロンプトに注入
+    """
     from ..analyzer.feedback_converter import (
         build_system_prompt,
         build_conversion_prompt,
         classify_feedback_category,
     )
+    from ..tracker.feedback_learner import FeedbackLearner
+    from ..tracker.video_learner import VideoLearner
 
     raw = body.raw_text
     # カテゴリ自動検出
     category = classify_feedback_category(raw)
+
+    # --- 自己学習エンジンからルール・参考情報を取得 ---
+    learned_rules_text = ""
+    tracking_refs_text = ""
+
+    try:
+        fb_learner = FeedbackLearner()
+        fb_rules = fb_learner.get_active_rules(category=category)
+        if fb_rules:
+            learned_rules_text = "\n\n## 過去のFBから学習したルール（優先的に適用すること）:\n"
+            for rule in fb_rules:
+                learned_rules_text += f"- [{rule.priority}] {rule.rule_text}\n"
+    except Exception:
+        pass
+
+    try:
+        vid_learner = VideoLearner()
+        vid_rules = vid_learner.get_active_rules(category=category)
+        if vid_rules:
+            tracking_refs_text = "\n\n## トラッキング映像から学習した演出パターン（参考として活用すること）:\n"
+            for rule in vid_rules:
+                tracking_refs_text += f"- [{rule.category}] {rule.rule_text}\n"
+            # 引用URL付きのインサイトも追加
+            insights = vid_learner.get_insights_for_direction()
+            if insights:
+                tracking_refs_text += "\n### 演出の参考引用:\n"
+                for insight in insights[:5]:  # 最大5件
+                    tracking_refs_text += f"- {insight}\n"
+    except Exception:
+        pass
 
     try:
         import re
         from teko_core.llm import ask
 
         system_prompt = build_system_prompt(category)
-        user_prompt = build_conversion_prompt(raw, category)
+        user_prompt = build_conversion_prompt(
+            raw, category,
+            learned_rules_text=learned_rules_text,
+            tracking_refs_text=tracking_refs_text,
+        )
 
         text = ask(user_prompt, system=system_prompt, model="sonnet", max_tokens=2048, timeout=120)
         # JSONブロックを抽出

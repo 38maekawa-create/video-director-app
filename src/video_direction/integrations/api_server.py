@@ -106,6 +106,15 @@ def init_db():
             knowledge_file TEXT,
             created_at TEXT DEFAULT (datetime('now'))
         );
+
+        CREATE TABLE IF NOT EXISTS fb_tracking (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id TEXT NOT NULL REFERENCES projects(id),
+            comment_uri TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pending',
+            updated_at TEXT DEFAULT (datetime('now')),
+            UNIQUE(project_id, comment_uri)
+        );
     """)
     conn.commit()
 
@@ -3658,6 +3667,155 @@ def get_before_after(project_id: str):
         "all_versions": all_versions,
         "diff_highlights": diff_highlights,
     }
+
+
+# --- FB指示トラッカー ---
+
+@app.get("/api/v1/projects/{project_id}/fb-tracker")
+def get_fb_tracker(project_id: str):
+    """Vimeoレビューコメント（=AI変換済みFB指示）に対応ステータスを付与して返す。"""
+    import urllib.request
+
+    conn = _get_db()
+    proj = conn.execute("SELECT id, edited_video FROM projects WHERE id = ?", (project_id,)).fetchone()
+    if not proj:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # 全バージョンのvimeo_idを取得
+    versions = conn.execute(
+        "SELECT vimeo_id, version_label, version_order FROM video_versions "
+        "WHERE project_id = ? ORDER BY version_order ASC",
+        (project_id,),
+    ).fetchall()
+
+    vimeo_ids = []
+    if versions:
+        for v in versions:
+            if v["vimeo_id"]:
+                vimeo_ids.append({"vimeo_id": v["vimeo_id"], "label": v["version_label"], "order": v["version_order"]})
+    else:
+        ev = proj["edited_video"] or ""
+        m = re.search(r"vimeo\.com/(\d+)", ev)
+        if m:
+            vimeo_ids.append({"vimeo_id": m.group(1), "label": "最新", "order": 0})
+
+    if not vimeo_ids:
+        conn.close()
+        return {"project_id": project_id, "items": [], "summary": {"total": 0, "resolved": 0, "pending": 0}}
+
+    # Vimeoトークン取得
+    token = os.environ.get("VIMEO_ACCESS_TOKEN", "")
+    if not token:
+        api_keys_path = Path.home() / ".config" / "maekawa" / "api-keys.env"
+        if api_keys_path.exists():
+            for line in api_keys_path.read_text().splitlines():
+                if line.startswith("VIMEO_ACCESS_TOKEN="):
+                    token = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    break
+    if not token:
+        conn.close()
+        return {"project_id": project_id, "items": [], "message": "VIMEO_ACCESS_TOKENが未設定です"}
+
+    # 既存のトラッキングステータスをDB取得
+    tracking_rows = conn.execute(
+        "SELECT comment_uri, status, updated_at FROM fb_tracking WHERE project_id = ?",
+        (project_id,),
+    ).fetchall()
+    tracking_map = {r["comment_uri"]: {"status": r["status"], "updated_at": r["updated_at"]} for r in tracking_rows}
+
+    # Vimeoコメント取得＋ステータスマージ
+    items = []
+    for vid_info in vimeo_ids:
+        vid = vid_info["vimeo_id"]
+        label = vid_info["label"]
+        url = f"https://api.vimeo.com/videos/{vid}/comments?per_page=100"
+        try:
+            req = urllib.request.Request(url, headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/json",
+            })
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                for c in data.get("data", []):
+                    uri = c.get("uri", "")
+                    text = c.get("text", "")
+                    timecode = None
+                    tc_match = re.search(r"\[?(\d{1,2}:\d{2}(?::\d{2})?)\]?", text)
+                    if tc_match:
+                        timecode = tc_match.group(1)
+
+                    tracking = tracking_map.get(uri, {})
+                    status = tracking.get("status", "pending")
+
+                    # 新規コメントはDBに自動登録
+                    if uri and uri not in tracking_map:
+                        try:
+                            conn.execute(
+                                "INSERT OR IGNORE INTO fb_tracking (project_id, comment_uri, status) VALUES (?, ?, 'pending')",
+                                (project_id, uri),
+                            )
+                        except Exception:
+                            pass
+
+                    items.append({
+                        "uri": uri,
+                        "vimeo_id": vid,
+                        "version_label": label,
+                        "text": text,
+                        "timecode": timecode,
+                        "created_time": c.get("created_time", ""),
+                        "user": c.get("user", {}).get("name", ""),
+                        "status": status,
+                    })
+        except Exception as e:
+            items.append({
+                "uri": "",
+                "vimeo_id": vid,
+                "version_label": label,
+                "text": f"取得エラー: {str(e)}",
+                "timecode": None,
+                "created_time": "",
+                "user": "system",
+                "status": "error",
+            })
+
+    conn.commit()
+    conn.close()
+
+    resolved = sum(1 for i in items if i["status"] == "resolved")
+    return {
+        "project_id": project_id,
+        "items": items,
+        "summary": {
+            "total": len(items),
+            "resolved": resolved,
+            "pending": len(items) - resolved,
+        },
+    }
+
+
+class FBTrackingUpdate(BaseModel):
+    status: str  # "pending" | "resolved"
+
+
+@app.patch("/api/v1/projects/{project_id}/fb-tracker/{comment_uri:path}")
+def update_fb_tracking(project_id: str, comment_uri: str, body: FBTrackingUpdate):
+    """FB指示の対応ステータスを更新する。"""
+    if body.status not in ("pending", "resolved"):
+        raise HTTPException(status_code=400, detail="statusは 'pending' または 'resolved' のみ")
+
+    conn = _get_db()
+    # UPSERT
+    conn.execute(
+        "INSERT INTO fb_tracking (project_id, comment_uri, status, updated_at) "
+        "VALUES (?, ?, ?, datetime('now')) "
+        "ON CONFLICT(project_id, comment_uri) DO UPDATE SET status = excluded.status, updated_at = excluded.updated_at",
+        (project_id, comment_uri, body.status),
+    )
+    conn.commit()
+    conn.close()
+    return {"ok": True, "comment_uri": comment_uri, "status": body.status}
 
 
 # --- 文字起こしdiff可視化 ---

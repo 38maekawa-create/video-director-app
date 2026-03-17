@@ -3958,3 +3958,13 @@ Traceback (most recent call last):
   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/pathlib.py", line 548, in _select_from
     with scandir(parent_path) as scandir_it:
 FileNotFoundError: [Errno 2] No such file or directory: '/Users/maekawanaoto/AI開発10/.git/objects/5e'
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [9656]
+INFO:     Will watch for changes in these directories: ['/Users/maekawanaoto/AI開発10']
+INFO:     Uvicorn running on http://0.0.0.0:8210 (Press CTRL+C to quit)
+INFO:     Started reloader process [16979] using StatReload
+INFO:     Started server process [16981]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

@@ -1768,3 +1768,62 @@ struct TranscriptDiffResponse: Codable {
         message = try container.decodeIfPresent(String.self, forKey: .message)
     }
 }
+
+// MARK: - FB指示トラッカー
+
+struct FBTrackerResponse: Codable {
+    let projectId: String
+    let items: [FBTrackerItem]
+    let summary: FBTrackerSummary
+    let message: String?
+
+    enum CodingKeys: String, CodingKey {
+        case projectId = "project_id"
+        case items, summary, message
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        projectId = try container.decodeIfPresent(String.self, forKey: .projectId) ?? ""
+        items = try container.decodeIfPresent([FBTrackerItem].self, forKey: .items) ?? []
+        summary = try container.decodeIfPresent(FBTrackerSummary.self, forKey: .summary) ?? FBTrackerSummary(total: 0, resolved: 0, pending: 0)
+        message = try container.decodeIfPresent(String.self, forKey: .message)
+    }
+}
+
+struct FBTrackerItem: Codable, Identifiable {
+    var id: String { uri.isEmpty ? UUID().uuidString : uri }
+    let uri: String
+    let vimeoId: String
+    let versionLabel: String
+    let text: String
+    let timecode: String?
+    let createdTime: String
+    let user: String
+    let status: String  // "pending" | "resolved"
+
+    enum CodingKeys: String, CodingKey {
+        case uri
+        case vimeoId = "vimeo_id"
+        case versionLabel = "version_label"
+        case text, timecode
+        case createdTime = "created_time"
+        case user, status
+    }
+
+    /// 対応ステータスの表示色
+    var statusColor: Color {
+        status == "resolved" ? AppTheme.statusComplete : Color.orange
+    }
+
+    /// 対応ステータスの表示テキスト
+    var statusLabel: String {
+        status == "resolved" ? "対応済み" : "未対応"
+    }
+}
+
+struct FBTrackerSummary: Codable {
+    let total: Int
+    let resolved: Int
+    let pending: Int
+}

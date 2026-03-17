@@ -2,22 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>method</key>
-    <string>app-store-connect</string>
-
-    <key>teamID</key>
-    <string>TT2DA7H5NJ</string>
-
-    <key>signingStyle</key>
-    <string>automatic</string>
-
-    <key>destination</key>
-    <string>upload</string>
-
-    <key>uploadSymbols</key>
-    <true/>
-
-    <key>compileBitcode</key>
-    <false/>
+	<key>method</key>
+	<string>app-store-connect</string>
+	<key>teamID</key>
+	<string>TT2DA7H5NJ</string>
+	<key>destination</key>
+	<string>upload</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
 </dict>
 </plist>

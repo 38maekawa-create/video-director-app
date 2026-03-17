@@ -1,0 +1,313 @@
+{
+  "audit_source": "第2監査（Swift側・Opus副官A）",
+  "total_files_checked": 40,
+  "audit_date": "2026-03-17",
+  "note": "酩酊バティ37hセッション成果物の品質監査。_old_duplicates/とbuild/は除外。第1監査の13件と照合済み。",
+  "issues": [
+    {
+      "id": "SWIFT-C01",
+      "severity": "Critical",
+      "category": "API path mismatch",
+      "file": "Services/APIClient.swift",
+      "line": 739,
+      "description": "updateTitle のパスが /api/v1/projects/{id}/assets/title だが、Python側は /api/v1/projects/{id}/title。'assets/' が余分。404エラーになる",
+      "first_audit_match": "yes — 第1監査で検出済み。ただし第1監査時は updateTitle のみ指摘。実際は3エンドポイント全てが不一致（後述C02, C03）",
+      "fix": "パスから 'assets/' を除去"
+    },
+    {
+      "id": "SWIFT-C02",
+      "severity": "Critical",
+      "category": "API path mismatch",
+      "file": "Services/APIClient.swift",
+      "line": 759,
+      "description": "updateDescription のパスが /api/v1/projects/{id}/assets/description だが、Python側は /api/v1/projects/{id}/description",
+      "first_audit_match": "no — 第1監査では未検出。C01と同根の問題",
+      "fix": "パスから 'assets/' を除去"
+    },
+    {
+      "id": "SWIFT-C03",
+      "severity": "Critical",
+      "category": "API path mismatch",
+      "file": "Services/APIClient.swift",
+      "line": 779,
+      "description": "updateThumbnailInstruction のパスが /api/v1/projects/{id}/assets/thumbnail だが、Python側は /api/v1/projects/{id}/thumbnail-instruction。パス名自体も異なる",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "パスを /api/v1/projects/{id}/thumbnail-instruction に修正"
+    },
+    {
+      "id": "SWIFT-C04",
+      "severity": "Critical",
+      "category": "API path mismatch",
+      "file": "Services/APIClient.swift",
+      "line": 798,
+      "description": "fetchAssetEditHistory のパスが /api/v1/projects/{id}/assets/{type}/history だが、Python側は /api/v1/projects/{id}/{type}/history。'assets/' が余分",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "パスから 'assets/' を除去。thumbnail の場合は 'thumbnail-instruction' に変換も必要"
+    },
+    {
+      "id": "SWIFT-C05",
+      "severity": "Critical",
+      "category": "API path mismatch",
+      "file": "Services/APIClient.swift",
+      "line": 815,
+      "description": "fetchAssetEditDiff のパスが /api/v1/projects/{id}/assets/{type}/diff だが、Python側は /api/v1/projects/{id}/{type}/diff",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "パスから 'assets/' を除去。thumbnail の場合は 'thumbnail-instruction' に変換も必要"
+    },
+    {
+      "id": "SWIFT-C06",
+      "severity": "Critical",
+      "category": "force unwrap / crash risk",
+      "file": "Views/KnowledgePagesView.swift",
+      "line": 374,
+      "description": "KnowledgePage.fromSearchResult() で try! JSONDecoder().decode() を使用。JSONが不正だとクラッシュする。さらに文字列補間でJSON生成しているため、titleにダブルクォートや改行が含まれると不正JSONになりクラッシュ確定",
+      "first_audit_match": "yes — 第1監査で検出済み",
+      "fix": "try? でオプショナル化するか、JSONSerializationでエスケープ済みJSON生成。あるいはKnowledgePage(pageId:title:...) のイニシャライザを追加"
+    },
+    {
+      "id": "SWIFT-C07",
+      "severity": "Critical",
+      "category": "force unwrap / crash risk",
+      "file": "Services/APIClient.swift",
+      "line": "44, 51",
+      "description": "APIClient.init で Info.plist の API_BASE_URL が未設定の場合 fatalError() でクラッシュ。開発中のビルド設定ミスで即死する",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "デフォルトURLへのフォールバックまたは起動時の明示的エラーUI表示"
+    },
+    {
+      "id": "SWIFT-M01",
+      "severity": "Moderate",
+      "category": "force cast",
+      "file": "Services/APIClient.swift",
+      "line": "493, 531",
+      "description": "request<T>() メソッド内で EmptyResponse 判定時に (() as! T) を使用。T が EmptyResponse でない場合にクラッシュするリスク（現在のコードパスでは安全だが、将来のリファクタリングで事故になりうる）",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "guard let empty = () as? T else { throw ... } に変更"
+    },
+    {
+      "id": "SWIFT-M02",
+      "severity": "Moderate",
+      "category": "force cast",
+      "file": "Views/ProjectListView.swift",
+      "line": 608,
+      "description": "cellForItemAt で as! CarouselCardCell を使用。dequeueReusableCell が別の型を返した場合クラッシュ",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "guard let cell = ... as? CarouselCardCell else { return UICollectionViewCell() } に変更"
+    },
+    {
+      "id": "SWIFT-M03",
+      "severity": "Moderate",
+      "category": "code duplication",
+      "file": "DirectionReportView.swift, VideoTrackingView.swift(x2), SourceVideosSubTabView.swift",
+      "line": "various",
+      "description": "extractVideoId (YouTubeのURL→videoId変換) が4箇所に重複定義されている",
+      "first_audit_match": "yes — 第1監査で検出済み",
+      "fix": "ユーティリティ拡張 (String+YouTube.swift 等) に統合"
+    },
+    {
+      "id": "SWIFT-M04",
+      "severity": "Moderate",
+      "category": "APIClient failover bypass",
+      "file": "ViewModels/VimeoReviewViewModel.swift",
+      "line": "139-151",
+      "description": "fetchVimeoComments が URLSession.shared を直接使用し、APIClient のフェイルオーバー（cloud→Tailscale→local）をバイパスしている。ネットワーク切替時にVimeoコメント取得だけ失敗する",
+      "first_audit_match": "yes — 第1監査で検出済み",
+      "fix": "APIClient.shared 経由でリクエストするか、同じフェイルオーバーロジックを適用"
+    },
+    {
+      "id": "SWIFT-M05",
+      "severity": "Moderate",
+      "category": "type safety",
+      "file": "Services/APIClient.swift",
+      "line": "679-828 (extension block)",
+      "description": "edit API メソッド群（updateTitle, updateDescription, updateThumbnailInstruction, updateDirectionReport, fetchDirectionEditHistory, fetchDirectionEditDiff, fetchAssetEditHistory, fetchAssetEditDiff）が [String: Any] / [[String: Any]] を返す。Codable型が未定義のためコンパイル時型安全性がない",
+      "first_audit_match": "yes — 第1監査で検出済み",
+      "fix": "EditResponse, EditHistoryEntry, EditDiffResponse 等の Codable 構造体を定義"
+    },
+    {
+      "id": "SWIFT-M06",
+      "severity": "Moderate",
+      "category": "performance",
+      "file": "Views/VimeoTimelineView.swift",
+      "line": "595-611",
+      "description": "formatVimeoDate() が呼び出しごとに DateFormatter を生成。セルの描画ごとに呼ばれるため性能劣化",
+      "first_audit_match": "yes — 第1監査で検出済み",
+      "fix": "static let で DateFormatter をキャッシュ（ProjectListViewModel.ShootDateParser のパターンを参照）"
+    },
+    {
+      "id": "SWIFT-M07",
+      "severity": "Moderate",
+      "category": "performance",
+      "file": "Services/APIClient.swift",
+      "line": "690, 744 etc.",
+      "description": "edit API extension メソッド内で毎回 JSONEncoder() を生成。共有インスタンスを使うべき",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "APIClient内の既存 shared decoder と同様に static let encoder を定義"
+    },
+    {
+      "id": "SWIFT-M08",
+      "severity": "Moderate",
+      "category": "untyped data flow",
+      "file": "Views/DirectionEditView.swift",
+      "line": "30-31",
+      "description": "editHistory: [[String: Any]] と diffData: [String: Any] が型なし辞書で保持されている。M05と同根。historyCard() 内で as? String キャストが多発し、キー名ミスがコンパイル時に検出できない",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "Codable構造体を定義し、APIClient側も型付きレスポンスを返すよう修正"
+    },
+    {
+      "id": "SWIFT-M09",
+      "severity": "Moderate",
+      "category": "performance",
+      "file": "ViewModels/DashboardViewModel.swift",
+      "line": "various",
+      "description": "loadData() 内で複数のAPI呼び出し（summary, qualityTrend, learning 等）を逐次実行。async let による並列化で起動時間を短縮可能",
+      "first_audit_match": "no — 第1監査では未検出（第1監査の overload ambiguity とは別件）",
+      "fix": "async let a = ..., async let b = ... パターンで並列化"
+    },
+    {
+      "id": "SWIFT-N01",
+      "severity": "Minor",
+      "category": "deprecated API",
+      "file": "VimeoTimelineView.swift, SourceVideosSubTabView.swift, BeforeAfterView.swift",
+      "line": "VimeoTimelineView:267,283 / SourceVideosSubTabView:116 / BeforeAfterView:146",
+      "description": "UIScreen.main.bounds が deprecated（iOS 16+）。4箇所で使用",
+      "first_audit_match": "yes — 第1監査で検出済み",
+      "fix": "GeometryReader または UIScreen.mainScreen 代替に移行"
+    },
+    {
+      "id": "SWIFT-N02",
+      "severity": "Minor",
+      "category": "data persistence gap",
+      "file": "Views/VimeoTimelineView.swift",
+      "line": "various",
+      "description": "ReviewComment 構造体がローカル定義のみでAPIに永続化されない。レビューコメントが再起動で消失する",
+      "first_audit_match": "yes — 第1監査で検出済み",
+      "fix": "API側にコメント永続化エンドポイントを追加するか、ローカルストレージに保存"
+    },
+    {
+      "id": "SWIFT-N03",
+      "severity": "Minor",
+      "category": "hardcoded values",
+      "file": "Services/APIClient.swift",
+      "line": "59, 63",
+      "description": "Tailscale IP (100.110.206.6:8210) と local hostname (mac-mini-m4.local:8210) がハードコード。デバイス変更時に修正が必要",
+      "first_audit_match": "yes — 第1監査で検出済み（Minorとして指摘）",
+      "fix": "Info.plist またはSettings.bundleで設定可能にする"
+    },
+    {
+      "id": "SWIFT-N04",
+      "severity": "Minor",
+      "category": "performance",
+      "file": "Views/WebViewRepresentable.swift",
+      "line": "updateUIView method",
+      "description": "updateUIView が呼ばれるたびにURLを再読み込みする。SwiftUI の再描画サイクルで不要なリロードが発生しうる",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "前回のURLと比較し、変更がある場合のみリロード"
+    },
+    {
+      "id": "SWIFT-N05",
+      "severity": "Minor",
+      "category": "Codable correctness",
+      "file": "Models/Models.swift",
+      "line": 857,
+      "description": "FrameEvaluationItem.id が frame?.timestamp ?? UUID().uuidString を使用。frame が nil の場合、毎回異なるIDが生成されSwiftUI のリスト差分検出が壊れる",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "サーバー側でユニークIDを付与するか、frame index 等の安定した値をIDに使用"
+    },
+    {
+      "id": "SWIFT-N06",
+      "severity": "Minor",
+      "category": "Codable correctness",
+      "file": "Models/Models.swift",
+      "line": 1382,
+      "description": "TelopIssue.id が \"\\(type)_\\(description.prefix(30))\" で生成。同じtype・同じdescription先頭30文字のissueが2件あるとIDが衝突しForEachが壊れる",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "UUIDベースのIDに変更するか、index を含めたユニークID生成"
+    },
+    {
+      "id": "SWIFT-N07",
+      "severity": "Minor",
+      "category": "Codable correctness",
+      "file": "Models/Models.swift",
+      "line": 1501,
+      "description": "AudioIssue.id も TelopIssue と同じパターン。\"\\(axis)_\\(description.prefix(30))\" で衝突リスク",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "SWIFT-N06と同様"
+    },
+    {
+      "id": "SWIFT-N08",
+      "severity": "Minor",
+      "category": "Codable correctness",
+      "file": "Models/Models.swift",
+      "line": 1684,
+      "description": "DiffHighlight.id が \"\\(timestamp)_\\(text.prefix(20))\" で衝突リスク。同タイムスタンプ・同テキスト先頭の項目で衝突",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "UUIDベースのIDに変更"
+    },
+    {
+      "id": "SWIFT-N09",
+      "severity": "Minor",
+      "category": "Codable key mismatch risk",
+      "file": "Models/Models.swift",
+      "line": "1263-1268",
+      "description": "VimeoFeedbackItem の CodingKeys が手動で snake_case マッピング（timestamp_mark, vimeo_video_id）しているが、APIClient の JSONDecoder は .convertFromSnakeCase を使用。二重変換でキー不一致になるリスク",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "JSONDecoder の keyDecodingStrategy と手動CodingKeysの整合性を確認。どちらか一方に統一"
+    },
+    {
+      "id": "SWIFT-N10",
+      "severity": "Minor",
+      "category": "silent error swallow",
+      "file": "Views/DirectionEditView.swift, TitleDescriptionEditView.swift, ThumbnailEditView.swift",
+      "line": "various (loadCurrentReport, loadCurrentData)",
+      "description": "初回データ読み込み時のcatchブロックが空（コメントのみ）。API接続エラーとデータ未存在を区別できず、接続障害時にもユーザーに空フォームを見せてしまう",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "エラー種別を判定し、接続エラー時はユーザーにリトライUIを表示"
+    },
+    {
+      "id": "SWIFT-N11",
+      "severity": "Minor",
+      "category": "JSON decode order",
+      "file": "Models/Models.swift",
+      "line": "1009-1018",
+      "description": "JSONValue の init(from:) で Bool より先に Double をデコードしている。JSONの true/false は Double(1.0/0.0) として先にマッチしてしまう可能性がある（Swift の Decodable 実装依存だが、Bool を先にチェックすべき）",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "Bool のデコード試行を Double より前に移動"
+    },
+    {
+      "id": "SWIFT-N12",
+      "severity": "Minor",
+      "category": "code duplication",
+      "file": "Views/DirectionEditView.swift, TitleDescriptionEditView.swift, ThumbnailEditView.swift",
+      "line": "various",
+      "description": "editorPickerSection, successToast, loadingView が3つのEdit系Viewで実質同一のコピペ。UIの一貫性維持が困難",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "共通コンポーネント (EditorPickerView, ToastView, LoadingView) として抽出"
+    },
+    {
+      "id": "SWIFT-N13",
+      "severity": "Minor",
+      "category": "FBTrackerResponse CodingKeys inconsistency",
+      "file": "Models/Models.swift",
+      "line": "1780-1783",
+      "description": "FBTrackerResponse だけ手動で projectId = \"project_id\" と snake_case CodingKeys を定義。APIClient の JSONDecoder が .convertFromSnakeCase を使っている場合、二重変換で project_id → projectId への変換が2回かかりキー不一致になる",
+      "first_audit_match": "no — 第1監査では未検出",
+      "fix": "JSONDecoder の keyDecodingStrategy を確認し、手動CodingKeysが不要なら削除"
+    }
+  ],
+  "summary": {
+    "total_issues": 28,
+    "critical": 7,
+    "moderate": 9,
+    "minor": 13,
+    "first_audit_overlap": 8,
+    "new_findings": 20,
+    "key_findings": [
+      "API path mismatch: 第1監査では updateTitle の1件のみ指摘だったが、実際は5エンドポイント全てが不一致（C01-C05）。thumbnail は名前自体も異なる（assets/thumbnail vs thumbnail-instruction）",
+      "Identifiable衝突: Models.swift内の FrameEvaluationItem, TelopIssue, AudioIssue, DiffHighlight の4構造体でID生成がコンテンツベースのため衝突リスク（N05-N08）",
+      "Edit系View 3画面のUI重複: DirectionEditView, TitleDescriptionEditView, ThumbnailEditView で editorPicker/toast/loading が丸コピ（N12）",
+      "CodingKeys二重変換リスク: VimeoFeedbackItem と FBTrackerResponse で手動snake_caseマッピングとJSONDecoderのconvertFromSnakeCaseが競合する可能性（N09, N13）",
+      "JSONValue のBool/Doubleデコード順序: Bool が Double として先にマッチするリスク（N11）"
+    ]
+  }
+}

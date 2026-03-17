@@ -3728,3 +3728,186 @@ INFO:     Finished server process [64677]
 INFO:     Started server process [65259]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/integrations/api_server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [65259]
+INFO:     Started server process [71267]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/routing.py", line 121, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/routing.py", line 107, in app
+    response = await f(request)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+  File "/Users/maekawanaoto/AI開発10/src/video_direction/integrations/api_server.py", line 2176, in get_vimeo_comments
+    token = os.environ.get("VIMEO_ACCESS_TOKEN", "")
+NameError: name 'os' is not defined
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/routing.py", line 121, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/routing.py", line 107, in app
+    response = await f(request)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+  File "/Users/maekawanaoto/AI開発10/src/video_direction/integrations/api_server.py", line 2176, in get_vimeo_comments
+    token = os.environ.get("VIMEO_ACCESS_TOKEN", "")
+NameError: name 'os' is not defined
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/routing.py", line 121, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/routing.py", line 107, in app
+    response = await f(request)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+  File "/Users/maekawanaoto/AI開発10/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+  File "/Users/maekawanaoto/AI開発10/src/video_direction/integrations/api_server.py", line 2176, in get_vimeo_comments
+    token = os.environ.get("VIMEO_ACCESS_TOKEN", "")
+NameError: name 'os' is not defined
+WARNING:  StatReload detected changes in 'src/video_direction/integrations/api_server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [71267]
+INFO:     Started server process [71699]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/integrations/api_server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [71699]
+INFO:     Started server process [71720]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

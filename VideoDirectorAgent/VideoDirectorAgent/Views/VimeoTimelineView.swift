@@ -467,10 +467,24 @@ struct VimeoReviewTabView: View {
                                         .foregroundStyle(AppTheme.textMuted)
                                 }
                             }
-                            Text(comment.text)
-                                .font(AppTheme.bodyFont(14))
-                                .foregroundStyle(AppTheme.textSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
+                            HStack(alignment: .top) {
+                                Text(comment.text)
+                                    .font(AppTheme.bodyFont(14))
+                                    .foregroundStyle(AppTheme.textSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Spacer()
+                                Button {
+                                    editingText = comment.text
+                                    editingComment = comment
+                                } label: {
+                                    Image(systemName: "pencil")
+                                        .font(.caption)
+                                        .foregroundStyle(AppTheme.accent)
+                                        .padding(6)
+                                        .background(AppTheme.accent.opacity(0.15))
+                                        .clipShape(Circle())
+                                }
+                            }
                         }
                         .padding(12)
                         .background(AppTheme.cardBackgroundLight)
@@ -481,6 +495,58 @@ struct VimeoReviewTabView: View {
                 }
                 .background(AppTheme.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
+                .sheet(item: $editingComment) { comment in
+                    NavigationStack {
+                        VStack(spacing: 16) {
+                            if let tc = comment.timecode {
+                                HStack {
+                                    Image(systemName: "clock")
+                                        .foregroundStyle(AppTheme.accent)
+                                    Text(tc)
+                                        .font(AppTheme.labelFont(14))
+                                        .foregroundStyle(AppTheme.accent)
+                                    Spacer()
+                                }
+                                .padding(.horizontal)
+                            }
+                            TextEditor(text: $editingText)
+                                .font(AppTheme.bodyFont(14))
+                                .scrollContentBackground(.hidden)
+                                .padding(12)
+                                .background(Color(.systemGray6))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .frame(minHeight: 150)
+                                .padding(.horizontal)
+                            Spacer()
+                        }
+                        .padding(.top)
+                        .navigationTitle("コメント編集")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("キャンセル") {
+                                    editingComment = nil
+                                }
+                            }
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("保存") {
+                                    let newText = editingText
+                                    let commentToEdit = comment
+                                    editingComment = nil
+                                    Task {
+                                        await viewModel.editComment(
+                                            comment: commentToEdit,
+                                            newText: newText,
+                                            projectId: projectId
+                                        )
+                                    }
+                                }
+                                .disabled(editingText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                            }
+                        }
+                    }
+                    .presentationDetents([.medium, .large])
+                }
             }
 
             if viewModel.isLoading {

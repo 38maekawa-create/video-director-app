@@ -1723,3 +1723,17 @@ INFO:     100.113.28.70:49354 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82
 INFO:     100.113.28.70:49354 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff?version=FB%E4%BF%AE%E6%AD%A31 HTTP/1.1" 200 OK
 INFO:     100.113.28.70:52077 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff?version=%E4%BF%AE%E6%AD%A3 HTTP/1.1" 200 OK
 INFO:     100.113.28.70:52077 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff?version=FB%E4%BF%AE%E6%AD%A32 HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64731 - "GET /api/feedbacks?limit=50 HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64731 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64731 - "GET /api/dashboard/quality-trend HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64734 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64732 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64731 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64733 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64731 - "GET /api/audit/history HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64731 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64735 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64737 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64736 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64737 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     100.113.28.70:64737 - "GET /api/learning/summary HTTP/1.1" 200 OK

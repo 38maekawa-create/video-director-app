@@ -3574,7 +3574,7 @@ KNOWLEDGE_VIDEO_DIR = Path.home() / "TEKO" / "knowledge" / "01_teko" / "sources"
 
 def _fuzzy_match(highlight_text: str, transcript_line: str) -> bool:
     """ハイライトテキストとトランスクリプト行の部分一致判定。
-    完全包含 or 15文字以上の共通部分文字列があればマッチとみなす。
+    完全包含 / 先頭末尾20文字 / 4-gramオーバーラップ（閾値0.3）でマッチ。
     """
     # 完全包含チェック
     if highlight_text in transcript_line or transcript_line in highlight_text:
@@ -3582,14 +3582,24 @@ def _fuzzy_match(highlight_text: str, transcript_line: str) -> bool:
     # 短いテキストは完全包含のみ
     if len(highlight_text) < 15 or len(transcript_line) < 15:
         return False
-    # ハイライトテキストの先頭20文字・末尾20文字が行に含まれるかチェック
-    hl_clean = highlight_text.replace("「", "").replace("」", "").replace("『", "").replace("』", "")
-    line_clean = transcript_line.replace("「", "").replace("」", "").replace("『", "").replace("』", "")
+    # 記号除去
+    _clean_re = re.compile(r'[「」『』【】（）\(\)、。！？!?\s>*\-:：\n]+')
+    hl_clean = _clean_re.sub('', highlight_text)
+    line_clean = _clean_re.sub('', transcript_line)
+    # 先頭・末尾20文字の部分一致
     if len(hl_clean) >= 20:
         if hl_clean[:20] in line_clean or hl_clean[-20:] in line_clean:
             return True
     if len(line_clean) >= 20:
         if line_clean[:20] in hl_clean or line_clean[-20:] in hl_clean:
+            return True
+    # 4-gramオーバーラップ（日本語対応のファジーマッチ）
+    if len(hl_clean) >= 4 and len(line_clean) >= 4:
+        hl_ngrams = set(hl_clean[i:i+4] for i in range(len(hl_clean)-3))
+        line_ngrams = set(line_clean[i:i+4] for i in range(len(line_clean)-3))
+        overlap = len(hl_ngrams & line_ngrams)
+        smaller = min(len(hl_ngrams), len(line_ngrams))
+        if smaller > 0 and overlap / smaller >= 0.2:
             return True
     return False
 

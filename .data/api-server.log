@@ -1673,3 +1673,10 @@ INFO:     127.0.0.1:51687 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51696 - "GET /api/v1/projects/p-20260101-%E3%81%91%E3%83%BC%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51706 - "GET /api/v1/projects/p-20260101-%E3%81%91%E3%83%BC%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51712 - "GET /api/v1/projects/p-20260101-%E3%81%91%E3%83%BC%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51766 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51769 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51772 - "GET /api/v1/projects/p-20260101-%E3%81%91%E3%83%BC%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51775 - "GET /api/v1/projects/p-20260101-%E3%81%91%E3%83%BC%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51777 - "GET /api/v1/projects/p-20260101-%E3%81%91%E3%83%BC%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51793 - "GET /api/v1/projects/p-20260101-%E3%81%91%E3%83%BC%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51808 - "GET /api/v1/projects/p-20260101-%E3%81%91%E3%83%BC%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK

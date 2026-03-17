@@ -3920,3 +3920,11 @@ INFO:     Started server process [97747]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 WARNING:  Invalid HTTP request received.
+WARNING:  StatReload detected changes in 'src/video_direction/integrations/api_server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [97747]
+INFO:     Started server process [9656]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

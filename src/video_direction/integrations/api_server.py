@@ -4067,6 +4067,61 @@ def update_feedback_converted_text(feedback_id: int, body: dict):
     return {"status": "ok", "feedback_id": feedback_id, "converted_text": new_text}
 
 
+# --- Vimeoコメント編集（PATCH） ---
+
+@app.patch("/api/v1/vimeo/comments/{comment_id}")
+def edit_vimeo_comment(comment_id: str, body: dict):
+    """Vimeoコメントをアプリから編集する。Vimeo APIのPATCHで直接書き換え。
+    body: { "video_id": "1234567", "text": "修正後のコメントテキスト" }
+    """
+    import urllib.request
+
+    video_id = body.get("video_id", "")
+    new_text = body.get("text", "")
+    if not video_id or not new_text:
+        raise HTTPException(status_code=400, detail="video_id と text は必須です")
+
+    # Vimeoトークン取得
+    token = os.environ.get("VIMEO_ACCESS_TOKEN", "")
+    if not token:
+        api_keys_path = Path.home() / ".config" / "maekawa" / "api-keys.env"
+        if api_keys_path.exists():
+            for line in api_keys_path.read_text().splitlines():
+                if line.startswith("VIMEO_ACCESS_TOKEN="):
+                    token = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    break
+    if not token:
+        raise HTTPException(status_code=500, detail="VIMEO_ACCESS_TOKENが未設定です")
+
+    # Vimeo API: PATCH /videos/{video_id}/comments/{comment_id}
+    url = f"https://api.vimeo.com/videos/{video_id}/comments/{comment_id}"
+    payload = json.dumps({"text": new_text}).encode("utf-8")
+
+    try:
+        req = urllib.request.Request(url, data=payload, headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }, method="PATCH")
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            result = json.loads(resp.read().decode("utf-8"))
+            return {
+                "status": "ok",
+                "comment_id": comment_id,
+                "video_id": video_id,
+                "updated_text": result.get("text", new_text),
+                "uri": result.get("uri", ""),
+            }
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8") if e.fp else ""
+        raise HTTPException(
+            status_code=e.code,
+            detail=f"Vimeo APIエラー: {e.code} {error_body[:200]}"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Vimeoコメント編集エラー: {str(e)}")
+
+
 # --- ヘルスチェック ---
 
 @app.get("/api/health")

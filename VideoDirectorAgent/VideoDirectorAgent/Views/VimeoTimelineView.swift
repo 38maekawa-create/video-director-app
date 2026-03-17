@@ -220,6 +220,8 @@ struct VimeoReviewTabView: View {
     @State private var reviewComment: String = ""
     @State private var reviewComments: [ReviewComment] = []
     @State private var isCommentExpanded: Bool = false
+    @State private var editingComment: VimeoCommentItem? = nil
+    @State private var editingText: String = ""
 
     /// Vimeo URLからvideo_idを抽出するヘルパー
     private var vimeoVideoId: String? {

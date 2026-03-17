@@ -106,6 +106,28 @@ final class VimeoReviewViewModel: ObservableObject {
         await loadVimeoComments(projectId: projectId)
     }
 
+    /// Vimeoコメントを編集（Vimeo APIのPATCHで直接書き換え）
+    func editComment(comment: VimeoCommentItem, newText: String, projectId: String) async {
+        // URIからcomment_idを抽出（"/videos/12345/comments/67890" → "67890"）
+        let commentId = comment.uri.components(separatedBy: "/").last ?? ""
+        guard !commentId.isEmpty else {
+            errorMessage = "コメントIDが取得できません"
+            return
+        }
+
+        do {
+            try await APIClient.shared.editVimeoComment(
+                commentId: commentId,
+                videoId: comment.vimeoId,
+                newText: newText
+            )
+            // 成功したらコメント一覧を再読み込み
+            await loadVimeoComments(projectId: projectId)
+        } catch {
+            errorMessage = "コメント編集エラー: \(error.localizedDescription)"
+        }
+    }
+
     /// 指定タイムコードへシーク
     func seek(to seconds: TimeInterval) {
         seekTarget = seconds

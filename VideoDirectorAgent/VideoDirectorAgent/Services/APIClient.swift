@@ -418,6 +418,20 @@ final class APIClient: ObservableObject {
         )
     }
 
+    /// Vimeoコメントを編集（Vimeo APIのPATCHで直接書き換え）
+    func editVimeoComment(commentId: String, videoId: String, newText: String) async throws {
+        struct EditBody: Encodable {
+            let video_id: String
+            let text: String
+        }
+        _ = try await request(
+            EmptyResponse.self,
+            path: "/api/v1/vimeo/comments/\(commentId)",
+            method: "PATCH",
+            body: EditBody(video_id: videoId, text: newText)
+        )
+    }
+
     private func request<T: Decodable>(
         _ type: T.Type,
         path: String,

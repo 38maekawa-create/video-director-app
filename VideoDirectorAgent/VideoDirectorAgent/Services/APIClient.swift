@@ -1,6 +1,142 @@
 import Foundation
 import Network
 
+// MARK: - ConnectionOrchestrator（probe競合防止 actor）
+
+/// 接続先の自動検出・切り替えを排他制御するactor
+/// 多重probe抑止: 既存のprobeTaskをcancelしてから新しいprobeを開始
+actor ConnectionOrchestrator {
+    enum Route: Equatable {
+        case local(URL)
+        case tailscale(URL)
+        case cloud(URL)
+
+        var url: URL {
+            switch self {
+            case .local(let u), .tailscale(let u), .cloud(let u): return u
+            }
+        }
+
+        var label: String {
+            switch self {
+            case .local: return "🏠 ローカル"
+            case .tailscale: return "🔗 Tailscale"
+            case .cloud: return "☁️ クラウド"
+            }
+        }
+
+        var priority: Int {
+            switch self {
+            case .local: return 0
+            case .tailscale: return 1
+            case .cloud: return 2
+            }
+        }
+    }
+
+    enum State: Equatable {
+        case idle
+        case probing
+        case connected(Route)
+        case disconnected
+    }
+
+    private(set) var state: State = .idle
+    private var probeTask: Task<Route?, Never>?
+
+    private let routes: [Route]
+    private let primaryURL: URL
+
+    init(routes: [Route], primaryURL: URL) {
+        self.routes = routes
+        self.primaryURL = primaryURL
+    }
+
+    /// probe実行（多重抑止付き）
+    /// 既存のprobeが走っていればcancelしてから新しいprobeを開始
+    func reprobe(trigger: String = "unknown") async -> Route? {
+        // 既存probeをキャンセル
+        probeTask?.cancel()
+        state = .probing
+
+        probeTask = Task {
+            await raceRoutes()
+        }
+        let result = await probeTask?.value
+        if let route = result {
+            state = .connected(route)
+        } else {
+            state = .disconnected
+        }
+        return result
+    }
+
+    /// 優先度付き並列probe
+    /// Phase 1: local + tailscale を並列（短タイムアウト3秒）
+    /// Phase 2: 失敗時のみ cloud を試行
+    private func raceRoutes() async -> Route? {
+        // Phase 1: ローカル・Tailscaleを並列probe
+        let fastRoutes = routes.filter { $0.priority < 2 }
+        let cloudRoute = routes.first { $0.priority == 2 }
+
+        if !fastRoutes.isEmpty {
+            let winner = await withTaskGroup(of: Route?.self, returning: Route?.self) { group in
+                for route in fastRoutes {
+                    group.addTask {
+                        if await self.probe(route: route, timeout: 3) {
+                            return route
+                        }
+                        return nil
+                    }
+                }
+                // 優先度順で最初に成功したものを返す
+                var results: [Route] = []
+                for await result in group {
+                    if let r = result { results.append(r) }
+                }
+                return results.sorted { $0.priority < $1.priority }.first
+            }
+            if let w = winner { return w }
+        }
+
+        // Phase 2: クラウドを試行
+        if let cloud = cloudRoute {
+            if await probe(route: cloud, timeout: 5) {
+                return cloud
+            }
+        }
+
+        return nil
+    }
+
+    /// 単一ルートのヘルスチェック（/healthz を使用）
+    private func probe(route: Route, timeout: TimeInterval) async -> Bool {
+        let testURL = route.url.appendingPathComponent("/healthz")
+        var request = URLRequest(url: testURL)
+        request.httpMethod = "GET"
+        request.timeoutInterval = timeout
+        do {
+            let (_, response) = try await URLSession.shared.data(for: request)
+            if let http = response as? HTTPURLResponse {
+                return (200...299).contains(http.statusCode)
+            }
+            return false
+        } catch {
+            return false
+        }
+    }
+
+    /// 現在の接続先URLを取得（disconnected時はprimaryURL）
+    func activeURL() -> URL {
+        switch state {
+        case .connected(let route): return route.url
+        default: return primaryURL
+        }
+    }
+}
+
+// MARK: - APIClient
+
 @MainActor
 final class APIClient: ObservableObject {
     static let shared = APIClient()
@@ -18,9 +154,6 @@ final class APIClient: ObservableObject {
     private let monitorQueue = DispatchQueue(label: "com.maekawa.networkMonitor")
     private var lastPathStatus: NWPath.Status = .satisfied
 
-    /// フォールバック候補URL一覧（優先順）
-    /// 1. クラウドURL（DNS経由） 2. Tailscale（どこからでも） 3. ローカルIP（同一WiFi）
-    private let candidateURLs: [URL]
     /// 接続状態
     @Published private(set) var connectionStatus: ConnectionStatus = .connecting
 
@@ -29,6 +162,9 @@ final class APIClient: ObservableObject {
         case connected(String)  // 接続先のラベル
         case disconnected
     }
+
+    /// probe競合防止actor
+    let orchestrator: ConnectionOrchestrator
 
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
@@ -59,24 +195,22 @@ final class APIClient: ObservableObject {
         primaryURL = url
         actorName = actor
 
-        // フォールバック候補を構築（高速な接続先を優先）
-        // 1. ローカル（同一WiFi時・最速） 2. Tailscale（どこからでも） 3. クラウド（DNS経由・最遅）
-        var candidates: [URL] = []
-        // ローカルネットワーク（同一WiFi時のみ・最速応答）
+        // フォールバック候補をRoute型で構築
+        var routes: [ConnectionOrchestrator.Route] = []
         if let local = URL(string: "http://mac-mini-m4.local:8210") {
-            candidates.append(local)
+            routes.append(.local(local))
         }
-        // Tailscale経由（VPN越しにどこからでもアクセス可能）
         if let tailscale = URL(string: "http://100.110.206.6:8210") {
-            candidates.append(tailscale)
+            routes.append(.tailscale(tailscale))
         }
-        // クラウドURL（DNS経由・外部アクセス用）
-        candidates.append(url)
-        candidateURLs = candidates
+        routes.append(.cloud(url))
+
+        orchestrator = ConnectionOrchestrator(routes: routes, primaryURL: url)
+
         // 初期値はプライマリURL（すぐにprobeで上書きされる）
         activeBaseURL = url
 
-        // ネットワーク状態監視を開始（WiFi↔4G切り替え・復帰を自動検知）
+        // ネットワーク状態監視を開始
         startNetworkMonitor()
     }
 
@@ -91,9 +225,7 @@ final class APIClient: ObservableObject {
                 self.lastPathStatus = path.status
 
                 if isNowConnected && (wasDisconnected || interfaceChanged) {
-                    // ネットワーク復帰またはWiFi↔4G切り替え → 自動再接続
                     print("📡 ネットワーク変化検知（\(path.availableInterfaces.map { $0.type })）→ 再接続開始")
-                    // 少し待ってからprobeする（ネットワーク安定化のため）
                     try? await Task.sleep(nanoseconds: 500_000_000)
                     await self.probeAndConnect()
                 } else if !isNowConnected {
@@ -105,46 +237,24 @@ final class APIClient: ObservableObject {
         networkMonitor.start(queue: monitorQueue)
     }
 
-    /// アプリ起動時に呼び出し: 到達可能なURLを自動検出
+    /// アプリ起動時・ScenePhase復帰時・ネットワーク変化時に呼び出し
+    /// ConnectionOrchestrator actorにより多重probe抑止
     func probeAndConnect() async {
         connectionStatus = .connecting
-        for candidate in candidateURLs {
-            let label = Self.labelFor(url: candidate)
-            print("🔍 接続テスト: \(candidate.absoluteString) (\(label))")
-            if await isReachable(url: candidate) {
-                activeBaseURL = candidate
-                connectionStatus = .connected(label)
-                print("✅ 接続成功: \(candidate.absoluteString) (\(label))")
-                return
-            }
-            print("❌ 接続失敗: \(candidate.absoluteString)")
-        }
-        // 全候補到達不可 → プライマリURLで待機
-        activeBaseURL = primaryURL
-        connectionStatus = .disconnected
-        print("⚠️ 全URL到達不可。プライマリURL(\(primaryURL))で待機")
-    }
-
-    /// URLの到達可能性テスト（軽量ヘルスチェック）
-    private func isReachable(url: URL) async -> Bool {
-        let testURL = url.appendingPathComponent("/api/projects")
-        var request = URLRequest(url: testURL)
-        request.httpMethod = "GET"
-        request.timeoutInterval = 3  // 高速タイムアウト
-        do {
-            let (_, response) = try await URLSession.shared.data(for: request)
-            if let http = response as? HTTPURLResponse {
-                return (200...299).contains(http.statusCode)
-            }
-            return false
-        } catch {
-            return false
+        print("🔍 probeAndConnect開始（orchestrator経由）")
+        if let route = await orchestrator.reprobe(trigger: "probeAndConnect") {
+            activeBaseURL = route.url
+            connectionStatus = .connected(route.label)
+            print("✅ 接続成功: \(route.url.absoluteString) (\(route.label))")
+        } else {
+            activeBaseURL = primaryURL
+            connectionStatus = .disconnected
+            print("⚠️ 全URL到達不可。プライマリURL(\(primaryURL))で待機")
         }
     }
 
     /// ネットワークエラー時に自動再接続を試行
     private func reconnectIfNeeded(error: Error) async {
-        // URLErrorの場合のみ再接続（タイムアウト、接続拒否、ホスト解決失敗等）
         guard let urlError = error as? URLError else { return }
         let reconnectCodes: [URLError.Code] = [
             .timedOut, .cannotFindHost, .cannotConnectToHost,
@@ -156,16 +266,7 @@ final class APIClient: ObservableObject {
         await probeAndConnect()
     }
 
-    private static func labelFor(url: URL) -> String {
-        let host = url.host ?? ""
-        if host.contains("legit-marc.com") { return "☁️ クラウド" }
-        if host.starts(with: "100.") { return "🔗 Tailscale" }
-        if host.contains(".local") { return "🏠 ローカル" }
-        if host.starts(with: "192.") || host.starts(with: "172.") || host.starts(with: "10.") {
-            return "🏠 ローカル"
-        }
-        return host
-    }
+    // MARK: - パブリックAPIメソッド
 
     func fetchProjects() async throws -> [VideoProject] {
         try await request([VideoProject].self, path: "/api/projects")
@@ -243,12 +344,10 @@ final class APIClient: ObservableObject {
         try await request([AuditReport].self, path: "/api/audit/history")
     }
 
-    /// 品質ダッシュボード統計（グレード分布・改善傾向）を取得
     func fetchQualityStats() async throws -> QualityStats {
         try await request(QualityStats.self, path: "/api/v1/dashboard/quality")
     }
 
-    /// 編集後フィードバックを取得（Before/After差分分析）
     func fetchEditFeedback(
         projectId: String,
         body: EditFeedbackRequestBody = EditFeedbackRequestBody()
@@ -263,8 +362,6 @@ final class APIClient: ObservableObject {
 
     // MARK: - E2Eパイプライン
 
-    /// E2Eパイプラインを実行する（FB→学習→ディレクション生成→Vimeo投稿）
-    /// 長時間処理のためタイムアウトを120秒に設定
     func runE2EPipeline(
         projectId: String,
         body: E2EPipelineRequestBody = E2EPipelineRequestBody()
@@ -280,12 +377,10 @@ final class APIClient: ObservableObject {
 
     // MARK: - テロップチェック
 
-    /// テロップチェック結果を取得（キャッシュ済み）
     func fetchTelopCheck(projectId: String) async throws -> TelopCheckResponse {
         try await request(TelopCheckResponse.self, path: "/api/v1/projects/\(projectId)/telop-check")
     }
 
-    /// テロップチェックを実行する
     func runTelopCheck(
         projectId: String,
         body: TelopCheckRequestBody = TelopCheckRequestBody()
@@ -300,12 +395,10 @@ final class APIClient: ObservableObject {
 
     // MARK: - 音声品質評価
 
-    /// 音声品質評価結果を取得（キャッシュ済み）
     func fetchAudioEvaluation(projectId: String) async throws -> AudioEvaluationResponse {
         try await request(AudioEvaluationResponse.self, path: "/api/v1/projects/\(projectId)/audio-evaluation")
     }
 
-    /// 音声品質評価を実行する
     func runAudioEvaluation(projectId: String) async throws -> AudioEvaluationResponse {
         try await request(
             AudioEvaluationResponse.self,
@@ -316,7 +409,6 @@ final class APIClient: ObservableObject {
 
     // MARK: - ナレッジページ
 
-    /// ナレッジページ一覧を取得
     func fetchKnowledgePages(limit: Int = 50, offset: Int = 0) async throws -> KnowledgePagesResponse {
         try await request(
             KnowledgePagesResponse.self,
@@ -324,7 +416,6 @@ final class APIClient: ObservableObject {
         )
     }
 
-    /// ナレッジページ詳細を取得（HTML形式）
     func fetchKnowledgePageDetail(pageId: String) async throws -> KnowledgePageDetail {
         try await request(
             KnowledgePageDetail.self,
@@ -332,7 +423,6 @@ final class APIClient: ObservableObject {
         )
     }
 
-    /// ナレッジ検索
     func searchKnowledge(query: String, limit: Int = 20) async throws -> KnowledgeSearchResponse {
         let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
         return try await request(
@@ -343,7 +433,6 @@ final class APIClient: ObservableObject {
 
     // MARK: - 素材動画（Source Videos）
 
-    /// プロジェクトに紐づく素材動画一覧を取得
     func fetchSourceVideos(projectId: String) async throws -> SourceVideosResponse {
         try await request(
             SourceVideosResponse.self,
@@ -351,7 +440,6 @@ final class APIClient: ObservableObject {
         )
     }
 
-    /// 素材動画を手動登録
     func addSourceVideo(projectId: String, youtubeURL: String, title: String?, qualityStatus: String = "pending") async throws -> SourceVideoItem {
         let body = SourceVideoCreateBody(youtubeUrl: youtubeURL, title: title, qualityStatus: qualityStatus)
         return try await request(
@@ -364,12 +452,10 @@ final class APIClient: ObservableObject {
 
     // MARK: - ビフォーアフター比較
 
-    /// プロジェクトの全動画バージョン一覧を取得（素材 vs 編集後 vs FB後）
     func fetchBeforeAfter(projectId: String) async throws -> BeforeAfterResponse {
         try await request(BeforeAfterResponse.self, path: "/api/v1/projects/\(projectId)/before-after")
     }
 
-    /// 文字起こしdiff分析結果を取得（バージョン指定可能）
     func fetchTranscriptDiff(projectId: String, version: String? = nil) async throws -> TranscriptDiffResponse {
         var path = "/api/v1/projects/\(projectId)/transcript-diff"
         if let ver = version, !ver.isEmpty {
@@ -381,12 +467,10 @@ final class APIClient: ObservableObject {
 
     // MARK: - カテゴリ
 
-    /// カテゴリ別プロジェクト一覧を取得
     func fetchProjectsByCategory(_ category: String) async throws -> [VideoProject] {
         try await request([VideoProject].self, path: "/api/v1/projects/by-category/\(category)")
     }
 
-    /// プロジェクトのカテゴリを変更
     func updateProjectCategory(projectId: String, category: String?) async throws {
         let body = CategoryUpdateBody(category: category)
         _ = try await request(
@@ -455,7 +539,6 @@ final class APIClient: ObservableObject {
         )
     }
 
-    /// Vimeoコメントを編集（Vimeo APIのPATCHで直接書き換え）
     // MARK: - FB指示トラッカー
 
     func fetchFBTracker(projectId: String) async throws -> FBTrackerResponse {
@@ -489,6 +572,13 @@ final class APIClient: ObservableObject {
             body: EditBody(video_id: videoId, text: newText)
         )
     }
+
+    /// Vimeoコメント取得（VimeoReviewViewModelから呼ばれる）
+    func fetchVimeoComments(projectId: String) async throws -> VimeoCommentsResponse {
+        try await request(VimeoCommentsResponse.self, path: "/api/v1/projects/\(projectId)/vimeo-comments")
+    }
+
+    // MARK: - Internal request routing
 
     private func request<T: Decodable>(
         _ type: T.Type,
@@ -532,10 +622,8 @@ final class APIClient: ObservableObject {
 
             return try decoder.decode(T.self, from: data)
         } catch let error where error is URLError {
-            // ネットワークエラー → 自動再接続して1回だけリトライ
             await reconnectIfNeeded(error: error)
             if activeBaseURL != baseURL {
-                // 別のURLに切り替わった → リトライ
                 return try await performRequest(baseURL: activeBaseURL, path: path, method: method)
             }
             throw error
@@ -612,24 +700,56 @@ final class APIClient: ObservableObject {
         }
     }
 
+    /// JSONSerializationベースのperformRequest（[String: Any] / [[String: Any]] 返却用）
+    /// 手修正API 8メソッド統合用
+    private func performRequestRaw(
+        baseURL: URL,
+        path: String,
+        method: String,
+        body: (any Encodable)? = nil
+    ) async throws -> Data {
+        let url = buildURL(base: baseURL, path: path)
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.timeoutInterval = 12
+        if let body = body {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONEncoder().encode(body)
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw APIError.invalidResponse
+            }
+            guard (200...299).contains(httpResponse.statusCode) else {
+                throw APIError.server(statusCode: httpResponse.statusCode)
+            }
+            return data
+        } catch let error where error is URLError {
+            await reconnectIfNeeded(error: error)
+            if activeBaseURL != baseURL {
+                return try await performRequestRaw(baseURL: activeBaseURL, path: path, method: method, body: body)
+            }
+            throw error
+        }
+    }
+
     // クエリパラメータ付きパスを正しくURLに変換するヘルパー
-    // URL.appending(path:) はクエリ文字列の ? を %3F にエンコードしてしまうため
-    // 日本語を含むパス（プロジェクトID等）もパーセントエンコーディングで対応
     func buildURL(base: URL, path: String) -> URL {
         let fullString = base.absoluteString + path
-        // まず直接URLを試みる
         if let url = URL(string: fullString) {
             return url
         }
-        // 日本語等の非ASCII文字をパーセントエンコーディング
         if let encoded = fullString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
            let url = URL(string: encoded) {
             return url
         }
-        // 最終フォールバック
         return base.appending(path: path)
     }
 }
+
+// MARK: - APIError
 
 enum APIError: Error {
     case invalidResponse
@@ -667,12 +787,10 @@ struct SourceVideoItem: Codable, Identifiable {
     let knowledgeFile: String?
     let createdAt: String?
 
-    /// YouTube埋め込みURL
     var embedURL: String {
         "https://www.youtube.com/embed/\(videoId)?playsinline=1&rel=0"
     }
 
-    /// YouTube視聴URL
     var watchURL: String {
         "https://www.youtube.com/watch?v=\(videoId)"
     }
@@ -703,7 +821,7 @@ private struct AssetEditBody: Encodable {
     let editedBy: String
 }
 
-// MARK: - 手修正API（APIClient拡張）
+// MARK: - 手修正API（performRequestRaw経由に統合）
 
 extension APIClient {
 
@@ -719,152 +837,90 @@ extension APIClient {
             editedBy: editedBy,
             editNotes: editNotes
         )
-        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/direction-report")
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.timeoutInterval = 12
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw APIError.server(statusCode: httpResponse.statusCode)
-        }
+        let data = try await performRequestRaw(
+            baseURL: activeBaseURL,
+            path: "/api/v1/projects/\(projectId)/direction-report",
+            method: "PUT",
+            body: body
+        )
         return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
     }
 
     /// ディレクション編集履歴を取得
     func fetchDirectionEditHistory(projectId: String) async throws -> [[String: Any]] {
-        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/direction-report/history")
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.timeoutInterval = 12
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw APIError.server(statusCode: httpResponse.statusCode)
-        }
+        let data = try await performRequestRaw(
+            baseURL: activeBaseURL,
+            path: "/api/v1/projects/\(projectId)/direction-report/history",
+            method: "GET"
+        )
         return (try? JSONSerialization.jsonObject(with: data) as? [[String: Any]]) ?? []
     }
 
     /// ディレクション編集diff（元 vs 修正）を取得
     func fetchDirectionEditDiff(projectId: String) async throws -> [String: Any] {
-        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/direction-report/diff")
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.timeoutInterval = 12
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw APIError.server(statusCode: httpResponse.statusCode)
-        }
+        let data = try await performRequestRaw(
+            baseURL: activeBaseURL,
+            path: "/api/v1/projects/\(projectId)/direction-report/diff",
+            method: "GET"
+        )
         return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
     }
 
     /// タイトルを更新
     func updateTitle(projectId: String, editedContent: String, editedBy: String) async throws -> [String: Any] {
         let body = AssetEditBody(editedContent: editedContent, editedBy: editedBy)
-        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/title")
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.timeoutInterval = 12
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw APIError.server(statusCode: httpResponse.statusCode)
-        }
+        let data = try await performRequestRaw(
+            baseURL: activeBaseURL,
+            path: "/api/v1/projects/\(projectId)/title",
+            method: "PUT",
+            body: body
+        )
         return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
     }
 
     /// 概要欄を更新（手修正API用 — 既存のupdateDescriptionとは別エンドポイント）
     func updateDescription(projectId: String, editedContent: String, editedBy: String) async throws -> [String: Any] {
         let body = AssetEditBody(editedContent: editedContent, editedBy: editedBy)
-        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/description")
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.timeoutInterval = 12
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw APIError.server(statusCode: httpResponse.statusCode)
-        }
+        let data = try await performRequestRaw(
+            baseURL: activeBaseURL,
+            path: "/api/v1/projects/\(projectId)/description",
+            method: "PUT",
+            body: body
+        )
         return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
     }
 
     /// サムネ指示書を更新
     func updateThumbnailInstruction(projectId: String, editedContent: String, editedBy: String) async throws -> [String: Any] {
         let body = AssetEditBody(editedContent: editedContent, editedBy: editedBy)
-        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/thumbnail-instruction")
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.timeoutInterval = 12
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw APIError.server(statusCode: httpResponse.statusCode)
-        }
+        let data = try await performRequestRaw(
+            baseURL: activeBaseURL,
+            path: "/api/v1/projects/\(projectId)/thumbnail-instruction",
+            method: "PUT",
+            body: body
+        )
         return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
     }
 
     /// アセット編集履歴を取得（タイトル/概要/サムネ共通）
     func fetchAssetEditHistory(projectId: String, assetType: String) async throws -> [[String: Any]] {
-        // Python側URLではthumbnailはthumbnail-instructionにマッピング
         let pathType = assetType == "thumbnail" ? "thumbnail-instruction" : assetType
-        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/\(pathType)/history")
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.timeoutInterval = 12
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw APIError.server(statusCode: httpResponse.statusCode)
-        }
+        let data = try await performRequestRaw(
+            baseURL: activeBaseURL,
+            path: "/api/v1/projects/\(projectId)/\(pathType)/history",
+            method: "GET"
+        )
         return (try? JSONSerialization.jsonObject(with: data) as? [[String: Any]]) ?? []
     }
 
     /// アセット編集diff（元 vs 修正）を取得（タイトル/概要/サムネ共通）
     func fetchAssetEditDiff(projectId: String, assetType: String) async throws -> [String: Any] {
-        // Python側URLではthumbnailはthumbnail-instructionにマッピング
         let pathType = assetType == "thumbnail" ? "thumbnail-instruction" : assetType
-        let url = buildURL(base: baseURL, path: "/api/v1/projects/\(projectId)/\(pathType)/diff")
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.timeoutInterval = 12
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw APIError.server(statusCode: httpResponse.statusCode)
-        }
+        let data = try await performRequestRaw(
+            baseURL: activeBaseURL,
+            path: "/api/v1/projects/\(projectId)/\(pathType)/diff",
+            method: "GET"
+        )
         return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
     }
 }

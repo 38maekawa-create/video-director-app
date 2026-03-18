@@ -137,16 +137,7 @@ final class VimeoReviewViewModel: ObservableObject {
     // MARK: - Private
 
     private func fetchVimeoComments(projectId: String) async throws -> VimeoCommentsResponse {
-        guard let url = URL(string: "\(baseURL)/api/v1/projects/\(projectId)/vimeo-comments") else {
-            throw URLError(.badURL)
-        }
-        let (data, response) = try await URLSession.shared.data(from: url)
-        guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
-            throw URLError(.badServerResponse)
-        }
-        let decoder = JSONDecoder()
-        let decoded = try decoder.decode(VimeoCommentsResponse.self, from: data)
-        return decoded
+        // APIClient経由で統一（フォールバック・リトライ機構を活用）
+        return try await APIClient.shared.fetchVimeoComments(projectId: projectId)
     }
 }

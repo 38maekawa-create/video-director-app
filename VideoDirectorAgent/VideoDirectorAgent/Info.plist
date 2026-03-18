@@ -28,8 +28,6 @@
     <dict>
         <key>NSAllowsLocalNetworking</key>
         <true/>
-        <key>NSAllowsArbitraryLoads</key>
-        <true/>
         <key>NSExceptionDomains</key>
         <dict>
             <key>localhost</key>
@@ -46,6 +44,15 @@
             <dict>
                 <key>NSExceptionAllowsInsecureHTTPLoads</key>
                 <true/>
+            </dict>
+            <key>video-api.legit-marc.com</key>
+            <dict>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <false/>
+                <key>NSExceptionRequiresForwardSecrecy</key>
+                <true/>
+                <key>NSExceptionMinimumTLSVersion</key>
+                <string>TLSv1.2</string>
             </dict>
         </dict>
     </dict>

@@ -10,6 +10,7 @@ struct RootTabView: View {
     @StateObject private var dashboardVM = DashboardViewModel()
     @StateObject private var feedbackHistoryVM = FeedbackHistoryViewModel()
     @StateObject private var knowledgePagesVM = KnowledgePagesViewModel()
+    @ObservedObject private var apiClient = APIClient.shared
 
     enum Tab: Int, CaseIterable {
         case home, report, record, history, quality
@@ -37,6 +38,14 @@ struct RootTabView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                // 接続ステータスバナー
+                connectionStatusBanner
+
+                Spacer(minLength: 0)
+            }
+            .zIndex(1)
+
             // メインコンテンツ
             Group {
                 switch selectedTab {
@@ -158,5 +167,52 @@ struct RootTabView: View {
                 .shadow(color: .black.opacity(0.5), radius: 10, y: -2)
                 .ignoresSafeArea(edges: .bottom)
         )
+    }
+
+    // MARK: - 接続ステータスバナー
+    @ViewBuilder
+    private var connectionStatusBanner: some View {
+        switch apiClient.connectionStatus {
+        case .disconnected:
+            HStack(spacing: 8) {
+                Image(systemName: "wifi.slash")
+                    .font(.system(size: 14, weight: .semibold))
+                Text("サーバーに接続できません")
+                    .font(.system(size: 13, weight: .medium))
+                Spacer()
+                Button {
+                    Task {
+                        await APIClient.shared.probeAndConnect()
+                    }
+                } label: {
+                    Text("再接続")
+                        .font(.system(size: 12, weight: .bold))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(Color.white.opacity(0.2))
+                        .clipShape(Capsule())
+                }
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(Color.red.opacity(0.85))
+        case .connecting:
+            HStack(spacing: 8) {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .scaleEffect(0.7)
+                    .tint(.white)
+                Text("接続中...")
+                    .font(.system(size: 13, weight: .medium))
+                Spacer()
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+            .background(Color.orange.opacity(0.75))
+        case .connected:
+            EmptyView()
+        }
     }
 }

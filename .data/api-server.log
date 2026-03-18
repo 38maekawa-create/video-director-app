@@ -1770,3 +1770,16 @@ INFO:     100.113.28.70:49530 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82
 INFO:     100.113.28.70:49528 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/fb-tracker HTTP/1.1" 200 OK
 INFO:     100.113.28.70:50657 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.113.28.70:55699 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65141 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65141 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65142 - "GET /api/feedbacks?limit=50 HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65142 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65143 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65142 - "GET /api/dashboard/quality-trend HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65145 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65144 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65142 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65142 - "GET /api/audit/history HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65142 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65142 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     100.113.28.70:65142 - "GET /api/learning/summary HTTP/1.1" 200 OK

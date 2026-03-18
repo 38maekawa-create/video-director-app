@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-18T16:55:05.558759",
+  "generated_at": "2026-03-18T17:56:50.631292",
   "summary": {
     "total_members": 29,
     "matched": 14,
@@ -273,7 +273,7 @@
         {
           "title": "59_スリマンさん_FB修正2_坂野",
           "vimeo_url": "https://vimeo.com/1174416658",
-          "status": "uploading",
+          "status": "available",
           "created": "2026-03-17"
         },
         {
@@ -333,7 +333,7 @@
           "matched_keys": [
             "ヤーマン"
           ],
-          "status": "uploading"
+          "status": "available"
         },
         {
           "title": "55_さるビールさん_対談_FB修正3_坂野",
@@ -435,10 +435,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "クマキ",
+        "クマスケ",
         "くまき",
         "くますけ",
-        "クマスケ"
+        "クマキ"
       ],
       "near_candidates": [
         {
@@ -446,7 +446,7 @@
           "matched_keys": [
             "クマスケ"
           ],
-          "status": "uploading"
+          "status": "available"
         },
         {
           "title": "50_りょうすけさん_対談_FB修正3_坂野",
@@ -525,16 +525,16 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ロキ",
-        "ろき"
+        "ろき",
+        "ロキ"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "さくらさん",
       "search_keys": [
-        "さくら",
-        "サクラ"
+        "サクラ",
+        "さくら"
       ],
       "near_candidates": [
         {
@@ -563,17 +563,17 @@
     {
       "guest_name": "ゆりかさん",
       "search_keys": [
-        "ゆりか",
-        "ユリカ"
+        "ユリカ",
+        "ゆりか"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "コテさん",
       "search_keys": [
+        "こてつ",
         "こて",
         "コテ",
-        "こてつ",
         "コテツ"
       ],
       "near_candidates": [
@@ -589,9 +589,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
+        "kos",
         "コスト",
-        "こすと",
-        "kos"
+        "こすと"
       ],
       "near_candidates": [
         {
@@ -627,13 +627,13 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
+        "さといも・トーマス",
+        "さといも",
+        "サトイモ・トーマス",
         "トーマス",
         "とーます",
-        "サトイモ・トーマス",
-        "さといも",
-        "さといも・トーマス",
-        "サトイモ",
-        "さといも・とーます"
+        "さといも・とーます",
+        "サトイモ"
       ],
       "near_candidates": [
         {
@@ -641,7 +641,7 @@
           "matched_keys": [
             "トーマス"
           ],
-          "status": "uploading"
+          "status": "available"
         },
         {
           "title": "ゆきもるさんボイチェン_対談_修正_大胡",
@@ -676,9 +676,9 @@
     {
       "guest_name": "ハオさん",
       "search_keys": [
+        "はお",
         "羽生",
-        "ハオ",
-        "はお"
+        "ハオ"
       ],
       "near_candidates": []
     }

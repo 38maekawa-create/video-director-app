@@ -66,8 +66,6 @@ final class VimeoReviewViewModel: ObservableObject {
     // 後方互換: feedbacksを参照している箇所のために残す
     @Published var feedbacks: [VimeoFeedbackItem] = []
 
-    private var baseURL: String { APIClient.shared.baseURL.absoluteString }
-
     /// Vimeo APIからコメントを取得
     func loadVimeoComments(projectId: String) async {
         isLoading = true

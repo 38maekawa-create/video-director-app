@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-18T09:30:03.929726",
+  "generated_at": "2026-03-18T10:34:50.048306",
   "summary": {
     "total_members": 29,
     "matched": 14,
@@ -324,8 +324,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
@@ -376,8 +376,8 @@
     {
       "guest_name": "ひろきょうさん",
       "search_keys": [
-        "ヒロキョウ",
-        "ひろきょう"
+        "ひろきょう",
+        "ヒロキョウ"
       ],
       "near_candidates": []
     },
@@ -435,10 +435,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "くまき",
         "くますけ",
+        "クマキ",
         "クマスケ",
-        "クマキ"
+        "くまき"
       ],
       "near_candidates": [
         {
@@ -481,8 +481,8 @@
     {
       "guest_name": "アンディさん",
       "search_keys": [
-        "あんでぃ",
-        "アンディ"
+        "アンディ",
+        "あんでぃ"
       ],
       "near_candidates": [
         {
@@ -563,8 +563,8 @@
     {
       "guest_name": "ゆりかさん",
       "search_keys": [
-        "ユリカ",
-        "ゆりか"
+        "ゆりか",
+        "ユリカ"
       ],
       "near_candidates": []
     },
@@ -572,8 +572,8 @@
       "guest_name": "コテさん",
       "search_keys": [
         "コテ",
-        "こて",
         "こてつ",
+        "こて",
         "コテツ"
       ],
       "near_candidates": [
@@ -589,9 +589,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "kos",
+        "こすと",
         "コスト",
-        "こすと"
+        "kos"
       ],
       "near_candidates": [
         {
@@ -627,12 +627,12 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
-        "とーます",
-        "サトイモ",
-        "さといも・トーマス",
-        "サトイモ・トーマス",
         "さといも",
+        "さといも・トーマス",
         "トーマス",
+        "サトイモ・トーマス",
+        "サトイモ",
+        "とーます",
         "さといも・とーます"
       ],
       "near_candidates": [
@@ -676,8 +676,8 @@
     {
       "guest_name": "ハオさん",
       "search_keys": [
-        "はお",
         "ハオ",
+        "はお",
         "羽生"
       ],
       "near_candidates": []

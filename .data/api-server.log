@@ -1880,3 +1880,5 @@ INFO:     2400:4151:202:e100:adcc:fb68:8a83:11b1:0 - "GET /api/audit/history HTT
 INFO:     2400:4151:202:e100:adcc:fb68:8a83:11b1:0 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
 INFO:     2400:4151:202:e100:adcc:fb68:8a83:11b1:0 - "GET /api/learning/summary HTTP/1.1" 200 OK
 INFO:     2400:4151:202:e100:adcc:fb68:8a83:11b1:0 - "GET /api/feedbacks?limit=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62955 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62957 - "GET /api/health HTTP/1.1" 200 OK

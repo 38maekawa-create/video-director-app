@@ -36,8 +36,9 @@ DB_PATH = Path.home() / "AI開発10" / ".data" / "video_director.db"
 
 def _get_db() -> sqlite3.Connection:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(DB_PATH))
+    conn = sqlite3.connect(str(DB_PATH), timeout=10)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA busy_timeout=10000")
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
@@ -301,15 +302,64 @@ class FeedbackCreate(BaseModel):
 
 app = FastAPI(title="Video Director Agent API", version="1.0.0")
 
+# --- CORS設定 ---
+_DEFAULT_ORIGINS = [
+    "http://localhost:8210",
+    "http://127.0.0.1:8210",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+_env_origins = os.getenv("API_ALLOW_ORIGINS")
+_allowed_origins = (
+    [o.strip() for o in _env_origins.split(",") if o.strip()]
+    if _env_origins
+    else _DEFAULT_ORIGINS
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.include_router(edit_direction_router)
 app.include_router(edit_assets_router)
+
+
+# --- 共通エラーハンドラ ---
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """HTTPExceptionを統一フォーマットで返す"""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": {
+                "code": f"HTTP_{exc.status_code}",
+                "message": exc.detail or "Unknown error",
+                "retryable": exc.status_code >= 500,
+            }
+        },
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """未処理例外をキャッチし、詳細をログに残しつつ一般メッセージを返す"""
+    logger.exception("未処理例外: %s %s", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": {
+                "code": "INTERNAL_ERROR",
+                "message": "Internal server error",
+                "retryable": True,
+            }
+        },
+    )
 
 
 @app.on_event("startup")
@@ -547,7 +597,8 @@ def sync_categories_from_sheet():
         sm = SheetsManager()
         sheet_categories = sm.get_content_categories()
     except Exception as e:
-        raise HTTPException(502, f"Failed to fetch categories from spreadsheet: {e}")
+        logger.exception("スプレッドシートからカテゴリ取得に失敗")
+        raise HTTPException(502, "Failed to fetch categories from spreadsheet")
 
     conn = _get_db()
     projects = conn.execute("SELECT id, guest_name, title FROM projects").fetchall()
@@ -2117,7 +2168,8 @@ def post_vimeo_review(body: VimeoPostReviewRequest, dry_run: bool = True):
     try:
         token = load_token()
     except ValueError as e:
-        raise HTTPException(500, str(e))
+        logger.exception("Vimeoトークン読み込み失敗")
+        raise HTTPException(500, "Internal server error")
 
     endpoint = build_endpoint(target_video_id)
     results = []
@@ -2688,7 +2740,8 @@ def generate_direction(project_id: str, body: GenerateDirectionRequest = Generat
             get_learning_context,
         )
     except ImportError as e:
-        raise HTTPException(500, f"必要なモジュールのimportに失敗: {e}")
+        logger.exception("必要なモジュールのimportに失敗")
+        raise HTTPException(500, "Internal server error")
 
     # knowledgeフィールドからハイライト復元
     highlights = []
@@ -2746,7 +2799,8 @@ def generate_direction(project_id: str, body: GenerateDirectionRequest = Generat
             edit_learner=edit_learner,
         )
     except Exception as e:
-        raise HTTPException(500, f"ディレクション生成エラー: {e}")
+        logger.exception("ディレクション生成エラー")
+        raise HTTPException(500, "Internal server error")
 
     # 学習コンテキスト取得
     learning_ctx = get_learning_context(
@@ -4345,12 +4399,14 @@ def edit_vimeo_comment(comment_id: str, body: dict):
             }
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8") if e.fp else ""
+        logger.error("Vimeo APIエラー: %s %s", e.code, error_body[:200])
         raise HTTPException(
             status_code=e.code,
-            detail=f"Vimeo APIエラー: {e.code} {error_body[:200]}"
+            detail=f"Vimeo APIエラー: {e.code}"
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Vimeoコメント編集エラー: {str(e)}")
+        logger.exception("Vimeoコメント編集エラー")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # --- ヘルスチェック ---
@@ -4364,11 +4420,29 @@ def health():
     conn.close()
     return {
         "status": "ok",
-        "db_path": str(DB_PATH),
         "projects": project_count,
         "youtube_assets": assets_count,
         "feedbacks": feedback_count,
     }
+
+
+@app.get("/healthz")
+def healthz():
+    """軽量ヘルスチェック（DB不要）"""
+    return {"status": "ok"}
+
+
+@app.get("/readyz")
+def readyz():
+    """レディネスチェック（DB疎通確認）"""
+    try:
+        conn = _get_db()
+        conn.execute("SELECT 1").fetchone()
+        conn.close()
+        return {"status": "ok"}
+    except Exception:
+        logger.exception("readyz: DB疎通失敗")
+        raise HTTPException(status_code=503, detail="Database not ready")
 
 
 # --- Webアプリ静的ファイル配信 ---

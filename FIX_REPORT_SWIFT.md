@@ -3,6 +3,7 @@
 > **実施日**: 2026-03-18
 > **対象**: VideoDirectorAgent iOS アプリ
 > **ビルド結果**: **BUILD SUCCEEDED**（error 0）
+> **再検証日**: 2026-03-18（iPhone 17 Pro Simulator, iOS 26.3.1 で再ビルド成功確認）
 
 ## 修正サマリー
 

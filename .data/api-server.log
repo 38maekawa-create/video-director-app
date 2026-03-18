@@ -1790,3 +1790,8 @@ INFO:     100.113.28.70:63633 - "GET /api/projects/p-20260101-%E3%81%91%E3%83%BC
 INFO:     100.113.28.70:63634 - "GET /api/v1/projects/p-20260101-%E3%81%91%E3%83%BC%E3%81%95%E3%82%93/before-after HTTP/1.1" 200 OK
 INFO:     100.113.28.70:63636 - "GET /api/v1/projects/p-20260101-%E3%81%91%E3%83%BC%E3%81%95%E3%82%93/fb-tracker HTTP/1.1" 200 OK
 INFO:     100.113.28.70:63635 - "GET /api/v1/projects/p-20260101-%E3%81%91%E3%83%BC%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62724 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62725 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62726 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62724 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     100.113.28.70:62724 - "GET /api/learning/summary HTTP/1.1" 200 OK

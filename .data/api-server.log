@@ -1882,3 +1882,7 @@ INFO:     2400:4151:202:e100:adcc:fb68:8a83:11b1:0 - "GET /api/learning/summary 
 INFO:     2400:4151:202:e100:adcc:fb68:8a83:11b1:0 - "GET /api/feedbacks?limit=50 HTTP/1.1" 200 OK
 INFO:     127.0.0.1:62955 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     127.0.0.1:62957 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     61.117.149.82:0 - "GET /api/projects/p-20260125-%E6%9D%BE%E6%9C%AC/youtube-assets HTTP/1.1" 200 OK
+INFO:     61.117.149.82:0 - "GET /api/v1/projects/p-20260125-%E6%9D%BE%E6%9C%AC/source-videos HTTP/1.1" 200 OK
+INFO:     61.117.149.82:0 - "GET /api/projects/p-20260125-%E6%9D%BE%E6%9C%AC/feedbacks HTTP/1.1" 200 OK
+INFO:     61.117.149.82:0 - "GET /api/v1/projects/p-20260125-%E6%9D%BE%E6%9C%AC/source-videos HTTP/1.1" 200 OK

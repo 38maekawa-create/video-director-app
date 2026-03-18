@@ -1968,3 +1968,6 @@ INFO:     127.0.0.1:59290 - "GET /api/v1/projects/p-20260215-%E3%83%AD%E3%82%AD/
 INFO:     127.0.0.1:59292 - "GET /api/v1/projects/p-20251213-%E3%82%B9%E3%83%AA%E3%83%9E%E3%83%B3/source-videos HTTP/1.1" 200 OK
 INFO:     127.0.0.1:59298 - "GET /api/v1/source-videos/status HTTP/1.1" 200 OK
 INFO:     127.0.0.1:59308 - "GET /api/v1/source-videos/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59760 - "POST /api/v1/projects/p-20260125-%E6%9D%BE%E6%9C%AC/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59762 - "POST /api/v1/projects/p-20260125-%E6%9D%BE%E6%9C%AC/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59766 - "GET /api/v1/projects/p-20260125-%E6%9D%BE%E6%9C%AC/source-videos HTTP/1.1" 200 OK

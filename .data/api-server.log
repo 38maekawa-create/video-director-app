@@ -2005,3 +2005,10 @@ INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20251213-%E3%82%86%E3%81%8D
 INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20251213-%E3%82%86%E3%81%8D%E3%82%82%E3%82%8B/before-after HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20251213-%E3%82%86%E3%81%8D%E3%82%82%E3%82%8B/fb-tracker HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20251213-%E3%82%86%E3%81%8D%E3%82%82%E3%82%8B/transcript-diff HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/before-after HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/fb-tracker HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff?version=%E5%88%9D%E7%A8%BF HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff?version=FB%E4%BF%AE%E6%AD%A31 HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/transcript-diff?version=FB%E4%BF%AE%E6%AD%A32 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61300 - "GET /healthz HTTP/1.1" 200 OK

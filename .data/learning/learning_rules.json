@@ -23,7 +23,19 @@
       "applied_count": 0,
       "is_active": true,
       "created_at": "2026-03-20T01:50:31.036704"
+    },
+    {
+      "id": "rule_20260320044605_2",
+      "rule_text": "[telop] ここのテロップもう少し大きくして",
+      "category": "telop",
+      "source_pattern_ids": [
+        "pat_20260319195642_2"
+      ],
+      "priority": "medium",
+      "applied_count": 0,
+      "is_active": true,
+      "created_at": "2026-03-20T04:46:05.233102"
     }
   ],
-  "updated_at": "2026-03-20T01:50:31.038006"
+  "updated_at": "2026-03-20T04:46:05.233991"
 }

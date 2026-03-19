@@ -3289,8 +3289,12 @@ def run_e2e_pipeline(project_id: str, body: E2EPipelineRequest = E2EPipelineRequ
             _edit_learner = EditLearner()
         except Exception:
             pass
-        yt_titles = generate_title_proposals(video_data, classification, income_eval, knowledge_ctx, edit_learner=_edit_learner)
-        yt_description = generate_description(video_data, classification, income_eval, knowledge_ctx, edit_learner=_edit_learner)
+        # 固有名詞フィルタ（ゲスト名を渡して他ゲストの企業名混入を防止）
+        from ..analyzer.proper_noun_filter import detect_proper_nouns
+        _guest_name_for_filter = video_data.profiles[0].name if video_data.profiles else None
+        _proper_nouns = detect_proper_nouns(video_data, guest_name=_guest_name_for_filter)
+        yt_titles = generate_title_proposals(video_data, classification, income_eval, knowledge_ctx, edit_learner=_edit_learner, proper_nouns=_proper_nouns)
+        yt_description = generate_description(video_data, classification, income_eval, knowledge_ctx, edit_learner=_edit_learner, proper_nouns=_proper_nouns)
         yt_thumbnail = generate_thumbnail_design(video_data, classification, income_eval, knowledge_ctx)
 
         # DB更新

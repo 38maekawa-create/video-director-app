@@ -236,9 +236,11 @@ def generate_report_for_project(project_id: str) -> Optional[str]:
             )
             title_proposals = generate_title_proposals(
                 video_data, classification, income_eval, knowledge_ctx,
+                proper_nouns=proper_nouns,
             )
             video_description = generate_description(
                 video_data, classification, income_eval, knowledge_ctx,
+                proper_nouns=proper_nouns,
             )
         except Exception as e:
             logger.warning("YouTube素材生成スキップ: %s", e)

@@ -118,11 +118,11 @@ def process_single_file(
         thumbnail_design = generate_thumbnail_design(video_data, classification, income_eval, knowledge_ctx)
         print(f"  🖼️ サムネ指示書: Z型4ゾーン設計完了")
 
-        title_proposals = generate_title_proposals(video_data, classification, income_eval, knowledge_ctx)
+        title_proposals = generate_title_proposals(video_data, classification, income_eval, knowledge_ctx, proper_nouns=proper_nouns)
         title_count = len(title_proposals.candidates) if title_proposals.candidates else 0
         print(f"  📝 タイトル案: {title_count}件")
 
-        video_description = generate_description(video_data, classification, income_eval, knowledge_ctx)
+        video_description = generate_description(video_data, classification, income_eval, knowledge_ctx, proper_nouns=proper_nouns)
         desc_len = len(video_description.full_text) if video_description.full_text else 0
         print(f"  📋 概要欄: {desc_len}文字")
     except Exception as e:

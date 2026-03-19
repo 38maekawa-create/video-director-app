@@ -15,6 +15,7 @@ from ..analyzer.guest_classifier import ClassificationResult
 from ..analyzer.income_evaluator import IncomeEvaluation
 from ..knowledge.loader import KnowledgeContext
 from ..knowledge.prompts import DESCRIPTION_GENERATION_PROMPT
+from ..analyzer.proper_noun_filter import ProperNounEntry
 
 
 @dataclass
@@ -35,6 +36,7 @@ def generate_description(
     income_eval: IncomeEvaluation,
     knowledge_ctx: KnowledgeContext,
     edit_learner=None,
+    proper_nouns: list[ProperNounEntry] | None = None,
 ) -> VideoDescription:
     """YouTube概要欄テキストを生成する（teko_core.llm経由 — MAX定額内）"""
 
@@ -86,14 +88,58 @@ def generate_description(
     if edit_rules_text:
         prompt += edit_rules_text
 
+    # 固有名詞規制: 「伏せる」と判定された企業名を使用禁止ワードとして注入
+    hidden_nouns = _get_hidden_noun_names(proper_nouns)
+    if hidden_nouns:
+        forbidden_text = "\n\n## 使用禁止ワード（固有名詞規制 — 概要欄に絶対に含めないこと）:\n"
+        for noun_name in hidden_nouns:
+            forbidden_text += f"- 「{noun_name}」（伏せ対象の企業名）\n"
+        forbidden_text += "※ 上記の企業名・サービス名は概要欄内に一切使用禁止。\n"
+        prompt += forbidden_text
+
     try:
         from teko_core.llm import ask
         raw = ask(prompt, model="sonnet", max_tokens=3000, timeout=120)
-        return _parse_description_response(raw)
+        result = _parse_description_response(raw)
+        # LLM生成結果からも伏せ対象の企業名を除去（セーフティネット）
+        if hidden_nouns:
+            result = _sanitize_description(result, hidden_nouns)
+        return result
 
     except Exception as e:
         print(f"  ⚠️ 概要欄文章LLM生成失敗: {e}")
         return _fallback_description(video_data, classification, income_eval)
+
+
+def _get_hidden_noun_names(proper_nouns: list[ProperNounEntry] | None) -> list[str]:
+    """「伏せる」と判定された固有名詞の名前リストを返す"""
+    if not proper_nouns:
+        return []
+    return [n.name for n in proper_nouns if n.action == "hide"]
+
+
+def _sanitize_description(desc: VideoDescription, hidden_nouns: list[str]) -> VideoDescription:
+    """概要欄テキストから伏せ対象の企業名を除去する（セーフティネット）"""
+    from ..analyzer.proper_noun_filter import INDUSTRY_CATEGORIES
+
+    for noun in hidden_nouns:
+        industry_info = INDUSTRY_CATEGORIES.get(noun)
+        if industry_info:
+            _, company_type = industry_info
+            replacement = f"大手{company_type}"
+        else:
+            replacement = "大手企業"
+
+        if desc.full_text and noun in desc.full_text:
+            desc.full_text = desc.full_text.replace(noun, replacement)
+        if desc.hook and noun in desc.hook:
+            desc.hook = desc.hook.replace(noun, replacement)
+        if desc.summary and noun in desc.summary:
+            desc.summary = desc.summary.replace(noun, replacement)
+        if desc.hashtags and noun in desc.hashtags:
+            desc.hashtags = desc.hashtags.replace(noun, replacement)
+
+    return desc
 
 
 def _parse_description_response(raw: str) -> VideoDescription:

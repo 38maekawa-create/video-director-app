@@ -126,14 +126,17 @@ def generate_title_proposals(
         print(f"  🤖 パース結果: {len(result.candidates)}件の候補")
         if not result.candidates:
             print(f"  ⚠️ パース失敗、フォールバックへ。生レスポンス冒頭: {raw[:200]}")
-            return _fallback_titles(video_data, classification, income_eval)
+            return _fallback_titles(video_data, classification, income_eval, proper_nouns=proper_nouns)
+        # LLM生成結果からも伏せ対象の企業名を除去
+        if hidden_nouns and result.candidates:
+            result = _sanitize_title_candidates(result, hidden_nouns)
         return result
 
     except Exception as e:
         import traceback
         print(f"  ⚠️ タイトル考案LLM生成失敗: {e}")
         traceback.print_exc()
-        return _fallback_titles(video_data, classification, income_eval)
+        return _fallback_titles(video_data, classification, income_eval, proper_nouns=proper_nouns)
 
 
 def _parse_title_response(raw: str) -> TitleProposals:
@@ -163,10 +166,39 @@ def _parse_title_response(raw: str) -> TitleProposals:
     )
 
 
+def _get_hidden_noun_names(proper_nouns: list[ProperNounEntry] | None) -> list[str]:
+    """「伏せる」と判定された固有名詞の名前リストを返す"""
+    if not proper_nouns:
+        return []
+    return [n.name for n in proper_nouns if n.action == "hide"]
+
+
+def _sanitize_title_candidates(proposals: TitleProposals, hidden_nouns: list[str]) -> TitleProposals:
+    """タイトル候補から伏せ対象の企業名を除去する
+
+    LLMがプロンプトの禁止ワード指示を無視した場合のセーフティネット。
+    """
+    from ..analyzer.proper_noun_filter import INDUSTRY_CATEGORIES
+
+    for candidate in proposals.candidates:
+        for noun in hidden_nouns:
+            if noun in candidate.title:
+                # 業界カテゴリがあれば「大手○○企業」に置換
+                industry_info = INDUSTRY_CATEGORIES.get(noun)
+                if industry_info:
+                    _, company_type = industry_info
+                    replacement = f"大手{company_type}"
+                else:
+                    replacement = "大手企業"
+                candidate.title = candidate.title.replace(noun, replacement)
+    return proposals
+
+
 def _fallback_titles(
     video_data: VideoData,
     classification: ClassificationResult,
     income_eval: IncomeEvaluation,
+    proper_nouns: list[ProperNounEntry] | None = None,
 ) -> TitleProposals:
     """フォールバック（ルールベース — TEKO実投稿済みフォーマット準拠）
 
@@ -242,10 +274,17 @@ def _fallback_titles(
             rationale=f"TEKO実投稿済みフォーマット準拠: テーマ={theme}",
         ))
 
-    return TitleProposals(
+    result = TitleProposals(
         candidates=candidates,
         recommended_index=0,
         llm_raw_response="[フォールバック: TEKO実投稿済みフォーマット準拠]",
     )
+
+    # 伏せ対象の企業名をタイトルからサニタイズ
+    hidden_nouns = _get_hidden_noun_names(proper_nouns)
+    if hidden_nouns:
+        result = _sanitize_title_candidates(result, hidden_nouns)
+
+    return result
 
 

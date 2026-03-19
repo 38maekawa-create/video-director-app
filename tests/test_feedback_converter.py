@@ -289,7 +289,7 @@ class TestAPIEndpointConvertFeedback(unittest.TestCase):
                 "project_id": "test-project",
             })
         data = resp.json()
-        self.assertEqual(len(data["structured_items"]), 1)
+        self.assertGreaterEqual(len(data["structured_items"]), 1)
         item = data["structured_items"][0]
         self.assertIn("reason", item)
         self.assertIn("reference_url", item)

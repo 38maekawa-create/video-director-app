@@ -13,6 +13,7 @@ from ..analyzer.guest_classifier import ClassificationResult
 from ..analyzer.income_evaluator import IncomeEvaluation
 from ..knowledge.loader import KnowledgeContext
 from ..knowledge.prompts import TITLE_GENERATION_PROMPT
+from ..analyzer.proper_noun_filter import ProperNounEntry
 
 
 @dataclass
@@ -38,6 +39,7 @@ def generate_title_proposals(
     income_eval: IncomeEvaluation,
     knowledge_ctx: KnowledgeContext,
     edit_learner=None,
+    proper_nouns: list[ProperNounEntry] | None = None,
 ) -> TitleProposals:
     """タイトル案を生成する（teko_core.llm経由 — MAX定額内）"""
 
@@ -105,6 +107,15 @@ def generate_title_proposals(
     # EditLearnerルールをプロンプト末尾に追加
     if edit_rules_text:
         prompt += edit_rules_text
+
+    # 固有名詞規制: 「伏せる」と判定された企業名を使用禁止ワードとして注入
+    hidden_nouns = _get_hidden_noun_names(proper_nouns)
+    if hidden_nouns:
+        forbidden_text = "\n\n## 使用禁止ワード（固有名詞規制 — タイトルに絶対に含めないこと）:\n"
+        for noun_name in hidden_nouns:
+            forbidden_text += f"- 「{noun_name}」（伏せ対象の企業名。業界カテゴリや一般的な表現で代替すること）\n"
+        forbidden_text += "※ 上記の企業名・サービス名はタイトル内に一切使用禁止。「大手○○企業」「業界トップクラスの○○」等で代替すること。\n"
+        prompt += forbidden_text
 
     try:
         from teko_core.llm import ask

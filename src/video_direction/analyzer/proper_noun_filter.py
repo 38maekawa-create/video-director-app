@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from ..integrations.ai_dev5_connector import VideoData
 
 
@@ -67,8 +68,13 @@ class ProperNounEntry:
     occurrences: list  # 出現箇所（タイムスタンプ等）
 
 
-def detect_proper_nouns(video_data: VideoData) -> list[ProperNounEntry]:
-    """固有名詞を検出し、判定・テロップ提案を生成する"""
+def detect_proper_nouns(video_data: VideoData, guest_name: str = None) -> list[ProperNounEntry]:
+    """固有名詞を検出し、判定・テロップ提案を生成する
+
+    Args:
+        video_data: 動画データ
+        guest_name: ゲスト名（指定時、このゲストに関連する固有名詞のみを返す）
+    """
     # ハイライトシーンと全文から固有名詞を抽出
     all_text = video_data.detailed_summary or ""
     if video_data.profiles:
@@ -88,6 +94,17 @@ def detect_proper_nouns(video_data: VideoData) -> list[ProperNounEntry]:
         if noun not in noun_occurrences:
             noun_occurrences[noun] = []
 
+    # ゲスト名が指定されている場合、そのゲストに関連する固有名詞のみをフィルタ
+    if guest_name and noun_occurrences:
+        guest_related = _get_guest_related_nouns(guest_name, video_data)
+        if guest_related is not None:
+            # ゲストのプロファイルに関連する固有名詞のみを残す
+            filtered = {}
+            for noun, timestamps in noun_occurrences.items():
+                if noun in guest_related:
+                    filtered[noun] = timestamps
+            noun_occurrences = filtered
+
     # 各固有名詞を判定
     results = []
     for noun, timestamps in noun_occurrences.items():
@@ -96,6 +113,54 @@ def detect_proper_nouns(video_data: VideoData) -> list[ProperNounEntry]:
             results.append(entry)
 
     return results
+
+
+def _get_guest_related_nouns(guest_name: str, video_data: VideoData) -> set[str] | None:
+    """ゲストに関連する固有名詞のセットを返す
+
+    MEMBER_MASTER.jsonのプロファイルと、video_dataのゲスト固有テキスト
+    （profiles[0].occupation, guest_summary）のみから固有名詞を抽出し、
+    そのゲストに関連する企業名のセットを返す。
+
+    ゲスト情報が見つからない場合はNoneを返し、フィルタリングをスキップする。
+    """
+    # ゲスト固有のテキストのみから固有名詞を抽出
+    guest_text = ""
+    if video_data.profiles:
+        profile = video_data.profiles[0]
+        guest_text += (profile.occupation or "") + " "
+        guest_text += (profile.name or "") + " "
+    guest_text += (video_data.guest_summary or "") + " "
+
+    # MEMBER_MASTER.jsonからゲストのプロファイル情報も取得
+    try:
+        from ..integrations.member_master import MemberMaster
+        mm = MemberMaster()
+        member = mm.find_member(guest_name)
+        if member and member.has_people_file:
+            profile_text = mm.get_people_profile(member)
+            if profile_text:
+                guest_text += profile_text + " "
+    except Exception:
+        pass
+
+    if not guest_text.strip():
+        return None  # ゲスト情報なし → フィルタリングしない
+
+    # ゲスト固有テキストから企業名を抽出
+    related = set()
+    for company in INDUSTRY_CATEGORIES:
+        if _is_standalone_match(company, guest_text):
+            related.add(company)
+
+    # ハイライトシーンのテキストからも抽出
+    # （ハイライトはそのゲストの動画に紐づいているため、関連性が高い）
+    for highlight in video_data.highlights:
+        for company in INDUSTRY_CATEGORIES:
+            if _is_standalone_match(company, highlight.text):
+                related.add(company)
+
+    return related
 
 
 def _is_standalone_match(word: str, text: str) -> bool:

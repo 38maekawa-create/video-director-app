@@ -85,7 +85,9 @@ def process_single_file(
     emphasis_text = "強調ON" if income_eval.emphasize else "強調OFF"
     print(f"  💰 年収演出: {emphasis_text} ({income_eval.emphasis_reason})")
 
-    proper_nouns = detect_proper_nouns(video_data)
+    # ゲスト名を先に取得して固有名詞フィルタに渡す（他ゲストの企業名混入防止）
+    _guest_name_for_filter = video_data.profiles[0].name if video_data.profiles else None
+    proper_nouns = detect_proper_nouns(video_data, guest_name=_guest_name_for_filter)
     hide_count = sum(1 for n in proper_nouns if n.action == "hide")
     print(f"  🔇 固有名詞: {len(proper_nouns)}件検出（うち{hide_count}件伏せ）")
 

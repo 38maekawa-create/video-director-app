@@ -178,8 +178,9 @@ def generate_report_for_project(project_id: str) -> Optional[str]:
                 emphasize=True, emphasis_reason="年収情報あり", telop_suggestion="",
             )
 
-        # 固有名詞フィルタ
-        proper_nouns = detect_proper_nouns(video_data)
+        # 固有名詞フィルタ（ゲスト名を渡して他ゲストの企業名混入を防止）
+        _guest_name_for_filter = video_data.profiles[0].name if video_data.profiles else None
+        proper_nouns = detect_proper_nouns(video_data, guest_name=_guest_name_for_filter)
 
         # ターゲットラベリング
         target_result = label_targets(video_data)

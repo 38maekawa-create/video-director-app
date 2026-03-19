@@ -62,7 +62,7 @@ async def generate_direction(
     client: httpx.AsyncClient,
     project_id: str,
     guest_name: str,
-    timeout: float = 120,
+    timeout: float = 600,
 ) -> dict:
     """1プロジェクトのディレクションレポートを生成"""
     start = time.time()

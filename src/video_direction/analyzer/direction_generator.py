@@ -4,6 +4,8 @@ from __future__ import annotations
 テロップ強調・色変え・画角変更のタイミング指示をタイムライン形式で生成する。
 LLM（Claude Sonnet）を使って文脈分析 → タイムライン形式の指示を生成。
 FB学習ループ: FeedbackLearnerのルールを自動反映してディレクション品質を向上させる。
+品質基準注入: QUALITY_JUDGMENT_GUIDE.md のハイライト選定基準・コンテンツライン判定を
+LLMプロンプトに注入して、初回生成から高品質なディレクションを実現する。
 """
 
 import os
@@ -14,6 +16,10 @@ from typing import TYPE_CHECKING
 from ..integrations.ai_dev5_connector import VideoData, HighlightScene
 from .guest_classifier import ClassificationResult
 from .income_evaluator import IncomeEvaluation
+from ..knowledge.quality_knowledge_loader import (
+    build_quality_injection_text,
+    determine_content_line,
+)
 
 if TYPE_CHECKING:
     from ..tracker.feedback_learner import FeedbackLearner, LearningRule
@@ -555,6 +561,26 @@ def _llm_analyze(
 - 転職・キャリアチェンジの場合 → Before/After構成を意識した編集。過去の状況と現在を交互にカットで見せる。色温度を寒色（過去）→暖色（現在）に変化させる
 - 副業・複業成功の場合 → 本業との二面性をカット切り替えで演出。「昼は○○、夜は○○」的な対比構成。テロップで二つの顔を並列表示"""
 
+    # 品質基準の注入テキストを構築
+    # コンテンツライン判定: タイトル・ゲスト情報からキャリア軸/不動産軸を自動判定
+    transcript_text = ""
+    if video_data.highlights:
+        transcript_text = " ".join(h.text for h in video_data.highlights if h.text)
+    content_line = determine_content_line(
+        title=video_data.title or "",
+        transcript=transcript_text,
+        guest_summary=video_data.guest_summary or "",
+    )
+    # プロンプトが長くなりすぎないようにcompactモード（4引き金 + NGパターン + コンテンツライン）
+    quality_criteria_text = build_quality_injection_text(
+        content_line=content_line,
+        include_highlight=True,
+        include_direction=True,
+        include_content_line=True,
+        include_tier=False,  # 層分類は既にtier_textで注入済み
+        compact=True,
+    )
+
     prompt = f"""以下はTEKO対談インタビュー動画のハイライトシーンです。
 動画編集者向けに、追加の演出ディレクション提案を5〜8個生成してください。
 
@@ -563,6 +589,7 @@ def _llm_analyze(
 - 全体尺: {total_duration}
 - ハイライト数: {highlight_count}個
 - ハイライト密度: {highlight_density}
+- コンテンツライン: {'不動産実績対談（ノウハウ軸）' if content_line == 'realestate' else '通常のTEKO実績対談（キャリア軸）'}
 
 ## ゲスト情報
 - ゲスト分類: {classification.tier_label}
@@ -577,6 +604,8 @@ def _llm_analyze(
 
 ## ハイライトシーン
 {highlights_text}{gap_text}{learned_rules_text}{video_insights_text}{edit_rules_text}
+
+{quality_criteria_text}
 
 ## 出力フォーマット
 以下のフォーマットで、具体的なタイムスタンプと演出指示を出してください:

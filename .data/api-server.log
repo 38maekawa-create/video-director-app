@@ -2102,3 +2102,8 @@ INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/projects/p-20260125-%E6%9D%BE%E6%9C%AC/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61011 - "GET /api/v1/health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61028 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61041 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61047 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61055 - "GET /api/v1/projects HTTP/1.1" 404 Not Found

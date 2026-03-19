@@ -3563,6 +3563,13 @@ def add_project_source_video(project_id: str, req: SourceVideoCreate):
     ).fetchone()
     conn.close()
 
+    # 自動レポート生成をバックグラウンドで実行
+    try:
+        from .auto_report_trigger import trigger_auto_report
+        trigger_auto_report(project_id)
+    except Exception as e:
+        logger.warning("自動レポート生成トリガー失敗（source-videos API）: %s", e)
+
     return {
         "id": row["id"],
         "project_id": row["project_id"],
@@ -3589,6 +3596,16 @@ def scan_source_videos(req: SourceVideoScanRequest):
     from .source_video_linker import SourceVideoLinker
     linker = SourceVideoLinker(db_path=DB_PATH)
     result = linker.scan_and_link(dry_run=req.dry_run)
+
+    # dry_runでない場合、リンク成功したプロジェクトに対して自動レポート生成
+    if not req.dry_run and result.linked:
+        try:
+            from .auto_report_trigger import trigger_auto_report
+            for candidate in result.linked:
+                trigger_auto_report(candidate.project_id)
+        except Exception as e:
+            logger.warning("自動レポート生成トリガー失敗（scan）: %s", e)
+
     return {
         "dry_run": req.dry_run,
         "linked": [

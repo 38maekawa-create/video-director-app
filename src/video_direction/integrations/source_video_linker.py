@@ -455,6 +455,22 @@ class SourceVideoLinker:
             conn.close()
 
         result.linked = linked_final
+
+        # リンク成功したプロジェクトに対して自動レポート生成
+        if linked_final:
+            try:
+                from .auto_report_trigger import trigger_auto_report_sync
+                for candidate in linked_final:
+                    try:
+                        trigger_auto_report_sync(candidate.project_id)
+                    except Exception as e:
+                        logger.warning(
+                            "自動レポート生成失敗: project=%s: %s",
+                            candidate.project_id, e,
+                        )
+            except ImportError:
+                logger.warning("auto_report_triggerモジュールが見つかりません")
+
         return result
 
     def get_status(self) -> dict:

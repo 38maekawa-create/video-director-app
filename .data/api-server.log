@@ -2224,3 +2224,31 @@ INFO:     127.0.0.1:51009 - "GET /api/v1/projects/ HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:51011 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51017 - "GET /api/v1/projects/p-20251213-%E3%81%97%E3%81%8A/vimeo-comments HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51046 - "GET /api/health HTTP/1.1" 200 OK
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2344文字)
+  🤖 パース結果: 5件の候補
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2031文字)
+  🤖 パース結果: 5件の候補
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2416文字)
+  🤖 パース結果: 5件の候補
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2332文字)
+  🤖 パース結果: 5件の候補
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2265文字)
+  🤖 パース結果: 5件の候補
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2291文字)
+  🤖 パース結果: 5件の候補
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2005文字)
+  🤖 パース結果: 5件の候補
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2256文字)
+  🤖 パース結果: 5件の候補
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20251130-%E3%81%BF%E3%82%93%E3%81%A6%E3%81%83%E3%81%82/vimeo-comments HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects/p-20251130-%E3%81%BF%E3%82%93%E3%81%A6%E3%81%83%E3%81%82/feedbacks HTTP/1.1" 200 OK

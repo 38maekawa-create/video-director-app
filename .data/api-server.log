@@ -2109,3 +2109,9 @@ INFO:     127.0.0.1:61047 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:61055 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:61060 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:61063 - "GET /api/projects/p-20251123-Izu HTTP/1.1" 200 OK
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2133文字)
+  🤖 パース結果: 5件の候補
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+INFO:     127.0.0.1:61121 - "POST /api/v1/projects/p-20251123-Izu/e2e-pipeline HTTP/1.1" 200 OK

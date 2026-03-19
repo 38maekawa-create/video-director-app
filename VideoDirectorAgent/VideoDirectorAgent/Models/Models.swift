@@ -626,6 +626,7 @@ struct FeedbackCreateRequest: Encodable {
     let createdBy: String
     let timestamp: String?
     let feedbackType: String
+    let feedbackTarget: String
 
     enum CodingKeys: String, CodingKey {
         case timestampMark
@@ -634,6 +635,7 @@ struct FeedbackCreateRequest: Encodable {
         case category
         case priority
         case createdBy
+        case feedbackTarget = "feedback_target"
     }
 
     func encode(to encoder: Encoder) throws {
@@ -647,6 +649,33 @@ struct FeedbackCreateRequest: Encodable {
         try container.encode(feedbackType, forKey: .category)
         try container.encode("medium", forKey: .priority)
         try container.encode(createdBy, forKey: .createdBy)
+        try container.encode(feedbackTarget, forKey: .feedbackTarget)
+    }
+}
+
+struct AssetFeedbackConvertRequest: Encodable {
+    let rawText: String
+    let projectId: String
+    let assetType: String
+
+    enum CodingKeys: String, CodingKey {
+        case rawText = "raw_text"
+        case projectId = "project_id"
+        case assetType = "asset_type"
+    }
+}
+
+struct AssetFeedbackConvertResponse: Codable {
+    let convertedText: String
+    let improvementPoints: [String]?
+    let priority: String?
+    let assetType: String?
+
+    enum CodingKeys: String, CodingKey {
+        case convertedText = "converted_text"
+        case improvementPoints = "improvement_points"
+        case priority
+        case assetType = "asset_type"
     }
 }
 

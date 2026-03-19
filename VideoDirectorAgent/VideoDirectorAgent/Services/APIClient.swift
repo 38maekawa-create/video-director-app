@@ -514,13 +514,15 @@ final class APIClient: ObservableObject {
         content: String,
         createdBy: String,
         timestamp: String?,
-        feedbackType: String
+        feedbackType: String,
+        feedbackTarget: String = "direction"
     ) async throws {
         let body = FeedbackCreateRequest(
             content: content,
             createdBy: createdBy,
             timestamp: timestamp,
-            feedbackType: feedbackType
+            feedbackType: feedbackType,
+            feedbackTarget: feedbackTarget
         )
         _ = try await request(
             EmptyResponse.self,
@@ -528,6 +530,11 @@ final class APIClient: ObservableObject {
             method: "POST",
             body: body
         )
+    }
+
+    func convertAssetFeedback(rawText: String, projectId: String, assetType: String) async throws -> AssetFeedbackConvertResponse {
+        let body = AssetFeedbackConvertRequest(rawText: rawText, projectId: projectId, assetType: assetType)
+        return try await request(AssetFeedbackConvertResponse.self, path: "/api/v1/asset-feedback/convert", method: "POST", body: body)
     }
 
     func updateConvertedText(feedbackId: String, newText: String) async throws {

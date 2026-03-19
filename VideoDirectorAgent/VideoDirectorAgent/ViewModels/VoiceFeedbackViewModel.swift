@@ -15,6 +15,7 @@ enum VoiceFlowState {
 @MainActor
 final class VoiceFeedbackViewModel: ObservableObject {
     @Published var projectId: String = ""
+    @Published var feedbackTarget: String = "direction"  // "direction" / "title" / "description"
     @Published var selectedTime: Double = 138
     @Published var flowState: VoiceFlowState = .idle
     @Published var rawTranscript: String = ""
@@ -144,16 +145,26 @@ final class VoiceFeedbackViewModel: ObservableObject {
 
         Task {
             do {
-                let response = try await APIClient.shared.convertFeedback(rawText: rawTranscript, projectId: projectId)
-                convertedText = response.convertedText
-                structuredItems = response.structuredItems.map { item in
-                    StructuredFeedback(
-                        id: UUID(),
-                        timestamp: item.timestamp ?? String(format: "%02d:%02d", Int(selectedTime) / 60, Int(selectedTime) % 60),
-                        element: item.element,
-                        priority: feedbackPriority(from: item.priority),
-                        note: item.note
+                if feedbackTarget == "direction" {
+                    // 既存動作: 映像ディレクションFB変換
+                    let response = try await APIClient.shared.convertFeedback(rawText: rawTranscript, projectId: projectId)
+                    convertedText = response.convertedText
+                    structuredItems = response.structuredItems.map { item in
+                        StructuredFeedback(
+                            id: UUID(),
+                            timestamp: item.timestamp ?? String(format: "%02d:%02d", Int(selectedTime) / 60, Int(selectedTime) % 60),
+                            element: item.element,
+                            priority: feedbackPriority(from: item.priority),
+                            note: item.note
+                        )
+                    }
+                } else {
+                    // AI生成物（タイトル・概要欄等）へのFB変換
+                    let response = try await APIClient.shared.convertAssetFeedback(
+                        rawText: rawTranscript, projectId: projectId, assetType: feedbackTarget
                     )
+                    convertedText = response.convertedText
+                    structuredItems = []
                 }
                 flowState = .readyToSend
             } catch {
@@ -173,7 +184,8 @@ final class VoiceFeedbackViewModel: ObservableObject {
                     content: convertedText.isEmpty ? rawTranscript : convertedText,
                     createdBy: APIClient.shared.actorName,
                     timestamp: timestamp,
-                    feedbackType: "voice"
+                    feedbackType: "voice",
+                    feedbackTarget: feedbackTarget
                 )
                 flowState = .sent
                 sentMessage = "フィードバックを保存しました"

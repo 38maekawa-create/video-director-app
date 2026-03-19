@@ -22,6 +22,8 @@ struct TitleDescriptionEditView: View {
     @State private var showDescriptionDiff = false
     @State private var saveSuccessMessage: String?
     @State private var errorMessage: String?
+    @State private var showVoiceFBForTitle = false
+    @State private var showVoiceFBForDescription = false
 
     private let editors = ["なおとさん", "パグさん"]
 
@@ -196,6 +198,31 @@ struct TitleDescriptionEditView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             }
             .disabled(isSavingTitle)
+
+            // 音声FBボタン
+            Button {
+                showVoiceFBForTitle = true
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "mic.fill")
+                        .font(.system(size: 12, weight: .bold))
+                    Text("音声でフィードバック")
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                }
+                .foregroundStyle(AppTheme.accent)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(AppTheme.cardBackgroundLight)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(AppTheme.accent, lineWidth: 1)
+                )
+            }
+            .sheet(isPresented: $showVoiceFBForTitle) {
+                voiceFBSheet(target: "title")
+            }
         }
         .padding(16)
         .background(AppTheme.cardBackground)
@@ -248,10 +275,41 @@ struct TitleDescriptionEditView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             }
             .disabled(isSavingDescription)
+
+            // 音声FBボタン
+            Button {
+                showVoiceFBForDescription = true
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "mic.fill")
+                        .font(.system(size: 12, weight: .bold))
+                    Text("音声でフィードバック")
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                }
+                .foregroundStyle(AppTheme.accent)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(AppTheme.cardBackgroundLight)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(AppTheme.accent, lineWidth: 1)
+                )
+            }
+            .sheet(isPresented: $showVoiceFBForDescription) {
+                voiceFBSheet(target: "description")
+            }
         }
         .padding(16)
         .background(AppTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: - 音声FBシート
+
+    private func voiceFBSheet(target: String) -> some View {
+        AssetVoiceFeedbackSheet(projectId: projectId, feedbackTarget: target)
     }
 
     // MARK: - Diff表示カード
@@ -391,5 +449,22 @@ struct TitleDescriptionEditView: View {
             try? await Task.sleep(nanoseconds: 2_000_000_000)
             saveSuccessMessage = nil
         }
+    }
+}
+
+// MARK: - AI生成物向け音声FBシートラッパー
+
+struct AssetVoiceFeedbackSheet: View {
+    let projectId: String
+    let feedbackTarget: String
+
+    @StateObject private var viewModel = VoiceFeedbackViewModel()
+
+    var body: some View {
+        VoiceFeedbackView(viewModel: viewModel, projectId: projectId)
+            .onAppear {
+                viewModel.projectId = projectId
+                viewModel.feedbackTarget = feedbackTarget
+            }
     }
 }

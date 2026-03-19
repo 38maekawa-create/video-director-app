@@ -165,6 +165,11 @@ def main():
         choices=["teko_member", "teko_realestate"],
         help="特定カテゴリだけ実行",
     )
+    parser.add_argument(
+        "--yes", "-y",
+        action="store_true",
+        help="確認プロンプトをスキップ",
+    )
     args = parser.parse_args()
 
     projects = get_all_projects()
@@ -197,11 +202,12 @@ def main():
         return
 
     # 確認プロンプト
-    print(f"\n⚠️  {len(projects)}件のディレクションレポートを生成します。")
-    confirm = input("続行しますか？ (y/N): ").strip().lower()
-    if confirm != "y":
-        print("中止しました。")
-        return
+    if not args.yes:
+        print(f"\n⚠️  {len(projects)}件のディレクションレポートを生成します。")
+        confirm = input("続行しますか？ (y/N): ").strip().lower()
+        if confirm != "y":
+            print("中止しました。")
+            return
 
     print(f"\n🚀 バッチ生成開始...")
     start_time = time.time()

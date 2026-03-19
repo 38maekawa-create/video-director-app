@@ -1,10 +1,14 @@
 from __future__ import annotations
 """A-1: ゲスト層自動分類
 
-分類ロジック:
-- 層c: 自営業家系・2代目・3代目
-- 層a: 年収1000万以上 OR 有名企業管理職 OR 士業（監査法人等）
-- 層b: それ以外（相対的強さの言語化が必要）
+分類ロジック（演出マニュアル準拠）:
+- 層c（②自営業家系）: 自営業家系・2代目・3代目
+- 層a（誰が見ても圧倒的に強い）:
+  - 年収1000万以上 → 無条件で層a
+  - 年収700万以上 かつ 企業ブランドの権威性が高い → 層a
+  - 年収700万以上 かつ 20代 → 年齢×年収のインパクトで層a相当
+  - 企業ブランドが「誰もが知る超大手」で年収700万以上 → 層a
+- 層b（相対的強さの言語化が必要）: それ以外
 """
 
 import re
@@ -13,11 +17,21 @@ from ..integrations.ai_dev5_connector import VideoData, PersonProfile
 
 
 # 層aに該当する有名企業・士業キーワード
+# 「誰が見てもスゴい」と評価される企業名・肩書き
 TIER_A_KEYWORDS = [
+    # コンサルBIG4+戦略系
     "アクセンチュア", "マッキンゼー", "BCG", "ベイン", "デロイト",
     "PwC", "EY", "KPMG", "監査法人", "BIG4",
+    # GAFA+大手テック
     "GAFA", "Google", "Amazon", "Apple", "Meta", "Microsoft",
     "AWS", "外資",
+    # 日系超大手（誰もが知る企業）
+    "リクルート", "花王", "トヨタ", "ソニー", "任天堂",
+    "キーエンス", "三菱商事", "三井物産", "伊藤忠",
+    "電通", "博報堂", "NTT", "ソフトバンク",
+    "凸版", "トッパン", "大日本印刷", "DNP",
+    "野村證券", "ゴールドマン", "モルガン", "JPモルガン",
+    # 肩書き
     "VP", "執行役員", "取締役", "弁護士", "公認会計士",
     "医師", "パイロット",
 ]
@@ -96,7 +110,15 @@ def classify_guest(video_data: VideoData) -> ClassificationResult:
     # 年収抽出: プロファイルのincomeフィールドのみから取得（目標値の誤検出防止）
     income = _extract_income(profile.income or "", "")
 
-    # 層a判定: 年収1000万以上
+    # 年齢抽出（20代判定用）
+    age = _extract_age(profile_text)
+
+    # 企業ブランドキーワードの検出
+    matched_brand = _find_tier_a_keyword(profile_text)
+
+    # --- 層a判定（マニュアル準拠の3段階） ---
+
+    # 層a判定①: 年収1000万以上 → 無条件で層a
     if income and income >= 1000:
         return ClassificationResult(
             tier="a",
@@ -106,29 +128,56 @@ def classify_guest(video_data: VideoData) -> ClassificationResult:
             confidence="high",
         )
 
-    # 層a判定: 有名企業管理職・士業
-    # profile_textのみで判定（detailed_summaryに「将来外資に転職したい」等の文脈での誤判定防止）
-    # さらに仮定文脈（「転職すれば」「の場合」等）でのキーワードは除外
-    for keyword in TIER_A_KEYWORDS:
-        if keyword.lower() in profile_text.lower():
-            # 仮定・条件文脈での言及は除外（例: 「外資系の場合」「転職すれば外資」）
-            if _is_hypothetical_context(profile_text, keyword):
-                continue
-            # 「医師と」「医師に」等、本人が医師ではないケースを除外
-            if not _is_subject_attribute(profile_text, keyword):
-                continue
-            return ClassificationResult(
-                tier="a",
-                tier_label="層a（圧倒的に強い）",
-                reason=f"「{keyword}」に該当",
-                presentation_template=PRESENTATION_TEMPLATES["a"],
-                confidence="high" if income and income >= 700 else "medium",
-            )
+    # 層a判定②: 年収700万以上 + 企業ブランドの権威性
+    # マニュアル例: さくらさん=BIG4+20代半ば+年収900万→層a
+    #             くますけさん=元リクルート+30代前半+年収870万→層a
+    if income and income >= 700 and matched_brand:
+        return ClassificationResult(
+            tier="a",
+            tier_label="層a（圧倒的に強い）",
+            reason=f"年収{income}万円（700万以上）× 「{matched_brand}」の権威性",
+            presentation_template=PRESENTATION_TEMPLATES["a"],
+            confidence="high",
+        )
 
-    # 層b: それ以外
-    reason = "年収1000万未満かつ層a/cの特徴キーワードなし"
+    # 層a判定③: 年収700万以上 + 20代 → 年齢×年収のインパクト
+    # マニュアル: 「20代で700万以上は年次補足テロップで際立たせる」
+    if income and income >= 700 and age and age < 30:
+        return ClassificationResult(
+            tier="a",
+            tier_label="層a（圧倒的に強い）",
+            reason=f"年収{income}万円 × {age}歳（20代で700万以上）",
+            presentation_template=PRESENTATION_TEMPLATES["a"],
+            confidence="high",
+        )
+
+    # 層a判定④: 年収700万以上（企業ブランドなし・30代以上でも）
+    # マニュアル: 「700万以上は年齢関係なく無条件で強調」
+    # 年収演出はONだが、層分類は年収だけでは層bの場合もある
+    # ただし700万以上で特定条件（年収800万超など）なら層aが妥当
+    if income and income >= 800:
+        return ClassificationResult(
+            tier="a",
+            tier_label="層a（圧倒的に強い）",
+            reason=f"年収{income}万円（800万以上で層a相当）",
+            presentation_template=PRESENTATION_TEMPLATES["a"],
+            confidence="medium",
+        )
+
+    # 層a判定⑤: 企業ブランドのみ（年収700万未満でも「誰が見ても凄い」企業）
+    if matched_brand:
+        return ClassificationResult(
+            tier="a",
+            tier_label="層a（圧倒的に強い）",
+            reason=f"「{matched_brand}」に該当",
+            presentation_template=PRESENTATION_TEMPLATES["a"],
+            confidence="high" if income and income >= 700 else "medium",
+        )
+
+    # 層b: それ以外（相対的強さの言語化が必要）
+    reason = "層a/cの条件に該当せず"
     if income:
-        reason = f"年収{income}万円（1000万未満、相対的強さの言語化が必要）"
+        reason = f"年収{income}万円（相対的強さの言語化が必要）"
     return ClassificationResult(
         tier="b",
         tier_label="層b（相対的強さの言語化が必要）",
@@ -201,6 +250,43 @@ def _is_subject_attribute(text: str, keyword: str) -> bool:
         if next_char in "とにへからの":
             return False
     return True
+
+
+def _find_tier_a_keyword(text: str) -> str | None:
+    """テキストから層aに該当する企業ブランド・士業キーワードを検出する
+
+    仮定文脈（「転職すれば外資」等）や、主語が本人でないケース（「医師と対話」等）は除外。
+    """
+    for keyword in TIER_A_KEYWORDS:
+        if keyword.lower() in text.lower():
+            if _is_hypothetical_context(text, keyword):
+                continue
+            if not _is_subject_attribute(text, keyword):
+                continue
+            return keyword
+    return None
+
+
+def _extract_age(text: str) -> int | None:
+    """テキストから年齢を抽出する"""
+    # 「28歳」「31歳」等の直接的な年齢表記
+    m = re.search(r"(\d{2})歳", text)
+    if m:
+        age = int(m.group(1))
+        if 18 <= age <= 70:
+            return age
+
+    # 「20代前半」「30代半ば」等の年代表記
+    age_range_map = {
+        "20代前半": 22, "20代中盤": 25, "20代半ば": 25, "20代後半": 28,
+        "30代前半": 32, "30代中盤": 35, "30代半ば": 35, "30代後半": 38,
+        "40代前半": 42, "40代半ば": 45, "40代後半": 48,
+    }
+    for pattern, age in age_range_map.items():
+        if pattern in text:
+            return age
+
+    return None
 
 
 def _extract_income(income_str: str, full_text: str = "") -> int | None:

@@ -2215,3 +2215,12 @@ INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260101-kos/source-videos 
 INFO:     113.149.186.41:0 - "GET /api/projects/p-20260101-kos/feedbacks HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260101-kos/vimeo-comments HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20251213-%E3%81%97%E3%81%8A/vimeo-comments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50991 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50993 - "GET /api/v1/projects/p-20251213-%E3%81%97%E3%81%8A/vimeo-review HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51001 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51004 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51007 - "GET /api/v1/status HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51009 - "GET /api/v1/projects/ HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51011 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51017 - "GET /api/v1/projects/p-20251213-%E3%81%97%E3%81%8A/vimeo-comments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51046 - "GET /api/health HTTP/1.1" 200 OK

@@ -15,6 +15,8 @@ struct VimeoCommentsResponse: Codable {
 }
 
 /// Vimeo APIから取得した個別コメント
+/// CodingKeysは不要: APIClientのJSONDecoderで.convertFromSnakeCaseが有効なため、
+/// vimeo_id→vimeoId, version_label→versionLabel等は自動変換される
 struct VimeoCommentItem: Codable, Identifiable {
     var id: String { uri.isEmpty ? UUID().uuidString : uri }
     let vimeoId: String
@@ -25,14 +27,6 @@ struct VimeoCommentItem: Codable, Identifiable {
     let user: String
     let uri: String
     let error: Bool?
-
-    enum CodingKeys: String, CodingKey {
-        case vimeoId = "vimeo_id"
-        case versionLabel = "version_label"
-        case text, timecode
-        case createdTime = "created_time"
-        case user, uri, error
-    }
 }
 
 /// Vimeoレビュー画面のViewModel

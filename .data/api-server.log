@@ -2483,3 +2483,7 @@ INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
   🤖 LLM応答取得 (2140文字)
   🤖 パース結果: 5件の候補
 INFO:     127.0.0.1:53421 - "POST /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/e2e-pipeline HTTP/1.1" 200 OK
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2063文字)
+  🤖 パース結果: 5件の候補
+INFO:     127.0.0.1:53421 - "POST /api/v1/projects/p-20260215-%E3%83%AD%E3%82%AD/e2e-pipeline HTTP/1.1" 200 OK

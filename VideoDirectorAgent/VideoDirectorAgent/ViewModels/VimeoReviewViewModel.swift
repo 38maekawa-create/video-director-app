@@ -2,16 +2,14 @@ import Foundation
 import Combine
 
 /// Vimeo APIコメントのレスポンス
+/// CodingKeysは不要: APIClientのJSONDecoderで.convertFromSnakeCaseが有効なため、
+/// project_id→projectId は自動変換される。CodingKeysを定義すると
+/// .convertFromSnakeCase変換後のキーとrawValueが衝突してデコードエラーになる
 struct VimeoCommentsResponse: Codable {
     let projectId: String
     let total: Int?
     let comments: [VimeoCommentItem]?
     let message: String?
-
-    enum CodingKeys: String, CodingKey {
-        case projectId = "project_id"
-        case total, comments, message
-    }
 }
 
 /// Vimeo APIから取得した個別コメント

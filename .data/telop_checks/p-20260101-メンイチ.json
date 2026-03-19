@@ -1,0 +1,106 @@
+{
+  "project_id": "p-20260101-メンイチ",
+  "status": "completed",
+  "checked_at": "2026-03-19T13:55:38.084464+00:00",
+  "frame_check": {
+    "total_frames_checked": 0,
+    "total_telops_found": 0,
+    "extraction_method": "none",
+    "extracted_telops": [],
+    "spelling_issues": [],
+    "consistency_issues": [],
+    "timing_issues": [],
+    "error_count": 0,
+    "warning_count": 0,
+    "overall_score": 100.0
+  },
+  "text_check": {
+    "total_telops": 10,
+    "error_count": 0,
+    "warning_count": 0,
+    "consistency_score": 100.0,
+    "candidates": [
+      {
+        "timestamp": "01:44",
+        "text": "大学の友達の親がやっぱり",
+        "category": "属性テロップ",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "03:41",
+        "text": "TEKOに入って",
+        "category": "一般テロップ",
+        "char_count": 8,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "04:46",
+        "text": "今後規模拡大したいんだっ",
+        "category": "キー発言強調",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "05:48",
+        "text": "私自身もですけど",
+        "category": "数字強調",
+        "char_count": 8,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "08:41",
+        "text": "自己資金は1,000万く",
+        "category": "属性テロップ",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "12:13",
+        "text": "僕実際直接会いたいなと思",
+        "category": "キー発言強調",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "14:32",
+        "text": "北海道雪降るじゃないです",
+        "category": "数字強調",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "17:05",
+        "text": "僕は正直不動産の方は99",
+        "category": "キー発言強調",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "18:55",
+        "text": "今月はモロモロ込みで20",
+        "category": "数字強調",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "20:50",
+        "text": "ほんと買う時だけ結構まぁ",
+        "category": "キー発言強調",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      }
+    ],
+    "issues": []
+  }
+}

@@ -168,11 +168,24 @@ def _parse_highlights(content: str) -> list:
 
 
 def _parse_profiles(content: str) -> list:
-    """人物プロファイル情報をパース"""
-    section = _extract_section(content, "人物プロファイル情報")
-    if not section:
-        return []
+    """人物プロファイル情報をパース
 
+    優先度:
+    1. 「## 人物プロファイル情報」セクションがあればそこからパース
+    2. なければメタ情報セクションからフォールバック抽出
+    """
+    section = _extract_section(content, "人物プロファイル情報")
+    if section:
+        profiles = _parse_profile_section(section)
+        if profiles:
+            return profiles
+
+    # フォールバック: メタ情報セクションからプロファイル抽出
+    return _parse_profiles_from_meta(content)
+
+
+def _parse_profile_section(section: str) -> list:
+    """「## 人物プロファイル情報」セクションからプロファイルをパース"""
     profiles = []
     current_profile = None
 
@@ -204,6 +217,55 @@ def _parse_profiles(content: str) -> list:
 
     if current_profile:
         profiles.append(current_profile)
+
+    return profiles
+
+
+def _parse_profiles_from_meta(content: str) -> list:
+    """メタ情報セクションからプロファイル情報をフォールバック抽出
+
+    「## 人物プロファイル情報」セクションがないファイル向け。
+    メタ情報内の「**名前**: 年齢: X / 本業: Y / 年収: Z」形式を解析する。
+    """
+    meta_section = _extract_section(content, "メタ情報")
+    if not meta_section:
+        return []
+
+    profiles = []
+    for line in meta_section.split("\n"):
+        line = line.strip()
+        # パターン1: 「**名前**: 年齢: X / 本業: Y / 年収: Z」
+        match = re.match(r"\*\*(.+?)\*\*:\s*(.+)", line)
+        if not match:
+            continue
+        name = match.group(1).strip()
+        info = match.group(2).strip()
+
+        # 「前川」（ホスト）はスキップ
+        if name == "前川" or name == "前川直士" or name == "ナオト":
+            continue
+
+        # 「年齢:」「本業:」「年収:」のキーが含まれていればプロファイル行と判断
+        if not any(k in info for k in ("年齢", "本業", "年収", "職業")):
+            continue
+
+        profile = PersonProfile(name=name)
+
+        # 「/」区切りで各フィールドを抽出
+        for part in info.split("/"):
+            part = part.strip()
+            if part.startswith("年齢:") or part.startswith("年齢："):
+                profile.age = part.split(":", 1)[-1].split("：", 1)[-1].strip()
+            elif part.startswith("本業:") or part.startswith("本業：") or part.startswith("職業:") or part.startswith("職業："):
+                profile.occupation = part.split(":", 1)[-1].split("：", 1)[-1].strip()
+            elif part.startswith("年収:") or part.startswith("年収："):
+                profile.income = part.split(":", 1)[-1].split("：", 1)[-1].strip()
+            elif part.startswith("副業:") or part.startswith("副業："):
+                profile.side_business = part.split(":", 1)[-1].split("：", 1)[-1].strip()
+
+        # 年齢・本業・年収のいずれかが取れていれば有効なプロファイル
+        if profile.age or profile.occupation or profile.income:
+            profiles.append(profile)
 
     return profiles
 

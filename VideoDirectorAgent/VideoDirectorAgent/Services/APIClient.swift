@@ -216,7 +216,11 @@ final class APIClient: ObservableObject {
         startNetworkMonitor()
     }
 
+    /// ネットワーク変化時のデバウンス用タスク
+    private var networkDebounceTask: Task<Void, Never>?
+
     /// ネットワーク状態変化を監視し、復帰時に自動再接続
+    /// デバウンス: 短時間の連続変化を無視し、安定してから再接続
     private func startNetworkMonitor() {
         networkMonitor.pathUpdateHandler = { [weak self] path in
             Task { @MainActor [weak self] in
@@ -227,9 +231,14 @@ final class APIClient: ObservableObject {
                 self.lastPathStatus = path.status
 
                 if isNowConnected && (wasDisconnected || interfaceChanged) {
-                    print("📡 ネットワーク変化検知（\(path.availableInterfaces.map { $0.type })）→ 再接続開始")
-                    try? await Task.sleep(nanoseconds: 500_000_000)
-                    await self.probeAndConnect()
+                    // デバウンス: 2秒間安定してから再接続（4G電波変動でのチラつき防止）
+                    self.networkDebounceTask?.cancel()
+                    self.networkDebounceTask = Task {
+                        try? await Task.sleep(nanoseconds: 2_000_000_000)
+                        guard !Task.isCancelled else { return }
+                        print("📡 ネットワーク変化検知（安定後）→ 再接続開始")
+                        await self.probeAndConnect()
+                    }
                 } else if !isNowConnected {
                     self.connectionStatus = .disconnected
                     print("📡 ネットワーク切断検知")
@@ -241,9 +250,21 @@ final class APIClient: ObservableObject {
 
     /// アプリ起動時・ScenePhase復帰時・ネットワーク変化時に呼び出し
     /// ConnectionOrchestrator actorにより多重probe抑止
+    /// 既に接続済みの場合はバナーを出さずにバックグラウンドでprobeする
     func probeAndConnect() async {
-        connectionStatus = .connecting
-        print("🔍 probeAndConnect開始（orchestrator経由）")
+        let wasConnected: Bool
+        if case .connected = connectionStatus {
+            wasConnected = true
+        } else {
+            wasConnected = false
+        }
+
+        // 既に接続済みの場合はconnectingバナーを出さない（チラつき防止）
+        if !wasConnected {
+            connectionStatus = .connecting
+        }
+        print("🔍 probeAndConnect開始（orchestrator経由、wasConnected=\(wasConnected)）")
+
         if let route = await orchestrator.reprobe(trigger: "probeAndConnect") {
             activeBaseURL = route.url
             connectionStatus = .connected(route.label)

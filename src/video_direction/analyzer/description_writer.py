@@ -34,6 +34,7 @@ def generate_description(
     classification: ClassificationResult,
     income_eval: IncomeEvaluation,
     knowledge_ctx: KnowledgeContext,
+    edit_learner=None,
 ) -> VideoDescription:
     """YouTube概要欄テキストを生成する（teko_core.llm経由 — MAX定額内）"""
 
@@ -55,6 +56,19 @@ def generate_description(
         for h in video_data.highlights[:10]
     ]) or "なし"
 
+    # EditLearnerから過去のFB・手修正ルールを取得してプロンプトに注入
+    edit_rules_text = ""
+    if edit_learner is not None:
+        try:
+            rules = edit_learner.get_active_rules(asset_type="description")
+            if rules:
+                edit_rules_text = "\n\n## 過去のフィードバック・手修正から学習した概要欄改善ルール（必ず反映すること）:\n"
+                for r in rules[:10]:
+                    edit_rules_text += f"- [{r.priority}] {r.rule_text}\n"
+                print(f"  📚 EditLearnerルール {len(rules)}件を注入")
+        except Exception:
+            pass
+
     prompt = DESCRIPTION_GENERATION_PROMPT.format(
         marketing_principles=knowledge_ctx.marketing_principles,
         past_descriptions_text=past_descriptions_text,
@@ -67,6 +81,10 @@ def generate_description(
         duration=video_data.duration or "不明",
         highlights_with_timestamps=highlights_with_timestamps,
     )
+
+    # EditLearnerルールをプロンプト末尾に追加
+    if edit_rules_text:
+        prompt += edit_rules_text
 
     try:
         from teko_core.llm import ask

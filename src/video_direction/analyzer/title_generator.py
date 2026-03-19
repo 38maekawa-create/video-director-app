@@ -37,6 +37,7 @@ def generate_title_proposals(
     classification: ClassificationResult,
     income_eval: IncomeEvaluation,
     knowledge_ctx: KnowledgeContext,
+    edit_learner=None,
 ) -> TitleProposals:
     """タイトル案を生成する（teko_core.llm経由 — MAX定額内）"""
 
@@ -70,6 +71,19 @@ def generate_title_proposals(
     else:
         clean_guest_name = raw_guest_name
 
+    # EditLearnerから過去のFB・手修正ルールを取得してプロンプトに注入
+    edit_rules_text = ""
+    if edit_learner is not None:
+        try:
+            rules = edit_learner.get_active_rules(asset_type="title")
+            if rules:
+                edit_rules_text = "\n\n## 過去のフィードバック・手修正から学習したタイトル改善ルール（必ず反映すること）:\n"
+                for r in rules[:10]:
+                    edit_rules_text += f"- [{r.priority}] {r.rule_text}\n"
+                print(f"  📚 EditLearnerルール {len(rules)}件を注入")
+        except Exception:
+            pass
+
     prompt = TITLE_GENERATION_PROMPT.format(
         marketing_principles=knowledge_ctx.marketing_principles,
         z_theory_summary=knowledge_ctx.z_theory_summary,
@@ -87,6 +101,10 @@ def generate_title_proposals(
         side_business=profile.side_business if profile and profile.side_business else "なし",
         highlights_text=highlights_text,
     )
+
+    # EditLearnerルールをプロンプト末尾に追加
+    if edit_rules_text:
+        prompt += edit_rules_text
 
     try:
         from teko_core.llm import ask

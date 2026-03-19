@@ -129,6 +129,12 @@ def init_db():
         conn.execute("ALTER TABLE projects ADD COLUMN category TEXT")
         conn.commit()
 
+    # feedback_targetカラムのマイグレーション（AI生成物へのFB種別管理）
+    fb_columns = [row[1] for row in conn.execute("PRAGMA table_info(feedbacks)").fetchall()]
+    if "feedback_target" not in fb_columns:
+        conn.execute("ALTER TABLE feedbacks ADD COLUMN feedback_target TEXT DEFAULT 'direction'")
+        conn.commit()
+
     conn.close()
 
 
@@ -296,6 +302,7 @@ class FeedbackCreate(BaseModel):
     category: Optional[str] = None
     priority: str = "medium"
     created_by: Optional[str] = None
+    feedback_target: str = "direction"  # "direction" / "title" / "description"
 
 
 # --- FastAPI アプリ ---
@@ -810,10 +817,11 @@ def create_feedback(project_id: str, fb: FeedbackCreate):
     conn = _get_db()
     cursor = conn.execute(
         """INSERT INTO feedbacks (project_id, timestamp_mark, raw_voice_text,
-           converted_text, category, priority, created_by)
-           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+           converted_text, category, priority, created_by, feedback_target)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
         (project_id, fb.timestamp_mark, fb.raw_voice_text,
-         fb.converted_text, fb.category, fb.priority, fb.created_by)
+         fb.converted_text, fb.category, fb.priority, fb.created_by,
+         fb.feedback_target)
     )
     # プロジェクトの未レビュー数を更新
     conn.execute(
@@ -829,21 +837,38 @@ def create_feedback(project_id: str, fb: FeedbackCreate):
     learned_patterns = 0
     content = (fb.converted_text or fb.raw_voice_text or "").strip()
     if content:
-        learner = _get_feedback_learner()
-        if learner:
+        if fb.feedback_target in ("title", "description"):
+            # AI生成物へのFB → EditLearnerに蓄積
             try:
-                feedback_id = f"fb_{cursor.lastrowid}" if cursor.lastrowid else f"fb_{project_id}"
-                patterns = learner.ingest_feedback(
-                    feedback_id=feedback_id,
-                    content=content,
-                    category=fb.category,
-                    created_by=fb.created_by,
+                from ..tracker.edit_learner import EditLearner
+                from ..tracker.asset_feedback_adapter import voice_fb_to_edit_diff
+                edit_learner = EditLearner()
+                diff_result = voice_fb_to_edit_diff(content, fb.feedback_target)
+                result = edit_learner.ingest_edit(
+                    project_id=project_id,
+                    asset_type=fb.feedback_target,
+                    diff_result=diff_result,
                 )
                 learned = True
-                learned_patterns = len(patterns)
+                learned_patterns = result.get("new_patterns", 0) + result.get("updated_patterns", 0)
             except Exception:
-                # 学習はベストエフォート。FB保存自体は成功扱いにする
                 pass
+        else:
+            # 既存動作: FeedbackLearnerに蓄積（ディレクション/映像FB）
+            learner = _get_feedback_learner()
+            if learner:
+                try:
+                    feedback_id = f"fb_{cursor.lastrowid}" if cursor.lastrowid else f"fb_{project_id}"
+                    patterns = learner.ingest_feedback(
+                        feedback_id=feedback_id,
+                        content=content,
+                        category=fb.category,
+                        created_by=fb.created_by,
+                    )
+                    learned = True
+                    learned_patterns = len(patterns)
+                except Exception:
+                    pass
 
     return {
         "status": "created",
@@ -851,6 +876,7 @@ def create_feedback(project_id: str, fb: FeedbackCreate):
         "feedback_id": cursor.lastrowid,
         "learning_applied": learned,
         "learned_patterns": learned_patterns,
+        "feedback_target": fb.feedback_target,
     }
 
 
@@ -2419,6 +2445,97 @@ def convert_feedback(body: FeedbackConvertRequest):
     }
 
 
+# --- AI生成物への音声FB変換 ---
+
+class AssetFeedbackConvertRequest(BaseModel):
+    raw_text: str
+    project_id: str
+    asset_type: str  # "title" / "description" / "direction"
+
+
+@app.post("/api/v1/asset-feedback/convert")
+def convert_asset_feedback(body: AssetFeedbackConvertRequest):
+    """AI生成物（タイトル・概要欄等）への音声FBを改善指示に変換
+
+    既存の /api/feedback/convert（映像FB用）とは別エンドポイント。
+    asset_type別の専門プロンプトを使用し、EditLearnerのルールを注入する。
+    """
+    from ..tracker.edit_learner import EditLearner
+
+    raw = body.raw_text
+    asset_type = body.asset_type
+
+    # EditLearnerから過去の学習ルールを取得
+    learned_rules_text = ""
+    rules_count = 0
+    try:
+        edit_learner = EditLearner()
+        rules = edit_learner.get_active_rules(asset_type=asset_type)
+        if rules:
+            rules_count = len(rules)
+            learned_rules_text = "\n\n## 過去のフィードバック・手修正から学習した改善ルール（必ず反映すること）:\n"
+            for rule in rules[:10]:
+                learned_rules_text += f"- [{rule.priority}] {rule.rule_text}\n"
+    except Exception:
+        pass
+
+    # asset_type別の専門プロンプト
+    asset_prompts = {
+        "title": (
+            "あなたはYouTubeタイトルの品質改善の専門家です。"
+            "ユーザーからの音声フィードバックをもとに、タイトルの具体的な改善指示を生成してください。"
+            "TEKOチャンネルのタイトルフォーマット（パターンA: 年収先頭型、パターンB: パンチライン先頭型）を前提とします。"
+        ),
+        "description": (
+            "あなたはYouTube概要欄の品質改善の専門家です。"
+            "ユーザーからの音声フィードバックをもとに、概要欄の具体的な改善指示を生成してください。"
+            "TEKOチャンネルの概要欄フォーマット（ハッシュタグ+タイムスタンプ+CTA+チャンネル紹介）を前提とします。"
+        ),
+        "direction": (
+            "あなたは映像ディレクションの品質改善の専門家です。"
+            "ユーザーからの音声フィードバックをもとに、ディレクションレポートの具体的な改善指示を生成してください。"
+        ),
+    }
+
+    system_prompt = asset_prompts.get(asset_type, asset_prompts["direction"])
+
+    user_prompt = f"""以下の音声フィードバックを、{asset_type}の具体的な改善指示に変換してください。
+{learned_rules_text}
+
+## 音声フィードバック:
+{raw}
+
+## 出力形式（JSON）:
+{{
+    "converted_text": "変換後の改善指示テキスト",
+    "improvement_points": ["改善ポイント1", "改善ポイント2"],
+    "priority": "high" または "medium" または "low"
+}}"""
+
+    try:
+        import re
+        from teko_core.llm import ask
+
+        text = ask(user_prompt, system=system_prompt, model="sonnet", max_tokens=1024, timeout=120)
+        json_match = re.search(r'\{[\s\S]*\}', text)
+        if json_match:
+            result = json.loads(json_match.group())
+            result["asset_type"] = asset_type
+            result["learning_applied"] = {"edit_rules_count": rules_count}
+            return result
+    except Exception:
+        pass
+
+    # フォールバック
+    return {
+        "converted_text": f"【{asset_type}改善指示】\n{raw}",
+        "improvement_points": [raw[:200]],
+        "priority": "medium",
+        "asset_type": asset_type,
+        "learning_applied": {"edit_rules_count": rules_count},
+    }
+
+
 # --- 編集後フィードバック (P1: Before/After差分) ---
 
 class EditFeedbackRequest(BaseModel):
@@ -3165,8 +3282,15 @@ def run_e2e_pipeline(project_id: str, body: E2EPipelineRequest = E2EPipelineRequ
                 emphasize=True, emphasis_reason="年収情報あり", telop_suggestion="",
             )
 
-        yt_titles = generate_title_proposals(video_data, classification, income_eval, knowledge_ctx)
-        yt_description = generate_description(video_data, classification, income_eval, knowledge_ctx)
+        # EditLearnerから学習ルールを取得して生成関数に注入
+        _edit_learner = None
+        try:
+            from ..tracker.edit_learner import EditLearner
+            _edit_learner = EditLearner()
+        except Exception:
+            pass
+        yt_titles = generate_title_proposals(video_data, classification, income_eval, knowledge_ctx, edit_learner=_edit_learner)
+        yt_description = generate_description(video_data, classification, income_eval, knowledge_ctx, edit_learner=_edit_learner)
         yt_thumbnail = generate_thumbnail_design(video_data, classification, income_eval, knowledge_ctx)
 
         # DB更新

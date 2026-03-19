@@ -124,94 +124,149 @@ def _generate_for_highlight(
     classification: ClassificationResult,
     income_eval: IncomeEvaluation,
 ) -> list[DirectionEntry]:
-    """ハイライトシーンから演出指示を生成"""
+    """ハイライトシーンから具体的な演出指示を生成
+
+    マニュアル準拠: 編集者が読んで即座にアクションに移せるレベルの具体性を持たせる。
+    """
     entries = []
     ts = highlight.timestamp
     text = highlight.text
     category = highlight.category
+    speaker = highlight.speaker if hasattr(highlight, "speaker") else ""
 
     # テロップ強調タイミング
     if category == "実績数字":
-        # 年収・実績の数字が出た瞬間 → テロップ強調
         numbers = re.findall(r"\d+万|年収\d+|月利?\d+万|月収?\d+万", text)
         if numbers:
+            # 具体的なテロップ内容を指定
+            main_number = numbers[0]
+            telop_text = f"「{main_number}」"
+            if len(numbers) > 1:
+                telop_text += f"（他: {', '.join(numbers[1:])}）"
+
             entries.append(DirectionEntry(
                 timestamp=ts,
                 direction_type="telop",
-                instruction=f"テロップ強調: 「{numbers[0]}」を大きく表示、色変え（赤orゴールド）",
-                reason=f"実績数字の出現（{', '.join(numbers)}）",
+                instruction=f"数字テロップ: {telop_text}を画面の30%以上のサイズで表示。フォント: 太ゴシック、色: {'ゴールド' if classification.tier == 'a' else '赤'}。表示タイミングは発言と同時、3秒間キープ",
+                reason=f"実績数字「{', '.join(numbers)}」の視覚的インパクト最大化",
                 priority="high",
             ))
-            # 色変えも同時
             entries.append(DirectionEntry(
                 timestamp=ts,
                 direction_type="color",
-                instruction="色変え: テロップ出現に合わせて画面演出（フラッシュ or 背景色変更）",
-                reason="強調テロップ出現時の色変え",
+                instruction=f"背景演出: 数字テロップ出現に合わせて背景をダーク化（透過度50%）→数字を際立たせる。SE（効果音）を数字出現の瞬間に挿入",
+                reason="数字テロップの視覚的強調",
                 priority="medium",
             ))
 
     if category == "パンチライン":
-        # キー発言 → テロップ強調 + 寄り
-        # テキストから短いパンチラインを抽出
         punch = _extract_punchline(text)
+        # 相槌・フィラーのフィルタリング
+        if _is_filler(text):
+            # 相槌はパンチラインとして扱わない
+            return entries
+
         entries.append(DirectionEntry(
             timestamp=ts,
             direction_type="telop",
-            instruction=f"テロップ強調: 「{punch}」（パンチライン）",
-            reason="キー発言の強調",
+            instruction=f"パンチラインテロップ: 「{punch}」を白抜き太字で画面下部1/3に表示。背景: 半透明黒帯。表示は発言の頭から、発言終了後1秒まで",
+            reason=f"{speaker}のキー発言を視覚的に強調",
             priority="high",
         ))
         entries.append(DirectionEntry(
             timestamp=ts,
             direction_type="camera",
-            instruction="画角変更: ワイド → 寄り（アップ）でキー発言を際立たせる",
-            reason="パンチライン発言時の寄り",
+            instruction=f"画角: 発言開始の1秒前にワイド→寄り（バストアップ）にカット切替。{speaker}の表情が画面の60%以上を占める構図",
+            reason="パンチライン発言時、話者の表情・感情を最大化",
             priority="high",
         ))
 
     if category == "属性紹介":
-        # 属性紹介 → テロップで属性情報表示
+        # ゲストの具体的な属性をテロップ文言に反映
+        attr_text = _build_attribute_telop(text, income_eval, classification)
         entries.append(DirectionEntry(
             timestamp=ts,
             direction_type="telop",
-            instruction=f"属性テロップ: ゲストの肩書き・属性情報を表示",
-            reason="ゲスト属性の視覚的提示",
+            instruction=f"属性テロップ: {attr_text}。画面下部にキャプション表示（3〜5秒間）。フォント: 細ゴシック白文字+黒縁取り",
+            reason="ゲスト属性の視覚的提示（視聴者が「この人誰？」と思うタイミング）",
             priority="medium",
         ))
 
     if category == "TEKO価値":
-        # TEKO価値の証言 → 2ショットで信頼感演出
         entries.append(DirectionEntry(
             timestamp=ts,
             direction_type="camera",
-            instruction="画角: 2ショット（ワイド）で対話の空気感を見せる",
-            reason="TEKO価値の証言は対話の雰囲気が重要",
+            instruction=f"画角: 2ショット（ワイド）に切替。{speaker}と前川さんの対話の空気感を見せる。2人の表情が同時に映る構図をキープ",
+            reason="TEKOの価値を語る証言シーン。1対1の信頼関係が伝わる絵面を優先",
             priority="medium",
         ))
 
     if category == "メッセージ":
-        # 締めメッセージ → 寄りで説得力
         entries.append(DirectionEntry(
             timestamp=ts,
             direction_type="camera",
-            instruction="画角変更: 寄り（アップ）で視聴者への直接メッセージ感",
-            reason="視聴者への直接メッセージ",
+            instruction=f"画角: クローズアップ（寄り）。{speaker}の目元〜口元が画面の70%以上。視聴者に直接語りかけている印象を演出",
+            reason="締めメッセージ。視聴者との距離を縮める構図",
             priority="medium",
         ))
+        entries.append(DirectionEntry(
+            timestamp=ts,
+            direction_type="telop",
+            instruction=f"メッセージテロップ: 「{_extract_punchline(text)}」を字幕スタイルで表示。フォント: 明朝体、白文字。控えめなサイズで発言に寄り添う",
+            reason="締めの発言を字幕で視覚的に補強",
+            priority="low",
+        ))
 
-    # 層a/bの強さ強調シーン → 色変え
+    # 層別の色演出（テンプレではなく具体的な色指定）
     if classification.tier in ("a", "b") and category in ("実績数字", "パンチライン"):
         if not any(e.direction_type == "color" for e in entries):
+            if classification.tier == "a":
+                color_instruction = "背景色: ゴールド系グラデーション（#FFD700→#FFA500、透過度30%）を1.5秒間フェードイン→フェードアウト"
+            else:
+                color_instruction = "背景色: ブルー系グラデーション（#1565C0→#0D47A1、透過度20%）を1.5秒間フェードイン→フェードアウト"
             entries.append(DirectionEntry(
                 timestamp=ts,
                 direction_type="color",
-                instruction=f"色変え: {classification.tier_label}の強さ強調シーン",
-                reason=f"ゲスト{classification.tier_label}の強さ演出",
+                instruction=color_instruction,
+                reason=f"{classification.tier_label}の強さを色で表現",
                 priority="medium",
             ))
 
     return entries
+
+
+def _is_filler(text: str) -> bool:
+    """テキストが相槌・フィラーのみかを判定"""
+    filler_patterns = [
+        r"^(そうですね|そうなんです|ああ|はい|うん|なるほど|そうですよね|へえ|ええ|まあ|うーん)[。、！？]*$",
+        r"^(かなり変わりましたね|そうですか|本当ですか)[。、！？]*$",
+    ]
+    cleaned = text.strip().strip("「」")
+    if len(cleaned) < 15:
+        for pattern in filler_patterns:
+            if re.match(pattern, cleaned):
+                return True
+    return False
+
+
+def _build_attribute_telop(text: str, income_eval: IncomeEvaluation, classification: ClassificationResult) -> str:
+    """ハイライトテキストと評価結果から具体的な属性テロップ文言を生成"""
+    parts = []
+
+    # 年収演出がONなら年収を含める
+    if income_eval.emphasize and income_eval.telop_suggestion:
+        parts.append(income_eval.telop_suggestion)
+    elif income_eval.emphasize and income_eval.income_value:
+        parts.append(f"年収{income_eval.income_value}万円")
+
+    # テキストから属性キーワードを抽出
+    occupation_match = re.search(r"(元[^\s、。]+|[^\s、。]+勤務|[^\s、。]+職|[^\s、。]+営業|[^\s、。]+エンジニア)", text)
+    if occupation_match:
+        parts.append(occupation_match.group(1))
+
+    if parts:
+        return "「" + " / ".join(parts) + "」"
+    return "「ゲスト肩書き」（※プロファイルから具体的な肩書きを確認して記載）"
 
 
 def _extract_punchline(text: str) -> str:

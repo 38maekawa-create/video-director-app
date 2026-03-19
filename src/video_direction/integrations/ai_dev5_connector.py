@@ -140,8 +140,16 @@ def _parse_numbered_list(content: str, section_name: str) -> list:
 
 
 def _parse_highlights(content: str) -> list:
-    """ハイライトシーンのテーブルをパース"""
-    section = _extract_section(content, "ハイライトシーン")
+    """ハイライトシーンのテーブルをパース
+
+    セクション名のバリエーション（「ハイライトシーン」「キーポイント・重要発言」等）に対応。
+    """
+    # 複数のセクション名を試行
+    section = None
+    for name in ["ハイライトシーン", "キーポイント・重要発言", "キーポイント", "重要発言"]:
+        section = _extract_section(content, name)
+        if section:
+            break
     if not section:
         return []
     highlights = []

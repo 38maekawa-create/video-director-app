@@ -12070,3 +12070,9 @@ INFO:     Application startup complete.
 WARNING:  StatReload detected changes in 'scripts/batch_generate_directions.py'. Reloading...
 INFO:     Shutting down
 INFO:     Waiting for background tasks to complete. (CTRL+C to force quit)
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [98877]
+INFO:     Started server process [49963]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

@@ -11,7 +11,10 @@ from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from fastapi.testclient import TestClient
+# モック対象のモジュールパス
+_LLM_MOD = "teko_core.llm.ask"
+_GUEST_MOD = "src.video_direction.tracker.editing_feedback_converter._get_guest_context"
+_CRITERIA_MOD = "src.video_direction.tracker.editing_feedback_converter._get_quality_criteria"
 
 
 class TestEditingFeedbackConvertAPI(unittest.TestCase):
@@ -25,12 +28,13 @@ class TestEditingFeedbackConvertAPI(unittest.TestCase):
         sys.modules.setdefault("google.oauth2.service_account", MagicMock())
         sys.modules.setdefault("googleapiclient", MagicMock())
         sys.modules.setdefault("googleapiclient.discovery", MagicMock())
+        from fastapi.testclient import TestClient
         from src.video_direction.integrations.api_server import app
         cls.client = TestClient(app)
 
-    @patch("src.video_direction.tracker.editing_feedback_converter.ask")
-    @patch("src.video_direction.tracker.editing_feedback_converter._get_guest_context")
-    @patch("src.video_direction.tracker.editing_feedback_converter._get_quality_criteria")
+    @patch(_LLM_MOD)
+    @patch(_GUEST_MOD)
+    @patch(_CRITERIA_MOD)
     def test_basic_request(self, mock_criteria, mock_guest, mock_ask):
         """基本的なリクエストが正常にレスポンスを返す"""
         mock_criteria.return_value = ("品質基準テキスト", "ハイライト選定の品質基準")
@@ -62,9 +66,9 @@ class TestEditingFeedbackConvertAPI(unittest.TestCase):
         self.assertIn("quality_criteria_used", data)
         self.assertIn("original_feedback", data)
 
-    @patch("src.video_direction.tracker.editing_feedback_converter.ask")
-    @patch("src.video_direction.tracker.editing_feedback_converter._get_guest_context")
-    @patch("src.video_direction.tracker.editing_feedback_converter._get_quality_criteria")
+    @patch(_LLM_MOD)
+    @patch(_GUEST_MOD)
+    @patch(_CRITERIA_MOD)
     def test_auto_category_detection(self, mock_criteria, mock_guest, mock_ask):
         """category未指定時に自動推定される"""
         mock_criteria.return_value = ("基準", "ハイライト選定の品質基準")
@@ -88,15 +92,15 @@ class TestEditingFeedbackConvertAPI(unittest.TestCase):
         data = response.json()
         self.assertEqual(data["category"], "highlight")
 
-    @patch("src.video_direction.tracker.editing_feedback_converter._get_guest_context")
-    @patch("src.video_direction.tracker.editing_feedback_converter._get_quality_criteria")
+    @patch(_GUEST_MOD)
+    @patch(_CRITERIA_MOD)
     def test_llm_failure_returns_fallback(self, mock_criteria, mock_guest):
         """LLM失敗時もフォールバックレスポンスが返る"""
         mock_criteria.return_value = ("基準", "ハイライト選定の品質基準")
         mock_guest.return_value = ""
 
         with patch(
-            "src.video_direction.tracker.editing_feedback_converter.ask",
+            _LLM_MOD,
             side_effect=Exception("LLMエラー"),
         ):
             response = self.client.post(
@@ -133,9 +137,9 @@ class TestEditingFeedbackConvertAPI(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 422)
 
-    @patch("src.video_direction.tracker.editing_feedback_converter.ask")
-    @patch("src.video_direction.tracker.editing_feedback_converter._get_guest_context")
-    @patch("src.video_direction.tracker.editing_feedback_converter._get_quality_criteria")
+    @patch(_LLM_MOD)
+    @patch(_GUEST_MOD)
+    @patch(_CRITERIA_MOD)
     def test_with_project_id(self, mock_criteria, mock_guest, mock_ask):
         """project_id付きリクエスト"""
         mock_criteria.return_value = ("基準", "基準名")
@@ -158,9 +162,9 @@ class TestEditingFeedbackConvertAPI(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-    @patch("src.video_direction.tracker.editing_feedback_converter.ask")
-    @patch("src.video_direction.tracker.editing_feedback_converter._get_guest_context")
-    @patch("src.video_direction.tracker.editing_feedback_converter._get_quality_criteria")
+    @patch(_LLM_MOD)
+    @patch(_GUEST_MOD)
+    @patch(_CRITERIA_MOD)
     def test_response_has_all_fields(self, mock_criteria, mock_guest, mock_ask):
         """レスポンスに全必須フィールドが含まれる"""
         mock_criteria.return_value = ("基準", "基準名")
@@ -191,8 +195,8 @@ class TestEditingFeedbackConvertAPI(unittest.TestCase):
             "suggestions",
             "confidence",
         ]
-        for field in required_fields:
-            self.assertIn(field, data, f"レスポンスに{field}が含まれていない")
+        for field_name in required_fields:
+            self.assertIn(field_name, data, f"レスポンスに{field_name}が含まれていない")
 
 
 if __name__ == "__main__":

@@ -2262,3 +2262,7 @@ INFO:     113.149.186.41:0 - "GET /api/projects/p-20251130-%E3%81%BF%E3%82%93%E3
       "title": "年収3000万30代元アクセンチュア独立コンサル「生成AIでコンサル業は今と同じ形にはならない」Izuさんが語る令和時代のキャリア戦略とは【TEKO独占インタビュー】",
       "target_segment": "ITコンサル・SIer・戦略コンサル勤務の30代前後。AI台頭による自分の市場
 INFO:     127.0.0.1:53421 - "POST /api/v1/projects/p-20251123-Izu/e2e-pipeline HTTP/1.1" 200 OK
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (1987文字)
+  🤖 パース結果: 5件の候補
+INFO:     127.0.0.1:53421 - "POST /api/v1/projects/p-20251213-PAY/e2e-pipeline HTTP/1.1" 200 OK

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-03-19T20:37:28.487692",
+  "generated_at": "2026-03-19T22:40:07.208190",
   "summary": {
     "total_members": 29,
     "matched": 14,
     "unmatched": 15,
-    "total_vimeo_videos": 356,
-    "taidan_videos": 81
+    "total_vimeo_videos": 357,
+    "taidan_videos": 82
   },
   "matched": [
     {
@@ -299,6 +299,12 @@
       "guest_name": "メンイチさん",
       "videos": [
         {
+          "title": "69_メンイチさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1175136437/de9a947723",
+          "status": "available",
+          "created": "2026-03-19"
+        },
+        {
           "title": "メンイチ夫妻　インタビュー",
           "vimeo_url": "https://vimeo.com/1118716330/b900b42c21",
           "status": "available",
@@ -324,8 +330,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
@@ -376,8 +382,8 @@
     {
       "guest_name": "ひろきょうさん",
       "search_keys": [
-        "ヒロキョウ",
-        "ひろきょう"
+        "ひろきょう",
+        "ヒロキョウ"
       ],
       "near_candidates": []
     },
@@ -435,10 +441,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
+        "くまき",
         "くますけ",
         "クマキ",
-        "クマスケ",
-        "くまき"
+        "クマスケ"
       ],
       "near_candidates": [
         {
@@ -563,8 +569,8 @@
     {
       "guest_name": "ゆりかさん",
       "search_keys": [
-        "ユリカ",
-        "ゆりか"
+        "ゆりか",
+        "ユリカ"
       ],
       "near_candidates": []
     },
@@ -572,8 +578,8 @@
       "guest_name": "コテさん",
       "search_keys": [
         "こて",
-        "コテ",
         "コテツ",
+        "コテ",
         "こてつ"
       ],
       "near_candidates": [
@@ -589,9 +595,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "こすと",
         "kos",
-        "コスト"
+        "コスト",
+        "こすと"
       ],
       "near_candidates": [
         {
@@ -627,13 +633,13 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
-        "サトイモ・トーマス",
-        "さといも・トーマス",
-        "さといも・とーます",
-        "トーマス",
+        "さといも",
         "サトイモ",
+        "さといも・トーマス",
+        "サトイモ・トーマス",
         "とーます",
-        "さといも"
+        "トーマス",
+        "さといも・とーます"
       ],
       "near_candidates": [
         {
@@ -676,9 +682,9 @@
     {
       "guest_name": "ハオさん",
       "search_keys": [
-        "羽生",
         "ハオ",
-        "はお"
+        "はお",
+        "羽生"
       ],
       "near_candidates": []
     }

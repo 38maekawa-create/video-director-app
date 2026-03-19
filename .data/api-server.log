@@ -2315,3 +2315,34 @@ INFO:     100.110.206.6:55127 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     100.110.206.6:55250 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     100.110.206.6:55349 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     127.0.0.1:53421 - "POST /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/e2e-pipeline HTTP/1.1" 200 OK
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/dashboard/quality-trend HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/audit/history HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/dashboard/quality-trend HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/audit/history HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects/p-20260124-%E3%82%84%E3%83%BC%E3%81%BE%E3%82%93/youtube-assets HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260124-%E3%82%84%E3%83%BC%E3%81%BE%E3%82%93/source-videos HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260101-kos/vimeo-comments HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20251130-%E3%81%95%E3%82%8B%E3%83%93%E3%83%BC%E3%83%AB/vimeo-comments HTTP/1.1" 200 OK
+  🤖 LLM応答取得 (2230文字)
+  🤖 パース結果: 5件の候補
+INFO:     127.0.0.1:55453 - "GET /api/v1/projects/p-20251213-%E3%81%97%E3%81%8A/vimeo-comments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55456 - "GET /api/v1/projects/p-20260124-RYO/vimeo-comments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55467 - "GET /api/v1/projects/p-20251123-%E3%81%93%E3%82%82%E3%81%95%E3%82%93/vimeo-comments HTTP/1.1" 200 OK

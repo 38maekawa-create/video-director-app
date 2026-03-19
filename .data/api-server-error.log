@@ -11999,3 +11999,11 @@ INFO:     Finished server process [70992]
 INFO:     Started server process [71059]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/analyzer/guest_classifier.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [71059]
+INFO:     Started server process [72008]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

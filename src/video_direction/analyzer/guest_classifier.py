@@ -164,14 +164,17 @@ def classify_guest(video_data: VideoData) -> ClassificationResult:
             confidence="medium",
         )
 
-    # 層a判定⑤: 企業ブランドのみ（年収700万未満でも「誰が見ても凄い」企業）
-    if matched_brand:
+    # 層a判定⑤: 企業ブランドのみ（年収700万未満でも「誰が見ても凄い」肩書き）
+    # 士業・経営層の肩書きのみ（企業名だけでは年収700万未満で層aにはしない）
+    # マニュアル例: りょうすけさん=元凸版+年収600万→層b（凸版は「年収以外の強さ」として活用）
+    TITLE_ONLY_TIER_A = {"弁護士", "公認会計士", "医師", "パイロット", "VP", "執行役員", "取締役"}
+    if matched_brand and matched_brand in TITLE_ONLY_TIER_A:
         return ClassificationResult(
             tier="a",
             tier_label="層a（圧倒的に強い）",
             reason=f"「{matched_brand}」に該当",
             presentation_template=PRESENTATION_TEMPLATES["a"],
-            confidence="high" if income and income >= 700 else "medium",
+            confidence="high",
         )
 
     # 層b: それ以外（相対的強さの言語化が必要）

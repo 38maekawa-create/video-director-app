@@ -2172,3 +2172,28 @@ INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50388 - "GET /api/health HTTP/1.1" 200 OK
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/feedbacks?limit=50 HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/dashboard/quality-trend HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/audit/history HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+  🤖 LLM応答取得 (2204文字)
+  🤖 パース結果: 0件の候補
+  ⚠️ パース失敗、フォールバックへ。生レスポンス冒頭: ```json
+{
+  "candidates": [
+    {
+      "title": "年収3000万30代元アクセンチュア独立コンサル「生成AIでコンサルという働き方は今と同じ形では続かない」Izuさんが語るキャリアの未来設計とは【TEKO独占インタビュー】",
+      "target_segment": "コンサル・ITプロフェッショナル、AI時代のキャリア不安を持つ30代高収
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK

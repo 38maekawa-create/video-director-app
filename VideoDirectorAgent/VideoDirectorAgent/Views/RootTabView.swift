@@ -173,7 +173,7 @@ struct RootTabView: View {
     @ViewBuilder
     private var connectionStatusBanner: some View {
         switch apiClient.connectionStatus {
-        case .disconnected:
+        case .disconnected where apiClient.hasEverConnected:
             HStack(spacing: 8) {
                 Image(systemName: "wifi.slash")
                     .font(.system(size: 14, weight: .semibold))
@@ -212,6 +212,8 @@ struct RootTabView: View {
             .padding(.vertical, 6)
             .background(Color.orange.opacity(0.75))
         case .connected:
+            EmptyView()
+        default:
             EmptyView()
         }
     }

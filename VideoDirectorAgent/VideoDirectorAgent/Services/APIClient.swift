@@ -156,6 +156,8 @@ final class APIClient: ObservableObject {
 
     /// 接続状態
     @Published private(set) var connectionStatus: ConnectionStatus = .connecting
+    /// 初回接続完了フラグ（初回probe完了前はdisconnectedバナーを抑制）
+    @Published private(set) var hasEverConnected: Bool = false
 
     enum ConnectionStatus: Equatable {
         case connecting
@@ -245,6 +247,7 @@ final class APIClient: ObservableObject {
         if let route = await orchestrator.reprobe(trigger: "probeAndConnect") {
             activeBaseURL = route.url
             connectionStatus = .connected(route.label)
+            hasEverConnected = true
             print("✅ 接続成功: \(route.url.absoluteString) (\(route.label))")
         } else {
             activeBaseURL = primaryURL

@@ -2408,3 +2408,4 @@ INFO:     113.149.186.41:0 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/telop-check HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "POST /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/telop-check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53421 - "POST /api/v1/projects/p-20260124-%E3%82%84%E3%83%BC%E3%81%BE%E3%82%93/e2e-pipeline HTTP/1.1" 200 OK

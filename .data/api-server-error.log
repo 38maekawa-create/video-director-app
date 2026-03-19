@@ -11935,3 +11935,11 @@ INFO:     Finished server process [48829]
 INFO:     Started server process [48830]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/analyzer/proper_noun_filter.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [48830]
+INFO:     Started server process [58384]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

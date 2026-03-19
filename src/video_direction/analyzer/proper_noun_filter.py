@@ -98,13 +98,34 @@ def detect_proper_nouns(video_data: VideoData) -> list[ProperNounEntry]:
     return results
 
 
+def _is_standalone_match(word: str, text: str) -> bool:
+    """単語が独立して出現しているか（部分文字列でないか）
+
+    カタカナ単語の場合、前後にカタカナが続いていれば
+    より長い単語の一部とみなし、マッチしない。
+    例: 「くますけ」の中の「キリン」は不一致（前後がカタカナ）。
+    """
+    def _is_katakana(ch: str) -> bool:
+        return '\u30A0' <= ch <= '\u30FF'
+
+    idx = text.find(word)
+    while idx != -1:
+        before_ok = (idx == 0 or not _is_katakana(text[idx - 1]))
+        after_ok = (idx + len(word) >= len(text)
+                    or not _is_katakana(text[idx + len(word)]))
+        if before_ok and after_ok:
+            return True
+        idx = text.find(word, idx + 1)
+    return False
+
+
 def _extract_nouns_from_text(text: str) -> list[str]:
     """テキストから企業名・サービス名を抽出"""
     found = set()
 
-    # 既知の企業名を検出
+    # 既知の企業名を検出（部分文字列マッチを防止）
     for company in INDUSTRY_CATEGORIES:
-        if company in text:
+        if _is_standalone_match(company, text):
             found.add(company)
 
     # パターンマッチングで追加抽出
@@ -113,9 +134,9 @@ def _extract_nouns_from_text(text: str) -> list[str]:
             candidate = match.group(0).strip()
             # フィルタリング: 一般的すぎる単語を除外
             if len(candidate) >= 3 and candidate not in _COMMON_WORDS:
-                # 既知企業名と一致するか部分一致するかチェック
+                # 既知企業名と完全一致するかチェック（部分文字列マッチ防止）
                 for known in INDUSTRY_CATEGORIES:
-                    if candidate in known or known in candidate:
+                    if candidate == known or _is_standalone_match(known, candidate):
                         found.add(known)
 
     return sorted(found)

@@ -168,7 +168,6 @@ final class APIClient: ObservableObject {
 
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
         return decoder
     }()
 

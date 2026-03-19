@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import sqlite3
 import threading
 from datetime import datetime, timezone
@@ -119,20 +120,35 @@ def generate_report_for_project(project_id: str) -> Optional[str]:
             except (json.JSONDecodeError, TypeError):
                 pass
 
+        # --- titleから年収情報を抽出 ---
+        title = project_data.get("title", "")
+        extracted_income = _extract_income_from_title(title)
+
+        # --- categoryからvideo_typeにマッピング ---
+        category = project_data.get("category", "")
+        video_type = _category_to_video_type(category)
+
+        # --- source_videosからdurationを取得 ---
+        duration = _get_duration_from_source_videos(project_id)
+
         video_data = VideoData(
-            title=project_data.get("title", ""),
+            title=title,
             speakers=guest_name,
             highlights=highlights,
+            video_type=video_type,
+            duration=duration,
         )
 
         # プロフィール情報の補完
         if profiles_data:
             p = profiles_data[0]
+            # knowledgeのprofilesにincomeがなければtitleから抽出した年収を使用
+            profile_income = p.get("income", "") or extracted_income
             video_data.profiles = [PersonProfile(
                 name=p.get("name", guest_name),
                 age=p.get("age", str(project_data.get("guest_age", "")) if project_data.get("guest_age") else ""),
                 occupation=p.get("occupation", project_data.get("guest_occupation", "")),
-                income=p.get("income", ""),
+                income=profile_income,
                 side_business=p.get("side_business", ""),
             )]
         elif guest_name and guest_name != "不明":
@@ -140,7 +156,7 @@ def generate_report_for_project(project_id: str) -> Optional[str]:
                 name=guest_name,
                 age=str(project_data.get("guest_age", "")) if project_data.get("guest_age") else "",
                 occupation=project_data.get("guest_occupation", ""),
-                income="",
+                income=extracted_income,
                 side_business="",
             )]
 
@@ -331,3 +347,67 @@ def trigger_auto_report_sync(project_id: str) -> Optional[str]:
         return None
 
     return generate_report_for_project(project_id)
+
+
+def _extract_income_from_title(title: str) -> str:
+    """titleフィールドから年収情報を抽出する
+
+    例:
+    - "年収870万" → "年収870万"
+    - "年収1000万円台" → "年収1000万円台"
+    - "年収約900万円" → "年収約900万円"
+    - "年収3,600-4,800万円規模" → "年収3,600-4,800万円規模"
+    - "年収1000万円台...独立後3000万円" のような複合パターンも抽出
+    """
+    if not title:
+        return ""
+
+    # 年収パターンを正規表現で抽出（「年収」の後に続く金額表現を取得）
+    patterns = [
+        # 「年収」で始まるパターン（最も一般的）
+        r'年収[約]?[\d,]+[\-〜～]?[\d,]*万円?[台規模超]*',
+    ]
+
+    matches = []
+    for pattern in patterns:
+        found = re.findall(pattern, title)
+        matches.extend(found)
+
+    if matches:
+        return "、".join(matches)
+
+    # 「年収」が含まれるが上記パターンにマッチしない場合、周辺テキストを抽出
+    if "年収" in title:
+        # 「年収」を含む部分を広めに抽出
+        match = re.search(r'年収[^\s、。：:）)]*', title)
+        if match:
+            return match.group(0)
+
+    return ""
+
+
+def _category_to_video_type(category: str) -> str:
+    """DBのcategoryカラムをvideo_typeに変換する"""
+    mapping = {
+        "teko_member": "TEKOメンバー対談",
+        "teko_realestate": "TEKO不動産",
+    }
+    return mapping.get(category, category or "")
+
+
+def _get_duration_from_source_videos(project_id: str) -> str:
+    """source_videosテーブルからdurationを取得する"""
+    try:
+        conn = _get_db()
+        try:
+            row = conn.execute(
+                "SELECT duration FROM source_videos WHERE project_id = ? AND duration IS NOT NULL AND duration != '' LIMIT 1",
+                (project_id,),
+            ).fetchone()
+            if row and row["duration"]:
+                return row["duration"]
+        finally:
+            conn.close()
+    except Exception:
+        pass
+    return ""

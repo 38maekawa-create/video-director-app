@@ -136,10 +136,26 @@ def _sanitize_description(desc: VideoDescription, hidden_nouns: list[str]) -> Vi
             desc.hook = desc.hook.replace(noun, replacement)
         if desc.summary and noun in desc.summary:
             desc.summary = desc.summary.replace(noun, replacement)
-        if desc.hashtags and noun in desc.hashtags:
-            desc.hashtags = desc.hashtags.replace(noun, replacement)
+
+    # ハッシュタグは特別処理: 伏せ対象企業名を含むハッシュタグ全体を除去
+    if desc.hashtags and hidden_nouns:
+        desc.hashtags = _remove_hashtags_with_hidden_nouns(desc.hashtags, hidden_nouns)
 
     return desc
+
+
+def _remove_hashtags_with_hidden_nouns(hashtags_text: str, hidden_nouns: list[str]) -> str:
+    """伏せ対象企業名を含むハッシュタグを丸ごと除去する"""
+    # ハッシュタグを分割（#で始まる各タグを抽出）
+    tags = re.findall(r'#\S+', hashtags_text)
+    filtered = []
+    for tag in tags:
+        if any(noun in tag for noun in hidden_nouns):
+            continue
+        filtered.append(tag)
+    # 元の区切り文字（全角スペース or 半角スペース）を維持
+    separator = "　" if "　" in hashtags_text else " "
+    return separator.join(filtered)
 
 
 def _parse_description_response(raw: str) -> VideoDescription:

@@ -211,3 +211,37 @@ class TestDescriptionWriterSanitize:
         desc = VideoDescription(full_text=original_text)
         result = _sanitize_description(desc, [])
         assert result.full_text == original_text
+
+    def test_hashtag_with_partial_match_removed(self):
+        """「キリン」が伏せ対象の時、#キリンビール もハッシュタグごと除去される"""
+        from src.video_direction.analyzer.description_writer import (
+            VideoDescription, _sanitize_description,
+        )
+
+        desc = VideoDescription(
+            full_text="大手飲料メーカーで営業",
+            hashtags="#キリンビール　#営業企画　#副業　#年収700万",
+        )
+        result = _sanitize_description(desc, ["キリン"])
+
+        assert "#キリンビール" not in result.hashtags, (
+            f"部分一致するハッシュタグが除去されていない: {result.hashtags}"
+        )
+        assert "#営業企画" in result.hashtags
+        assert "#副業" in result.hashtags
+        assert "#年収700万" in result.hashtags
+
+    def test_hashtag_no_removal_when_no_match(self):
+        """伏せ対象でない企業名のハッシュタグは残る"""
+        from src.video_direction.analyzer.description_writer import (
+            VideoDescription, _sanitize_description,
+        )
+
+        desc = VideoDescription(
+            hashtags="#アクセンチュア　#コンサル　#年収1500万",
+        )
+        result = _sanitize_description(desc, ["キリン"])
+
+        assert "#アクセンチュア" in result.hashtags
+        assert "#コンサル" in result.hashtags
+        assert "#年収1500万" in result.hashtags

@@ -172,49 +172,55 @@ struct RootTabView: View {
     // MARK: - 接続ステータスバナー
     @ViewBuilder
     private var connectionStatusBanner: some View {
-        switch apiClient.connectionStatus {
-        case .disconnected where apiClient.hasEverConnected:
-            HStack(spacing: 8) {
-                Image(systemName: "wifi.slash")
-                    .font(.system(size: 14, weight: .semibold))
-                Text("サーバーに接続できません")
-                    .font(.system(size: 13, weight: .medium))
-                Spacer()
-                Button {
-                    Task {
-                        await APIClient.shared.probeAndConnect()
+        // 初回接続が完了するまではバナーを一切表示しない
+        // アプリ起動直後の「接続中...」表示を抑制
+        if !apiClient.hasEverConnected {
+            EmptyView()
+        } else {
+            switch apiClient.connectionStatus {
+            case .disconnected:
+                HStack(spacing: 8) {
+                    Image(systemName: "wifi.slash")
+                        .font(.system(size: 14, weight: .semibold))
+                    Text("サーバーに接続できません")
+                        .font(.system(size: 13, weight: .medium))
+                    Spacer()
+                    Button {
+                        Task {
+                            await APIClient.shared.probeAndConnect()
+                        }
+                    } label: {
+                        Text("再接続")
+                            .font(.system(size: 12, weight: .bold))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 4)
+                            .background(Color.white.opacity(0.2))
+                            .clipShape(Capsule())
                     }
-                } label: {
-                    Text("再接続")
-                        .font(.system(size: 12, weight: .bold))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.2))
-                        .clipShape(Capsule())
                 }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color.red.opacity(0.85))
+            case .connecting:
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .scaleEffect(0.7)
+                        .tint(.white)
+                    Text("再接続中...")
+                        .font(.system(size: 13, weight: .medium))
+                    Spacer()
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+                .background(Color.orange.opacity(0.75))
+            case .connected:
+                EmptyView()
+            default:
+                EmptyView()
             }
-            .foregroundStyle(.white)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(Color.red.opacity(0.85))
-        case .connecting:
-            HStack(spacing: 8) {
-                ProgressView()
-                    .progressViewStyle(.circular)
-                    .scaleEffect(0.7)
-                    .tint(.white)
-                Text("接続中...")
-                    .font(.system(size: 13, weight: .medium))
-                Spacer()
-            }
-            .foregroundStyle(.white)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
-            .background(Color.orange.opacity(0.75))
-        case .connected:
-            EmptyView()
-        default:
-            EmptyView()
         }
     }
 }

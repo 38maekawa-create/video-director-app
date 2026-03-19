@@ -225,7 +225,23 @@ struct VideoProject: Identifiable, Codable, Hashable {
         unreviewedCount = try container.decodeIfPresent(Int.self, forKey: .unreviewedCount) ?? 0
         qualityScore = try container.decodeIfPresent(Int.self, forKey: .qualityScore)
         hasUnsentFeedback = try container.decodeIfPresent(Bool.self, forKey: .hasUnsentFeedback) ?? false
-        directionReportURL = try container.decodeIfPresent(String.self, forKey: .directionReportURL)
+        // .convertFromSnakeCaseがdirection_report_url→directionReportUrlに変換するが、
+        // CodingKeysのcase名directionReportURLとUrl/URLの大文字小文字が不一致するため、
+        // CodingKeys経由とDynamicKey経由の両方を試行する
+        if let url = try? container.decodeIfPresent(String.self, forKey: .directionReportURL), url != nil {
+            directionReportURL = url
+        } else {
+            // convertFromSnakeCaseで変換後のキー名で直接アクセス
+            struct DynamicKey: CodingKey {
+                var stringValue: String
+                var intValue: Int? { nil }
+                init?(stringValue: String) { self.stringValue = stringValue }
+                init?(intValue: Int) { nil }
+            }
+            let rawContainer = try decoder.container(keyedBy: DynamicKey.self)
+            directionReportURL = try rawContainer.decodeIfPresent(String.self, forKey: DynamicKey(stringValue: "directionReportUrl")!)
+                ?? rawContainer.decodeIfPresent(String.self, forKey: DynamicKey(stringValue: "direction_report_url")!)
+        }
         sourceVideoURL = VideoProject.decodeNestedURL(from: container, key: .sourceVideoURL, fallbackKey: .sourceVideo)
         editedVideoURL = VideoProject.decodeNestedURL(from: container, key: .editedVideoURL, fallbackKey: .editedVideo)
         knowledge = VideoProject.decodeKnowledgeText(from: container)

@@ -181,7 +181,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         case unreviewedCount
         case qualityScore
         case hasUnsentFeedback
-        case directionReportURL = "direction_report_url"
+        case directionReportURL = "directionReportUrl"
         case sourceVideoURL = "source_video_url"
         case editedVideoURL = "edited_video_url"
         case knowledge

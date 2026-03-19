@@ -2137,3 +2137,10 @@ INFO:     127.0.0.1:61912 - "GET /api/projects/p-20251123-Izu HTTP/1.1" 200 OK
 INFO:     127.0.0.1:61914 - "GET /api/projects/p-20260101-kos HTTP/1.1" 200 OK
 INFO:     127.0.0.1:61917 - "GET /api/projects/p-20260101-%E3%83%8F%E3%82%AA HTTP/1.1" 200 OK
 INFO:     127.0.0.1:62399 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2016文字)
+  🤖 パース結果: 5件の候補
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK

@@ -2542,8 +2542,8 @@ class EditingFeedbackConvertRequest(BaseModel):
     """編集FB変換リクエスト"""
     feedback: str                              # 抽象的なFBテキスト
     guest_name: str                            # 対象ゲスト名
-    category: str | None = None                # "highlight" | "direction" | "telop" | "general"（Noneなら自動推定）
-    project_id: str | None = None              # 動画プロジェクトID（オプション）
+    category: Optional[str] = None             # "highlight" | "direction" | "telop" | "general"（Noneなら自動推定）
+    project_id: Optional[str] = None           # 動画プロジェクトID（オプション）
 
 
 @app.post("/api/v1/editing-feedback/convert")

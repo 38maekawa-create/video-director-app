@@ -2536,6 +2536,40 @@ def convert_asset_feedback(body: AssetFeedbackConvertRequest):
     }
 
 
+# --- 編集FB変換（タイミング1: 抽象FB→具体的編集指示） ---
+
+class EditingFeedbackConvertRequest(BaseModel):
+    """編集FB変換リクエスト"""
+    feedback: str                              # 抽象的なFBテキスト
+    guest_name: str                            # 対象ゲスト名
+    category: str | None = None                # "highlight" | "direction" | "telop" | "general"（Noneなら自動推定）
+    project_id: str | None = None              # 動画プロジェクトID（オプション）
+
+
+@app.post("/api/v1/editing-feedback/convert")
+def convert_editing_feedback_api(body: EditingFeedbackConvertRequest):
+    """編集者の映像に対するFBを品質基準に基づいて具体的な編集指示に変換
+
+    抽象的な音声FB（例:「冒頭のハイライト、センスなさすぎ」）を、
+    QUALITY_JUDGMENT_GUIDE.mdの品質基準を参照して、
+    編集者が即アクションできる具体的な指示に変換する。
+    """
+    from ..tracker.editing_feedback_converter import (
+        convert_editing_feedback,
+        ConvertedEditingFeedback,
+    )
+    from dataclasses import asdict
+
+    result = convert_editing_feedback(
+        raw_feedback=body.feedback,
+        guest_name=body.guest_name,
+        feedback_category=body.category,
+        project_id=body.project_id,
+    )
+
+    return asdict(result)
+
+
 # --- 編集後フィードバック (P1: Before/After差分) ---
 
 class EditFeedbackRequest(BaseModel):

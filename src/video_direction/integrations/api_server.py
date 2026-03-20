@@ -2573,11 +2573,11 @@ def convert_feedback(body: FeedbackConvertRequest):
                         created_by="naoto",
                     )
             except Exception:
-                pass  # 学習失敗はFB変換自体には影響させない
+                logger.exception("EditLearner学習処理でエラー発生（FB変換自体には影響させない）")
 
             return result
     except Exception:
-        pass
+        logger.exception("FB変換でエラー発生（フォールバックに切り替え）")
 
     # フォールバック: 簡易変換（LLM不使用）
     return {
@@ -3655,7 +3655,7 @@ def convert_feedback_enhanced(body: FeedbackConvertEnhancedRequest):
             result["learning_rules_applied"] = bool(learned_rules_text)
             return result
     except Exception:
-        pass
+        logger.exception("AI生成物FB変換でエラー発生（フォールバックに切り替え）")
 
     # フォールバック: 簡易変換（LLM不使用）
     return {

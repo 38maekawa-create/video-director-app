@@ -186,12 +186,20 @@ def _fallback_description(
     classification: ClassificationResult,
     income_eval: IncomeEvaluation,
 ) -> VideoDescription:
-    """フォールバック（テンプレートベース — TEKO実投稿済みフォーマット完全準拠）"""
+    """フォールバック（テンプレートベース）
+
+    ゲストのcategoryに応じてテンプレートを分岐する。
+    - teko_realestate: 不動産事業向けテンプレート（従来版）
+    - teko_member / その他: 汎用テンプレート（不動産固有表現を除去）
+    """
     profile = video_data.profiles[0] if video_data.profiles else None
 
     # ゲスト名（「さん」の二重付与を防止）
     raw_name = profile.name if profile and profile.name else "ゲスト"
     guest_name = raw_name.rstrip("さん") + "さん"
+
+    # カテゴリ判定（video_dataから取得）
+    guest_category = video_data.category or ""
 
     # ハッシュタグ生成（動画内容に合わせて）
     hashtag_parts = []
@@ -201,7 +209,11 @@ def _fallback_description(
         hashtag_parts.append(f"#{occ.replace(' ', '')}")
     if profile and profile.income:
         hashtag_parts.append(f"#年収{profile.income}")
-    hashtag_parts.extend(["#プロパー八重洲", "#年収1000万", "#年収", "#副業", "#ハイキャリ", "#TEKO", "#転職"])
+    # カテゴリに応じたハッシュタグ（不動産固有タグは不動産カテゴリのみ）
+    if guest_category == "teko_realestate":
+        hashtag_parts.extend(["#プロパー八重洲", "#年収1000万", "#年収", "#副業", "#不動産投資", "#ハイキャリ", "#TEKO", "#転職"])
+    else:
+        hashtag_parts.extend(["#プロパー八重洲", "#年収1000万", "#年収", "#副業", "#ハイキャリ", "#TEKO", "#転職"])
 
     hashtags_text = "　".join(hashtag_parts[:10])
 
@@ -212,7 +224,61 @@ def _fallback_description(
             ts = h.timestamp if h.timestamp else "0:00"
             timestamps_text += f"{ts} {h.text[:40]}\n"
 
-    # 概要欄全文（実際のTEKO投稿済み動画と完全同一のテンプレート）
+    # 運営者紹介文をカテゴリに応じて分岐
+    if guest_category == "teko_realestate":
+        # 不動産カテゴリ: 不動産投資に言及した従来版
+        owner_bio = """【運営者情報】　プロパー八重洲 / 藤田光貴
+
+1993年、愛媛県生まれ。
+TEKO合同会社 代表社員 / Yohack合同会社 代表社員。
+
+小野薬品工業（株） → (株) ストライク → アレクシオンファーマ（同）を経て独立。
+
+アレクシオンファーマ在籍時、30歳時点で年収約1,100万円と500万円相当のRSUを受け取る。
+
+サラリーマン時代に副業・不動産投資を並行して実践し、アレクシオンファーマ（同）在籍時に純資産1億円超えに至る。
+
+Xフォロワー2.2万人。Instagramフォロワー1万人。（2025.9時点）
+
+医師、GAFAM、5大総合商社、外資系戦略コンサルなどハイクラスのビジネスパーソンも数多く在籍する会員制ビジネスパーソン向けプラットフォーム"TEKO"を運営。
+
+2025年9月時点で、300名ほどのビジネスパーソンがTEKOに在籍中。
+
+海外輸出物販事業を運営する法人と不動産賃貸業及びハイキャリア中心にビジネスパーソンのキャリア支援・経済支援を行うTEKO事業を運営する法人の2法人を所有。
+
+海外輸出物販法人の前期決算では年商1.3億円。
+
+2016年 小野薬品工業株式会社  入社
+2021年 株式会社ストライク 入社
+2022年 アレクシオンファーマ合同会社  入社
+2024年 TEKO設立"""
+    else:
+        # 汎用カテゴリ（teko_member等）: 不動産固有表現を除いた汎用版
+        owner_bio = """【運営者情報】　プロパー八重洲 / 藤田光貴
+
+1993年、愛媛県生まれ。
+TEKO合同会社 代表社員 / Yohack合同会社 代表社員。
+
+小野薬品工業（株） → (株) ストライク → アレクシオンファーマ（同）を経て独立。
+
+アレクシオンファーマ在籍時、30歳時点で年収約1,100万円と500万円相当のRSUを受け取る。
+
+サラリーマン時代に副業を並行して実践し、アレクシオンファーマ（同）在籍時に純資産1億円超えに至る。
+
+Xフォロワー2.2万人。Instagramフォロワー1万人。（2025.9時点）
+
+医師、GAFAM、5大総合商社、外資系戦略コンサルなどハイクラスのビジネスパーソンも数多く在籍する会員制ビジネスパーソン向けプラットフォーム"TEKO"を運営。
+
+2025年9月時点で、300名ほどのビジネスパーソンがTEKOに在籍中。
+
+ハイキャリア中心にビジネスパーソンのキャリア支援・経済支援を行うTEKO事業を運営。
+
+2016年 小野薬品工業株式会社  入社
+2021年 株式会社ストライク 入社
+2022年 アレクシオンファーマ合同会社  入社
+2024年 TEKO設立"""
+
+    # 概要欄全文（TEKO投稿済みフォーマット準拠、カテゴリに応じた運営者紹介を使用）
     full_text = f"""チャンネル登録はこちらから▼
     @TEKO-公式
 
@@ -238,31 +304,7 @@ https://leverage.daive-teko.com/p/lp_youtube_tekoofficial?openExternalBrowser=1
 ━━━━━━━━━━━
 
 
-【運営者情報】　プロパー八重洲 / 藤田光貴
-
-1993年、愛媛県生まれ。
-TEKO合同会社 代表社員 / Yohack合同会社 代表社員。
-
-小野薬品工業（株） → (株) ストライク → アレクシオンファーマ（同）を経て独立。
-
-アレクシオンファーマ在籍時、30歳時点で年収約1,100万円と500万円相当のRSUを受け取る。
-
-サラリーマン時代に副業・不動産投資を並行して実践し、アレクシオンファーマ（同）在籍時に純資産1億円超えに至る。
-
-Xフォロワー2.2万人。Instagramフォロワー1万人。（2025.9時点）
-
-医師、GAFAM、5大総合商社、外資系戦略コンサルなどハイクラスのビジネスパーソンも数多く在籍する会員制ビジネスパーソン向けプラットフォーム"TEKO"を運営。
-
-2025年9月時点で、300名ほどのビジネスパーソンがTEKOに在籍中。
-
-海外輸出物販事業を運営する法人と不動産賃貸業及びハイキャリア中心にビジネスパーソンのキャリア支援・経済支援を行うTEKO事業を運営する法人の2法人を所有。
-
-海外輸出物販法人の前期決算では年商1.3億円。
-
-2016年 小野薬品工業株式会社  入社
-2021年 株式会社ストライク 入社
-2022年 アレクシオンファーマ合同会社  入社
-2024年 TEKO設立
+{owner_bio}
 
 
 ▪️他SNSでもキャリアや資産形成に関する戦略・戦術を発信中
@@ -279,7 +321,7 @@ https://www.instagram.com/yaesu.pro/"""
         timestamps=timestamps_text,
         cta="",
         hashtags=hashtags_text,
-        llm_raw_response="[フォールバック: TEKO実投稿済みテンプレート準拠]",
+        llm_raw_response=f"[フォールバック: TEKO実投稿済みテンプレート準拠 (category={guest_category or 'unknown'})]",
     )
 
 

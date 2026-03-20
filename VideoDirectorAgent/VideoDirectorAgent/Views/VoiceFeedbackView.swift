@@ -54,9 +54,15 @@ struct VoiceFeedbackView: View {
                             sendSection
                         }
 
-                        // Vimeo投稿セクション（変換済みの場合に表示）
-                        if viewModel.flowState == .readyToSend || viewModel.flowState == .sent {
-                            vimeoPostSection
+                        // Vimeo投稿セクション
+                        // 承認フロー導入後: FB送信後は「承認画面で承認してからVimeo投稿」の導線を表示
+                        // 直接Vimeo投稿は承認済みのFBのみ許可
+                        if viewModel.flowState == .sent {
+                            approvalGuidanceSection
+                        } else if viewModel.flowState == .readyToSend {
+                            // 未送信状態ではVimeo投稿セクションは非表示
+                            // （まずFBを送信→承認フローを経由する必要がある）
+                            EmptyView()
                         }
                     }
                     .padding(.horizontal, 20)
@@ -450,7 +456,40 @@ struct VoiceFeedbackView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    // MARK: - Vimeo投稿セクション
+    // MARK: - 承認フロー誘導セクション
+    private var approvalGuidanceSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "checkmark.shield.fill")
+                    .foregroundStyle(Color(hex: 0xF5A623))
+                Text("Vimeo投稿には承認が必要です")
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.white)
+            }
+
+            Text("FBが保存されました。「FB承認」タブから内容を確認・承認してください。承認後にVimeoへの投稿が可能になります。")
+                .font(.caption)
+                .foregroundStyle(AppTheme.textSecondary)
+
+            HStack {
+                Image(systemName: "arrow.right.circle.fill")
+                    .foregroundStyle(AppTheme.accent)
+                Text("ホーム画面の「FB承認」タブから承認できます")
+                    .font(.caption)
+                    .foregroundStyle(AppTheme.textMuted)
+            }
+        }
+        .padding(16)
+        .background(Color(hex: 0xF5A623).opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(Color(hex: 0xF5A623).opacity(0.3), lineWidth: 1)
+        )
+    }
+
+    // MARK: - Vimeo投稿セクション（レガシー: 承認済みFBからの投稿用に残す）
     private var vimeoPostSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             // セクションヘッダー

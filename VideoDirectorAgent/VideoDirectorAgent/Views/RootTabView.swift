@@ -9,18 +9,19 @@ struct RootTabView: View {
     @StateObject private var projectListVM = ProjectListViewModel()
     @StateObject private var dashboardVM = DashboardViewModel()
     @StateObject private var feedbackHistoryVM = FeedbackHistoryViewModel()
+    @StateObject private var feedbackApprovalVM = FeedbackApprovalViewModel()
     @StateObject private var knowledgePagesVM = KnowledgePagesViewModel()
     @ObservedObject private var apiClient = APIClient.shared
 
     enum Tab: Int, CaseIterable {
-        case home, report, record, history, quality
+        case home, report, record, approval, quality
 
         var label: String {
             switch self {
             case .home: return "ホーム"
             case .report: return "レポート"
             case .record: return "録音"
-            case .history: return "履歴"
+            case .approval: return "FB承認"
             case .quality: return "品質"
             }
         }
@@ -30,7 +31,7 @@ struct RootTabView: View {
             case .home: return "house.fill"
             case .report: return "doc.text.fill"
             case .record: return "mic.fill"
-            case .history: return "clock.fill"
+            case .approval: return "checkmark.shield.fill"
             case .quality: return "chart.xyaxis.line"
             }
         }
@@ -64,9 +65,9 @@ struct RootTabView: View {
                         viewModel: projectListVM,
                         onShowKnowledge: { showKnowledgePages = true }
                     )
-                case .history:
+                case .approval:
                     NavigationStack {
-                        FeedbackHistoryView(viewModel: feedbackHistoryVM)
+                        FeedbackApprovalListView(viewModel: feedbackApprovalVM)
                     }
                 case .quality:
                     NavigationStack {
@@ -100,6 +101,10 @@ struct RootTabView: View {
                         }
                     }
             }
+        }
+        .task {
+            // アプリ起動時に承認待ちFB件数を取得（バッジ表示用）
+            await feedbackApprovalVM.fetchPending()
         }
     }
 
@@ -146,14 +151,27 @@ struct RootTabView: View {
                     Button {
                         selectedTab = tab
                     } label: {
-                        VStack(spacing: 4) {
-                            Image(systemName: tab.icon)
-                                .font(.system(size: 18))
-                            Text(tab.label)
-                                .font(AppTheme.labelFont(9))
+                        ZStack(alignment: .topTrailing) {
+                            VStack(spacing: 4) {
+                                Image(systemName: tab.icon)
+                                    .font(.system(size: 18))
+                                Text(tab.label)
+                                    .font(AppTheme.labelFont(9))
+                            }
+                            .foregroundStyle(selectedTab == tab ? .white : AppTheme.textMuted)
+                            .frame(maxWidth: .infinity)
+
+                            // FB承認タブに未承認件数バッジを表示
+                            if tab == .approval && feedbackApprovalVM.pendingCount > 0 {
+                                Text("\(feedbackApprovalVM.pendingCount)")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .frame(minWidth: 16, minHeight: 16)
+                                    .background(AppTheme.accent)
+                                    .clipShape(Circle())
+                                    .offset(x: -8, y: -2)
+                            }
                         }
-                        .foregroundStyle(selectedTab == tab ? .white : AppTheme.textMuted)
-                        .frame(maxWidth: .infinity)
                     }
                 }
             }

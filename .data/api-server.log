@@ -2701,3 +2701,7 @@ INFO:     127.0.0.1:63854 - "POST /api/v1/projects/p-pay/e2e-pipeline HTTP/1.1" 
   🤖 LLM応答取得 (2330文字)
   🤖 パース結果: 5件の候補
 INFO:     127.0.0.1:63854 - "POST /api/v1/projects/p-20251213-PAY/e2e-pipeline HTTP/1.1" 200 OK
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2101文字)
+  🤖 パース結果: 5件の候補
+INFO:     127.0.0.1:64410 - "POST /api/v1/projects/p-ryo/e2e-pipeline HTTP/1.1" 200 OK

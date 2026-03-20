@@ -105,25 +105,40 @@ def _parse_meta(content: str, data: VideoData):
         "カテゴリ": "category",
         "文字起こし方式": "transcript_method",
     }
+    # guest_summaryとして認識しない既知の非プロファイルキー
+    non_profile_keys = {
+        "タグ", "メンバー期", "YouTube URL", "形式", "備考",
+        "撮影日", "撮影場所", "編集者", "公開状況", "チャプター",
+    }
 
     for line in meta_section.split("\n"):
         line = line.strip()
         if not line.startswith("- **"):
-            # ゲスト情報行（"- **名前**: ..."のパターンだがfield_mapに含まれないもの）
-            # メタ情報の最後にゲスト1行要約がある
             continue
         match = re.match(r"- \*\*(.+?)\*\*:\s*(.+)", line)
         if not match:
             continue
         key, value = match.group(1).strip(), match.group(2).strip()
+        # 名前のクリーニング（余分な括弧等を除去）
+        key_clean = re.sub(r"[()（）]", "", key).strip()
 
-        if key == "タグ":
+        if key_clean == "タグ":
             data.tags = [t.strip().lstrip("#") for t in value.split(",")]
-        elif key in field_map:
-            setattr(data, field_map[key], value)
+        elif key_clean in field_map:
+            setattr(data, field_map[key_clean], value)
+        elif key_clean in non_profile_keys:
+            # 既知の非プロファイルキーはguest_summaryに設定しない
+            pass
         else:
             # ゲスト名とその情報（例: "Izu": "年齢: 30代中盤 / ..."）
-            data.guest_summary = f"{key}: {value}"
+            # プロファイル行（年齢/本業/年収を含む行）を優先的にguest_summaryに設定
+            info_text = f"{key_clean}: {value}"
+            if any(k in value for k in ("年齢", "本業", "年収", "職業")):
+                # プロファイル行は最優先で設定
+                data.guest_summary = info_text
+            elif not data.guest_summary:
+                # プロファイル行がまだ見つかっていない場合のみフォールバック設定
+                data.guest_summary = info_text
 
 
 def _parse_numbered_list(content: str, section_name: str) -> list:
@@ -234,6 +249,8 @@ def _parse_profiles_from_meta(content: str) -> list:
 
     「## 人物プロファイル情報」セクションがないファイル向け。
     メタ情報内の「**名前**: 年齢: X / 本業: Y / 年収: Z」形式を解析する。
+    行頭の「- 」（Markdownリストマーカー）があっても正しくパースする。
+    名前に含まれる余分な記号（括弧等）はクリーニングする。
     """
     meta_section = _extract_section(content, "メタ情報")
     if not meta_section:
@@ -242,11 +259,14 @@ def _parse_profiles_from_meta(content: str) -> list:
     profiles = []
     for line in meta_section.split("\n"):
         line = line.strip()
-        # パターン1: 「**名前**: 年齢: X / 本業: Y / 年収: Z」
-        match = re.match(r"\*\*(.+?)\*\*:\s*(.+)", line)
+        # 行頭の「- 」を除去してからマッチ（メタ情報はMarkdownリスト形式）
+        stripped = line.lstrip("- ").strip()
+        # パターン: 「**名前**: 年齢: X / 本業: Y / 年収: Z」
+        match = re.match(r"\*\*(.+?)\*\*:\s*(.+)", stripped)
         if not match:
             continue
-        name = match.group(1).strip()
+        # 名前のクリーニング: 余分な括弧等を除去（例: 「真生)」→「真生」）
+        name = re.sub(r"[()（）]", "", match.group(1)).strip()
         info = match.group(2).strip()
 
         # 「前川」（ホスト）はスキップ

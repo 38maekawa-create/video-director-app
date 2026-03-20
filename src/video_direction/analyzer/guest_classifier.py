@@ -79,11 +79,13 @@ def classify_guest(video_data: VideoData) -> ClassificationResult:
         )
 
     # プロファイルベースのテキスト（現在の属性のみ。将来の希望は含めない）
+    # タイトルにも企業名が含まれることがあるため（例: 「キリンビール」）参照に含める
     profile_text = " ".join([
         profile.occupation or "",
         profile.income or "",
         profile.teko_info or "",
         video_data.guest_summary or "",
+        video_data.title or "",
     ])
     # 詳細要約も参照するが、分類判定はプロファイルベースを優先
     full_text = profile_text + " " + (video_data.detailed_summary or "")

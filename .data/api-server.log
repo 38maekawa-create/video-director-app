@@ -2633,3 +2633,7 @@ INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/audit/latest HTTP/
 INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/feedbacks?limit=50 HTTP/1.1" 200 OK
 INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/audit/history HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52105 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:5ce0:a990:c98b:3545:0 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:5ce0:a990:c98b:3545:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:5ce0:a990:c98b:3545:0 - "GET /readyz HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:5ce0:a990:c98b:3545:0 - "GET /api/projects HTTP/1.1" 200 OK

@@ -570,6 +570,53 @@ final class APIClient: ObservableObject {
         )
     }
 
+    // MARK: - FB承認フロー
+
+    /// 承認待ちFB一覧を取得
+    func fetchPendingFeedbacks() async throws -> [FeedbackItem] {
+        try await request([FeedbackItem].self, path: "/api/v1/feedbacks/pending")
+    }
+
+    /// FBを承認する
+    func approveFeedback(feedbackId: String) async throws {
+        struct ApproveBody: Encodable {
+            let approved_by: String
+        }
+        _ = try await request(
+            EmptyResponse.self,
+            path: "/api/v1/feedbacks/\(feedbackId)/approve",
+            method: "PUT",
+            body: ApproveBody(approved_by: actorName)
+        )
+    }
+
+    /// FBを修正して承認する
+    func modifyFeedback(feedbackId: String, modifiedText: String) async throws {
+        struct ModifyBody: Encodable {
+            let modified_text: String
+            let approved_by: String
+        }
+        _ = try await request(
+            EmptyResponse.self,
+            path: "/api/v1/feedbacks/\(feedbackId)/modify",
+            method: "PUT",
+            body: ModifyBody(modified_text: modifiedText, approved_by: actorName)
+        )
+    }
+
+    /// FBを却下する
+    func rejectFeedback(feedbackId: String) async throws {
+        struct RejectBody: Encodable {
+            let approved_by: String
+        }
+        _ = try await request(
+            EmptyResponse.self,
+            path: "/api/v1/feedbacks/\(feedbackId)/reject",
+            method: "PUT",
+            body: RejectBody(approved_by: actorName)
+        )
+    }
+
     // MARK: - FB指示トラッカー
 
     func fetchFBTracker(projectId: String) async throws -> FBTrackerResponse {

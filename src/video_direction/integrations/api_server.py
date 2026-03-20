@@ -135,6 +135,21 @@ def init_db():
         conn.execute("ALTER TABLE feedbacks ADD COLUMN feedback_target TEXT DEFAULT 'direction'")
         conn.commit()
 
+    # 承認フロー用カラムのマイグレーション（FB変換結果の事前承認制）
+    fb_columns = [row[1] for row in conn.execute("PRAGMA table_info(feedbacks)").fetchall()]
+    if "approval_status" not in fb_columns:
+        conn.execute("ALTER TABLE feedbacks ADD COLUMN approval_status TEXT DEFAULT 'pending'")
+        conn.commit()
+    if "approved_at" not in fb_columns:
+        conn.execute("ALTER TABLE feedbacks ADD COLUMN approved_at TEXT")
+        conn.commit()
+    if "modified_text" not in fb_columns:
+        conn.execute("ALTER TABLE feedbacks ADD COLUMN modified_text TEXT")
+        conn.commit()
+    if "approved_by" not in fb_columns:
+        conn.execute("ALTER TABLE feedbacks ADD COLUMN approved_by TEXT")
+        conn.commit()
+
     conn.close()
 
 
@@ -893,6 +908,122 @@ def list_all_feedbacks(limit: int = 100):
     ).fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+
+# --- FB承認フロー ---
+
+@app.get("/api/v1/feedbacks/pending")
+def list_pending_feedbacks():
+    """承認待ちFB一覧（approval_status='pending'のFBをプロジェクト情報付きで返す）"""
+    conn = _get_db()
+    rows = conn.execute(
+        "SELECT f.*, p.guest_name, p.title as project_title "
+        "FROM feedbacks f "
+        "LEFT JOIN projects p ON f.project_id = p.id "
+        "WHERE f.approval_status = 'pending' "
+        "ORDER BY f.created_at DESC"
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+@app.put("/api/v1/feedbacks/{feedback_id}/approve")
+def approve_feedback(feedback_id: int, body: dict = None):
+    """FBを承認する（approval_status='approved'に変更）"""
+    conn = _get_db()
+    existing = conn.execute(
+        "SELECT id, created_by FROM feedbacks WHERE id = ?", (feedback_id,)
+    ).fetchone()
+    if not existing:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Feedback not found")
+
+    # 承認者のチェック（bodyにapproved_byがあれば、created_byと一致するか検証）
+    approved_by = (body or {}).get("approved_by", existing["created_by"])
+    if approved_by != existing["created_by"]:
+        conn.close()
+        raise HTTPException(
+            status_code=403,
+            detail="FB投稿者本人のみが承認できます"
+        )
+
+    conn.execute(
+        "UPDATE feedbacks SET approval_status = 'approved', "
+        "approved_at = datetime('now'), approved_by = ? WHERE id = ?",
+        (approved_by, feedback_id),
+    )
+    conn.commit()
+    conn.close()
+    return {"status": "approved", "feedback_id": feedback_id, "approved_by": approved_by}
+
+
+@app.put("/api/v1/feedbacks/{feedback_id}/modify")
+def modify_feedback(feedback_id: int, body: dict):
+    """FBを修正して承認する（修正テキストを保存し、approval_status='modified'に変更）"""
+    modified_text = (body or {}).get("modified_text", "")
+    if not modified_text:
+        raise HTTPException(status_code=400, detail="modified_text is required")
+
+    conn = _get_db()
+    existing = conn.execute(
+        "SELECT id, created_by FROM feedbacks WHERE id = ?", (feedback_id,)
+    ).fetchone()
+    if not existing:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Feedback not found")
+
+    # 承認者のチェック
+    approved_by = body.get("approved_by", existing["created_by"])
+    if approved_by != existing["created_by"]:
+        conn.close()
+        raise HTTPException(
+            status_code=403,
+            detail="FB投稿者本人のみが修正承認できます"
+        )
+
+    conn.execute(
+        "UPDATE feedbacks SET approval_status = 'modified', "
+        "approved_at = datetime('now'), modified_text = ?, approved_by = ? WHERE id = ?",
+        (modified_text, approved_by, feedback_id),
+    )
+    conn.commit()
+    conn.close()
+    return {
+        "status": "modified",
+        "feedback_id": feedback_id,
+        "modified_text": modified_text,
+        "approved_by": approved_by,
+    }
+
+
+@app.put("/api/v1/feedbacks/{feedback_id}/reject")
+def reject_feedback(feedback_id: int, body: dict = None):
+    """FBを却下する（approval_status='rejected'に変更）"""
+    conn = _get_db()
+    existing = conn.execute(
+        "SELECT id, created_by FROM feedbacks WHERE id = ?", (feedback_id,)
+    ).fetchone()
+    if not existing:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Feedback not found")
+
+    # 承認者のチェック
+    approved_by = (body or {}).get("approved_by", existing["created_by"])
+    if approved_by != existing["created_by"]:
+        conn.close()
+        raise HTTPException(
+            status_code=403,
+            detail="FB投稿者本人のみが却下できます"
+        )
+
+    conn.execute(
+        "UPDATE feedbacks SET approval_status = 'rejected', "
+        "approved_at = datetime('now'), approved_by = ? WHERE id = ?",
+        (approved_by, feedback_id),
+    )
+    conn.commit()
+    conn.close()
+    return {"status": "rejected", "feedback_id": feedback_id, "approved_by": approved_by}
 
 
 # --- 同期チェック（ポーリング用） ---
@@ -2152,6 +2283,26 @@ def post_vimeo_review(body: VimeoPostReviewRequest, dry_run: bool = True):
         raise HTTPException(400, "vimeo_video_id is required")
     if not comments:
         raise HTTPException(400, "comments list is empty")
+
+    # 本番投稿時: feedback_idを持つコメントの承認状態をチェック
+    if not dry_run:
+        conn = _get_db()
+        unapproved_ids = []
+        for comment in comments:
+            if comment.feedback_id and comment.feedback_id.isdigit():
+                fb = conn.execute(
+                    "SELECT id, approval_status FROM feedbacks WHERE id = ?",
+                    (int(comment.feedback_id),)
+                ).fetchone()
+                if fb and fb["approval_status"] not in ("approved", "modified"):
+                    unapproved_ids.append(comment.feedback_id)
+        conn.close()
+        if unapproved_ids:
+            raise HTTPException(
+                403,
+                f"未承認のFBが含まれています（ID: {', '.join(unapproved_ids)}）。"
+                "承認後に再試行してください。"
+            )
 
     # コメントごとにVimeo APIペイロードを構築
     plan = []

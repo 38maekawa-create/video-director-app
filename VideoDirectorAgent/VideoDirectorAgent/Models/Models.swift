@@ -516,6 +516,46 @@ struct TitleCandidate: Codable, Identifiable {
     var rationale: String
 }
 
+// MARK: - 承認ステータス
+enum ApprovalStatus: String, CaseIterable {
+    case pending = "pending"
+    case approved = "approved"
+    case modified = "modified"
+    case rejected = "rejected"
+
+    var label: String {
+        switch self {
+        case .pending: return "承認待ち"
+        case .approved: return "承認済み"
+        case .modified: return "修正承認"
+        case .rejected: return "却下"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .pending: return Color(hex: 0xF5A623)
+        case .approved: return AppTheme.statusComplete
+        case .modified: return Color(hex: 0x4A90D9)
+        case .rejected: return AppTheme.accent
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .pending: return "clock.fill"
+        case .approved: return "checkmark.circle.fill"
+        case .modified: return "pencil.circle.fill"
+        case .rejected: return "xmark.circle.fill"
+        }
+    }
+
+    /// Vimeo投稿可能かどうか
+    var canPostToVimeo: Bool {
+        self == .approved || self == .modified
+    }
+}
+
 struct FeedbackItem: Identifiable, Codable {
     let id: String
     let projectId: String
@@ -529,6 +569,11 @@ struct FeedbackItem: Identifiable, Codable {
     let rawVoiceText: String?
     let convertedText: String?
     let isSent: Bool
+    // 承認フロー関連
+    let approvalStatus: ApprovalStatus
+    let approvedAt: String?
+    let modifiedText: String?
+    let approvedBy: String?
 
     init(
         id: String,
@@ -542,7 +587,11 @@ struct FeedbackItem: Identifiable, Codable {
         guestName: String?,
         rawVoiceText: String?,
         convertedText: String?,
-        isSent: Bool
+        isSent: Bool,
+        approvalStatus: ApprovalStatus = .pending,
+        approvedAt: String? = nil,
+        modifiedText: String? = nil,
+        approvedBy: String? = nil
     ) {
         self.id = id
         self.projectId = projectId
@@ -556,6 +605,18 @@ struct FeedbackItem: Identifiable, Codable {
         self.rawVoiceText = rawVoiceText
         self.convertedText = convertedText
         self.isSent = isSent
+        self.approvalStatus = approvalStatus
+        self.approvedAt = approvedAt
+        self.modifiedText = modifiedText
+        self.approvedBy = approvedBy
+    }
+
+    /// Vimeo投稿時に使用するテキスト（修正テキストがあればそちらを優先）
+    var textForVimeoPost: String {
+        if approvalStatus == .modified, let modified = modifiedText, !modified.isEmpty {
+            return modified
+        }
+        return content
     }
 
     enum CodingKeys: String, CodingKey {
@@ -574,6 +635,10 @@ struct FeedbackItem: Identifiable, Codable {
         case projectTitle
         case guestName
         case isSent
+        case approvalStatus
+        case approvedAt
+        case modifiedText
+        case approvedBy
     }
 
     init(from decoder: Decoder) throws {
@@ -604,6 +669,12 @@ struct FeedbackItem: Identifiable, Codable {
         } else {
             isSent = true
         }
+        // 承認フロー関連フィールド
+        let statusStr = try container.decodeIfPresent(String.self, forKey: .approvalStatus) ?? "pending"
+        approvalStatus = ApprovalStatus(rawValue: statusStr) ?? .pending
+        approvedAt = try container.decodeIfPresent(String.self, forKey: .approvedAt)
+        modifiedText = try container.decodeIfPresent(String.self, forKey: .modifiedText)
+        approvedBy = try container.decodeIfPresent(String.self, forKey: .approvedBy)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -618,6 +689,10 @@ struct FeedbackItem: Identifiable, Codable {
         try container.encodeIfPresent(projectTitle, forKey: .projectTitle)
         try container.encodeIfPresent(guestName, forKey: .guestName)
         try container.encode(isSent, forKey: .isSent)
+        try container.encode(approvalStatus.rawValue, forKey: .approvalStatus)
+        try container.encodeIfPresent(approvedAt, forKey: .approvedAt)
+        try container.encodeIfPresent(modifiedText, forKey: .modifiedText)
+        try container.encodeIfPresent(approvedBy, forKey: .approvedBy)
     }
 }
 

@@ -2947,3 +2947,7 @@ INFO:     127.0.0.1:59656 - "POST /api/v1/projects/p-20251123-%E3%81%A6%E3%81%83
   🤖 LLM応答取得 (2345文字)
   🤖 パース結果: 5件の候補
 INFO:     127.0.0.1:59656 - "POST /api/v1/projects/p-20260125-%E3%81%B2%E6%A8%B9%E4%BA%AC%E3%81%B2%E3%82%8D%E3%81%8D%E3%82%87%E3%81%86/e2e-pipeline HTTP/1.1" 200 OK
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2180文字)
+  🤖 パース結果: 5件の候補
+INFO:     127.0.0.1:59656 - "POST /api/v1/projects/p-20251130-%E3%81%BF%E3%82%93%E3%81%A6%E3%81%83%E3%81%82/e2e-pipeline HTTP/1.1" 200 OK

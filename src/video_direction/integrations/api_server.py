@@ -920,7 +920,7 @@ def list_pending_feedbacks():
         "SELECT f.*, p.guest_name, p.title as project_title "
         "FROM feedbacks f "
         "LEFT JOIN projects p ON f.project_id = p.id "
-        "WHERE f.approval_status = 'pending' "
+        "WHERE (f.approval_status = 'pending' OR f.approval_status IS NULL) "
         "ORDER BY f.created_at DESC"
     ).fetchall()
     conn.close()

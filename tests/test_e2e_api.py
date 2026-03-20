@@ -431,7 +431,7 @@ class TestFeedbackConvertEnhancedAPI:
             assert "id" in item
             assert "timestamp" in item
             assert "element" in item
-            assert "instruction" in item
+            assert "note" in item  # iOS側 StructuredFeedbackItem の "note" キーに統一
             assert "priority" in item
 
     @patch("src.video_direction.integrations.api_server._get_video_tracker")

@@ -514,7 +514,7 @@ def build_conversion_prompt(
       "id": "1",
       "timestamp": "該当タイムスタンプ（推定。不明なら '全般'）",
       "element": "対象要素（テロップ/カット/BGM/カメラ/カラー/構図/テンポ等）",
-      "instruction": "具体的かつ技術的な指示（数値・専門用語を含む）",
+      "note": "具体的かつ技術的な指示（数値・専門用語を含む）",
       "priority": "high/medium/low",
       "reason": "この変更が必要な理由（編集者の理解を助ける）",
       "reference_url": "参考映像のURL（あれば。なければnull）",

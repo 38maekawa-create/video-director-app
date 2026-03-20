@@ -95,7 +95,59 @@
       "is_active": true,
       "created_at": "2026-03-20T01:49:52.279083",
       "updated_at": "2026-03-20T06:52:36.433330"
+    },
+    {
+      "id": "pat_20260320153017_6",
+      "category": "general",
+      "pattern": "変換済みテストfb",
+      "frequency": 1,
+      "source_feedbacks": [
+        "fb_6"
+      ],
+      "confidence": 0.2,
+      "is_active": true,
+      "created_at": "2026-03-20T15:30:17.309204",
+      "updated_at": "2026-03-20T15:30:17.309205"
+    },
+    {
+      "id": "pat_20260320153017_7",
+      "category": "general",
+      "pattern": "修正前",
+      "frequency": 1,
+      "source_feedbacks": [
+        "fb_7"
+      ],
+      "confidence": 0.2,
+      "is_active": true,
+      "created_at": "2026-03-20T15:30:17.321325",
+      "updated_at": "2026-03-20T15:30:17.321327"
+    },
+    {
+      "id": "pat_20260320153017_8",
+      "category": "general",
+      "pattern": "却下変換",
+      "frequency": 1,
+      "source_feedbacks": [
+        "fb_8"
+      ],
+      "confidence": 0.2,
+      "is_active": true,
+      "created_at": "2026-03-20T15:30:17.327754",
+      "updated_at": "2026-03-20T15:30:17.327756"
+    },
+    {
+      "id": "pat_20260320153017_9",
+      "category": "general",
+      "pattern": "権限",
+      "frequency": 1,
+      "source_feedbacks": [
+        "fb_9"
+      ],
+      "confidence": 0.2,
+      "is_active": true,
+      "created_at": "2026-03-20T15:30:17.334498",
+      "updated_at": "2026-03-20T15:30:17.334499"
     }
   ],
-  "updated_at": "2026-03-20T15:17:19.818035"
+  "updated_at": "2026-03-20T15:30:17.334602"
 }

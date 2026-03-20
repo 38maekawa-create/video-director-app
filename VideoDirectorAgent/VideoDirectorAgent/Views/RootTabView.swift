@@ -8,7 +8,6 @@ struct RootTabView: View {
     @StateObject private var voiceFeedbackVM = VoiceFeedbackViewModel()
     @StateObject private var projectListVM = ProjectListViewModel()
     @StateObject private var dashboardVM = DashboardViewModel()
-    @StateObject private var feedbackHistoryVM = FeedbackHistoryViewModel()
     @StateObject private var feedbackApprovalVM = FeedbackApprovalViewModel()
     @StateObject private var knowledgePagesVM = KnowledgePagesViewModel()
     @ObservedObject private var apiClient = APIClient.shared

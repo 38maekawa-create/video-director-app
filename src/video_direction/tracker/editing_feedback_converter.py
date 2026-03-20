@@ -309,9 +309,13 @@ def convert_editing_feedback(
     # ゲスト情報の取得
     guest_context = _get_guest_context(guest_name)
 
+    # コンテンツライン情報の取得（project_idからDBのcategoryを参照）
+    content_line_context = _get_content_line_context(project_id)
+
     # LLMプロンプトの構築
     system_prompt, user_prompt = _build_conversion_prompt(
         raw_feedback, feedback_category, quality_criteria, guest_context,
+        content_line_context=content_line_context,
     )
 
     # LLM呼び出し

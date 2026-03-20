@@ -146,12 +146,12 @@ class TestGetQualityCriteria(unittest.TestCase):
         self.assertEqual(section_name, "品質判断ガイド全般")
 
     @patch(f"{_LOADER_MOD}.get_highlight_criteria")
-    def test_long_criteria_truncated(self, mock_loader):
-        """3000文字を超える品質基準は切り詰められる"""
+    def test_long_criteria_not_truncated(self, mock_loader):
+        """Opusのコンテキスト長は1Mトークンのため切り詰めしない"""
         mock_loader.return_value = "あ" * 5000
         criteria, _ = _get_quality_criteria("highlight")
-        self.assertTrue(len(criteria) < 5000)
-        self.assertIn("以下省略", criteria)
+        self.assertEqual(len(criteria), 5000)
+        self.assertNotIn("以下省略", criteria)
 
 
 class TestGetGuestContext(unittest.TestCase):
@@ -199,17 +199,18 @@ class TestGetGuestContext(unittest.TestCase):
         self.assertEqual(context, "")
 
     @patch(_MEMBER_MOD)
-    def test_long_profile_truncated(self, MockMaster):
-        """長すぎるプロファイルは切り詰められる"""
+    def test_long_profile_not_truncated(self, MockMaster):
+        """Opusのコンテキスト長は1Mトークンのため切り詰めしない"""
         mock_instance = MockMaster.return_value
         mock_member = MagicMock()
         mock_member.canonical_name = "長文ゲスト"
         mock_instance.find_member.return_value = mock_member
-        mock_instance.get_people_profile.return_value = "テスト" * 1000
+        long_profile = "テスト" * 1000
+        mock_instance.get_people_profile.return_value = long_profile
 
         context = _get_guest_context("長文ゲスト")
-        self.assertIn("以下省略", context)
-        self.assertTrue(len(context) < 3000)
+        self.assertNotIn("以下省略", context)
+        self.assertIn(long_profile, context)
 
 
 class TestBuildConversionPrompt(unittest.TestCase):

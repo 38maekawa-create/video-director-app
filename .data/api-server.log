@@ -2871,3 +2871,7 @@ INFO:     127.0.0.1:59632 - "GET /api/v1/health HTTP/1.1" 404 Not Found
   🤖 LLM応答取得 (2297文字)
   🤖 パース結果: 5件の候補
 INFO:     127.0.0.1:59656 - "POST /api/v1/projects/p-20251123-Izu/e2e-pipeline HTTP/1.1" 200 OK
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2004文字)
+  🤖 パース結果: 5件の候補
+INFO:     127.0.0.1:59656 - "POST /api/v1/projects/p-pay/e2e-pipeline HTTP/1.1" 200 OK

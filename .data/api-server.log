@@ -2610,3 +2610,5 @@ INFO:     127.0.0.1:53315 - "POST /api/projects HTTP/1.1" 409 Conflict
 INFO:     127.0.0.1:53316 - "PUT /api/projects/p-pay HTTP/1.1" 200 OK
 INFO:     127.0.0.1:53317 - "PUT /api/projects/p-pay/youtube-assets HTTP/1.1" 200 OK
 INFO:     127.0.0.1:55368 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     100.110.206.6:58525 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:41f7:c754:d43a:c3a6:fbbf:c5a7:0 - "GET /api/projects HTTP/1.1" 200 OK

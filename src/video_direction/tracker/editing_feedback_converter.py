@@ -9,10 +9,14 @@ from __future__ import annotations
 
 import json
 import re
+import sqlite3
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+
+# DBパス（プロジェクト情報取得用）
+_DB_PATH = Path.home() / "AI開発10" / ".data" / "video_director.db"
 
 
 @dataclass
@@ -121,9 +125,9 @@ def _get_quality_criteria(category: str) -> tuple[str, str]:
     loader = loaders.get(loader_name, load_quality_guide)
     criteria_text = loader()
 
-    # テキストが長すぎる場合は先頭3000文字に切り詰め（プロンプトサイズ制御）
-    if len(criteria_text) > 3000:
-        criteria_text = criteria_text[:3000] + "\n... (以下省略)"
+    # Opusのコンテキスト長は1Mトークンのため切り詰め不要
+    # セクション5（ハイライト選定品質基準）は10,698文字あり、
+    # NGパターン・完成品ハイライト構成・パンチライン一覧を全て注入する
 
     return criteria_text, section_name
 
@@ -148,15 +152,79 @@ def _get_guest_context(guest_name: str) -> str:
             return ""
 
         # プロファイルファイルから詳細情報を取得
+        # Opusのコンテキスト長は1Mトークンのため切り詰め不要
         profile_text = master.get_people_profile(member)
         if profile_text:
-            # 長すぎる場合は先頭1500文字に切り詰め
-            if len(profile_text) > 1500:
-                profile_text = profile_text[:1500] + "\n... (以下省略)"
             return f"【ゲスト: {member.canonical_name}】\n{profile_text}"
 
         # プロファイルファイルがない場合はMEMBER_MASTER.jsonの情報だけ返す
         return f"【ゲスト: {member.canonical_name}】（詳細プロファイルなし）"
+
+    except Exception:
+        return ""
+
+
+def _get_content_line_context(project_id: str | None) -> str:
+    """project_idからDBのcategoryを取得し、コンテンツライン情報テキストを返す
+
+    不動産軸（teko_realestate）の場合は層分類よりも不動産実績がパンチラインになる旨を注入。
+    キャリア軸（teko_member）の場合はマニュアルの層分類・社格・年収の見せ方を厳密に適用する旨を注入。
+
+    Args:
+        project_id: 動画プロジェクトID（Noneの場合は空文字を返す）
+
+    Returns:
+        コンテンツライン情報テキスト。取得できない場合は空文字
+    """
+    if not project_id:
+        return ""
+
+    try:
+        from ..knowledge.quality_knowledge_loader import (
+            get_content_line_criteria,
+        )
+
+        # DBからcategoryを取得
+        if not _DB_PATH.exists():
+            return ""
+        conn = sqlite3.connect(str(_DB_PATH), timeout=5)
+        try:
+            row = conn.execute(
+                "SELECT category, title FROM projects WHERE id = ?",
+                (project_id,),
+            ).fetchone()
+        finally:
+            conn.close()
+
+        if not row:
+            return ""
+
+        category = row[0] or "teko_member"
+        title = row[1] or ""
+
+        # コンテンツライン判定
+        if category == "teko_realestate":
+            content_line = "realestate"
+        else:
+            content_line = "career"
+
+        # コンテンツライン基準テキストの取得
+        cl_criteria = get_content_line_criteria()
+
+        parts = []
+        parts.append("## コンテンツライン判定")
+        if content_line == "realestate":
+            parts.append(f"この動画のコンテンツライン: **不動産実績対談（ノウハウ軸）**")
+            parts.append("→ 層分類より不動産の実績・内容がパンチライン。マニュアルの層分類を厳密に適用するよりも不動産実績とパンチラインにフォーカスすること。")
+        else:
+            parts.append(f"この動画のコンテンツライン: **通常のTEKO実績対談（キャリア軸）**")
+            parts.append("→ マニュアルの層分類・社格・年収の見せ方を厳密に適用すること。")
+
+        if cl_criteria:
+            parts.append("")
+            parts.append(cl_criteria)
+
+        return "\n".join(parts)
 
     except Exception:
         return ""
@@ -167,6 +235,7 @@ def _build_conversion_prompt(
     category: str,
     quality_criteria: str,
     guest_context: str,
+    content_line_context: str = "",
 ) -> tuple[str, str]:
     """LLM用のプロンプトを構築する
 
@@ -180,6 +249,11 @@ def _build_conversion_prompt(
         "TEKOの対談動画（不動産投資家の実績紹介コンテンツ）の文脈を理解しています。"
     )
 
+    # コンテンツライン情報があればプロンプトに注入
+    content_line_section = ""
+    if content_line_context:
+        content_line_section = f"\n\n{content_line_context}"
+
     user_prompt = f"""以下の音声フィードバックを、編集者が即座にアクションに移せる具体的な指示に変換してください。
 
 ## プロデューサーのFB
@@ -189,7 +263,7 @@ def _build_conversion_prompt(
 {guest_context if guest_context else "（ゲスト情報なし）"}
 
 ## 品質基準（この基準に基づいて具体化すること）
-{quality_criteria if quality_criteria else "（品質基準未設定）"}
+{quality_criteria if quality_criteria else "（品質基準未設定）"}{content_line_section}
 
 ## 出力形式（JSON）
 必ず以下のJSON形式で出力してください。他のテキストは含めないでください。
@@ -251,7 +325,7 @@ def convert_editing_feedback(
         response_text = ask(
             user_prompt,
             system=system_prompt,
-            model="sonnet",
+            model="opus",
             max_tokens=1024,
             timeout=120,
         )

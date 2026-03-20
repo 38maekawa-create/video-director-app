@@ -94,34 +94,36 @@
       "id": "pat_20260320014907_4",
       "category": "bgm",
       "pattern": "bgmうるさい",
-      "frequency": 4,
+      "frequency": 5,
       "source_feedbacks": [
         "fb_test-project_20260320014907",
         "fb_test-project_20260320065018",
         "fb_test-project_20260321062605",
-        "fb_test-project_20260321062817"
+        "fb_test-project_20260321062817",
+        "fb_test-project_20260321063029"
       ],
-      "confidence": 0.8,
+      "confidence": 1.0,
       "is_active": true,
       "created_at": "2026-03-20T01:49:07.222201",
-      "updated_at": "2026-03-21T06:28:17.962803"
+      "updated_at": "2026-03-21T06:30:29.357343"
     },
     {
       "id": "pat_20260320014952_5",
       "category": "telop",
       "pattern": "テロップ読めない",
-      "frequency": 5,
+      "frequency": 6,
       "source_feedbacks": [
         "fb_test-project_20260320014952",
         "fb_test-project_20260320065108",
         "fb_test-project_20260320065236",
         "fb_test-project_20260321062653",
-        "fb_test-project_20260321062909"
+        "fb_test-project_20260321062909",
+        "fb_test-project_20260321063117"
       ],
       "confidence": 1.0,
       "is_active": true,
       "created_at": "2026-03-20T01:49:52.279083",
-      "updated_at": "2026-03-21T06:29:09.124396"
+      "updated_at": "2026-03-21T06:31:17.655059"
     },
     {
       "id": "pat_20260320153017_6",
@@ -176,5 +178,5 @@
       "updated_at": "2026-03-20T15:30:17.334499"
     }
   ],
-  "updated_at": "2026-03-21T06:30:17.810119"
+  "updated_at": "2026-03-21T06:31:27.338136"
 }

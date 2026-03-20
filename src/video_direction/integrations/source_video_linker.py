@@ -407,8 +407,20 @@ class SourceVideoLinker:
                 ))
                 continue
 
-            # YouTube URLがなくてもナレッジファイルがマッチしていればリンク対象
-            # （素材動画リンクは音質に関係なく有用）
+            # 音質フィルタ: YouTube字幕がない場合はスキップ
+            if candidate.quality != "youtube_subtitle":
+                candidate.skipped = True
+                candidate.skip_reason = "no_audio_quality"
+                result.skipped_no_audio.append(candidate)
+                continue
+
+            # YouTube URLがない場合はリンクできない
+            if not candidate.youtube_url:
+                candidate.skipped = True
+                candidate.skip_reason = "no_youtube_url"
+                result.skipped_no_match.append(candidate)
+                continue
+
             result.linked.append(candidate)
 
         return result

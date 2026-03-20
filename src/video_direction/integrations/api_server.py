@@ -2587,7 +2587,7 @@ def convert_feedback(body: FeedbackConvertRequest):
             "id": "1",
             "timestamp": "00:00",
             "element": "全般",
-            "instruction": raw[:200],
+            "note": raw[:200],  # iOS側 StructuredFeedbackItem の "note" キーに統一
             "priority": "medium",
             "reason": "音声FBの自動分類結果に基づく",
             "reference_url": None,
@@ -3508,7 +3508,7 @@ def run_e2e_pipeline(project_id: str, body: E2EPipelineRequest = E2EPipelineRequ
             for entry in direction_result["entries"]:
                 vimeo_comments.append(VimeoCommentItem(
                     timecode=entry["timestamp"],
-                    text=entry["instruction"],
+                    text=entry["note"],  # "instruction" → "note" に統一
                     priority=entry.get("priority", "medium"),
                     feedback_id=None,
                 ))
@@ -3665,7 +3665,7 @@ def convert_feedback_enhanced(body: FeedbackConvertEnhancedRequest):
             "id": "1",
             "timestamp": "00:00",
             "element": "全般",
-            "instruction": raw[:200],
+            "note": raw[:200],  # iOS側 StructuredFeedbackItem の "note" キーに統一
             "priority": "medium",
             "reason": "音声FBの自動分類結果に基づく",
             "reference_url": None,

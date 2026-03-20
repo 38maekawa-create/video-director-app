@@ -46,9 +46,9 @@ def generate_description(
     past_descriptions_text = ""
     if knowledge_ctx.past_descriptions:
         for i, desc in enumerate(knowledge_ctx.past_descriptions[:3], 1):
-            # 先頭300文字に制限（プロンプトサイズ管理）
-            truncated = desc[:300] + ("..." if len(desc) > 300 else "")
-            past_descriptions_text += f"\n--- 過去例{i} ---\n{truncated}\n"
+            # 全文をfew-shotに使用（品質のため切り詰めない）
+            example_desc = desc
+            past_descriptions_text += f"\n--- 過去例{i} ---\n{example_desc}\n"
     else:
         past_descriptions_text = "（過去概要欄データなし — 初回生成のため独自に構成）"
 

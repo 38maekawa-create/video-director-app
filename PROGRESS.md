@@ -1,16 +1,32 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-20 14:05
-<!-- authored: T1/副官A/バティ/2026-03-20 -->
+2026-03-20 18:30
+<!-- authored: T1/兵隊A/バティ/2026-03-20 -->
 
 ## 現在の作業状態
-**タイミング①FB変換パイプライン改善完了・品質確認OK → 次セッションで再バッチ生成**
+**FB変換結果の承認フロー実装完了 → Xcodeビルド・TestFlightアップが次のステップ**
 
-### 次セッションでやること（タスク指示書あり）
-1. **TASK_BATCH_REGEN.md** — 29件再バッチ生成（Opus+全文注入+コンテンツライン反映）。腕に振って2.3h放置。
-2. **TASK_DESCRIPTION_INVESTIGATION.md** — 概要欄未生成38%の原因調査。腕に振れる。
-3. **承認フロー設計** — なおとさんとの壁打ちが必要。FB変換結果を「承認待ち」で保持→アプリ上で承認/修正/却下。
+### 次セッションでやること
+1. **Xcodeビルド・TestFlight配布** — 承認フロー含むアプリをTestFlightにアップ
+2. **TASK_BATCH_REGEN.md** — 29件再バッチ生成（Opus+全文注入+コンテンツライン反映）
+3. **TASK_DESCRIPTION_INVESTIGATION.md** — 概要欄未生成38%の原因調査
+
+### 2026-03-20 完了タスク（セッション4: FB承認フロー実装）
+
+| # | タスク | 状態 |
+|---|--------|------|
+| 36 | feedbacksテーブルに承認カラム追加（approval_status, approved_at, modified_text, approved_by） | done |
+| 37 | 承認APIエンドポイント4つ追加（pending/approve/modify/reject） | done |
+| 38 | Vimeo投稿エンドポイントに承認チェック追加（未承認FBのVimeo投稿をブロック） | done |
+| 39 | iOS: FeedbackApprovalListView 新規作成（承認待ちFB一覧+全件セグメント） | done |
+| 40 | iOS: FeedbackApprovalDetailView 新規作成（承認/修正/却下+承認後Vimeo投稿） | done |
+| 41 | iOS: FeedbackApprovalViewModel 新規作成 | done |
+| 42 | iOS: VoiceFeedbackViewのVimeo投稿セクション→承認フロー誘導に変更 | done |
+| 43 | iOS: RootTabViewに「FB承認」タブ追加（バッジ付き） | done |
+| 44 | iOS: Models.swift ApprovalStatus enum + FeedbackItemに承認フィールド追加 | done |
+| 45 | iOS: APIClient.swiftに承認API 4メソッド追加 | done |
+| 46 | 自走修正3回ループ完了（統合テスト12件PASS、既存テスト44件PASS） | done |
 
 ### 品質確認結果（2026-03-20 14:00）
 hirai（キャリア軸・層a）とメンイチ（不動産軸・層b）で実機テスト済み。4修正全て効いてることを確認:

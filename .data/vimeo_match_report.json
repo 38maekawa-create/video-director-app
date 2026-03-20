@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-21T07:04:39.956276",
+  "generated_at": "2026-03-21T08:06:16.057228",
   "summary": {
     "total_members": 33,
     "matched": 14,
@@ -441,10 +441,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "クマキ",
         "クマスケ",
+        "くまき",
         "くますけ",
-        "くまき"
+        "クマキ"
       ],
       "near_candidates": [
         {
@@ -487,8 +487,8 @@
     {
       "guest_name": "アンディさん",
       "search_keys": [
-        "あんでぃ",
-        "アンディ"
+        "アンディ",
+        "あんでぃ"
       ],
       "near_candidates": [
         {
@@ -531,16 +531,16 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ろき",
-        "ロキ"
+        "ロキ",
+        "ろき"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "さくらさん",
       "search_keys": [
-        "さくら",
-        "サクラ"
+        "サクラ",
+        "さくら"
       ],
       "near_candidates": [
         {
@@ -569,8 +569,8 @@
     {
       "guest_name": "ゆりかさん",
       "search_keys": [
-        "ゆりか",
-        "ユリカ"
+        "ユリカ",
+        "ゆりか"
       ],
       "near_candidates": []
     },
@@ -579,8 +579,8 @@
       "search_keys": [
         "コテツ",
         "こてつ",
-        "コテ",
-        "こて"
+        "こて",
+        "コテ"
       ],
       "near_candidates": [
         {
@@ -595,9 +595,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
+        "コスト",
         "こすと",
-        "kos",
-        "コスト"
+        "kos"
       ],
       "near_candidates": [
         {
@@ -633,13 +633,13 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
-        "サトイモ・トーマス",
-        "サトイモ",
-        "さといも・とーます",
-        "トーマス",
-        "とーます",
         "さといも",
-        "さといも・トーマス"
+        "とーます",
+        "サトイモ",
+        "さといも・トーマス",
+        "さといも・とーます",
+        "サトイモ・トーマス",
+        "トーマス"
       ],
       "near_candidates": [
         {
@@ -683,8 +683,8 @@
       "guest_name": "ハオさん",
       "search_keys": [
         "ハオ",
-        "はお",
-        "羽生"
+        "羽生",
+        "はお"
       ],
       "near_candidates": []
     },
@@ -721,23 +721,23 @@
       "guest_name": "PAY",
       "search_keys": [
         "PAY",
-        "Pay",
-        "pay"
+        "pay",
+        "Pay"
       ],
       "near_candidates": [
         {
           "title": "payさん_対談_修正_大胡",
           "matched_keys": [
-            "Pay",
-            "pay"
+            "pay",
+            "Pay"
           ],
           "status": "available"
         },
         {
           "title": "payさん_対談_初稿_大胡",
           "matched_keys": [
-            "Pay",
-            "pay"
+            "pay",
+            "Pay"
           ],
           "status": "available"
         }
@@ -753,8 +753,8 @@
     {
       "guest_name": "テストゲスト",
       "search_keys": [
-        "テストゲスト",
-        "てすとげすと"
+        "てすとげすと",
+        "テストゲスト"
       ],
       "near_candidates": [
         {

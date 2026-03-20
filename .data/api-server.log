@@ -2755,3 +2755,7 @@ INFO:     127.0.0.1:49294 - "POST /api/v1/projects/p-20260101-kos/e2e-pipeline H
   🤖 LLM応答取得 (2084文字)
   🤖 パース結果: 5件の候補
 INFO:     127.0.0.1:49294 - "POST /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/e2e-pipeline HTTP/1.1" 200 OK
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (1973文字)
+  🤖 パース結果: 5件の候補
+INFO:     127.0.0.1:49294 - "POST /api/v1/projects/p-20260215-%E3%82%AF%E3%83%9E%E3%82%AD%E3%81%8F%E3%81%BE%E3%81%99%E3%81%91/e2e-pipeline HTTP/1.1" 200 OK

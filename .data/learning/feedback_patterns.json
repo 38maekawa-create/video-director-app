@@ -94,15 +94,16 @@
       "id": "pat_20260320014907_4",
       "category": "bgm",
       "pattern": "bgmうるさい",
-      "frequency": 2,
+      "frequency": 3,
       "source_feedbacks": [
         "fb_test-project_20260320014907",
-        "fb_test-project_20260320065018"
+        "fb_test-project_20260320065018",
+        "fb_test-project_20260321062605"
       ],
-      "confidence": 0.4,
+      "confidence": 0.6,
       "is_active": true,
       "created_at": "2026-03-20T01:49:07.222201",
-      "updated_at": "2026-03-20T06:50:18.021792"
+      "updated_at": "2026-03-21T06:26:05.745142"
     },
     {
       "id": "pat_20260320014952_5",
@@ -172,5 +173,5 @@
       "updated_at": "2026-03-20T15:30:17.334499"
     }
   ],
-  "updated_at": "2026-03-21T06:22:17.196397"
+  "updated_at": "2026-03-21T06:26:05.745691"
 }

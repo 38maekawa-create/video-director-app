@@ -2688,3 +2688,12 @@ INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/audit/history HTTP
 INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
 INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     127.0.0.1:63849 - "GET /api/v1/health HTTP/1.1" 404 Not Found
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+INFO:     127.0.0.1:63936 - "GET /api/v1/projects HTTP/1.1" 404 Not Found
+  🤖 LLM応答取得 (2168文字)
+  🤖 パース結果: 5件の候補
+INFO:     127.0.0.1:63854 - "POST /api/v1/projects/p-20251123-Izu/e2e-pipeline HTTP/1.1" 200 OK
+  🤖 タイトル考案: teko_core.llm.ask() 呼び出し中...
+  🤖 LLM応答取得 (2145文字)
+  🤖 パース結果: 5件の候補
+INFO:     127.0.0.1:63854 - "POST /api/v1/projects/p-pay/e2e-pipeline HTTP/1.1" 200 OK

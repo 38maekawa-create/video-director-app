@@ -749,16 +749,22 @@ def get_youtube_assets(project_id: str):
 def upsert_youtube_assets(project_id: str, assets: YouTubeAssetsUpsert):
     conn = _get_db()
     now = datetime.now(timezone.utc).isoformat()
+    # description_originalが空の場合は既存値を保持する（空文字上書き防止）
+    desc_original_value = assets.description_original
+    desc_original_update = "description_original=excluded.description_original"
+    if not desc_original_value or not desc_original_value.strip():
+        # 空文字/Noneの場合: COALESCE で既存値を維持
+        desc_original_update = "description_original=COALESCE(youtube_assets.description_original, excluded.description_original)"
     # UPSERT
     conn.execute(
-        """INSERT INTO youtube_assets (project_id, thumbnail_design, title_proposals,
+        f"""INSERT INTO youtube_assets (project_id, thumbnail_design, title_proposals,
            description_original, description_edited, selected_title_index,
            edited_title, last_edited_by, generated_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(project_id) DO UPDATE SET
              thumbnail_design=excluded.thumbnail_design,
              title_proposals=excluded.title_proposals,
-             description_original=excluded.description_original,
+             {desc_original_update},
              description_edited=excluded.description_edited,
              selected_title_index=excluded.selected_title_index,
              edited_title=excluded.edited_title,
@@ -768,7 +774,7 @@ def upsert_youtube_assets(project_id: str, assets: YouTubeAssetsUpsert):
             project_id,
             json.dumps(assets.thumbnail_design) if assets.thumbnail_design else None,
             json.dumps(assets.title_proposals) if assets.title_proposals else None,
-            assets.description_original,
+            desc_original_value,
             assets.description_edited,
             assets.selected_title_index,
             assets.edited_title,

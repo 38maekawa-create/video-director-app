@@ -101,6 +101,10 @@ def generate_description(
         from teko_core.llm import ask
         raw = ask(prompt, model="sonnet", max_tokens=3000, timeout=120)
         result = _parse_description_response(raw)
+        # full_textが空の場合はフォールバックに回す（LLMがハッシュタグのみ返した場合等）
+        if not result.full_text or not result.full_text.strip():
+            print("  ⚠️ LLMレスポンスのfull_textが空 → フォールバック生成に切り替え")
+            return _fallback_description(video_data, classification, income_eval)
         # LLM生成結果からも伏せ対象の企業名を除去（セーフティネット）
         if hidden_nouns:
             result = _sanitize_description(result, hidden_nouns)

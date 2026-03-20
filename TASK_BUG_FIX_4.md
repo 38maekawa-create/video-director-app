@@ -69,3 +69,27 @@ truncated = desc  # 全文使用
 3. api_server.pyの構文チェック: `python3 -c "import ast; ast.parse(open('src/video_direction/integrations/api_server.py').read())"`
 4. description_writer.pyの構文チェック: 同上
 5. 修正内容のサマリーをこのファイル末尾に追記すること
+
+---
+
+## 修正完了サマリー（2026-03-21）
+
+### 修正1: Critical — `instruction` vs `note` 契約不一致 → 完了
+- `api_server.py` 2590行, 3668行: フォールバック辞書の `"instruction"` → `"note"` に変更
+- `api_server.py` 3511行: Vimeoコメント構築時の `entry["instruction"]` → `entry["note"]` に変更
+- `feedback_converter.py` 517行: LLMプロンプトのJSONスキーマも `"instruction"` → `"note"` に統一
+- テストファイル（test_api_phase3_4.py, test_e2e_api.py）のassertionも `"note"` に更新
+
+### 修正2: High — few-shot 300文字切り詰め → 完了
+- `description_writer.py` 49-51行: `desc[:300]` の切り詰めを撤廃、全文をfew-shotに使用
+- 変数名を `truncated` → `example_desc` にリネーム
+
+### 修正3: High — フォールバック不動産固定 → 完了
+- `description_writer.py` `_fallback_description()`: `video_data.category` に応じて運営者紹介文を分岐
+  - `teko_realestate`: 不動産投資に言及した従来版テンプレートを維持
+  - `teko_member` / その他: 不動産固有表現（「不動産投資」「不動産賃貸業」等）を除去した汎用版を使用
+- ハッシュタグも不動産カテゴリのみ `#不動産投資` を含むよう分岐
+
+### 修正4: High — 例外握りつぶし → 完了
+- `api_server.py` 2575行, 2579行, 3657行: `except Exception: pass` → `logger.exception(...)` に変更
+- フォールバック処理自体は維持しつつ、例外情報がログに残るように改善

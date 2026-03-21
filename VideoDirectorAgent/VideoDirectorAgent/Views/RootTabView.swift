@@ -12,6 +12,12 @@ struct RootTabView: View {
     @StateObject private var knowledgePagesVM = KnowledgePagesViewModel()
     @ObservedObject private var apiClient = APIClient.shared
 
+    /// バナー表示用のデバウンスされた接続ステータス
+    /// connectionStatusの急速な変化による「出たり消えたり」を防止
+    @State private var displayedStatus: APIClient.ConnectionStatus = .connecting
+    /// バナー表示デバウンス用タスク
+    @State private var bannerDebounceTask: Task<Void, Never>?
+
     enum Tab: Int, CaseIterable {
         case home, report, record, approval, quality
 

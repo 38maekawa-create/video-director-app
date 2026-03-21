@@ -99,9 +99,9 @@ actor ConnectionOrchestrator {
             if let w = winner { return w }
         }
 
-        // Phase 2: クラウドを試行（モバイル通信＋Cloudflareトンネル経由を考慮し10秒）
+        // Phase 2: クラウドを試行（モバイル通信＋Cloudflareトンネル＋TLSハンドシェイクを考慮し15秒）
         if let cloud = cloudRoute {
-            if await probe(route: cloud, timeout: 10) {
+            if await probe(route: cloud, timeout: 15) {
                 return cloud
             }
         }
@@ -220,39 +220,52 @@ final class APIClient: ObservableObject {
     private var networkDebounceTask: Task<Void, Never>?
     /// disconnected遷移のデバウンス用タスク
     private var disconnectDebounceTask: Task<Void, Never>?
+    /// 最後にNWPathMonitorが通知したインターフェースタイプ（重複通知フィルタ用）
+    private var lastInterfaceTypes: Set<NWInterface.InterfaceType> = []
 
     /// ネットワーク状態変化を監視し、復帰時に自動再接続
     /// デバウンス: 短時間の連続変化を無視し、安定してから再接続
+    /// モバイル通信(4G/5G)の電波変動・基地局ハンドオーバーによる頻繁な通知を抑制
     private func startNetworkMonitor() {
         networkMonitor.pathUpdateHandler = { [weak self] path in
             Task { @MainActor [weak self] in
                 guard let self = self else { return }
                 let wasDisconnected = self.lastPathStatus != .satisfied
                 let isNowConnected = path.status == .satisfied
-                let interfaceChanged = self.lastPathStatus == .satisfied && isNowConnected
                 self.lastPathStatus = path.status
 
-                if isNowConnected && (wasDisconnected || interfaceChanged) {
+                // インターフェースタイプの変化を検出（WiFi→4G等の実質的な変化のみ反応）
+                let currentInterfaces = Set(path.availableInterfaces.map { $0.type })
+                let interfaceActuallyChanged = currentInterfaces != self.lastInterfaceTypes
+                self.lastInterfaceTypes = currentInterfaces
+
+                if isNowConnected && (wasDisconnected || interfaceActuallyChanged) {
                     // 復帰時はdisconnectデバウンスをキャンセル（回復したのでバナー不要）
                     self.disconnectDebounceTask?.cancel()
                     self.disconnectDebounceTask = nil
-                    // デバウンス: 3.5秒間安定してから再接続（モバイル通信の電波変動でのチラつき防止）
+
+                    // 同一インターフェース内の再通知は無視（モバイル基地局ハンドオーバー等）
+                    if !wasDisconnected && !interfaceActuallyChanged {
+                        return
+                    }
+
+                    // デバウンス: 5秒間安定してから再接続（モバイル通信の電波変動でのチラつき防止）
                     self.networkDebounceTask?.cancel()
                     self.networkDebounceTask = Task {
-                        try? await Task.sleep(nanoseconds: 3_500_000_000)
-                        guard !Task.isCancelled else { return }
-                        print("📡 ネットワーク変化検知（安定後）→ 再接続開始")
-                        await self.probeAndConnect()
-                    }
-                } else if !isNowConnected {
-                    // 切断もデバウンス: 5秒間切断が続いた場合のみdisconnected表示
-                    // モバイル通信のWiFi↔4G切り替え時の瞬断でバナーが出るのを防止
-                    self.disconnectDebounceTask?.cancel()
-                    self.disconnectDebounceTask = Task {
                         try? await Task.sleep(nanoseconds: 5_000_000_000)
                         guard !Task.isCancelled else { return }
+                        print("📡 ネットワーク変化検知（安定後）→ サイレント再接続開始")
+                        await self.silentReprobe()
+                    }
+                } else if !isNowConnected {
+                    // 切断デバウンス: 15秒間切断が続いた場合のみdisconnected表示
+                    // モバイル通信のWiFi↔4G切り替え・電波変動での瞬断でバナーが出るのを防止
+                    self.disconnectDebounceTask?.cancel()
+                    self.disconnectDebounceTask = Task {
+                        try? await Task.sleep(nanoseconds: 15_000_000_000)
+                        guard !Task.isCancelled else { return }
                         self.connectionStatus = .disconnected
-                        print("📡 ネットワーク切断検知（5秒持続）")
+                        print("📡 ネットワーク切断検知（15秒持続）")
                     }
                 }
             }
@@ -262,8 +275,12 @@ final class APIClient: ObservableObject {
 
     /// probe失敗の連続回数（連続して失敗した場合のみdisconnectedに遷移）
     private var consecutiveProbeFailures = 0
+    /// サイレント再probeの重複防止フラグ
+    private var isSilentReprobing = false
+    /// 最後にdisconnected状態に遷移した時刻（短時間での再遷移を防止）
+    private var lastDisconnectedAt: Date?
 
-    /// アプリ起動時・ScenePhase復帰時・ネットワーク変化時に呼び出し
+    /// アプリ起動時・ScenePhase復帰時に呼び出し（UIバナーに影響する公開メソッド）
     /// ConnectionOrchestrator actorにより多重probe抑止
     /// 既に接続済みの場合はバナーを出さずにバックグラウンドでprobeする
     func probeAndConnect() async {
@@ -275,7 +292,7 @@ final class APIClient: ObservableObject {
         }
 
         // 既に接続済みの場合はconnectingバナーを出さない（チラつき防止）
-        if !wasConnected {
+        if !wasConnected && !hasEverConnected {
             connectionStatus = .connecting
         }
         print("🔍 probeAndConnect開始（orchestrator経由、wasConnected=\(wasConnected)）")
@@ -288,26 +305,76 @@ final class APIClient: ObservableObject {
             print("✅ 接続成功: \(route.url.absoluteString) (\(route.label))")
         } else {
             consecutiveProbeFailures += 1
-            // 既にconnected状態の場合、1回のprobe失敗ではdisconnectedにしない
-            // モバイル通信の一時的な遅延でバナーが出るのを防止
-            // 2回連続で失敗した場合のみdisconnectedに遷移
-            if wasConnected && consecutiveProbeFailures < 2 {
-                print("⚠️ probe失敗（\(consecutiveProbeFailures)回目）。connected状態を維持してリトライ")
-                // 3秒後に再度probeを試行
+            // connected状態の場合、3回連続probe失敗まではconnected状態を維持
+            // モバイル通信の一時的な遅延・パケロスでバナーが出るのを防止
+            if wasConnected && consecutiveProbeFailures < 3 {
+                print("⚠️ probe失敗（\(consecutiveProbeFailures)/3回目）。connected状態を維持してリトライ")
+                // 5秒後に再度probeを試行（バックグラウンドで静かに）
                 Task {
-                    try? await Task.sleep(nanoseconds: 3_000_000_000)
+                    try? await Task.sleep(nanoseconds: 5_000_000_000)
                     guard !Task.isCancelled else { return }
-                    await self.probeAndConnect()
+                    await self.silentReprobe()
                 }
-            } else {
+            } else if !hasEverConnected {
+                // 初回接続前の場合のみdisconnected遷移
                 activeBaseURL = primaryURL
                 connectionStatus = .disconnected
-                print("⚠️ 全URL到達不可（\(consecutiveProbeFailures)回連続）。プライマリURL(\(primaryURL))で待機")
+                print("⚠️ 初回接続失敗（\(consecutiveProbeFailures)回）。プライマリURL(\(primaryURL))で待機")
+            } else {
+                // 3回連続失敗の場合のみdisconnected遷移（ただし30秒以内の再遷移は防止）
+                if let lastDisc = lastDisconnectedAt, Date().timeIntervalSince(lastDisc) < 30 {
+                    print("⚠️ probe失敗だが30秒以内の再disconnectedは抑制。リトライ予約")
+                    Task {
+                        try? await Task.sleep(nanoseconds: 10_000_000_000)
+                        guard !Task.isCancelled else { return }
+                        await self.silentReprobe()
+                    }
+                } else {
+                    activeBaseURL = primaryURL
+                    connectionStatus = .disconnected
+                    lastDisconnectedAt = Date()
+                    print("⚠️ 全URL到達不可（\(consecutiveProbeFailures)回連続）。プライマリURL(\(primaryURL))で待機")
+                }
             }
         }
     }
 
-    /// ネットワークエラー時に自動再接続を試行
+    /// サイレント再probe（バナー状態を変更せずにバックグラウンドで接続先を更新）
+    /// NWPathMonitor変化時・APIエラー時に使用。UIのチラつきを完全に防止する
+    private func silentReprobe() async {
+        guard !isSilentReprobing else { return }
+        isSilentReprobing = true
+        defer { isSilentReprobing = false }
+
+        print("🔍 サイレント再probe開始")
+        if let route = await orchestrator.reprobe(trigger: "silentReprobe") {
+            activeBaseURL = route.url
+            // バナーが出ている場合のみ状態を更新（connected復帰）
+            if case .disconnected = connectionStatus {
+                connectionStatus = .connected(route.label)
+            } else if case .connecting = connectionStatus {
+                connectionStatus = .connected(route.label)
+            }
+            hasEverConnected = true
+            consecutiveProbeFailures = 0
+            print("✅ サイレント再probe成功: \(route.url.absoluteString) (\(route.label))")
+        } else {
+            consecutiveProbeFailures += 1
+            print("⚠️ サイレント再probe失敗（\(consecutiveProbeFailures)回目）")
+            // サイレントreprobeでは3回連続失敗かつhasEverConnectedの場合のみdisconnected
+            if consecutiveProbeFailures >= 3 {
+                if let lastDisc = lastDisconnectedAt, Date().timeIntervalSince(lastDisc) < 30 {
+                    // 30秒以内は再遷移しない
+                } else {
+                    connectionStatus = .disconnected
+                    lastDisconnectedAt = Date()
+                }
+            }
+        }
+    }
+
+    /// ネットワークエラー時に自動再接続を試行（サイレント — バナー状態に影響しない）
+    /// APIリクエストの個別エラーではバナーを出さず、バックグラウンドで静かに再probeする
     private func reconnectIfNeeded(error: Error) async {
         guard let urlError = error as? URLError else { return }
         let reconnectCodes: [URLError.Code] = [
@@ -316,8 +383,8 @@ final class APIClient: ObservableObject {
             .dnsLookupFailed, .secureConnectionFailed
         ]
         guard reconnectCodes.contains(urlError.code) else { return }
-        print("🔄 ネットワークエラー検知。再接続を試行...")
-        await probeAndConnect()
+        print("🔄 ネットワークエラー検知。サイレント再probeを試行...")
+        await silentReprobe()
     }
 
     // MARK: - パブリックAPIメソッド
@@ -721,8 +788,8 @@ final class APIClient: ObservableObject {
         let url = buildURL(base: baseURL, path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
-        // モバイル通信（4G/5G + Cloudflareトンネル）を考慮し20秒
-        request.timeoutInterval = 20
+        // モバイル通信（4G/5G + Cloudflareトンネル + TLSハンドシェイク）を考慮し25秒
+        request.timeoutInterval = 25
 
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
@@ -766,8 +833,8 @@ final class APIClient: ObservableObject {
         let url = buildURL(base: baseURL, path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
-        // モバイル通信（4G/5G + Cloudflareトンネル）を考慮し20秒
-        request.timeoutInterval = 20
+        // モバイル通信（4G/5G + Cloudflareトンネル + TLSハンドシェイク）を考慮し25秒
+        request.timeoutInterval = 25
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try encoder.encode(body)
 
@@ -847,8 +914,8 @@ final class APIClient: ObservableObject {
         let url = buildURL(base: baseURL, path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
-        // モバイル通信（4G/5G + Cloudflareトンネル）を考慮し20秒
-        request.timeoutInterval = 20
+        // モバイル通信（4G/5G + Cloudflareトンネル + TLSハンドシェイク）を考慮し25秒
+        request.timeoutInterval = 25
         if let body = body {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = try JSONEncoder().encode(body)

@@ -113,25 +113,33 @@ struct RootTabView: View {
             await feedbackApprovalVM.fetchPending()
         }
         .onChange(of: apiClient.connectionStatus) { _, newStatus in
-            // バナー表示のデバウンス: disconnectedへの遷移は3秒遅延
+            // バナー表示のデバウンス: disconnectedへの遷移は8秒遅延
             // connectedへの復帰は即座に反映（バナーをすぐ消す）
+            // モバイル通信での一時的なprobe失敗でバナーが出たり消えたりするのを根本的に防止
             bannerDebounceTask?.cancel()
             switch newStatus {
             case .connected:
+                // connected復帰は即座にバナーを消す
                 displayedStatus = newStatus
             case .disconnected:
-                // 3秒間disconnectedが持続した場合のみバナー表示
+                // 8秒間disconnectedが持続した場合のみバナー表示
+                // 8秒以内にconnectedに戻ればバナーは出ない
                 bannerDebounceTask = Task {
-                    try? await Task.sleep(nanoseconds: 3_000_000_000)
+                    try? await Task.sleep(nanoseconds: 8_000_000_000)
                     guard !Task.isCancelled else { return }
-                    displayedStatus = newStatus
+                    // 最終チェック: この時点でまだdisconnectedかどうか
+                    if case .disconnected = apiClient.connectionStatus {
+                        displayedStatus = newStatus
+                    }
                 }
             case .connecting:
-                // connectingも2秒遅延（すぐ解決する場合はバナーを出さない）
+                // connectingも5秒遅延（すぐ解決する場合はバナーを出さない）
                 bannerDebounceTask = Task {
-                    try? await Task.sleep(nanoseconds: 2_000_000_000)
+                    try? await Task.sleep(nanoseconds: 5_000_000_000)
                     guard !Task.isCancelled else { return }
-                    displayedStatus = newStatus
+                    if case .connecting = apiClient.connectionStatus {
+                        displayedStatus = newStatus
+                    }
                 }
             }
         }

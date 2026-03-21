@@ -386,6 +386,24 @@ final class APIClient: ObservableObject {
         }
     }
 
+    /// APIリクエスト成功時の状態更新
+    /// APIが正常にレスポンスを返した = サーバーに接続できている証拠
+    /// probeに頼らず、実際のAPIトラフィックで接続状態を判定する
+    private func markRequestSuccess() {
+        lastSuccessfulRequestAt = Date()
+        consecutiveProbeFailures = 0
+        // disconnectedバナーが出ている場合は即座に復帰
+        if case .disconnected = connectionStatus {
+            connectionStatus = .connected("✅ 復帰")
+            print("✅ APIリクエスト成功により接続復帰")
+        } else if case .connecting = connectionStatus {
+            connectionStatus = .connected("✅ 復帰")
+        }
+        if !hasEverConnected {
+            hasEverConnected = true
+        }
+    }
+
     /// ネットワークエラー時に自動再接続を試行（サイレント — バナー状態に影響しない）
     /// APIリクエストの個別エラーではバナーを出さず、バックグラウンドで静かに再probeする
     /// ただし、直近でAPIが成功している場合はprobeを走らせない（無駄な負荷とチラつき防止）

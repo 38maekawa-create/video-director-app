@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-21T19:25:04.181987",
+  "generated_at": "2026-03-21T20:26:38.393616",
   "summary": {
     "total_members": 32,
     "matched": 14,
@@ -382,8 +382,8 @@
     {
       "guest_name": "ひろきょうさん",
       "search_keys": [
-        "ヒロキョウ",
-        "ひろきょう"
+        "ひろきょう",
+        "ヒロキョウ"
       ],
       "near_candidates": []
     },
@@ -397,8 +397,8 @@
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "アサカツ",
-        "あさかつ"
+        "あさかつ",
+        "アサカツ"
       ],
       "near_candidates": [
         {
@@ -441,10 +441,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "クマスケ",
         "クマキ",
+        "くますけ",
         "くまき",
-        "くますけ"
+        "クマスケ"
       ],
       "near_candidates": [
         {
@@ -569,18 +569,18 @@
     {
       "guest_name": "ゆりかさん",
       "search_keys": [
-        "ユリカ",
-        "ゆりか"
+        "ゆりか",
+        "ユリカ"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "コテさん",
       "search_keys": [
+        "コテ",
         "コテツ",
         "こて",
-        "こてつ",
-        "コテ"
+        "こてつ"
       ],
       "near_candidates": [
         {
@@ -633,13 +633,13 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
-        "さといも・とーます",
-        "トーマス",
+        "とーます",
         "さといも・トーマス",
         "サトイモ",
-        "とーます",
+        "トーマス",
         "さといも",
-        "サトイモ・トーマス"
+        "サトイモ・トーマス",
+        "さといも・とーます"
       ],
       "near_candidates": [
         {
@@ -682,9 +682,9 @@
     {
       "guest_name": "ハオさん",
       "search_keys": [
+        "羽生",
         "はお",
-        "ハオ",
-        "羽生"
+        "ハオ"
       ],
       "near_candidates": []
     },
@@ -720,24 +720,24 @@
     {
       "guest_name": "PAY",
       "search_keys": [
-        "pay",
+        "Pay",
         "PAY",
-        "Pay"
+        "pay"
       ],
       "near_candidates": [
         {
           "title": "payさん_対談_修正_大胡",
           "matched_keys": [
-            "pay",
-            "Pay"
+            "Pay",
+            "pay"
           ],
           "status": "available"
         },
         {
           "title": "payさん_対談_初稿_大胡",
           "matched_keys": [
-            "pay",
-            "Pay"
+            "Pay",
+            "pay"
           ],
           "status": "available"
         }

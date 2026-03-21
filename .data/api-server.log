@@ -3187,3 +3187,11 @@ INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/learning/summary H
 INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:95f4:f38d:4512:73e4:0 - "GET /api/learning/summary HTTP/1.1" 200 OK

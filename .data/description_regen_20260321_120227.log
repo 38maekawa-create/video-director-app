@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-03-21T12:04:57",
+  "total": 4,
+  "success": 4,
+  "errors": 0,
+  "total_elapsed": 149.7,
+  "results": [
+    {
+      "project_id": "p-20260101-けーさん",
+      "guest_name": "けーさん",
+      "status": "success",
+      "elapsed": 40.8,
+      "desc_len": 626,
+      "is_fallback": false
+    },
+    {
+      "project_id": "p-20260125-ひ樹京ひろきょう",
+      "guest_name": "ひろきょうさん",
+      "status": "success",
+      "elapsed": 40.2,
+      "desc_len": 742,
+      "is_fallback": false
+    },
+    {
+      "project_id": "p-20251213-ゆきもる",
+      "guest_name": "ゆきもるさん",
+      "status": "success",
+      "elapsed": 36.1,
+      "desc_len": 1432,
+      "is_fallback": true
+    },
+    {
+      "project_id": "p-20260101-メンイチ",
+      "guest_name": "メンイチさん",
+      "status": "success",
+      "elapsed": 32.4,
+      "desc_len": 601,
+      "is_fallback": false
+    }
+  ]
+}

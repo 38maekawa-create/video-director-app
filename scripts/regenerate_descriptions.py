@@ -107,11 +107,12 @@ def regenerate_description_for_project(project_data: dict) -> dict:
                     )]
                 # ハイライト・サマリー等の取得
                 if kd.get("highlights"):
-                    from src.video_direction.integrations.ai_dev5_connector import Highlight
+                    from src.video_direction.integrations.ai_dev5_connector import HighlightScene
                     video_data.highlights = []
                     for h in kd["highlights"]:
-                        video_data.highlights.append(Highlight(
+                        video_data.highlights.append(HighlightScene(
                             timestamp=h.get("timestamp", ""),
+                            speaker=h.get("speaker", ""),
                             text=h.get("text", ""),
                             category=h.get("category", ""),
                         ))

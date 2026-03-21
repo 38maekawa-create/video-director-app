@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-03-21T12:02:08",
+  "total": 4,
+  "success": 0,
+  "errors": 4,
+  "total_elapsed": 0.0,
+  "results": [
+    {
+      "project_id": "p-20260101-けーさん",
+      "guest_name": "けーさん",
+      "status": "error",
+      "elapsed": 0.0,
+      "desc_len": 0,
+      "error": "cannot import name 'Highlight' from 'src.video_direction.integrations.ai_dev5_connector' (/Users/maekawanaoto/AI開発10/src/video_direction/integrations/ai_dev5_connector.py)"
+    },
+    {
+      "project_id": "p-20260125-ひ樹京ひろきょう",
+      "guest_name": "ひろきょうさん",
+      "status": "error",
+      "elapsed": 0.0,
+      "desc_len": 0,
+      "error": "cannot import name 'Highlight' from 'src.video_direction.integrations.ai_dev5_connector' (/Users/maekawanaoto/AI開発10/src/video_direction/integrations/ai_dev5_connector.py)"
+    },
+    {
+      "project_id": "p-20251213-ゆきもる",
+      "guest_name": "ゆきもるさん",
+      "status": "error",
+      "elapsed": 0.0,
+      "desc_len": 0,
+      "error": "cannot import name 'Highlight' from 'src.video_direction.integrations.ai_dev5_connector' (/Users/maekawanaoto/AI開発10/src/video_direction/integrations/ai_dev5_connector.py)"
+    },
+    {
+      "project_id": "p-20260101-メンイチ",
+      "guest_name": "メンイチさん",
+      "status": "error",
+      "elapsed": 0.0,
+      "desc_len": 0,
+      "error": "cannot import name 'Highlight' from 'src.video_direction.integrations.ai_dev5_connector' (/Users/maekawanaoto/AI開発10/src/video_direction/integrations/ai_dev5_connector.py)"
+    }
+  ]
+}

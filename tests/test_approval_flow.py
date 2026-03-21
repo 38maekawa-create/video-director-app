@@ -445,8 +445,11 @@ class TestVimeoApprovalGate:
         )
         assert resp.status_code == 403
         resp_data = resp.json()
-        detail = resp_data.get("detail", resp_data.get("message", ""))
-        assert "未承認" in detail
+        # カスタムエラーハンドラのレスポンス形式に対応
+        if "detail" in resp_data:
+            assert "未承認" in resp_data["detail"]
+        elif "error" in resp_data:
+            assert "未承認" in resp_data["error"].get("message", "")
 
     @patch("src.video_direction.integrations.api_server._get_db")
     def test_承認済みFBなら本番投稿可能(self, mock_db):

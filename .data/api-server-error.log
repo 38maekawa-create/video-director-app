@@ -12324,3 +12324,11 @@ INFO:     Finished server process [68872]
 INFO:     Started server process [69170]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'tests/test_approval_flow.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [69170]
+INFO:     Started server process [69550]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

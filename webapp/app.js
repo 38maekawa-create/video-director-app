@@ -54,7 +54,7 @@
     renderHomeWithProjects(MockData.projects);
 
     // APIからプロジェクト一覧を非同期取得
-    fetch('http://localhost:8210/api/projects')
+    fetch('/api/projects')
       .then(res => res.ok ? res.json() : Promise.reject('API error'))
       .then(apiProjects => {
         if (apiProjects && apiProjects.length > 0) {
@@ -976,7 +976,7 @@
     document.getElementById('rec-convert-btn').style.display = 'none';
     document.getElementById('rec-converting').style.display = 'block';
 
-    fetch('http://localhost:8210/api/v1/feedback/convert', {
+    fetch('/api/v1/feedback/convert', {
       method: 'POST',
       body: formData
     })
@@ -1020,7 +1020,7 @@
     statusEl.className = 'rec-post-status';
     statusEl.textContent = '投稿中...';
 
-    var url = 'http://localhost:8210/api/v1/vimeo/post-review' + (dryRun ? '?dry_run=true' : '');
+    var url = '/api/v1/vimeo/post-review' + (dryRun ? '?dry_run=true' : '');
 
     fetch(url, {
       method: 'POST',
@@ -1097,7 +1097,7 @@
     });
 
     // APIからプロジェクト詳細を取得（edited_video フィールドを確認）
-    fetch('http://localhost:8210/api/projects/' + encodeURIComponent(p.id))
+    fetch('/api/projects/' + encodeURIComponent(p.id))
       .then(function(r) { return r.json(); })
       .then(function(data) {
         renderEditFeedbackContent(content, p, data);
@@ -1247,7 +1247,7 @@
     });
 
     // API: POST /api/v1/vimeo/post-review?dry_run=true
-    fetch('http://localhost:8210/api/v1/vimeo/post-review?dry_run=true', {
+    fetch('/api/v1/vimeo/post-review?dry_run=true', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ project_id: p.id })
@@ -1258,7 +1258,7 @@
       })
       .catch(function() {
         // APIなしフォールバック: プロジェクト詳細から取得
-        fetch('http://localhost:8210/api/projects/' + encodeURIComponent(p.id))
+        fetch('/api/projects/' + encodeURIComponent(p.id))
           .then(function(r) { return r.json(); })
           .then(function(data) {
             renderVimeoReviewContent(content, p, data);
@@ -1392,7 +1392,7 @@
     }
 
     // APIから最新データを取得
-    fetch('http://localhost:8210/api/projects/' + encodeURIComponent(project.id))
+    fetch('/api/projects/' + encodeURIComponent(project.id))
       .then(function(r) { return r.ok ? r.json() : null; })
       .then(function(data) {
         var vimeoUrl = editedVideo;
@@ -1498,11 +1498,11 @@
     content.innerHTML = '<div class="ef-loading"><div class="yt-loading-text">\u30c8\u30e9\u30c3\u30ad\u30f3\u30b0\u30c7\u30fc\u30bf\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...</div></div>';
 
     // 並列でAPI呼び出し
-    var videosPromise = fetch('http://localhost:8210/api/tracking/videos')
+    var videosPromise = fetch('/api/tracking/videos')
       .then(function(r) { return r.ok ? r.json() : []; })
       .catch(function() { return []; });
 
-    var summaryPromise = fetch('http://localhost:8210/api/v1/learning/summary')
+    var summaryPromise = fetch('/api/v1/learning/summary')
       .then(function(r) { return r.ok ? r.json() : null; })
       .catch(function() { return null; });
 
@@ -1561,7 +1561,7 @@
     container.innerHTML = '<div class="yt-loading"><div class="yt-loading-text">YouTube素材を読み込み中...</div></div>';
 
     // APIからfetch（失敗時はローカル生成でフォールバック）
-    fetch('http://localhost:8210/api/projects/' + encodeURIComponent(project.id) + '/youtube-assets')
+    fetch('/api/projects/' + encodeURIComponent(project.id) + '/youtube-assets')
       .then(function(r) {
         if (!r.ok) throw new Error('not found');
         return r.json();
@@ -2350,7 +2350,7 @@
 
     container.innerHTML = '<div class="ef-loading"><div class="yt-loading-text">\u30d5\u30ec\u30fc\u30e0\u8a55\u4fa1\u30c7\u30fc\u30bf\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...</div></div>';
 
-    fetch('http://localhost:8210/api/v1/projects/' + encodeURIComponent(project.id) + '/frame-evaluation')
+    fetch('/api/v1/projects/' + encodeURIComponent(project.id) + '/frame-evaluation')
       .then(function(r) {
         if (!r.ok) throw new Error('not found');
         return r.json();
@@ -2616,7 +2616,7 @@
     var body = { dry_run: dryRun };
     if (vimeoId) body.vimeo_video_id = vimeoId;
 
-    fetch('http://localhost:8210/api/v1/projects/' + encodeURIComponent(pid) + '/e2e-pipeline', {
+    fetch('/api/v1/projects/' + encodeURIComponent(pid) + '/e2e-pipeline', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
@@ -2782,7 +2782,7 @@
       }
     }
 
-    fetch('http://localhost:8210/api/v1/projects/' + encodeURIComponent(pid) + '/telop-check', {
+    fetch('/api/v1/projects/' + encodeURIComponent(pid) + '/telop-check', {
       method: 'POST',
       body: formData
     })
@@ -2895,7 +2895,7 @@
     var body = {};
     if (videoPath) body.video_path = videoPath;
 
-    fetch('http://localhost:8210/api/v1/projects/' + encodeURIComponent(pid) + '/audio-evaluation', {
+    fetch('/api/v1/projects/' + encodeURIComponent(pid) + '/audio-evaluation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
@@ -3023,7 +3023,7 @@
     // ページ一覧を取得
     content.querySelector('.kb-grid').innerHTML = '<div class="ef-loading"><div class="yt-loading-text">ナレッジページを読み込み中...</div></div>';
 
-    fetch('http://localhost:8210/api/v1/knowledge/pages')
+    fetch('/api/v1/knowledge/pages')
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var pages = data.pages || data || [];
@@ -3096,7 +3096,7 @@
 
     // 検索APIも使う
     if (query && query.length >= 2) {
-      fetch('http://localhost:8210/api/v1/knowledge/search?q=' + encodeURIComponent(query))
+      fetch('/api/v1/knowledge/search?q=' + encodeURIComponent(query))
         .then(function(r) { return r.json(); })
         .then(function(data) {
           var searchResults = data.results || data.pages || data || [];
@@ -3195,11 +3195,11 @@
     });
 
     // 並列でAPI呼び出し
-    var patternsPromise = fetch('http://localhost:8210/api/learning/feedback-patterns')
+    var patternsPromise = fetch('/api/learning/feedback-patterns')
       .then(function(r) { return r.ok ? r.json() : null; })
       .catch(function() { return null; });
 
-    var summaryPromise = fetch('http://localhost:8210/api/learning/summary')
+    var summaryPromise = fetch('/api/learning/summary')
       .then(function(r) { return r.ok ? r.json() : null; })
       .catch(function() { return null; });
 
@@ -3353,7 +3353,7 @@
     resultEl.style.display = 'block';
     resultEl.innerHTML = '<div class="ef-loading"><div class="yt-loading-text">フレーム評価データを取得中...</div></div>';
 
-    fetch('http://localhost:8210/api/v1/projects/' + encodeURIComponent(pid) + '/frame-evaluation', {
+    fetch('/api/v1/projects/' + encodeURIComponent(pid) + '/frame-evaluation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({})
@@ -3962,9 +3962,9 @@
 
     // 両APIを並列取得
     Promise.all([
-      fetch('http://localhost:8210/api/v1/projects/' + encodeURIComponent(project.id) + '/before-after')
+      fetch('/api/v1/projects/' + encodeURIComponent(project.id) + '/before-after')
         .then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch('http://localhost:8210/api/v1/projects/' + encodeURIComponent(project.id) + '/transcript-diff')
+      fetch('/api/v1/projects/' + encodeURIComponent(project.id) + '/transcript-diff')
         .then(r => r.ok ? r.json() : null).catch(() => null)
     ]).then(([baData, tdData]) => {
       renderBeforeAfterContent(container, baData, tdData);

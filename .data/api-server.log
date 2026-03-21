@@ -3096,3 +3096,16 @@ INFO:     2400:4151:202:e100:c452:101a:1728:6f49:0 - "GET /api/tracking/insights
 INFO:     2400:4151:202:e100:c452:101a:1728:6f49:0 - "GET /api/audit/history HTTP/1.1" 200 OK
 INFO:     2400:4151:202:e100:c452:101a:1728:6f49:0 - "GET /api/learning/summary HTTP/1.1" 200 OK
 INFO:     2400:4151:202:e100:c452:101a:1728:6f49:0 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/dashboard/quality-trend HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/audit/history HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/learning/summary HTTP/1.1" 200 OK

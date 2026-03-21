@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-22T03:38:03.856318",
+  "generated_at": "2026-03-22T06:54:41.879299",
   "summary": {
     "total_members": 29,
     "matched": 14,
@@ -330,8 +330,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
@@ -382,8 +382,8 @@
     {
       "guest_name": "ひろきょうさん",
       "search_keys": [
-        "ひろきょう",
-        "ヒロキョウ"
+        "ヒロキョウ",
+        "ひろきょう"
       ],
       "near_candidates": []
     },
@@ -397,8 +397,8 @@
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "あさかつ",
-        "アサカツ"
+        "アサカツ",
+        "あさかつ"
       ],
       "near_candidates": [
         {
@@ -443,8 +443,8 @@
       "search_keys": [
         "クマキ",
         "クマスケ",
-        "くますけ",
-        "くまき"
+        "くまき",
+        "くますけ"
       ],
       "near_candidates": [
         {
@@ -531,16 +531,16 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ろき",
-        "ロキ"
+        "ロキ",
+        "ろき"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "さくらさん",
       "search_keys": [
-        "さくら",
-        "サクラ"
+        "サクラ",
+        "さくら"
       ],
       "near_candidates": [
         {
@@ -578,8 +578,8 @@
       "guest_name": "コテさん",
       "search_keys": [
         "コテツ",
-        "コテ",
         "こてつ",
+        "コテ",
         "こて"
       ],
       "near_candidates": [
@@ -596,8 +596,8 @@
       "guest_name": "kosさん",
       "search_keys": [
         "コスト",
-        "こすと",
-        "kos"
+        "kos",
+        "こすと"
       ],
       "near_candidates": [
         {
@@ -633,12 +633,12 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
+        "さといも・とーます",
         "さといも",
         "サトイモ・トーマス",
         "サトイモ",
-        "さといも・とーます",
-        "とーます",
         "さといも・トーマス",
+        "とーます",
         "トーマス"
       ],
       "near_candidates": [
@@ -682,8 +682,8 @@
     {
       "guest_name": "ハオさん",
       "search_keys": [
-        "ハオ",
         "はお",
+        "ハオ",
         "羽生"
       ],
       "near_candidates": []

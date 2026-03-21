@@ -130,8 +130,8 @@ def run_auto_qc(
             f"テロップ読み取り完了: {telop_result.telop_frames}/{telop_result.total_frames}枚にテロップ検出"
         )
 
-        # === Step 4: 突合 ===
-        logger.info("=== Step 4: テロップ正確性チェック ===")
+        # === Step 4A: テロップ正確性チェック ===
+        logger.info("=== Step 4A: テロップ正確性チェック ===")
         qc_result = run_qc_comparison(
             transcript=transcript,
             telop_result=telop_result,
@@ -140,6 +140,43 @@ def run_auto_qc(
             similarity_threshold=similarity_threshold,
             time_window_sec=time_window,
         )
+
+        # === Step 4B: マーケティング品質QC（Phase2） ===
+        marketing_qc_result = None
+        if enable_marketing_qc:
+            logger.info("=== Step 4B: マーケティング品質QC ===")
+            try:
+                # テロップテキストをタイムスタンプ付きリストに変換
+                telop_text_list = []
+                for reading in telop_result.readings:
+                    if reading.has_telop and reading.telop_texts:
+                        for text in reading.telop_texts:
+                            telop_text_list.append(f"[{reading.timecode}] {text}")
+
+                marketing_qc_result = run_marketing_qc(
+                    telop_texts=telop_text_list,
+                    transcript_text=transcript.full_text,
+                    project_id=project_id,
+                    direction_report=direction_report,
+                    guest_profile=guest_profile,
+                    content_line=content_line,
+                    model=marketing_qc_model,
+                )
+
+                # マーケQC結果をQCResultに統合
+                qc_result.marketing_qc = marketing_qc_result.to_dict()
+
+                logger.info(
+                    f"マーケQC完了: {marketing_qc_result.error_count}エラー, "
+                    f"{marketing_qc_result.warning_count}警告"
+                )
+            except Exception as e:
+                logger.error(f"マーケQC実行エラー（テロップQCには影響なし）: {e}")
+                # マーケQCが失敗してもテロップQC結果は返す
+                qc_result.marketing_qc = {
+                    "status": "error",
+                    "error_message": str(e),
+                }
 
         # 結果をJSONファイルに保存
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -161,6 +198,8 @@ def run_auto_qc(
                 "similarity_threshold": similarity_threshold,
                 "time_window": time_window,
                 "max_frames": max_frames,
+                "enable_marketing_qc": enable_marketing_qc,
+                "marketing_qc_model": marketing_qc_model,
             },
             "executed_at": datetime.now().isoformat(),
         }
@@ -218,6 +257,27 @@ def main():
         help=f"GPT-4oに投げる最大フレーム数。デフォルト: {DEFAULT_MAX_FRAMES}",
     )
     parser.add_argument(
+        "--skip-marketing-qc",
+        action="store_true",
+        help="マーケティング品質QC（Phase2）をスキップする",
+    )
+    parser.add_argument(
+        "--direction-report",
+        default="",
+        help="ディレクションレポートファイルパス（マーケQC用）",
+    )
+    parser.add_argument(
+        "--guest-profile",
+        default="",
+        help="ゲストプロファイルファイルパス（マーケQC用）",
+    )
+    parser.add_argument(
+        "--content-line",
+        choices=["career", "realestate"],
+        default=None,
+        help="コンテンツライン（未指定で自動判定）",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="詳細ログを表示",
@@ -230,6 +290,19 @@ def main():
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     )
 
+    # ファイル指定の場合は読み込み
+    direction_report = ""
+    if args.direction_report:
+        dr_path = Path(args.direction_report)
+        if dr_path.exists():
+            direction_report = dr_path.read_text(encoding="utf-8")
+
+    guest_profile = ""
+    if args.guest_profile:
+        gp_path = Path(args.guest_profile)
+        if gp_path.exists():
+            guest_profile = gp_path.read_text(encoding="utf-8")
+
     result = run_auto_qc(
         video_path=args.video,
         project_id=args.project_id,
@@ -237,25 +310,51 @@ def main():
         frame_interval=args.interval,
         similarity_threshold=args.threshold,
         max_frames=args.max_frames,
+        enable_marketing_qc=not args.skip_marketing_qc,
+        direction_report=direction_report,
+        guest_profile=guest_profile,
+        content_line=args.content_line,
     )
 
     # サマリー表示
     print("\n" + "=" * 60)
-    print(f"QC結果: {'PASSED' if result.status == 'passed' else 'FAILED'}")
+    print(f"テロップQC: {'PASSED' if result.status == 'passed' else 'FAILED'}")
     print(f"検査フレーム: {result.checked_frames}枚")
     print(f"エラー: {result.error_count}件, 警告: {result.warning_count}件")
+
+    if result.marketing_qc:
+        mq = result.marketing_qc
+        mq_status = mq.get("status", "unknown")
+        print(f"\nマーケQC: {'PASSED' if mq_status == 'passed' else mq_status.upper()}")
+        print(f"マーケQCエラー: {mq.get('error_count', 0)}件, 警告: {mq.get('warning_count', 0)}件")
+        if mq.get("highlight_assessment"):
+            print(f"ハイライト評価: {mq['highlight_assessment']}")
+        if mq.get("direction_assessment"):
+            print(f"演出評価: {mq['direction_assessment']}")
+
+    print(f"\n統合ステータス: {result.combined_status.upper()}")
     print("=" * 60)
 
     if result.issues:
-        print("\n【検出された問題】")
+        print("\n【テロップ誤字検出】")
         for issue in result.issues:
-            icon = "🔴" if issue.severity == "error" else "🟡"
-            print(f"  {icon} [{issue.timecode}] {issue.description}")
+            icon = "!" if issue.severity == "error" else "?"
+            print(f"  [{icon}] [{issue.timecode}] {issue.description}")
             print(f"     発言: {issue.spoken_text}")
             print(f"     テロップ: {issue.telop_text}")
             print()
 
-    sys.exit(0 if result.status == "passed" else 1)
+    if result.marketing_qc and result.marketing_qc.get("issues"):
+        print("\n【マーケティング品質指摘】")
+        for issue in result.marketing_qc["issues"]:
+            sev = issue.get("severity", "warning")
+            icon = "!" if sev == "error" else ("?" if sev == "warning" else "i")
+            print(f"  [{icon}] [{issue.get('category', 'general')}] {issue.get('description', '')}")
+            if issue.get("suggestion"):
+                print(f"     提案: {issue['suggestion']}")
+            print()
+
+    sys.exit(0 if result.combined_status == "passed" else 1)
 
 
 if __name__ == "__main__":

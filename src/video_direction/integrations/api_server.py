@@ -4769,12 +4769,17 @@ def get_auto_qc_result(project_id: str):
 
     latest = results[0]
     qc_data = latest.get("qc_result", {})
-    return {
+    response = {
         "status": qc_data.get("status", "unknown"),
+        "combined_status": qc_data.get("combined_status", qc_data.get("status", "unknown")),
         "project_id": project_id,
         "latest": latest,
         "total_results": len(results),
     }
+    # マーケQC結果がある場合はトップレベルにも含める
+    if "marketing_qc" in qc_data:
+        response["marketing_qc"] = qc_data["marketing_qc"]
+    return response
 
 
 class AutoQCRequest(BaseModel):
@@ -4782,6 +4787,11 @@ class AutoQCRequest(BaseModel):
     frame_interval: float = 2.0
     similarity_threshold: float = 0.7
     max_frames: int = 100
+    # Phase2: マーケQCオプション
+    enable_marketing_qc: bool = True
+    direction_report: str = ""
+    guest_profile: str = ""
+    content_line: Optional[str] = None  # "career" | "realestate" | None（自動判定）
 
 
 @app.post("/api/v1/projects/{project_id}/auto-qc")
@@ -4804,15 +4814,23 @@ async def run_auto_qc_endpoint(project_id: str, req: AutoQCRequest):
             frame_interval=req.frame_interval,
             similarity_threshold=req.similarity_threshold,
             max_frames=req.max_frames,
+            enable_marketing_qc=req.enable_marketing_qc,
+            direction_report=req.direction_report,
+            guest_profile=req.guest_profile,
+            content_line=req.content_line,
         )
-        return {
+        response = {
             "status": result.status,
+            "combined_status": result.combined_status,
             "project_id": project_id,
             "error_count": result.error_count,
             "warning_count": result.warning_count,
             "checked_frames": result.checked_frames,
             "issues": [i.to_dict() for i in result.issues],
         }
+        if result.marketing_qc is not None:
+            response["marketing_qc"] = result.marketing_qc
+        return response
     except FileNotFoundError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -4832,14 +4850,22 @@ def list_all_qc_results():
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
             qc_data = data.get("qc_result", {})
-            results.append({
+            entry = {
                 "file": f.name,
                 "project_id": qc_data.get("project_id", ""),
                 "status": qc_data.get("status", "unknown"),
+                "combined_status": qc_data.get("combined_status", qc_data.get("status", "unknown")),
                 "error_count": qc_data.get("error_count", 0),
                 "warning_count": qc_data.get("warning_count", 0),
                 "executed_at": data.get("executed_at", ""),
-            })
+            }
+            # マーケQCサマリーを含める
+            mq = qc_data.get("marketing_qc")
+            if mq:
+                entry["marketing_qc_status"] = mq.get("status", "unknown")
+                entry["marketing_qc_error_count"] = mq.get("error_count", 0)
+                entry["marketing_qc_warning_count"] = mq.get("warning_count", 0)
+            results.append(entry)
         except Exception as e:
             logger.warning(f"QC結果ファイルの読み込みエラー: {f}: {e}")
 

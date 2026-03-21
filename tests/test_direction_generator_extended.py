@@ -512,11 +512,11 @@ class TestGenerateDirectionsBasic:
         assert isinstance(timeline, DirectionTimeline)
         assert timeline.applied_rules == []
 
-    def test_LLM分析はAPIキーなしで空文字(self):
-        """ANTHROPIC_API_KEY未設定時、llm_analysisは空文字"""
+    def test_LLM分析が失敗した場合は空文字(self):
+        """LLM呼び出しが例外を投げた場合、llm_analysisは空文字（teko_core.llm移行後はAPIキー不要）"""
         hl = _make_highlight("01:00", "パンチライン", text="テスト")
         video = _make_video_data([hl])
-        with patch.dict("os.environ", {"ANTHROPIC_API_KEY": ""}, clear=False):
+        with patch("teko_core.llm.ask", side_effect=Exception("LLM unavailable")):
             timeline = generate_directions(
                 video, _make_classification(), _make_income_eval()
             )

@@ -3059,3 +3059,5 @@ INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/audit/history HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50842 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50874 - "GET /api/projects HTTP/1.1" 200 OK

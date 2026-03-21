@@ -73,7 +73,7 @@ actor ConnectionOrchestrator {
 
     /// 優先度付き並列probe
     /// Phase 1: local + tailscale を並列（短タイムアウト3秒）
-    /// Phase 2: 失敗時のみ cloud を試行
+    /// Phase 2: 失敗時のみ cloud を試行（モバイル通信考慮で10秒）
     private func raceRoutes() async -> Route? {
         // Phase 1: ローカル・Tailscaleを並列probe
         let fastRoutes = routes.filter { $0.priority < 2 }
@@ -99,9 +99,9 @@ actor ConnectionOrchestrator {
             if let w = winner { return w }
         }
 
-        // Phase 2: クラウドを試行
+        // Phase 2: クラウドを試行（モバイル通信＋Cloudflareトンネル経由を考慮し10秒）
         if let cloud = cloudRoute {
-            if await probe(route: cloud, timeout: 5) {
+            if await probe(route: cloud, timeout: 10) {
                 return cloud
             }
         }
@@ -218,6 +218,8 @@ final class APIClient: ObservableObject {
 
     /// ネットワーク変化時のデバウンス用タスク
     private var networkDebounceTask: Task<Void, Never>?
+    /// disconnected遷移のデバウンス用タスク
+    private var disconnectDebounceTask: Task<Void, Never>?
 
     /// ネットワーク状態変化を監視し、復帰時に自動再接続
     /// デバウンス: 短時間の連続変化を無視し、安定してから再接続
@@ -231,22 +233,35 @@ final class APIClient: ObservableObject {
                 self.lastPathStatus = path.status
 
                 if isNowConnected && (wasDisconnected || interfaceChanged) {
-                    // デバウンス: 2秒間安定してから再接続（4G電波変動でのチラつき防止）
+                    // 復帰時はdisconnectデバウンスをキャンセル（回復したのでバナー不要）
+                    self.disconnectDebounceTask?.cancel()
+                    self.disconnectDebounceTask = nil
+                    // デバウンス: 3.5秒間安定してから再接続（モバイル通信の電波変動でのチラつき防止）
                     self.networkDebounceTask?.cancel()
                     self.networkDebounceTask = Task {
-                        try? await Task.sleep(nanoseconds: 2_000_000_000)
+                        try? await Task.sleep(nanoseconds: 3_500_000_000)
                         guard !Task.isCancelled else { return }
                         print("📡 ネットワーク変化検知（安定後）→ 再接続開始")
                         await self.probeAndConnect()
                     }
                 } else if !isNowConnected {
-                    self.connectionStatus = .disconnected
-                    print("📡 ネットワーク切断検知")
+                    // 切断もデバウンス: 5秒間切断が続いた場合のみdisconnected表示
+                    // モバイル通信のWiFi↔4G切り替え時の瞬断でバナーが出るのを防止
+                    self.disconnectDebounceTask?.cancel()
+                    self.disconnectDebounceTask = Task {
+                        try? await Task.sleep(nanoseconds: 5_000_000_000)
+                        guard !Task.isCancelled else { return }
+                        self.connectionStatus = .disconnected
+                        print("📡 ネットワーク切断検知（5秒持続）")
+                    }
                 }
             }
         }
         networkMonitor.start(queue: monitorQueue)
     }
+
+    /// probe失敗の連続回数（連続して失敗した場合のみdisconnectedに遷移）
+    private var consecutiveProbeFailures = 0
 
     /// アプリ起動時・ScenePhase復帰時・ネットワーク変化時に呼び出し
     /// ConnectionOrchestrator actorにより多重probe抑止
@@ -269,11 +284,26 @@ final class APIClient: ObservableObject {
             activeBaseURL = route.url
             connectionStatus = .connected(route.label)
             hasEverConnected = true
+            consecutiveProbeFailures = 0
             print("✅ 接続成功: \(route.url.absoluteString) (\(route.label))")
         } else {
-            activeBaseURL = primaryURL
-            connectionStatus = .disconnected
-            print("⚠️ 全URL到達不可。プライマリURL(\(primaryURL))で待機")
+            consecutiveProbeFailures += 1
+            // 既にconnected状態の場合、1回のprobe失敗ではdisconnectedにしない
+            // モバイル通信の一時的な遅延でバナーが出るのを防止
+            // 2回連続で失敗した場合のみdisconnectedに遷移
+            if wasConnected && consecutiveProbeFailures < 2 {
+                print("⚠️ probe失敗（\(consecutiveProbeFailures)回目）。connected状態を維持してリトライ")
+                // 3秒後に再度probeを試行
+                Task {
+                    try? await Task.sleep(nanoseconds: 3_000_000_000)
+                    guard !Task.isCancelled else { return }
+                    await self.probeAndConnect()
+                }
+            } else {
+                activeBaseURL = primaryURL
+                connectionStatus = .disconnected
+                print("⚠️ 全URL到達不可（\(consecutiveProbeFailures)回連続）。プライマリURL(\(primaryURL))で待機")
+            }
         }
     }
 
@@ -675,15 +705,24 @@ final class APIClient: ObservableObject {
         try await performRequest(baseURL: activeBaseURL, path: path, method: method, body: body)
     }
 
+    /// モバイル通信対応: リトライ可能なURLErrorコード
+    private let retryableErrorCodes: [URLError.Code] = [
+        .timedOut, .cannotFindHost, .cannotConnectToHost,
+        .networkConnectionLost, .notConnectedToInternet,
+        .dnsLookupFailed, .secureConnectionFailed
+    ]
+
     private func performRequest<T: Decodable>(
         baseURL: URL,
         path: String,
-        method: String
+        method: String,
+        retryCount: Int = 0
     ) async throws -> T {
         let url = buildURL(base: baseURL, path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
-        request.timeoutInterval = 12
+        // モバイル通信（4G/5G + Cloudflareトンネル）を考慮し20秒
+        request.timeoutInterval = 20
 
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
@@ -699,6 +738,15 @@ final class APIClient: ObservableObject {
             }
 
             return try decoder.decode(T.self, from: data)
+        } catch let error as URLError where retryableErrorCodes.contains(error.code) && retryCount < 2 {
+            // モバイル通信対応: 最大2回リトライ（1秒→2秒の指数バックオフ）
+            let delay = UInt64(pow(2.0, Double(retryCount))) * 1_000_000_000
+            print("🔄 APIリトライ \(retryCount + 1)/2: \(path) (\(error.code.rawValue))")
+            try? await Task.sleep(nanoseconds: delay)
+            // ベースURLが変わっていれば新しいURLでリトライ
+            await reconnectIfNeeded(error: error)
+            let retryBase = activeBaseURL != baseURL ? activeBaseURL : baseURL
+            return try await performRequest(baseURL: retryBase, path: path, method: method, retryCount: retryCount + 1)
         } catch let error where error is URLError {
             await reconnectIfNeeded(error: error)
             if activeBaseURL != baseURL {
@@ -712,12 +760,14 @@ final class APIClient: ObservableObject {
         baseURL: URL,
         path: String,
         method: String,
-        body: Body
+        body: Body,
+        retryCount: Int = 0
     ) async throws -> T {
         let url = buildURL(base: baseURL, path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
-        request.timeoutInterval = 12
+        // モバイル通信（4G/5G + Cloudflareトンネル）を考慮し20秒
+        request.timeoutInterval = 20
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try encoder.encode(body)
 
@@ -735,6 +785,14 @@ final class APIClient: ObservableObject {
             }
 
             return try decoder.decode(T.self, from: data)
+        } catch let error as URLError where retryableErrorCodes.contains(error.code) && retryCount < 2 {
+            // モバイル通信対応: 最大2回リトライ（1秒→2秒の指数バックオフ）
+            let delay = UInt64(pow(2.0, Double(retryCount))) * 1_000_000_000
+            print("🔄 APIリトライ \(retryCount + 1)/2: \(path) (\(error.code.rawValue))")
+            try? await Task.sleep(nanoseconds: delay)
+            await reconnectIfNeeded(error: error)
+            let retryBase = activeBaseURL != baseURL ? activeBaseURL : baseURL
+            return try await performRequest(baseURL: retryBase, path: path, method: method, body: body, retryCount: retryCount + 1)
         } catch let error where error is URLError {
             await reconnectIfNeeded(error: error)
             if activeBaseURL != baseURL {
@@ -789,7 +847,8 @@ final class APIClient: ObservableObject {
         let url = buildURL(base: baseURL, path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
-        request.timeoutInterval = 12
+        // モバイル通信（4G/5G + Cloudflareトンネル）を考慮し20秒
+        request.timeoutInterval = 20
         if let body = body {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = try JSONEncoder().encode(body)

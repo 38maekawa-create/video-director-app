@@ -207,7 +207,7 @@ def compare_single(
             best_similarity = combined_sim
             best_segment_text = spoken_combined
 
-        if best_similarity >= 0.95:
+        if best_similarity >= 0.98:
             # ほぼ完全一致 → 問題なし
             continue
         elif best_similarity >= similarity_threshold:

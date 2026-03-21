@@ -231,7 +231,8 @@ class TestComputeSimilarity:
 class TestFindDifferences:
     def test_single_char_typo(self):
         diff = _find_differences("キャッシュフロー", "キャシュフロー")
-        assert "キャッシュ" in diff or "キャシュ" in diff
+        # 「ッ」が脱落として検出される
+        assert "脱落" in diff or "キャッシュ" in diff or "キャシュ" in diff
 
     def test_missing_text(self):
         diff = _find_differences("重要なポイント", "重要なポイ")

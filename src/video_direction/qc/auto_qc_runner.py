@@ -4,11 +4,13 @@
 Step 1: Whisper音声文字起こし
 Step 2: フレームキャプチャ
 Step 3: テロップ有無フィルタリング + GPT-4oビジョン読み取り
-Step 4: 正解データ vs テロップの突合
+Step 4A: 正解データ vs テロップの突合（テロップ正確性チェック）
+Step 4B: マーケティング品質QC（QUALITY_JUDGMENT_GUIDE注入 + Opus定額内判定）
 
 使い方:
     python -m src.video_direction.qc.auto_qc_runner --video /path/to/video.mp4
     python -m src.video_direction.qc.auto_qc_runner --video /path/to/video.mp4 --project-id PRJ001
+    python -m src.video_direction.qc.auto_qc_runner --video /path/to/video.mp4 --skip-marketing-qc
 """
 
 from __future__ import annotations
@@ -27,6 +29,7 @@ from .whisper_transcriber import transcribe_video, TranscriptResult
 from .frame_extractor import extract_and_filter, ExtractedFrame
 from .telop_reader import read_telops_batch, TelopReadResult
 from .qc_comparator import run_qc_comparison, QCResult
+from .marketing_qc import run_marketing_qc, MarketingQCResult
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +55,12 @@ def run_auto_qc(
     max_frames: int = DEFAULT_MAX_FRAMES,
     cache_dir: Optional[str | Path] = None,
     cleanup_frames: bool = True,
+    # Phase2: マーケQCオプション
+    enable_marketing_qc: bool = True,
+    direction_report: str = "",
+    guest_profile: str = "",
+    content_line: Optional[str] = None,
+    marketing_qc_model: str = "opus",
 ) -> QCResult:
     """自動QCパイプラインのメイン実行
 
@@ -65,9 +74,14 @@ def run_auto_qc(
         max_frames: GPT-4oに投げる最大フレーム数
         cache_dir: Whisper結果のキャッシュディレクトリ
         cleanup_frames: 処理後にフレーム画像を削除するか
+        enable_marketing_qc: マーケQC（Phase2）を実行するか
+        direction_report: ディレクションレポート（マーケQC用）
+        guest_profile: ゲストプロファイル（マーケQC用）
+        content_line: コンテンツライン（None=自動判定）
+        marketing_qc_model: マーケQCに使うモデル（デフォルト: opus）
 
     Returns:
-        QC結果
+        QC結果（マーケQC結果が含まれる場合あり）
     """
     video_path = Path(video_path)
     if not video_path.exists():

@@ -11,7 +11,7 @@ import logging
 import re
 import unicodedata
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Any, Optional
 
 from .whisper_transcriber import TranscriptResult, TranscriptSegment
 from .telop_reader import TelopReadResult, TelopReading
@@ -59,13 +59,28 @@ class QCResult:
     error_count: int = 0
     warning_count: int = 0
     status: str = "pending"  # "pending" | "passed" | "failed"
+    # Phase2: マーケQC結果（統合済みの場合に格納）
+    marketing_qc: Optional[dict] = None
 
     @property
     def has_errors(self) -> bool:
         return self.error_count > 0
 
+    @property
+    def combined_status(self) -> str:
+        """テロップQC + マーケQCの統合ステータス"""
+        if self.status == "failed":
+            return "failed"
+        if self.marketing_qc and self.marketing_qc.get("status") == "failed":
+            return "failed"
+        if self.status == "passed":
+            if self.marketing_qc is None:
+                return "passed"
+            return self.marketing_qc.get("status", "passed")
+        return self.status
+
     def to_dict(self) -> dict:
-        return {
+        result = {
             "project_id": self.project_id,
             "video_path": self.video_path,
             "issues": [i.to_dict() for i in self.issues],
@@ -74,7 +89,11 @@ class QCResult:
             "error_count": self.error_count,
             "warning_count": self.warning_count,
             "status": self.status,
+            "combined_status": self.combined_status,
         }
+        if self.marketing_qc is not None:
+            result["marketing_qc"] = self.marketing_qc
+        return result
 
     @classmethod
     def from_dict(cls, data: dict) -> QCResult:
@@ -88,6 +107,7 @@ class QCResult:
             error_count=data.get("error_count", 0),
             warning_count=data.get("warning_count", 0),
             status=data.get("status", "pending"),
+            marketing_qc=data.get("marketing_qc"),
         )
 
 

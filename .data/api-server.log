@@ -3083,3 +3083,4 @@ INFO:     240a:61:32e6:59c6:8b2:eb44:a587:4b62:0 - "GET /api/tracking/insights H
 INFO:     240a:61:32e6:59c6:8b2:eb44:a587:4b62:0 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
 INFO:     240a:61:32e6:59c6:8b2:eb44:a587:4b62:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     240a:61:32e6:59c6:8b2:eb44:a587:4b62:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53212 - "GET /api/projects HTTP/1.1" 200 OK

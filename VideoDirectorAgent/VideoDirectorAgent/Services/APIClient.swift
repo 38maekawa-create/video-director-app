@@ -279,6 +279,8 @@ final class APIClient: ObservableObject {
     private var isSilentReprobing = false
     /// 最後にdisconnected状態に遷移した時刻（短時間での再遷移を防止）
     private var lastDisconnectedAt: Date?
+    /// 最後にAPIリクエストが成功した時刻（APIが通っていればprobeを抑制）
+    private var lastSuccessfulRequestAt: Date?
 
     /// アプリ起動時・ScenePhase復帰時に呼び出し（UIバナーに影響する公開メソッド）
     /// ConnectionOrchestrator actorにより多重probe抑止
@@ -305,10 +307,10 @@ final class APIClient: ObservableObject {
             print("✅ 接続成功: \(route.url.absoluteString) (\(route.label))")
         } else {
             consecutiveProbeFailures += 1
-            // connected状態の場合、3回連続probe失敗まではconnected状態を維持
+            // connected状態の場合、5回連続probe失敗まではconnected状態を維持
             // モバイル通信の一時的な遅延・パケロスでバナーが出るのを防止
-            if wasConnected && consecutiveProbeFailures < 3 {
-                print("⚠️ probe失敗（\(consecutiveProbeFailures)/3回目）。connected状態を維持してリトライ")
+            if wasConnected && consecutiveProbeFailures < 5 {
+                print("⚠️ probe失敗（\(consecutiveProbeFailures)/5回目）。connected状態を維持してリトライ")
                 // 5秒後に再度probeを試行（バックグラウンドで静かに）
                 Task {
                     try? await Task.sleep(nanoseconds: 5_000_000_000)
@@ -321,8 +323,16 @@ final class APIClient: ObservableObject {
                 connectionStatus = .disconnected
                 print("⚠️ 初回接続失敗（\(consecutiveProbeFailures)回）。プライマリURL(\(primaryURL))で待機")
             } else {
-                // 3回連続失敗の場合のみdisconnected遷移（ただし30秒以内の再遷移は防止）
-                if let lastDisc = lastDisconnectedAt, Date().timeIntervalSince(lastDisc) < 30 {
+                // 5回連続失敗の場合のみdisconnected遷移（ただし30秒以内の再遷移は防止）
+                // さらに、最後のAPIリクエスト成功から20秒以内ならdisconnected遷移しない
+                if let lastSuccess = lastSuccessfulRequestAt, Date().timeIntervalSince(lastSuccess) < 20 {
+                    print("⚠️ probe失敗だが直近20秒以内にAPI成功あり。connected状態を維持")
+                    Task {
+                        try? await Task.sleep(nanoseconds: 10_000_000_000)
+                        guard !Task.isCancelled else { return }
+                        await self.silentReprobe()
+                    }
+                } else if let lastDisc = lastDisconnectedAt, Date().timeIntervalSince(lastDisc) < 30 {
                     print("⚠️ probe失敗だが30秒以内の再disconnectedは抑制。リトライ予約")
                     Task {
                         try? await Task.sleep(nanoseconds: 10_000_000_000)
@@ -361,9 +371,12 @@ final class APIClient: ObservableObject {
         } else {
             consecutiveProbeFailures += 1
             print("⚠️ サイレント再probe失敗（\(consecutiveProbeFailures)回目）")
-            // サイレントreprobeでは3回連続失敗かつhasEverConnectedの場合のみdisconnected
-            if consecutiveProbeFailures >= 3 {
-                if let lastDisc = lastDisconnectedAt, Date().timeIntervalSince(lastDisc) < 30 {
+            // サイレントreprobeでは5回連続失敗かつ最後のAPI成功から20秒以上経過した場合のみdisconnected
+            if consecutiveProbeFailures >= 5 {
+                // 直近でAPIリクエストが成功している場合はdisconnected遷移しない
+                if let lastSuccess = lastSuccessfulRequestAt, Date().timeIntervalSince(lastSuccess) < 20 {
+                    print("⚠️ サイレント5連続失敗だが直近API成功あり。disconnected遷移を抑制")
+                } else if let lastDisc = lastDisconnectedAt, Date().timeIntervalSince(lastDisc) < 30 {
                     // 30秒以内は再遷移しない
                 } else {
                     connectionStatus = .disconnected
@@ -375,6 +388,7 @@ final class APIClient: ObservableObject {
 
     /// ネットワークエラー時に自動再接続を試行（サイレント — バナー状態に影響しない）
     /// APIリクエストの個別エラーではバナーを出さず、バックグラウンドで静かに再probeする
+    /// ただし、直近でAPIが成功している場合はprobeを走らせない（無駄な負荷とチラつき防止）
     private func reconnectIfNeeded(error: Error) async {
         guard let urlError = error as? URLError else { return }
         let reconnectCodes: [URLError.Code] = [
@@ -383,6 +397,12 @@ final class APIClient: ObservableObject {
             .dnsLookupFailed, .secureConnectionFailed
         ]
         guard reconnectCodes.contains(urlError.code) else { return }
+        // 直近10秒以内にAPIリクエストが成功している場合はprobeを走らせない
+        // モバイル通信では個別リクエストのタイムアウトは頻繁に起きるが、全体としては繋がっている
+        if let lastSuccess = lastSuccessfulRequestAt, Date().timeIntervalSince(lastSuccess) < 10 {
+            print("🔄 ネットワークエラー検知だが直近10秒以内にAPI成功あり。probe抑制")
+            return
+        }
         print("🔄 ネットワークエラー検知。サイレント再probeを試行...")
         await silentReprobe()
     }
@@ -800,6 +820,9 @@ final class APIClient: ObservableObject {
                 throw APIError.server(statusCode: httpResponse.statusCode)
             }
 
+            // APIリクエスト成功 = サーバーに繋がっている証拠
+            markRequestSuccess()
+
             if T.self == EmptyResponse.self, let empty = EmptyResponse() as? T {
                 return empty
             }
@@ -847,6 +870,9 @@ final class APIClient: ObservableObject {
                 throw APIError.server(statusCode: httpResponse.statusCode)
             }
 
+            // APIリクエスト成功 = サーバーに繋がっている証拠
+            markRequestSuccess()
+
             if T.self == EmptyResponse.self, let empty = EmptyResponse() as? T {
                 return empty
             }
@@ -893,6 +919,8 @@ final class APIClient: ObservableObject {
             guard (200...299).contains(httpResponse.statusCode) else {
                 throw APIError.server(statusCode: httpResponse.statusCode)
             }
+            // APIリクエスト成功 = サーバーに繋がっている証拠
+            markRequestSuccess()
             return try decoder.decode(T.self, from: data)
         } catch let error where error is URLError {
             await reconnectIfNeeded(error: error)
@@ -929,6 +957,8 @@ final class APIClient: ObservableObject {
             guard (200...299).contains(httpResponse.statusCode) else {
                 throw APIError.server(statusCode: httpResponse.statusCode)
             }
+            // APIリクエスト成功 = サーバーに繋がっている証拠
+            markRequestSuccess()
             return data
         } catch let error where error is URLError {
             await reconnectIfNeeded(error: error)

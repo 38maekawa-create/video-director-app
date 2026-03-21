@@ -1,16 +1,28 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-20 18:30
-<!-- authored: T1/兵隊A/バティ/2026-03-20 -->
+2026-03-22 （バティ兵隊A）
 
 ## 現在の作業状態
-**FB変換結果の承認フロー実装完了 → Xcodeビルド・TestFlightアップが次のステップ**
+**タイミング3自動QC Phase2「マーケQC注入」実装完了 → テスト79件全PASS**
 
 ### 次セッションでやること
-1. **Xcodeビルド・TestFlight配布** — 承認フロー含むアプリをTestFlightにアップ
+1. **Xcodeビルド・TestFlight配布** — 承認フロー + QC Phase2含むアプリをTestFlightにアップ
 2. **TASK_BATCH_REGEN.md** — 29件再バッチ生成（Opus+全文注入+コンテンツライン反映）
 3. **TASK_DESCRIPTION_INVESTIGATION.md** — 概要欄未生成38%の原因調査
+4. **Phase2実機テスト** — 実動画でマーケQCを実行し、品質基準の判定精度を確認
+
+### 2026-03-22 完了タスク（Phase2: マーケQC注入）
+
+| # | タスク | 状態 |
+|---|--------|------|
+| 47 | marketing_qc.py 新規作成（QUALITY_JUDGMENT_GUIDE全セクション注入 + Opus定額内判定） | done |
+| 48 | QCResult にマーケQC結果フィールド追加（marketing_qc, combined_status） | done |
+| 49 | auto_qc_runner.py に Step 4B マーケQCステップ統合（enable_marketing_qc フラグ付き） | done |
+| 50 | api_server.py: AutoQCRequest にマーケQCオプション追加 | done |
+| 51 | api_server.py: GET/POST/一覧の全QCエンドポイントにマーケQC結果統合 | done |
+| 52 | test_marketing_qc.py 新規作成（データ構造・プロンプト構築・LLMレスポンス解析・統合テスト 36件） | done |
+| 53 | 既存Phase1テスト 43件 + 新規マーケQCテスト 36件 = 全79件PASS | done |
 
 ### 2026-03-20 完了タスク（セッション4: FB承認フロー実装）
 

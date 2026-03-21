@@ -21,6 +21,8 @@ struct VideoDirectorAgentApp: App {
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 // BG→FG復帰時に再接続を実行
+                // hasEverConnected=trueの場合、probeAndConnect内で
+                // connectingバナーを出さないように制御済み
                 print("📱 ScenePhase → active: 再接続を開始")
                 Task {
                     await APIClient.shared.probeAndConnect()

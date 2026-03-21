@@ -45,12 +45,12 @@ struct RootTabView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
-                // 接続ステータスバナー（アニメーション付きでチラつき防止）
+                // 接続ステータスバナー（デバウンス済みステータスに基づき表示）
                 connectionStatusBanner
 
                 Spacer(minLength: 0)
             }
-            .animation(.easeInOut(duration: 0.3), value: apiClient.connectionStatus)
+            .animation(.easeInOut(duration: 0.5), value: displayedStatus)
             .zIndex(1)
 
             // メインコンテンツ
@@ -111,6 +111,29 @@ struct RootTabView: View {
         .task {
             // アプリ起動時に承認待ちFB件数を取得（バッジ表示用）
             await feedbackApprovalVM.fetchPending()
+        }
+        .onChange(of: apiClient.connectionStatus) { _, newStatus in
+            // バナー表示のデバウンス: disconnectedへの遷移は3秒遅延
+            // connectedへの復帰は即座に反映（バナーをすぐ消す）
+            bannerDebounceTask?.cancel()
+            switch newStatus {
+            case .connected:
+                displayedStatus = newStatus
+            case .disconnected:
+                // 3秒間disconnectedが持続した場合のみバナー表示
+                bannerDebounceTask = Task {
+                    try? await Task.sleep(nanoseconds: 3_000_000_000)
+                    guard !Task.isCancelled else { return }
+                    displayedStatus = newStatus
+                }
+            case .connecting:
+                // connectingも2秒遅延（すぐ解決する場合はバナーを出さない）
+                bannerDebounceTask = Task {
+                    try? await Task.sleep(nanoseconds: 2_000_000_000)
+                    guard !Task.isCancelled else { return }
+                    displayedStatus = newStatus
+                }
+            }
         }
     }
 
@@ -201,7 +224,9 @@ struct RootTabView: View {
         if !apiClient.hasEverConnected {
             EmptyView()
         } else {
-            switch apiClient.connectionStatus {
+            // displayedStatus（デバウンス済み）に基づいて表示
+            // connectionStatusの急速な変化によるチラつきを完全に防止
+            switch displayedStatus {
             case .disconnected:
                 HStack(spacing: 8) {
                     Image(systemName: "wifi.slash")

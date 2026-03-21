@@ -5,23 +5,31 @@
   'use strict';
 
   // ===== リトライ付きfetch（モバイル通信のレイテンシ・一時断対策） =====
+  // maxRetries=3（モバイル通信の断続的な接続断に対応）
+  // タイムアウト25秒（Cloudflareトンネル+モバイル通信のTLSハンドシェイク考慮）
   function fetchWithRetry(url, options, maxRetries) {
-    if (maxRetries === undefined) maxRetries = 2;
+    if (maxRetries === undefined) maxRetries = 3;
     var attempt = 0;
     function doFetch() {
-      return fetch(url, options).then(function(res) {
+      // AbortControllerでタイムアウトを設定（25秒）
+      var controller = new AbortController();
+      var timeoutId = setTimeout(function() { controller.abort(); }, 25000);
+      var fetchOptions = Object.assign({}, options || {}, { signal: controller.signal });
+      return fetch(url, fetchOptions).then(function(res) {
+        clearTimeout(timeoutId);
         if (!res.ok && res.status >= 500 && attempt < maxRetries) {
           attempt++;
-          var delay = Math.pow(2, attempt - 1) * 1000; // 1秒、2秒の指数バックオフ
+          var delay = Math.min(Math.pow(2, attempt - 1) * 1000, 8000); // 1秒→2秒→4秒（上限8秒）
           return new Promise(function(resolve) {
             setTimeout(resolve, delay);
           }).then(doFetch);
         }
         return res;
       }).catch(function(err) {
+        clearTimeout(timeoutId);
         if (attempt < maxRetries) {
           attempt++;
-          var delay = Math.pow(2, attempt - 1) * 1000;
+          var delay = Math.min(Math.pow(2, attempt - 1) * 1000, 8000);
           return new Promise(function(resolve) {
             setTimeout(resolve, delay);
           }).then(doFetch);

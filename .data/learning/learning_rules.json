@@ -20,7 +20,7 @@
         "pat_20260319195723_3"
       ],
       "priority": "medium",
-      "applied_count": 169,
+      "applied_count": 171,
       "is_active": true,
       "created_at": "2026-03-20T01:50:31.036704"
     },
@@ -32,7 +32,7 @@
         "pat_20260319195642_2"
       ],
       "priority": "medium",
-      "applied_count": 171,
+      "applied_count": 173,
       "is_active": true,
       "created_at": "2026-03-20T04:46:05.233102"
     },
@@ -44,7 +44,7 @@
         "pat_20260320014952_5"
       ],
       "priority": "medium",
-      "applied_count": 143,
+      "applied_count": 145,
       "is_active": true,
       "created_at": "2026-03-20T06:52:36.433400"
     },
@@ -56,10 +56,10 @@
         "pat_20260320014907_4"
       ],
       "priority": "medium",
-      "applied_count": 42,
+      "applied_count": 44,
       "is_active": true,
       "created_at": "2026-03-21T06:26:05.745234"
     }
   ],
-  "updated_at": "2026-03-21T12:11:53.917234"
+  "updated_at": "2026-03-21T12:15:53.536456"
 }

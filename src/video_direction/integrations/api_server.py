@@ -4745,6 +4745,107 @@ def edit_vimeo_comment(comment_id: str, body: dict):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+# --- タイミング3: 自動QC ---
+
+@app.get("/api/v1/projects/{project_id}/auto-qc")
+def get_auto_qc_result(project_id: str):
+    """プロジェクトの自動QC結果を取得"""
+    from ..qc.qc_comparator import QCResult
+    qc_output = Path.home() / "AI開発10" / "output" / "qc_results"
+    if not qc_output.exists():
+        return {"status": "no_results", "project_id": project_id, "results": []}
+
+    # プロジェクトIDに一致するQC結果ファイルを検索（新しい順）
+    results = []
+    for f in sorted(qc_output.glob(f"qc_{project_id}_*.json"), reverse=True):
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+            results.append(data)
+        except Exception as e:
+            logger.warning(f"QC結果ファイルの読み込みエラー: {f}: {e}")
+
+    if not results:
+        return {"status": "no_results", "project_id": project_id, "results": []}
+
+    latest = results[0]
+    qc_data = latest.get("qc_result", {})
+    return {
+        "status": qc_data.get("status", "unknown"),
+        "project_id": project_id,
+        "latest": latest,
+        "total_results": len(results),
+    }
+
+
+class AutoQCRequest(BaseModel):
+    video_path: str
+    frame_interval: float = 2.0
+    similarity_threshold: float = 0.7
+    max_frames: int = 100
+
+
+@app.post("/api/v1/projects/{project_id}/auto-qc")
+async def run_auto_qc_endpoint(project_id: str, req: AutoQCRequest):
+    """プロジェクトの自動QCを実行
+
+    動画ファイルパスを指定してテロップ誤字自動QCパイプラインを起動する。
+    処理は同期的に実行され、完了までレスポンスを返さない（30分動画で数分程度）。
+    """
+    from ..qc.auto_qc_runner import run_auto_qc
+
+    video_path = Path(req.video_path)
+    if not video_path.exists():
+        raise HTTPException(status_code=400, detail=f"動画ファイルが見つかりません: {req.video_path}")
+
+    try:
+        result = run_auto_qc(
+            video_path=video_path,
+            project_id=project_id,
+            frame_interval=req.frame_interval,
+            similarity_threshold=req.similarity_threshold,
+            max_frames=req.max_frames,
+        )
+        return {
+            "status": result.status,
+            "project_id": project_id,
+            "error_count": result.error_count,
+            "warning_count": result.warning_count,
+            "checked_frames": result.checked_frames,
+            "issues": [i.to_dict() for i in result.issues],
+        }
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.exception(f"自動QCパイプライン実行エラー: {e}")
+        raise HTTPException(status_code=500, detail=f"QCパイプライン実行に失敗: {str(e)}")
+
+
+@app.get("/api/v1/auto-qc/results")
+def list_all_qc_results():
+    """全QC結果の一覧取得"""
+    qc_output = Path.home() / "AI開発10" / "output" / "qc_results"
+    if not qc_output.exists():
+        return {"results": []}
+
+    results = []
+    for f in sorted(qc_output.glob("qc_*.json"), reverse=True):
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+            qc_data = data.get("qc_result", {})
+            results.append({
+                "file": f.name,
+                "project_id": qc_data.get("project_id", ""),
+                "status": qc_data.get("status", "unknown"),
+                "error_count": qc_data.get("error_count", 0),
+                "warning_count": qc_data.get("warning_count", 0),
+                "executed_at": data.get("executed_at", ""),
+            })
+        except Exception as e:
+            logger.warning(f"QC結果ファイルの読み込みエラー: {f}: {e}")
+
+    return {"results": results, "total": len(results)}
+
+
 # --- ヘルスチェック ---
 
 @app.get("/api/health")

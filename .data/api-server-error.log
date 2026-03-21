@@ -12332,3 +12332,11 @@ INFO:     Finished server process [69170]
 INFO:     Started server process [69550]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'src/video_direction/integrations/api_server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [69550]
+INFO:     Started server process [74262]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

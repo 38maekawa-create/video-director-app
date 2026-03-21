@@ -4,6 +4,34 @@
 (function() {
   'use strict';
 
+  // ===== リトライ付きfetch（モバイル通信のレイテンシ・一時断対策） =====
+  function fetchWithRetry(url, options, maxRetries) {
+    if (maxRetries === undefined) maxRetries = 2;
+    var attempt = 0;
+    function doFetch() {
+      return fetch(url, options).then(function(res) {
+        if (!res.ok && res.status >= 500 && attempt < maxRetries) {
+          attempt++;
+          var delay = Math.pow(2, attempt - 1) * 1000; // 1秒、2秒の指数バックオフ
+          return new Promise(function(resolve) {
+            setTimeout(resolve, delay);
+          }).then(doFetch);
+        }
+        return res;
+      }).catch(function(err) {
+        if (attempt < maxRetries) {
+          attempt++;
+          var delay = Math.pow(2, attempt - 1) * 1000;
+          return new Promise(function(resolve) {
+            setTimeout(resolve, delay);
+          }).then(doFetch);
+        }
+        throw err;
+      });
+    }
+    return doFetch();
+  }
+
   // ===== 状態管理 =====
   let currentTab = 'home';
   let currentProject = null;
@@ -53,8 +81,8 @@
     // MockDataでまず描画し、APIから取得できたら上書き
     renderHomeWithProjects(MockData.projects);
 
-    // APIからプロジェクト一覧を非同期取得
-    fetch('/api/projects')
+    // APIからプロジェクト一覧を非同期取得（リトライ付き）
+    fetchWithRetry('/api/projects')
       .then(res => res.ok ? res.json() : Promise.reject('API error'))
       .then(apiProjects => {
         if (apiProjects && apiProjects.length > 0) {
@@ -1096,8 +1124,8 @@
       if (currentProject) renderReport(currentProject);
     });
 
-    // APIからプロジェクト詳細を取得（edited_video フィールドを確認）
-    fetch('/api/projects/' + encodeURIComponent(p.id))
+    // APIからプロジェクト詳細を取得（edited_video フィールドを確認）（リトライ付き）
+    fetchWithRetry('/api/projects/' + encodeURIComponent(p.id))
       .then(function(r) { return r.json(); })
       .then(function(data) {
         renderEditFeedbackContent(content, p, data);
@@ -1391,8 +1419,8 @@
       editedVideo = editedVideo.vimeo_url || editedVideo.vimeoUrl || '';
     }
 
-    // APIから最新データを取得
-    fetch('/api/projects/' + encodeURIComponent(project.id))
+    // APIから最新データを取得（リトライ付き）
+    fetchWithRetry('/api/projects/' + encodeURIComponent(project.id))
       .then(function(r) { return r.ok ? r.json() : null; })
       .then(function(data) {
         var vimeoUrl = editedVideo;
@@ -1498,11 +1526,11 @@
     content.innerHTML = '<div class="ef-loading"><div class="yt-loading-text">\u30c8\u30e9\u30c3\u30ad\u30f3\u30b0\u30c7\u30fc\u30bf\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...</div></div>';
 
     // 並列でAPI呼び出し
-    var videosPromise = fetch('/api/tracking/videos')
+    var videosPromise = fetchWithRetry('/api/tracking/videos')
       .then(function(r) { return r.ok ? r.json() : []; })
       .catch(function() { return []; });
 
-    var summaryPromise = fetch('/api/v1/learning/summary')
+    var summaryPromise = fetchWithRetry('/api/v1/learning/summary')
       .then(function(r) { return r.ok ? r.json() : null; })
       .catch(function() { return null; });
 
@@ -1560,8 +1588,8 @@
     // ローディング表示
     container.innerHTML = '<div class="yt-loading"><div class="yt-loading-text">YouTube素材を読み込み中...</div></div>';
 
-    // APIからfetch（失敗時はローカル生成でフォールバック）
-    fetch('/api/projects/' + encodeURIComponent(project.id) + '/youtube-assets')
+    // APIからfetch（失敗時はローカル生成でフォールバック）（リトライ付き）
+    fetchWithRetry('/api/projects/' + encodeURIComponent(project.id) + '/youtube-assets')
       .then(function(r) {
         if (!r.ok) throw new Error('not found');
         return r.json();
@@ -1808,8 +1836,8 @@
 
     container.innerHTML = '<div class="sv-loading"><div class="sv-loading-text">素材動画を読み込み中...</div></div>';
 
-    // APIから素材動画一覧を取得
-    fetch('/api/v1/projects/' + encodeURIComponent(project.id) + '/source-videos')
+    // APIから素材動画一覧を取得（リトライ付き）
+    fetchWithRetry('/api/v1/projects/' + encodeURIComponent(project.id) + '/source-videos')
       .then(function(r) {
         if (!r.ok) throw new Error('not found');
         return r.json();
@@ -2350,7 +2378,7 @@
 
     container.innerHTML = '<div class="ef-loading"><div class="yt-loading-text">\u30d5\u30ec\u30fc\u30e0\u8a55\u4fa1\u30c7\u30fc\u30bf\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...</div></div>';
 
-    fetch('/api/v1/projects/' + encodeURIComponent(project.id) + '/frame-evaluation')
+    fetchWithRetry('/api/v1/projects/' + encodeURIComponent(project.id) + '/frame-evaluation')
       .then(function(r) {
         if (!r.ok) throw new Error('not found');
         return r.json();
@@ -3023,7 +3051,7 @@
     // ページ一覧を取得
     content.querySelector('.kb-grid').innerHTML = '<div class="ef-loading"><div class="yt-loading-text">ナレッジページを読み込み中...</div></div>';
 
-    fetch('/api/v1/knowledge/pages')
+    fetchWithRetry('/api/v1/knowledge/pages')
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var pages = data.pages || data || [];
@@ -3194,12 +3222,12 @@
       renderToolsMenu();
     });
 
-    // 並列でAPI呼び出し
-    var patternsPromise = fetch('/api/learning/feedback-patterns')
+    // 並列でAPI呼び出し（リトライ付き）
+    var patternsPromise = fetchWithRetry('/api/learning/feedback-patterns')
       .then(function(r) { return r.ok ? r.json() : null; })
       .catch(function() { return null; });
 
-    var summaryPromise = fetch('/api/learning/summary')
+    var summaryPromise = fetchWithRetry('/api/learning/summary')
       .then(function(r) { return r.ok ? r.json() : null; })
       .catch(function() { return null; });
 
@@ -3568,14 +3596,14 @@
       });
     }
 
-    // API呼び出し: サマリー
-    fetch('/api/pdca/summary')
+    // API呼び出し: サマリー（リトライ付き）
+    fetchWithRetry('/api/pdca/summary')
       .then(function(r) { return r.json(); })
       .then(function(data) { summaryData = data; renderPDCAContent(); })
       .catch(function() { summaryData = { total_projects: 0, completed: 0, in_progress: 0, issues: 0 }; renderPDCAContent(); });
 
-    // API呼び出し: ステート一覧
-    fetch('/api/pdca/states')
+    // API呼び出し: ステート一覧（リトライ付き）
+    fetchWithRetry('/api/pdca/states')
       .then(function(r) { return r.json(); })
       .then(function(data) { statesData = Array.isArray(data) ? data : (data.states || []); renderPDCAContent(); })
       .catch(function() { statesData = []; renderPDCAContent(); });
@@ -3676,14 +3704,14 @@
       }
     }
 
-    // API呼び出し: 最新監査
-    fetch('/api/audit/latest')
+    // API呼び出し: 最新監査（リトライ付き）
+    fetchWithRetry('/api/audit/latest')
       .then(function(r) { return r.json(); })
       .then(function(data) { latestData = data; renderAuditContent(); })
       .catch(function() { latestData = {}; renderAuditContent(); });
 
-    // API呼び出し: 監査履歴
-    fetch('/api/audit/history')
+    // API呼び出し: 監査履歴（リトライ付き）
+    fetchWithRetry('/api/audit/history')
       .then(function(r) { return r.json(); })
       .then(function(data) { historyData = Array.isArray(data) ? data : (data.history || []); renderAuditContent(); })
       .catch(function() { historyData = []; renderAuditContent(); });
@@ -3702,7 +3730,7 @@
       renderToolsMenu();
     });
 
-    fetch('/api/editors')
+    fetchWithRetry('/api/editors')
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var editors = Array.isArray(data) ? data : (data.editors || []);
@@ -3821,7 +3849,7 @@
       renderToolsMenu();
     });
 
-    fetch('/api/notifications/config')
+    fetchWithRetry('/api/notifications/config')
       .then(function(r) { return r.json(); })
       .then(function(config) {
         renderNotifContent(config);
@@ -3960,11 +3988,11 @@
       </div>
     `;
 
-    // 両APIを並列取得
+    // 両APIを並列取得（リトライ付き）
     Promise.all([
-      fetch('/api/v1/projects/' + encodeURIComponent(project.id) + '/before-after')
+      fetchWithRetry('/api/v1/projects/' + encodeURIComponent(project.id) + '/before-after')
         .then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch('/api/v1/projects/' + encodeURIComponent(project.id) + '/transcript-diff')
+      fetchWithRetry('/api/v1/projects/' + encodeURIComponent(project.id) + '/transcript-diff')
         .then(r => r.ok ? r.json() : null).catch(() => null)
     ]).then(([baData, tdData]) => {
       renderBeforeAfterContent(container, baData, tdData);

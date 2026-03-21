@@ -39,11 +39,12 @@ struct RootTabView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
-                // 接続ステータスバナー
+                // 接続ステータスバナー（アニメーション付きでチラつき防止）
                 connectionStatusBanner
 
                 Spacer(minLength: 0)
             }
+            .animation(.easeInOut(duration: 0.3), value: apiClient.connectionStatus)
             .zIndex(1)
 
             // メインコンテンツ
@@ -219,6 +220,7 @@ struct RootTabView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(Color.red.opacity(0.85))
+                .transition(.move(edge: .top).combined(with: .opacity))
             case .connecting:
                 HStack(spacing: 8) {
                     ProgressView()
@@ -233,6 +235,7 @@ struct RootTabView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 6)
                 .background(Color.orange.opacity(0.75))
+                .transition(.move(edge: .top).combined(with: .opacity))
             case .connected:
                 EmptyView()
             default:

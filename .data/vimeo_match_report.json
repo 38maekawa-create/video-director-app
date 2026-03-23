@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-23T14:02:25.100756",
+  "generated_at": "2026-03-23T15:04:09.605465",
   "summary": {
     "total_members": 29,
     "matched": 14,
@@ -336,8 +336,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
@@ -380,16 +380,16 @@
     {
       "guest_name": "ろくさん",
       "search_keys": [
-        "ろく",
-        "ロク"
+        "ロク",
+        "ろく"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ひろきょうさん",
       "search_keys": [
-        "ひろきょう",
-        "ヒロキョウ"
+        "ヒロキョウ",
+        "ひろきょう"
       ],
       "near_candidates": []
     },
@@ -403,8 +403,8 @@
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "アサカツ",
-        "あさかつ"
+        "あさかつ",
+        "アサカツ"
       ],
       "near_candidates": [
         {
@@ -447,10 +447,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
+        "クマスケ",
         "くますけ",
-        "くまき",
         "クマキ",
-        "クマスケ"
+        "くまき"
       ],
       "near_candidates": [
         {
@@ -537,16 +537,16 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ロキ",
-        "ろき"
+        "ろき",
+        "ロキ"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "さくらさん",
       "search_keys": [
-        "サクラ",
-        "さくら"
+        "さくら",
+        "サクラ"
       ],
       "near_candidates": [
         {
@@ -575,18 +575,18 @@
     {
       "guest_name": "ゆりかさん",
       "search_keys": [
-        "ユリカ",
-        "ゆりか"
+        "ゆりか",
+        "ユリカ"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "コテさん",
       "search_keys": [
+        "コテツ",
         "コテ",
-        "こてつ",
         "こて",
-        "コテツ"
+        "こてつ"
       ],
       "near_candidates": [
         {
@@ -601,9 +601,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "こすと",
+        "kos",
         "コスト",
-        "kos"
+        "こすと"
       ],
       "near_candidates": [
         {
@@ -639,13 +639,13 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
-        "とーます",
-        "サトイモ・トーマス",
         "さといも・トーマス",
-        "トーマス",
+        "さといも",
         "さといも・とーます",
+        "とーます",
+        "トーマス",
         "サトイモ",
-        "さといも"
+        "サトイモ・トーマス"
       ],
       "near_candidates": [
         {
@@ -688,9 +688,9 @@
     {
       "guest_name": "ハオさん",
       "search_keys": [
+        "羽生",
         "はお",
-        "ハオ",
-        "羽生"
+        "ハオ"
       ],
       "near_candidates": []
     }

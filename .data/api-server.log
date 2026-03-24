@@ -3275,3 +3275,6 @@ INFO:     60.143.199.33:0 - "GET /api/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%
 INFO:     60.143.199.33:0 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/direction-report/diff HTTP/1.1" 404 Not Found
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     2400:2651:9c0:6c00:2469:5bbc:5565:f601:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240b:10:7e0:a300:d17a:d0cc:6548:2f29:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240b:10:7e0:a300:d17a:d0cc:6548:2f29:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240b:10:7e0:a300:d17a:d0cc:6548:2f29:0 - "GET /healthz HTTP/1.1" 200 OK

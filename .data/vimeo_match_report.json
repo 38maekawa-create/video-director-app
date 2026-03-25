@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-03-25T23:39:10.528046",
+  "generated_at": "2026-03-26T01:42:10.717454",
   "summary": {
     "total_members": 29,
-    "matched": 14,
-    "unmatched": 15,
-    "total_vimeo_videos": 360,
-    "taidan_videos": 85
+    "matched": 15,
+    "unmatched": 14,
+    "total_vimeo_videos": 362,
+    "taidan_videos": 87
   },
   "matched": [
     {
@@ -296,8 +296,25 @@
       ]
     },
     {
+      "guest_name": "さくらさん",
+      "videos": [
+        {
+          "title": "61_サクラさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1176971121/43ba03f617",
+          "status": "available",
+          "created": "2026-03-25"
+        }
+      ]
+    },
+    {
       "guest_name": "メンイチさん",
       "videos": [
+        {
+          "title": "69_メンイチさん_対談_修正3_大胡",
+          "vimeo_url": "https://vimeo.com/1176970116/d3bd3ab25e",
+          "status": "available",
+          "created": "2026-03-25"
+        },
         {
           "title": "69_メンイチさん_対談_修正2_大胡",
           "vimeo_url": "https://vimeo.com/1176199073/19adc09698",
@@ -394,8 +411,8 @@
     {
       "guest_name": "ひろきょうさん",
       "search_keys": [
-        "ひろきょう",
-        "ヒロキョウ"
+        "ヒロキョウ",
+        "ひろきょう"
       ],
       "near_candidates": []
     },
@@ -454,8 +471,8 @@
       "guest_name": "くますけさん",
       "search_keys": [
         "くまき",
-        "クマスケ",
         "くますけ",
+        "クマスケ",
         "クマキ"
       ],
       "near_candidates": [
@@ -543,56 +560,26 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ロキ",
-        "ろき"
+        "ろき",
+        "ロキ"
       ],
       "near_candidates": []
     },
     {
-      "guest_name": "さくらさん",
-      "search_keys": [
-        "サクラ",
-        "さくら"
-      ],
-      "near_candidates": [
-        {
-          "title": "くらぴさん_修正版",
-          "matched_keys": [
-            "さくら"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "アサヒ×タクヤ対談アーカイブ卸、メーカー仕入れ勉強会",
-          "matched_keys": [
-            "サクラ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "ワークバランス・デザイン特別対談　ヘルシーな働き方とは？",
-          "matched_keys": [
-            "サクラ"
-          ],
-          "status": "available"
-        }
-      ]
-    },
-    {
       "guest_name": "ゆりかさん",
       "search_keys": [
-        "ゆりか",
-        "ユリカ"
+        "ユリカ",
+        "ゆりか"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "コテツ",
-        "コテ",
         "こてつ",
-        "こて"
+        "こて",
+        "コテ",
+        "コテツ"
       ],
       "near_candidates": [
         {
@@ -607,9 +594,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "こすと",
         "kos",
-        "コスト"
+        "コスト",
+        "こすと"
       ],
       "near_candidates": [
         {
@@ -645,13 +632,13 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
-        "トーマス",
+        "さといも・トーマス",
         "さといも・とーます",
-        "さといも",
         "とーます",
         "サトイモ・トーマス",
-        "さといも・トーマス",
-        "サトイモ"
+        "サトイモ",
+        "トーマス",
+        "さといも"
       ],
       "near_candidates": [
         {

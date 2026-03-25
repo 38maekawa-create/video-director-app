@@ -662,3 +662,33 @@ Traceback (most recent call last):
   File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/decoder.py", line 363, in raw_decode
     raise JSONDecodeError("Expecting value", s, err.value) from None
 json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "/Users/maekawanaoto/AI開発10/scripts/sync_vimeo_edited_videos.py", line 531, in <module>
+    run_sync(dry_run=dry)
+    ~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/maekawanaoto/AI開発10/scripts/sync_vimeo_edited_videos.py", line 374, in run_sync
+    videos = fetch_vimeo_videos(token)
+  File "/Users/maekawanaoto/AI開発10/scripts/sync_vimeo_edited_videos.py", line 99, in fetch_vimeo_videos
+    result = subprocess.run(
+        [
+    ...<4 lines>...
+        capture_output=True, text=True, timeout=120,
+    )
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2145, in _communicate
+    self._check_timeout(endtime, orig_timeout,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+                        stdout, stderr,
+                        ^^^^^^^^^^^^^^^
+                        skip_check_and_raise=True)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['curl', '-s', '-H', 'Authorization: bearer 15ee3dc7bf7c533d55be07afdee0ef9d', 'https://api.vimeo.com/me/videos?per_page=100&sort=date&direction=desc&page=1']' timed out after 120 seconds

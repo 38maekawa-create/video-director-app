@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-03-25T08:50:42.605624",
+  "generated_at": "2026-03-25T13:20:48.924075",
   "summary": {
     "total_members": 29,
-    "matched": 14,
-    "unmatched": 15,
-    "total_vimeo_videos": 360,
-    "taidan_videos": 85
+    "matched": 13,
+    "unmatched": 16,
+    "total_vimeo_videos": 100,
+    "taidan_videos": 42
   },
   "matched": [
     {
@@ -195,12 +195,6 @@
           "vimeo_url": "https://vimeo.com/1153868700/72e0744de0",
           "status": "available",
           "created": "2026-01-13"
-        },
-        {
-          "title": "_さるビールさん_インタビュー修正 (1)",
-          "vimeo_url": "https://vimeo.com/1117071304/b97a9ebd32",
-          "status": "available",
-          "created": "2025-09-09"
         }
       ]
     },
@@ -285,17 +279,6 @@
       ]
     },
     {
-      "guest_name": "けーさん",
-      "videos": [
-        {
-          "title": "けーさん_修正",
-          "vimeo_url": "https://vimeo.com/1124561861/8174886c74",
-          "status": "available",
-          "created": "2025-10-05"
-        }
-      ]
-    },
-    {
       "guest_name": "メンイチさん",
       "videos": [
         {
@@ -315,18 +298,6 @@
           "vimeo_url": "https://vimeo.com/1175136437/de9a947723",
           "status": "available",
           "created": "2026-03-19"
-        },
-        {
-          "title": "メンイチ夫妻　インタビュー",
-          "vimeo_url": "https://vimeo.com/1118716330/b900b42c21",
-          "status": "available",
-          "created": "2025-09-15"
-        },
-        {
-          "title": "メンイチさんインタビュー1",
-          "vimeo_url": "https://vimeo.com/1114204802/a5051808ac",
-          "status": "available",
-          "created": "2025-08-29"
         }
       ]
     }
@@ -342,8 +313,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
@@ -394,8 +365,8 @@
     {
       "guest_name": "ひろきょうさん",
       "search_keys": [
-        "ヒロキョウ",
-        "ひろきょう"
+        "ひろきょう",
+        "ヒロキョウ"
       ],
       "near_candidates": []
     },
@@ -426,37 +397,16 @@
             "あさかつ"
           ],
           "status": "available"
-        },
-        {
-          "title": "りつさん　インタビュー修正",
-          "matched_keys": [
-            "あさかつ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "N1インタビューまどかさん",
-          "matched_keys": [
-            "あさかつ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "そのかさん 初稿",
-          "matched_keys": [
-            "あさかつ"
-          ],
-          "status": "available"
         }
       ]
     },
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "クマスケ",
         "くまき",
         "くますけ",
-        "クマキ"
+        "クマキ",
+        "クマスケ"
       ],
       "near_candidates": [
         {
@@ -523,60 +473,32 @@
             "あんでぃ"
           ],
           "status": "available"
-        },
-        {
-          "title": "ゆってぃさん　インタビュー 修正",
-          "matched_keys": [
-            "あんでぃ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "ゆってぃさんインタビュー",
-          "matched_keys": [
-            "あんでぃ"
-          ],
-          "status": "available"
         }
       ]
     },
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ろき",
-        "ロキ"
+        "ロキ",
+        "ろき"
+      ],
+      "near_candidates": []
+    },
+    {
+      "guest_name": "けーさん",
+      "search_keys": [
+        "ケー",
+        "けー"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "さくらさん",
       "search_keys": [
-        "サクラ",
-        "さくら"
+        "さくら",
+        "サクラ"
       ],
-      "near_candidates": [
-        {
-          "title": "くらぴさん_修正版",
-          "matched_keys": [
-            "さくら"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "アサヒ×タクヤ対談アーカイブ卸、メーカー仕入れ勉強会",
-          "matched_keys": [
-            "サクラ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "ワークバランス・デザイン特別対談　ヘルシーな働き方とは？",
-          "matched_keys": [
-            "サクラ"
-          ],
-          "status": "available"
-        }
-      ]
+      "near_candidates": []
     },
     {
       "guest_name": "ゆりかさん",
@@ -594,15 +516,7 @@
         "コテツ",
         "コテ"
       ],
-      "near_candidates": [
-        {
-          "title": "【スペース】 トップマーケッター対談　LIVE配信戦略について語る　（9/15小西）",
-          "matched_keys": [
-            "こてつ"
-          ],
-          "status": "available"
-        }
-      ]
+      "near_candidates": []
     },
     {
       "guest_name": "kosさん",
@@ -611,47 +525,18 @@
         "kos",
         "こすと"
       ],
-      "near_candidates": [
-        {
-          "title": "20250731_tekoインタビュー動画ベル様_修正稿 (1080p)",
-          "matched_keys": [
-            "kos"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "20250711_tekoインタビューベル様_2稿 (1080p)",
-          "matched_keys": [
-            "kos"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "20250624_tekoインタビュー｜ベルさん_初稿 (540p)",
-          "matched_keys": [
-            "kos"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "【スペース】 トップマーケッター対談　LIVE配信戦略について語る　（9/15小西）",
-          "matched_keys": [
-            "コスト"
-          ],
-          "status": "available"
-        }
-      ]
+      "near_candidates": []
     },
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
-        "サトイモ・トーマス",
         "さといも・トーマス",
-        "サトイモ",
-        "さといも・とーます",
         "さといも",
+        "サトイモ",
         "トーマス",
-        "とーます"
+        "とーます",
+        "さといも・とーます",
+        "サトイモ・トーマス"
       ],
       "near_candidates": [
         {
@@ -694,9 +579,9 @@
     {
       "guest_name": "ハオさん",
       "search_keys": [
+        "羽生",
         "はお",
-        "ハオ",
-        "羽生"
+        "ハオ"
       ],
       "near_candidates": []
     }

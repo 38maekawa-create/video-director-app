@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-03-26T13:01:25.574392",
+  "generated_at": "2026-03-26T15:43:38.428597",
   "summary": {
     "total_members": 29,
     "matched": 15,
     "unmatched": 14,
-    "total_vimeo_videos": 362,
-    "taidan_videos": 87
+    "total_vimeo_videos": 365,
+    "taidan_videos": 90
   },
   "matched": [
     {
@@ -310,6 +310,18 @@
       "guest_name": "メンイチさん",
       "videos": [
         {
+          "title": "69_メンイチさん1.1倍_対談_修正5_大胡",
+          "vimeo_url": "https://vimeo.com/1177207607/2836d71ed5",
+          "status": "available",
+          "created": "2026-03-26"
+        },
+        {
+          "title": "69_メンイチさん1.1倍_対談_修正4_大胡",
+          "vimeo_url": "https://vimeo.com/1177192469/6a80677653",
+          "status": "available",
+          "created": "2026-03-26"
+        },
+        {
           "title": "69_メンイチさん_対談_修正3_大胡",
           "vimeo_url": "https://vimeo.com/1176970116/d3bd3ab25e",
           "status": "available",
@@ -359,8 +371,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
@@ -403,16 +415,16 @@
     {
       "guest_name": "ろくさん",
       "search_keys": [
-        "ロク",
-        "ろく"
+        "ろく",
+        "ロク"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ひろきょうさん",
       "search_keys": [
-        "ひろきょう",
-        "ヒロキョウ"
+        "ヒロキョウ",
+        "ひろきょう"
       ],
       "near_candidates": []
     },
@@ -472,8 +484,8 @@
       "search_keys": [
         "くまき",
         "クマスケ",
-        "クマキ",
-        "くますけ"
+        "くますけ",
+        "クマキ"
       ],
       "near_candidates": [
         {
@@ -560,26 +572,26 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ろき",
-        "ロキ"
+        "ロキ",
+        "ろき"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ゆりかさん",
       "search_keys": [
-        "ゆりか",
-        "ユリカ"
+        "ユリカ",
+        "ゆりか"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "こてつ",
-        "コテツ",
         "コテ",
-        "こて"
+        "こて",
+        "コテツ",
+        "こてつ"
       ],
       "near_candidates": [
         {
@@ -594,8 +606,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "こすと",
         "コスト",
+        "こすと",
         "kos"
       ],
       "near_candidates": [
@@ -632,12 +644,12 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
-        "サトイモ・トーマス",
-        "さといも・トーマス",
-        "さといも",
-        "さといも・とーます",
         "サトイモ",
+        "さといも",
+        "サトイモ・トーマス",
+        "さといも・とーます",
         "とーます",
+        "さといも・トーマス",
         "トーマス"
       ],
       "near_candidates": [
@@ -681,9 +693,9 @@
     {
       "guest_name": "ハオさん",
       "search_keys": [
-        "ハオ",
         "はお",
-        "羽生"
+        "羽生",
+        "ハオ"
       ],
       "near_candidates": []
     }

@@ -3346,3 +3346,6 @@ INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/audit/history HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:4562:34da:2a02:d10a:0 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:4562:34da:2a02:d10a:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:71cc:32be:4562:34da:2a02:d10a:0 - "GET /healthz HTTP/1.1" 200 OK

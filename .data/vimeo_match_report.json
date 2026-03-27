@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-03-27T18:49:12.875778",
+  "generated_at": "2026-03-27T19:51:02.512838",
   "summary": {
     "total_members": 29,
     "matched": 15,
     "unmatched": 14,
     "total_vimeo_videos": 366,
-    "taidan_videos": 90
+    "taidan_videos": 91
   },
   "matched": [
     {
@@ -310,6 +310,12 @@
       "guest_name": "メンイチさん",
       "videos": [
         {
+          "title": "69_メンイチさん1.1倍_対談_修正6_大胡",
+          "vimeo_url": "https://vimeo.com/1177629566/beae162f2e",
+          "status": "available",
+          "created": "2026-03-27"
+        },
+        {
           "title": "69_メンイチさん1.1倍_対談_修正5_大胡",
           "vimeo_url": "https://vimeo.com/1177207607/2836d71ed5",
           "status": "available",
@@ -423,8 +429,8 @@
     {
       "guest_name": "ひろきょうさん",
       "search_keys": [
-        "ひろきょう",
-        "ヒロキョウ"
+        "ヒロキョウ",
+        "ひろきょう"
       ],
       "near_candidates": []
     },
@@ -482,10 +488,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
+        "クマキ",
         "くまき",
-        "クマスケ",
         "くますけ",
-        "クマキ"
+        "クマスケ"
       ],
       "near_candidates": [
         {
@@ -572,8 +578,8 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ロキ",
-        "ろき"
+        "ろき",
+        "ロキ"
       ],
       "near_candidates": []
     },
@@ -588,9 +594,9 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "こてつ",
         "コテ",
         "こて",
+        "こてつ",
         "コテツ"
       ],
       "near_candidates": [
@@ -606,9 +612,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "kos",
         "こすと",
-        "コスト"
+        "コスト",
+        "kos"
       ],
       "near_candidates": [
         {
@@ -644,13 +650,13 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
-        "さといも・とーます",
-        "サトイモ・トーマス",
         "トーマス",
-        "さといも",
-        "とーます",
         "サトイモ",
-        "さといも・トーマス"
+        "サトイモ・トーマス",
+        "とーます",
+        "さといも・とーます",
+        "さといも・トーマス",
+        "さといも"
       ],
       "near_candidates": [
         {

@@ -3278,3 +3278,16 @@ INFO:     2400:2651:9c0:6c00:2469:5bbc:5565:f601:0 - "GET /healthz HTTP/1.1" 200
 INFO:     240b:10:7e0:a300:d17a:d0cc:6548:2f29:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     240b:10:7e0:a300:d17a:d0cc:6548:2f29:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     240b:10:7e0:a300:d17a:d0cc:6548:2f29:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/dashboard/quality-trend HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/audit/history HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /healthz HTTP/1.1" 200 OK

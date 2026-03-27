@@ -12528,3 +12528,14 @@ INFO:     Started reloader process [1089] using StatReload
 INFO:     Started server process [1912]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1912]
+INFO:     Stopping reloader process [1089]
+INFO:     Will watch for changes in these directories: ['/Users/maekawanaoto/AI開発10']
+INFO:     Uvicorn running on http://0.0.0.0:8210 (Press CTRL+C to quit)
+INFO:     Started reloader process [1152] using StatReload
+INFO:     Started server process [1920]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

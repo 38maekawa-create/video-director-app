@@ -3291,3 +3291,9 @@ INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/v1/dashboard/quali
 INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/tracking/insights HTTP/1.1" 200 OK
 INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/learning/summary HTTP/1.1" 200 OK
 INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/before-after HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/transcript-diff HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/feedbacks HTTP/1.1" 200 OK
+INFO:     2400:2200:910:a95c:1911:db4a:2788:17d:0 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/vimeo-comments HTTP/1.1" 200 OK

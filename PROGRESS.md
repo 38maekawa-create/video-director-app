@@ -1,10 +1,19 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-22 （バティ兵隊A）
+2026-03-28 （右腕 Opus 4.6）
 
 ## 現在の作業状態
-**タイミング3自動QC Phase2「マーケQC注入」実装完了 → テスト79件全PASS**
+**API安定化修正（サーバー側3箇所）完了**
+
+### 2026-03-28 完了タスク（API安定化・サーバー側修正）
+
+| # | タスク | 状態 |
+|---|--------|------|
+| 54 | launchd plistから `--reload` 削除（ポート多重競合の主原因） | done |
+| 55 | api_server.py JSONパースの `except: pass` → ログ出力 + None設定（空レスポンス対策） | done |
+| 56 | api_server.py `get_project` の conn.close() をデータ構築完了後に移動 | done |
+| 57 | SQLite busy_timeout を10秒→30秒に延長（DB競合対策） | done |
 
 ### 次セッションでやること
 1. **Xcodeビルド・TestFlight配布** — 承認フロー + QC Phase2含むアプリをTestFlightにアップ

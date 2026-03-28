@@ -36,9 +36,9 @@ DB_PATH = Path.home() / "AI開発10" / ".data" / "video_director.db"
 
 def _get_db() -> sqlite3.Connection:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(DB_PATH), timeout=10)
+    conn = sqlite3.connect(str(DB_PATH), timeout=30)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA busy_timeout=10000")
+    conn.execute("PRAGMA busy_timeout=30000")
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
@@ -451,8 +451,9 @@ def list_projects(category: Optional[str] = None):
             if d.get(json_field):
                 try:
                     d[json_field] = json.loads(d[json_field])
-                except (json.JSONDecodeError, TypeError):
-                    pass  # JSON以外の文字列はそのまま保持
+                except (json.JSONDecodeError, TypeError) as e:
+                    logger.warning(f"JSON decode failed for field {json_field}: {e}")
+                    d[json_field] = None
         # edited_video / source_video からURLを抽出してトップレベルに追加
         # iOS側の decodeNestedURL が primary key で直接マッチできるようにする
         _extract_video_urls(d)
@@ -465,10 +466,11 @@ def list_projects(category: Optional[str] = None):
 def get_project(project_id: str):
     conn = _get_db()
     row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
-    conn.close()
     if not row:
+        conn.close()
         raise HTTPException(404, "Project not found")
     d = dict(row)
+    conn.close()
     for bool_field in ("has_unsent_feedback",):
         if bool_field in d:
             d[bool_field] = bool(d[bool_field])
@@ -476,9 +478,9 @@ def get_project(project_id: str):
         if d.get(json_field):
             try:
                 d[json_field] = json.loads(d[json_field])
-            except (json.JSONDecodeError, TypeError):
-                # プレーンURL文字列の場合はそのまま返す
-                pass
+            except (json.JSONDecodeError, TypeError) as e:
+                logger.warning(f"JSON decode failed for field {json_field}: {e}")
+                d[json_field] = None
     _extract_video_urls(d)
     _enrich_project_with_knowledge_url(d)
     return d

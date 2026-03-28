@@ -4,7 +4,15 @@
 2026-03-28 （右腕 Opus 4.6）
 
 ## 現在の作業状態
-**API安定化修正（サーバー側3箇所）完了**
+**概要欄生成プロンプト完結型改修 完了**
+
+### 2026-03-28 完了タスク（概要欄プロンプト完結型改修）
+
+| # | タスク | 状態 |
+|---|--------|------|
+| 58 | prompts.py DESCRIPTION_GENERATION_PROMPT 全面改修（テンプレ全文をプロンプト内に挿入、guest_category変数追加、sectionsスキーマ廃止） | done |
+| 59 | description_writer.py generate_description()にguest_categoryパラメータ追加 | done |
+| 60 | description_writer.py _parse_description_response()簡素化（full_textのみ取得、200文字未満でフォールバック） | done |
 
 ### 2026-03-28 完了タスク（API安定化・サーバー側修正）
 

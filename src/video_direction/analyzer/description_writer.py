@@ -71,6 +71,9 @@ def generate_description(
         except Exception:
             pass
 
+    # カテゴリ判定（運営者情報テンプレートの分岐に使用）
+    guest_category = video_data.category or "unknown"
+
     prompt = DESCRIPTION_GENERATION_PROMPT.format(
         marketing_principles=knowledge_ctx.marketing_principles,
         past_descriptions_text=past_descriptions_text,
@@ -78,6 +81,7 @@ def generate_description(
         guest_age=profile.age if profile else "不明",
         guest_occupation=profile.occupation if profile else "不明",
         guest_income=profile.income if profile else "不明",
+        guest_category=guest_category,
         three_line_summary="\n".join(video_data.three_line_summary) if video_data.three_line_summary else "なし",
         main_topics="\n".join(video_data.main_topics) if video_data.main_topics else "なし",
         duration=video_data.duration or "不明",
@@ -101,9 +105,9 @@ def generate_description(
         from teko_core.llm import ask
         raw = ask(prompt, model="sonnet", max_tokens=3000, timeout=120)
         result = _parse_description_response(raw)
-        # full_textが空の場合はフォールバックに回す（LLMがハッシュタグのみ返した場合等）
-        if not result.full_text or not result.full_text.strip():
-            print("  ⚠️ LLMレスポンスのfull_textが空 → フォールバック生成に切り替え")
+        # full_textが空 or 200文字未満（テンプレ欠落の検知）の場合はフォールバックに回す
+        if not result.full_text or len(result.full_text.strip()) < 200:
+            print(f"  ⚠️ LLMレスポンスのfull_textが不十分（{len(result.full_text.strip()) if result.full_text else 0}文字） → フォールバック生成に切り替え")
             return _fallback_description(video_data, classification, income_eval)
         # LLM生成結果からも伏せ対象の企業名を除去（セーフティネット）
         if hidden_nouns:
@@ -163,7 +167,7 @@ def _remove_hashtags_with_hidden_nouns(hashtags_text: str, hidden_nouns: list[st
 
 
 def _parse_description_response(raw: str) -> VideoDescription:
-    """LLMレスポンスからVideoDescriptionを構築"""
+    """LLMレスポンスからVideoDescriptionを構築（full_textのみ取得）"""
     json_match = re.search(r"\{[\s\S]*\}", raw)
     if not json_match:
         return VideoDescription(llm_raw_response=raw)
@@ -173,14 +177,8 @@ def _parse_description_response(raw: str) -> VideoDescription:
     except json.JSONDecodeError:
         return VideoDescription(llm_raw_response=raw)
 
-    sections = data.get("sections", {})
     return VideoDescription(
         full_text=data.get("full_text", ""),
-        hook=sections.get("hook", ""),
-        summary=sections.get("summary", ""),
-        timestamps=sections.get("timestamps", ""),
-        cta=sections.get("cta", ""),
-        hashtags=sections.get("hashtags", ""),
         llm_raw_response=raw,
     )
 

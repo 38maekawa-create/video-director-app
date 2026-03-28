@@ -88,3 +88,9 @@
   未処理: 135件
   品質異常: 0件
   滞留: 0件
+監査完了: critical
+  DB: unhealthy
+  API: unhealthy
+  未処理: 135件
+  品質異常: 0件
+  滞留: 0件

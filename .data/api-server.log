@@ -3349,3 +3349,5 @@ INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     240a:61:71cc:32be:4562:34da:2a02:d10a:0 - "GET /api/editors HTTP/1.1" 200 OK
 INFO:     240a:61:71cc:32be:4562:34da:2a02:d10a:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     240a:61:71cc:32be:4562:34da:2a02:d10a:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240b:10:7e0:a300:d9d5:76a0:7107:c117:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240b:10:7e0:a300:d9d5:76a0:7107:c117:0 - "GET /api/projects HTTP/1.1" 200 OK

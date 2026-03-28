@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-28T12:35:23.581073",
+  "generated_at": "2026-03-28T13:38:03.859299",
   "summary": {
     "total_members": 29,
     "matched": 15,
@@ -371,8 +371,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
@@ -415,16 +415,16 @@
     {
       "guest_name": "ろくさん",
       "search_keys": [
-        "ろく",
-        "ロク"
+        "ロク",
+        "ろく"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ひろきょうさん",
       "search_keys": [
-        "ヒロキョウ",
-        "ひろきょう"
+        "ひろきょう",
+        "ヒロキョウ"
       ],
       "near_candidates": []
     },
@@ -483,9 +483,9 @@
       "guest_name": "くますけさん",
       "search_keys": [
         "くますけ",
-        "クマキ",
+        "くまき",
         "クマスケ",
-        "くまき"
+        "クマキ"
       ],
       "near_candidates": [
         {
@@ -528,8 +528,8 @@
     {
       "guest_name": "アンディさん",
       "search_keys": [
-        "アンディ",
-        "あんでぃ"
+        "あんでぃ",
+        "アンディ"
       ],
       "near_candidates": [
         {
@@ -572,26 +572,26 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ろき",
-        "ロキ"
+        "ロキ",
+        "ろき"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ゆりかさん",
       "search_keys": [
-        "ユリカ",
-        "ゆりか"
+        "ゆりか",
+        "ユリカ"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "こて",
         "こてつ",
         "コテ",
-        "コテツ"
+        "コテツ",
+        "こて"
       ],
       "near_candidates": [
         {
@@ -606,9 +606,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
+        "コスト",
         "kos",
-        "こすと",
-        "コスト"
+        "こすと"
       ],
       "near_candidates": [
         {
@@ -644,13 +644,13 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
+        "サトイモ・トーマス",
+        "さといも",
+        "サトイモ",
         "トーマス",
         "とーます",
         "さといも・トーマス",
-        "サトイモ・トーマス",
-        "さといも・とーます",
-        "サトイモ",
-        "さといも"
+        "さといも・とーます"
       ],
       "near_candidates": [
         {

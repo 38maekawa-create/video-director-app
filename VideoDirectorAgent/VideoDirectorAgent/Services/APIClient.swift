@@ -841,15 +841,23 @@ final class APIClient: ObservableObject {
             // APIリクエスト成功 = サーバーに繋がっている証拠
             markRequestSuccess()
 
-            if T.self == EmptyResponse.self, let empty = EmptyResponse() as? T {
-                return empty
+            guard !data.isEmpty else {
+                if T.self == EmptyResponse.self, let empty = EmptyResponse() as? T {
+                    return empty
+                }
+                throw APIError.emptyResponse
             }
 
-            return try decoder.decode(T.self, from: data)
-        } catch let error as URLError where retryableErrorCodes.contains(error.code) && retryCount < 2 {
-            // モバイル通信対応: 最大2回リトライ（1秒→2秒の指数バックオフ）
+            do {
+                return try decoder.decode(T.self, from: data)
+            } catch is DecodingError {
+                print("⚠️ JSON decode failed: \(String(data: data, encoding: .utf8) ?? "?")")
+                throw APIError.invalidJSON
+            }
+        } catch let error as URLError where retryableErrorCodes.contains(error.code) && retryCount < 3 {
+            // モバイル通信対応: 最大3回リトライ（1秒→2秒→4秒の指数バックオフ）
             let delay = UInt64(pow(2.0, Double(retryCount))) * 1_000_000_000
-            print("🔄 APIリトライ \(retryCount + 1)/2: \(path) (\(error.code.rawValue))")
+            print("🔄 APIリトライ \(retryCount + 1)/3: \(path) (\(error.code.rawValue))")
             try? await Task.sleep(nanoseconds: delay)
             // ベースURLが変わっていれば新しいURLでリトライ
             await reconnectIfNeeded(error: error)
@@ -891,15 +899,23 @@ final class APIClient: ObservableObject {
             // APIリクエスト成功 = サーバーに繋がっている証拠
             markRequestSuccess()
 
-            if T.self == EmptyResponse.self, let empty = EmptyResponse() as? T {
-                return empty
+            guard !data.isEmpty else {
+                if T.self == EmptyResponse.self, let empty = EmptyResponse() as? T {
+                    return empty
+                }
+                throw APIError.emptyResponse
             }
 
-            return try decoder.decode(T.self, from: data)
-        } catch let error as URLError where retryableErrorCodes.contains(error.code) && retryCount < 2 {
-            // モバイル通信対応: 最大2回リトライ（1秒→2秒の指数バックオフ）
+            do {
+                return try decoder.decode(T.self, from: data)
+            } catch is DecodingError {
+                print("⚠️ JSON decode failed: \(String(data: data, encoding: .utf8) ?? "?")")
+                throw APIError.invalidJSON
+            }
+        } catch let error as URLError where retryableErrorCodes.contains(error.code) && retryCount < 3 {
+            // モバイル通信対応: 最大3回リトライ（1秒→2秒→4秒の指数バックオフ）
             let delay = UInt64(pow(2.0, Double(retryCount))) * 1_000_000_000
-            print("🔄 APIリトライ \(retryCount + 1)/2: \(path) (\(error.code.rawValue))")
+            print("🔄 APIリトライ \(retryCount + 1)/3: \(path) (\(error.code.rawValue))")
             try? await Task.sleep(nanoseconds: delay)
             await reconnectIfNeeded(error: error)
             let retryBase = activeBaseURL != baseURL ? activeBaseURL : baseURL
@@ -1006,6 +1022,8 @@ final class APIClient: ObservableObject {
 enum APIError: Error {
     case invalidResponse
     case server(statusCode: Int)
+    case emptyResponse
+    case invalidJSON
 }
 
 struct EmptyResponse: Decodable {}

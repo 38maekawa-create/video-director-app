@@ -3471,3 +3471,7 @@ INFO:     240a:61:32e6:59c6:d119:1f9d:5b45:7840:0 - "GET /api/projects HTTP/1.1"
 INFO:     240a:61:32e6:59c6:d119:1f9d:5b45:7840:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     240a:61:32e6:59c6:d119:1f9d:5b45:7840:0 - "GET /api/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/youtube-assets HTTP/1.1" 200 OK
 INFO:     240a:61:32e6:59c6:d119:1f9d:5b45:7840:0 - "GET /api/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/youtube-assets HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:d119:1f9d:5b45:7840:0 - "GET /api/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/youtube-assets HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:d119:1f9d:5b45:7840:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:d119:1f9d:5b45:7840:0 - "GET /api/projects/p-20260101-%E3%83%8F%E3%82%AA/youtube-assets HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:d119:1f9d:5b45:7840:0 - "GET /api/v1/projects/p-20260101-%E3%83%8F%E3%82%AA/source-videos HTTP/1.1" 200 OK

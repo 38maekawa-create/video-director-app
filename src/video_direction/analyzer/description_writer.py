@@ -15,6 +15,7 @@ from ..analyzer.guest_classifier import ClassificationResult
 from ..analyzer.income_evaluator import IncomeEvaluation
 from ..knowledge.loader import KnowledgeContext
 from ..knowledge.prompts import DESCRIPTION_GENERATION_PROMPT
+from ..knowledge.loader import fetch_latest_description_template
 from ..analyzer.proper_noun_filter import ProperNounEntry
 
 
@@ -74,6 +75,9 @@ def generate_description(
     # カテゴリ判定（運営者情報テンプレートの分岐に使用）
     guest_category = video_data.category or "unknown"
 
+    # YouTube API から最新テンプレートを取得（フォールバック: ハードコードテンプレート）
+    template_text = _build_youtube_template(guest_category)
+
     prompt = DESCRIPTION_GENERATION_PROMPT.format(
         marketing_principles=knowledge_ctx.marketing_principles,
         past_descriptions_text=past_descriptions_text,
@@ -86,6 +90,7 @@ def generate_description(
         main_topics="\n".join(video_data.main_topics) if video_data.main_topics else "なし",
         duration=video_data.duration or "不明",
         highlights_with_timestamps=highlights_with_timestamps,
+        youtube_template=template_text,
     )
 
     # EditLearnerルールをプロンプト末尾に追加
@@ -353,3 +358,246 @@ https://www.instagram.com/yaesu.pro/"""
     )
 
 
+# ---------------------------------------------------------------------------
+# YouTube APIテンプレート取得・抽出ロジック
+# ---------------------------------------------------------------------------
+
+# フォールバック用ハードコードテンプレート（API障害時のセーフティネット）
+_FALLBACK_TEMPLATE = """```
+{{ゲスト紹介フック}}
+← ここにゲストの魅力・動画の核心を伝える導入文を3〜5行で書く。最後に「」で囲んだパンチライン引用を入れると効果的
+
+チャンネル登録はこちらから▼
+              @TEKO-公式
+
+【TEKO公式メディア】
+ハイキャリアパーソンの裏側とキャリア、資産形成について発信
+https://levaraging.daive-teko.com/?openExternalBrowser=1
+
+【運営者：プロパー八重洲公式メールマガジンはこちら】
+▼パラレルキャリア戦略やTEKOについてはメルマガから▼
+https://leverage.daive-teko.com/p/lp_youtube_tekoofficial?openExternalBrowser=1
+
+【プロパー八重洲公式チャンネルはこちらから】
+               @プロパー八重洲キャリア戦略室
+
+ハイキャリアのキャリアの裏側と挑戦に迫ったキャリア密着ドキュメンタリー番組・"ハイキャリアの裏側"はこちら▼
+             @ハイキャリアの裏側-TEKO
+
+
+▼タイムスタンプ▼
+{{タイムスタンプ}}
+← ハイライト情報から「01:44 お金持ちへの原体験——大学の友人の親から学んだこと」のような形式で生成する。情報がなければ空欄でOK
+
+
+
+━━━━━━━━━━━
+{{ハッシュタグ}}
+← 動画内容に合った5-10個のハッシュタグ（例: #薬剤師　#プロパー八重洲　#不動産投資　#副業　#ハイキャリ　#TEKO　#資産形成　#物販　#信用組合　#年収700万）
+━━━━━━━━━━━
+
+
+{{運営者情報}}
+
+▪️他SNSでもキャリアや資産形成に関する戦略・戦術を発信中
+X（旧Twitter）
+https://x.com/yaesu_pro
+
+Instagram
+https://www.instagram.com/yaesu.pro/
+```
+
+【運営者情報の選択ルール】
+ゲストカテゴリに応じて、以下の2パターンから適切な運営者情報を選んでそのまま使うこと。
+
+■ パターンA: 不動産カテゴリ（ゲストカテゴリが teko_realestate の場合）
+```
+【運営者情報】　プロパー八重洲 / 藤田光貴
+
+1993年、愛媛県生まれ。
+TEKO合同会社 代表社員 / Yohack合同会社 代表社員。
+
+小野薬品工業（株） → (株) ストライク → アレクシオンファーマ（同）を経て独立。
+
+アレクシオンファーマ在籍時、30歳時点で年収約1,100万円と500万円相当のRSUを受け取る。
+
+サラリーマン時代に副業・不動産投資を並行して実践し、アレクシオンファーマ（同）在籍時に純資産1億円超えに至る。
+
+Xフォロワー2.2万人。Instagramフォロワー1万人。（2025.9時点）
+
+医師、GAFAM、5大総合商社、外資系戦略コンサルなどハイクラスのビジネスパーソンも数多く在籍する会員制ビジネスパーソン向けプラットフォーム"TEKO"を運営。
+
+2025年9月時点で、300名ほどのビジネスパーソンがTEKOに在籍中。
+
+海外輸出物販事業を運営する法人と不動産賃貸業及びハイキャリア中心にビジネスパーソンのキャリア支援・経済支援を行うTEKO事業を運営する法人の2法人を所有。
+
+海外輸出物販法人の前期決算では年商1.3億円。
+
+2016年 小野薬品工業株式会社  入社
+2021年 株式会社ストライク 入社
+2022年 アレクシオンファーマ合同会社  入社
+2024年 TEKO設立
+```
+
+■ パターンB: 汎用カテゴリ（ゲストカテゴリが teko_realestate 以外の場合）
+```
+【運営者情報】　プロパー八重洲 / 藤田光貴
+
+1993年、愛媛県生まれ。
+TEKO合同会社 代表社員 / Yohack合同会社 代表社員。
+
+小野薬品工業（株） → (株) ストライク → アレクシオンファーマ（同）を経て独立。
+
+アレクシオンファーマ在籍時、30歳時点で年収約1,100万円と500万円相当のRSUを受け取る。
+
+サラリーマン時代に副業を並行して実践し、アレクシオンファーマ（同）在籍時に純資産1億円超えに至る。
+
+Xフォロワー2.2万人。Instagramフォロワー1万人。（2025.9時点）
+
+医師、GAFAM、5大総合商社、外資系戦略コンサルなどハイクラスのビジネスパーソンも数多く在籍する会員制ビジネスパーソン向けプラットフォーム"TEKO"を運営。
+
+2025年9月時点で、300名ほどのビジネスパーソンがTEKOに在籍中。
+
+ハイキャリア中心にビジネスパーソンのキャリア支援・経済支援を行うTEKO事業を運営。
+
+2016年 小野薬品工業株式会社  入社
+2021年 株式会社ストライク 入社
+2022年 アレクシオンファーマ合同会社  入社
+2024年 TEKO設立
+```"""
+
+
+def _extract_template_from_description(raw_description: str) -> str:
+    """YouTube投稿済み概要欄から動的部分をプレースホルダーに置換したテンプレートを構築する。
+
+    認識する構造:
+    - ゲスト紹介フック: 先頭〜「チャンネル登録はこちらから」の前
+    - タイムスタンプ: 「▼タイムスタンプ▼」の後〜「━━━」の前
+    - ハッシュタグ: 「━━━」で囲まれた部分
+    - 運営者情報: 「【運営者情報】」〜「TEKO設立」の行まで
+    """
+    lines = raw_description.split("\n")
+    result_lines = []
+    i = 0
+
+    # --- ゲスト紹介フック: 先頭 〜 「チャンネル登録はこちらから」の前 ---
+    hook_end = None
+    for idx, line in enumerate(lines):
+        if "チャンネル登録はこちらから" in line:
+            hook_end = idx
+            break
+
+    if hook_end is not None and hook_end > 0:
+        result_lines.append("{{ゲスト紹介フック}}")
+        result_lines.append("← ここにゲストの魅力・動画の核心を伝える導入文を3〜5行で書く。最後に「」で囲んだパンチライン引用を入れると効果的")
+        result_lines.append("")
+        i = hook_end
+    # hook_endが0またはNoneの場合はそのまま先頭から
+
+    # --- 中間部分: タイムスタンプとハッシュタグを置換しつつコピー ---
+    in_timestamps = False
+    in_hashtags = False
+    separator_count = 0
+
+    while i < len(lines):
+        line = lines[i]
+
+        # タイムスタンプセクション検出
+        if "▼タイムスタンプ▼" in line:
+            result_lines.append(line)
+            result_lines.append("{{タイムスタンプ}}")
+            result_lines.append("← ハイライト情報から「01:44 お金持ちへの原体験——大学の友人の親から学んだこと」のような形式で生成する。情報がなければ空欄でOK")
+            in_timestamps = True
+            i += 1
+            continue
+
+        if in_timestamps:
+            # タイムスタンプ部分をスキップ（━━━ or 空行連続で終了）
+            if "━━━" in line:
+                in_timestamps = False
+                # ハッシュタグセクション開始
+                result_lines.append("")
+                result_lines.append("")
+                result_lines.append(line)
+                separator_count = 1
+                in_hashtags = True
+                i += 1
+                continue
+            # タイムスタンプ行をスキップ（数字:数字で始まる行 or 空行）
+            if re.match(r'^\d', line) or line.strip() == "":
+                i += 1
+                continue
+            # タイムスタンプっぽくない行が来たら終了
+            in_timestamps = False
+
+        # ハッシュタグセクション（━━━で囲まれた部分）
+        if in_hashtags:
+            if "━━━" in line:
+                separator_count += 1
+                if separator_count >= 2:
+                    # ハッシュタグセクション終了
+                    result_lines.append("{{ハッシュタグ}}")
+                    result_lines.append("← 動画内容に合った5-10個のハッシュタグ（例: #薬剤師　#プロパー八重洲　#不動産投資　#副業　#ハイキャリ　#TEKO　#資産形成　#物販　#信用組合　#年収700万）")
+                    result_lines.append(line)
+                    in_hashtags = False
+                    i += 1
+                    continue
+            else:
+                # ハッシュタグ行をスキップ
+                i += 1
+                continue
+
+        # 最初の━━━（タイムスタンプセクション外）
+        if not in_hashtags and "━━━" in line and separator_count == 0:
+            result_lines.append(line)
+            separator_count = 1
+            in_hashtags = True
+            i += 1
+            continue
+
+        # 運営者情報セクション
+        if "【運営者情報】" in line:
+            result_lines.append("{{運営者情報}}")
+            # TEKO設立の行までスキップ
+            i += 1
+            while i < len(lines):
+                if "TEKO設立" in lines[i]:
+                    i += 1
+                    break
+                i += 1
+            continue
+
+        result_lines.append(line)
+        i += 1
+
+    template = "\n".join(result_lines)
+
+    # テンプレートとして最低限の構造を持っているか検証
+    if "チャンネル登録はこちらから" not in template:
+        return ""
+
+    return template
+
+
+def _build_youtube_template(guest_category: str) -> str:
+    """YouTube APIテンプレートを構築する。API取得失敗時はフォールバックを使用。"""
+    raw = fetch_latest_description_template()
+    if raw:
+        extracted = _extract_template_from_description(raw)
+        if extracted:
+            # 抽出成功 → テンプレートとしてフォーマット
+            template = f"""```
+{extracted}
+```
+
+【運営者情報の選択ルール】
+ゲストカテゴリに応じて、以下の2パターンから適切な運営者情報を選んでそのまま使うこと。
+ゲストカテゴリが teko_realestate の場合 → 不動産投資に言及したパターンA
+それ以外 → 汎用パターンB
+（具体的な運営者情報テキストは過去概要欄の例を参照すること）"""
+            print(f"  🌐 YouTube APIから最新テンプレート取得成功（{len(raw)}文字）")
+            return template
+
+    # フォールバック: ハードコードテンプレート
+    print("  📋 フォールバック: ハードコードテンプレートを使用")
+    return _FALLBACK_TEMPLATE

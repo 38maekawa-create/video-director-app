@@ -308,14 +308,14 @@ Xフォロワー2.2万人。Instagramフォロワー1万人。（2025.9時点）
 
     # 概要欄全文（TEKO投稿済みフォーマット準拠、カテゴリに応じた運営者紹介を使用）
     full_text = f"""チャンネル登録はこちらから▼
-    @TEKO-公式
+              @TEKO-公式
 
 【TEKO公式メディア】
 ハイキャリアパーソンの裏側とキャリア、資産形成について発信
-https://levaraging.daive-teko.com/
+https://levaraging.daive-teko.com/?openExternalBrowser=1
 
-【運営者：プロパー八重洲とLINEで繋がりませんか？】
-▼パラレルキャリア戦略やTEKOについてはLINEから▼
+【運営者：プロパー八重洲公式メールマガジンはこちら】
+▼パラレルキャリア戦略やTEKOについてはメルマガから▼
 https://leverage.daive-teko.com/p/lp_youtube_tekoofficial?openExternalBrowser=1
 
 【プロパー八重洲公式チャンネルはこちらから】

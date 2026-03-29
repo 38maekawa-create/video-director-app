@@ -1,10 +1,19 @@
 # PROGRESS.md — 映像品質追求・自動ディレクションシステム（AI開発10）
 
 ## 最終更新日時
-2026-03-28 （右腕 Opus 4.6）
+2026-03-29 （右腕 Opus 4.6）
 
 ## 現在の作業状態
-**概要欄生成プロンプト完結型改修 完了**
+**YouTube Data API v3 連携 — 概要欄テンプレート自動同期 完了**
+
+### 2026-03-29 完了タスク（YouTube API テンプレート自動同期）
+
+| # | タスク | 状態 |
+|---|--------|------|
+| 61 | loader.py に `fetch_latest_description_template()` 追加（YouTube Data API v3で最新通常動画の概要欄取得、24hキャッシュ、Shorts除外） | done |
+| 62 | description_writer.py に `_extract_template_from_description()` 追加（投稿済み概要欄からテンプレート抽出・プレースホルダー置換） | done |
+| 63 | description_writer.py の `generate_description()` にAPI取得テンプレート優先使用ロジック追加（フォールバック: ハードコード） | done |
+| 64 | prompts.py の `DESCRIPTION_GENERATION_PROMPT` テンプレート部分を `{youtube_template}` 変数に置き換え | done |
 
 ### 2026-03-28 完了タスク（概要欄プロンプト完結型改修）
 

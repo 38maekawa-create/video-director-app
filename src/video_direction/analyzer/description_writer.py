@@ -167,27 +167,46 @@ def _remove_hashtags_with_hidden_nouns(hashtags_text: str, hidden_nouns: list[st
 
 
 def _parse_description_response(raw: str) -> VideoDescription:
-    """LLMレスポンスからVideoDescriptionを構築（full_textのみ取得）"""
-    # コードブロック内のJSONを優先抽出（LLMが```json...```で囲む場合）
+    """LLMレスポンスからVideoDescriptionを構築（full_textのみ取得）
+
+    パース戦略（優先順）:
+    1. JSON正規パース（strict=False）
+    2. "full_text"キーの値を直接抽出（JSON全体のパースが壊れた場合のフォールバック）
+    3. コードブロック内の全テキストをfull_textとして扱う（JSONを返さなかった場合）
+    """
+    # コードブロック内を優先抽出
     code_match = re.search(r"```json\s*([\s\S]*?)```", raw)
     if code_match:
         json_str = code_match.group(1).strip()
     else:
         json_match = re.search(r"\{[\s\S]*\}", raw)
         if not json_match:
+            # JSONもコードブロックもない → raw全体にテンプレが含まれてればそれを使う
+            if "チャンネル登録はこちらから" in raw and "@TEKO-公式" in raw:
+                return VideoDescription(full_text=raw.strip(), llm_raw_response=raw)
             return VideoDescription(llm_raw_response=raw)
         json_str = json_match.group()
 
+    # 戦略1: JSON正規パース
     try:
-        # strict=False: LLMがfull_text内に生改行を含めて返すためパース失敗を防止
         data = json.loads(json_str, strict=False)
+        full_text = data.get("full_text", "")
+        if full_text:
+            return VideoDescription(full_text=full_text, llm_raw_response=raw)
     except json.JSONDecodeError:
-        return VideoDescription(llm_raw_response=raw)
+        pass
 
-    return VideoDescription(
-        full_text=data.get("full_text", ""),
-        llm_raw_response=raw,
-    )
+    # 戦略2: "full_text"の値を直接抽出（JSONパース失敗時）
+    # "full_text": "..." の中身を最後の閉じ"} まで取得
+    ft_match = re.search(r'"full_text"\s*:\s*"([\s\S]*)"', json_str)
+    if ft_match:
+        extracted = ft_match.group(1)
+        # エスケープされた改行を実際の改行に変換
+        extracted = extracted.replace("\\n", "\n")
+        if len(extracted) > 200:
+            return VideoDescription(full_text=extracted, llm_raw_response=raw)
+
+    return VideoDescription(llm_raw_response=raw)
 
 
 def _fallback_description(

@@ -168,12 +168,19 @@ def _remove_hashtags_with_hidden_nouns(hashtags_text: str, hidden_nouns: list[st
 
 def _parse_description_response(raw: str) -> VideoDescription:
     """LLMレスポンスからVideoDescriptionを構築（full_textのみ取得）"""
-    json_match = re.search(r"\{[\s\S]*\}", raw)
-    if not json_match:
-        return VideoDescription(llm_raw_response=raw)
+    # コードブロック内のJSONを優先抽出（LLMが```json...```で囲む場合）
+    code_match = re.search(r"```json\s*([\s\S]*?)```", raw)
+    if code_match:
+        json_str = code_match.group(1).strip()
+    else:
+        json_match = re.search(r"\{[\s\S]*\}", raw)
+        if not json_match:
+            return VideoDescription(llm_raw_response=raw)
+        json_str = json_match.group()
 
     try:
-        data = json.loads(json_match.group())
+        # strict=False: LLMがfull_text内に生改行を含めて返すためパース失敗を防止
+        data = json.loads(json_str, strict=False)
     except json.JSONDecodeError:
         return VideoDescription(llm_raw_response=raw)
 

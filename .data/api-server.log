@@ -3426,3 +3426,8 @@ INFO:     113.149.186.41:0 - "GET /api/projects/p-20260101-%E3%83%A1%E3%83%B3%E3
 INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/youtube-assets HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK

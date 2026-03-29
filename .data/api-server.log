@@ -3452,3 +3452,7 @@ INFO:     240a:61:32e6:59c6:d119:1f9d:5b45:7840:0 - "GET /api/dashboard/summary 
 INFO:     240a:61:32e6:59c6:d119:1f9d:5b45:7840:0 - "GET /api/audit/latest HTTP/1.1" 200 OK
 INFO:     240a:61:32e6:59c6:d119:1f9d:5b45:7840:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     240a:61:32e6:59c6:d119:1f9d:5b45:7840:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56803 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56805 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56809 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56811 - "GET /api/projects HTTP/1.1" 200 OK

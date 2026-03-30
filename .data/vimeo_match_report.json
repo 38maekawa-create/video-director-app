@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-03-30T12:50:07.365854",
+  "generated_at": "2026-03-30T13:52:01.217844",
   "summary": {
     "total_members": 29,
-    "matched": 15,
-    "unmatched": 14,
-    "total_vimeo_videos": 366,
-    "taidan_videos": 91
+    "matched": 16,
+    "unmatched": 13,
+    "total_vimeo_videos": 368,
+    "taidan_videos": 93
   },
   "matched": [
     {
@@ -299,6 +299,12 @@
       "guest_name": "さくらさん",
       "videos": [
         {
+          "title": "61_サクラさん_対談_修正2_大胡",
+          "vimeo_url": "https://vimeo.com/1178313993/a12e75e2e0",
+          "status": "available",
+          "created": "2026-03-30"
+        },
+        {
           "title": "61_サクラさん_対談_修正1_大胡",
           "vimeo_url": "https://vimeo.com/1178154757/3e169556be",
           "status": "available",
@@ -309,6 +315,17 @@
           "vimeo_url": "https://vimeo.com/1176971121/43ba03f617",
           "status": "available",
           "created": "2026-03-25"
+        }
+      ]
+    },
+    {
+      "guest_name": "ゆりかさん",
+      "videos": [
+        {
+          "title": "63_ゆりかさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1178314943/71887ea120",
+          "status": "available",
+          "created": "2026-03-30"
         }
       ]
     },
@@ -421,8 +438,8 @@
     {
       "guest_name": "ろくさん",
       "search_keys": [
-        "ロク",
-        "ろく"
+        "ろく",
+        "ロク"
       ],
       "near_candidates": []
     },
@@ -448,6 +465,13 @@
         "あさかつ"
       ],
       "near_candidates": [
+        {
+          "title": "63_ゆりかさん_対談_初稿_大胡",
+          "matched_keys": [
+            "あさかつ"
+          ],
+          "status": "available"
+        },
         {
           "title": "みんてぃあさん_対談_完成",
           "matched_keys": [
@@ -475,23 +499,16 @@
             "あさかつ"
           ],
           "status": "available"
-        },
-        {
-          "title": "そのかさん 初稿",
-          "matched_keys": [
-            "あさかつ"
-          ],
-          "status": "available"
         }
       ]
     },
     {
       "guest_name": "くますけさん",
       "search_keys": [
+        "クマキ",
         "くまき",
         "くますけ",
-        "クマスケ",
-        "クマキ"
+        "クマスケ"
       ],
       "near_candidates": [
         {
@@ -534,8 +551,8 @@
     {
       "guest_name": "アンディさん",
       "search_keys": [
-        "あんでぃ",
-        "アンディ"
+        "アンディ",
+        "あんでぃ"
       ],
       "near_candidates": [
         {
@@ -584,20 +601,12 @@
       "near_candidates": []
     },
     {
-      "guest_name": "ゆりかさん",
-      "search_keys": [
-        "ゆりか",
-        "ユリカ"
-      ],
-      "near_candidates": []
-    },
-    {
       "guest_name": "コテさん",
       "search_keys": [
-        "こて",
-        "コテツ",
         "コテ",
-        "こてつ"
+        "コテツ",
+        "こてつ",
+        "こて"
       ],
       "near_candidates": [
         {
@@ -612,9 +621,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
+        "kos",
         "こすと",
-        "コスト",
-        "kos"
+        "コスト"
       ],
       "near_candidates": [
         {
@@ -650,13 +659,13 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
+        "さといも",
         "さといも・とーます",
         "サトイモ",
-        "とーます",
+        "サトイモ・トーマス",
         "さといも・トーマス",
-        "トーマス",
-        "さといも",
-        "サトイモ・トーマス"
+        "とーます",
+        "トーマス"
       ],
       "near_candidates": [
         {
@@ -699,9 +708,9 @@
     {
       "guest_name": "ハオさん",
       "search_keys": [
-        "はお",
         "羽生",
-        "ハオ"
+        "ハオ",
+        "はお"
       ],
       "near_candidates": []
     }

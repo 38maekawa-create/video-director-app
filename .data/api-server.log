@@ -3518,3 +3518,19 @@ INFO:     2405:6585:9c0:9300:fc60:64dc:548:ba92:0 - "GET /healthz HTTP/1.1" 200 
 INFO:     2405:6585:9c0:9300:fc60:64dc:548:ba92:0 - "GET /api/v1/projects/p-20251130-%E7%9C%9F%E7%94%9F%E3%81%95%E3%82%93/title/diff HTTP/1.1" 404 Not Found
 INFO:     2405:6585:9c0:9300:fc60:64dc:548:ba92:0 - "GET /api/v1/projects/p-20251130-%E7%9C%9F%E7%94%9F%E3%81%95%E3%82%93/description/diff HTTP/1.1" 404 Not Found
 INFO:     2405:6585:9c0:9300:fc60:64dc:548:ba92:0 - "GET /api/v1/projects/p-20251130-%E7%9C%9F%E7%94%9F%E3%81%95%E3%82%93/direction-report/diff HTTP/1.1" 404 Not Found
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/learning/summary HTTP/1.1" 200 OK

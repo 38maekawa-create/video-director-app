@@ -3534,3 +3534,6 @@ INFO:     113.149.186.41:0 - "GET /api/tracking/videos HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/tracking/insights HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:d0b8:2a2c:2831:2ef2:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:d0b8:2a2c:2831:2ef2:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55244 - "GET /api/health HTTP/1.1" 200 OK

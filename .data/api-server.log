@@ -3612,3 +3612,6 @@ INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /api/projects/p-202511
 INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /api/projects/p-20251213-PAY/youtube-assets HTTP/1.1" 200 OK
 INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /api/projects/p-20251213-PAY/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /api/projects/p-20251213-PAY/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /api/projects/p-20260101-%E3%81%95%E3%81%8F%E3%82%89/youtube-assets HTTP/1.1" 200 OK

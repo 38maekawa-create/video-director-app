@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-31T23:28:58.513541",
+  "generated_at": "2026-04-01T02:32:39.539847",
   "summary": {
     "total_members": 29,
     "matched": 16,
@@ -438,16 +438,16 @@
     {
       "guest_name": "ろくさん",
       "search_keys": [
-        "ろく",
-        "ロク"
+        "ロク",
+        "ろく"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ひろきょうさん",
       "search_keys": [
-        "ひろきょう",
-        "ヒロキョウ"
+        "ヒロキョウ",
+        "ひろきょう"
       ],
       "near_candidates": []
     },
@@ -461,8 +461,8 @@
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "アサカツ",
-        "あさかつ"
+        "あさかつ",
+        "アサカツ"
       ],
       "near_candidates": [
         {
@@ -505,10 +505,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "クマキ",
-        "くますけ",
         "くまき",
-        "クマスケ"
+        "クマスケ",
+        "クマキ",
+        "くますけ"
       ],
       "near_candidates": [
         {
@@ -551,8 +551,8 @@
     {
       "guest_name": "アンディさん",
       "search_keys": [
-        "アンディ",
-        "あんでぃ"
+        "あんでぃ",
+        "アンディ"
       ],
       "near_candidates": [
         {
@@ -595,18 +595,18 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ろき",
-        "ロキ"
+        "ロキ",
+        "ろき"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "こてつ",
         "こて",
+        "コテツ",
         "コテ",
-        "コテツ"
+        "こてつ"
       ],
       "near_candidates": [
         {
@@ -622,8 +622,8 @@
       "guest_name": "kosさん",
       "search_keys": [
         "こすと",
-        "kos",
-        "コスト"
+        "コスト",
+        "kos"
       ],
       "near_candidates": [
         {
@@ -659,13 +659,13 @@
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
-        "とーます",
-        "トーマス",
         "サトイモ",
         "サトイモ・トーマス",
+        "とーます",
         "さといも・とーます",
         "さといも",
-        "さといも・トーマス"
+        "さといも・トーマス",
+        "トーマス"
       ],
       "near_candidates": [
         {

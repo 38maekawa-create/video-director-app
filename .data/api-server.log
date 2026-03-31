@@ -3541,3 +3541,9 @@ INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /api/projects HTTP/1.1
 INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /api/v1/projects/p-20260101-%E3%82%86%E3%82%8A%E3%81%8B/title/diff HTTP/1.1" 404 Not Found
 INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /api/v1/projects/p-20260101-%E3%82%86%E3%82%8A%E3%81%8B/description/diff HTTP/1.1" 404 Not Found
+INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /api/v1/projects/p-20260101-%E3%82%86%E3%82%8A%E3%81%8B/direction-report/diff HTTP/1.1" 404 Not Found
+INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:94c:82bc:dce9:3c36:4323:e217:0 - "GET /healthz HTTP/1.1" 200 OK

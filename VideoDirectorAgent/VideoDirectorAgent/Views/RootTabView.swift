@@ -54,33 +54,7 @@ struct RootTabView: View {
             .zIndex(1)
 
             // メインコンテンツ
-            Group {
-                switch selectedTab {
-                case .home:
-                    ProjectListView(
-                        viewModel: projectListVM,
-                        onShowKnowledge: { showKnowledgePages = true }
-                    )
-                case .report:
-                    NavigationStack {
-                        ReportListView(viewModel: projectListVM)
-                    }
-                case .record:
-                    // 録音タブ選択時はモーダルを表示（homeをバックに表示）
-                    ProjectListView(
-                        viewModel: projectListVM,
-                        onShowKnowledge: { showKnowledgePages = true }
-                    )
-                case .approval:
-                    NavigationStack {
-                        FeedbackApprovalListView(viewModel: feedbackApprovalVM)
-                    }
-                case .quality:
-                    NavigationStack {
-                        QualityDashboardView(viewModel: dashboardVM)
-                    }
-                }
-            }
+            tabContent
             .padding(.bottom, 80) // タブバー分の余白
 
             // カスタムタブバー
@@ -141,6 +115,36 @@ struct RootTabView: View {
                         displayedStatus = newStatus
                     }
                 }
+            }
+        }
+    }
+
+    // MARK: - タブ別メインコンテンツ
+    @ViewBuilder
+    private var tabContent: some View {
+        switch selectedTab {
+        case .home:
+            ProjectListView(
+                viewModel: projectListVM,
+                onShowKnowledge: { showKnowledgePages = true }
+            )
+        case .report:
+            NavigationStack {
+                ReportListView(viewModel: projectListVM)
+            }
+        case .record:
+            // 録音タブ選択時はモーダルを表示（homeをバックに表示）
+            ProjectListView(
+                viewModel: projectListVM,
+                onShowKnowledge: { showKnowledgePages = true }
+            )
+        case .approval:
+            NavigationStack {
+                FeedbackApprovalListView(viewModel: feedbackApprovalVM)
+            }
+        case .quality:
+            NavigationStack {
+                QualityDashboardView(viewModel: dashboardVM)
             }
         }
     }

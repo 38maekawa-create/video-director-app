@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-04-02T02:36:26.186802",
+  "generated_at": "2026-04-02T17:05:23.043285",
   "summary": {
     "total_members": 29,
-    "matched": 16,
-    "unmatched": 13,
-    "total_vimeo_videos": 368,
-    "taidan_videos": 93
+    "matched": 18,
+    "unmatched": 11,
+    "total_vimeo_videos": 371,
+    "taidan_videos": 96
   },
   "matched": [
     {
@@ -68,6 +68,17 @@
           "vimeo_url": "https://vimeo.com/1172567733/fd8375829d",
           "status": "available",
           "created": "2026-03-11"
+        }
+      ]
+    },
+    {
+      "guest_name": "ひろきょうさん",
+      "videos": [
+        {
+          "title": "68_ひろきょうさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1179316561/79a1abea0b",
+          "status": "available",
+          "created": "2026-04-01"
         }
       ]
     },
@@ -381,6 +392,23 @@
           "created": "2025-08-29"
         }
       ]
+    },
+    {
+      "guest_name": "さといも・トーマスさん",
+      "videos": [
+        {
+          "title": "70_さといも・トーマスさん1.1倍_対談_修正_大胡",
+          "vimeo_url": "https://vimeo.com/1179489439/acd4f671b4",
+          "status": "available",
+          "created": "2026-04-02"
+        },
+        {
+          "title": "70_さといも・トーマスさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1179308072/7816f5b5c5",
+          "status": "available",
+          "created": "2026-04-01"
+        }
+      ]
     }
   ],
   "unmatched": [
@@ -394,10 +422,26 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
+        {
+          "title": "70_さといも・トーマスさん1.1倍_対談_修正_大胡",
+          "matched_keys": [
+            "ヤーマン",
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "70_さといも・トーマスさん_対談_初稿_大胡",
+          "matched_keys": [
+            "ヤーマン",
+            "やーまん"
+          ],
+          "status": "available"
+        },
         {
           "title": "59_スリマンさん_FB修正2_坂野",
           "matched_keys": [
@@ -418,20 +462,6 @@
             "やーまん"
           ],
           "status": "available"
-        },
-        {
-          "title": "59_スリマンさん_初稿_坂野",
-          "matched_keys": [
-            "ヤーマン"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "55_さるビールさん_対談_FB修正1_坂野",
-          "matched_keys": [
-            "やーまん"
-          ],
-          "status": "available"
         }
       ]
     },
@@ -440,14 +470,6 @@
       "search_keys": [
         "ろく",
         "ロク"
-      ],
-      "near_candidates": []
-    },
-    {
-      "guest_name": "ひろきょうさん",
-      "search_keys": [
-        "ヒロキョウ",
-        "ひろきょう"
       ],
       "near_candidates": []
     },
@@ -505,12 +527,26 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "くまき",
-        "クマスケ",
         "くますけ",
-        "クマキ"
+        "くまき",
+        "クマキ",
+        "クマスケ"
       ],
       "near_candidates": [
+        {
+          "title": "70_さといも・トーマスさん1.1倍_対談_修正_大胡",
+          "matched_keys": [
+            "クマスケ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "70_さといも・トーマスさん_対談_初稿_大胡",
+          "matched_keys": [
+            "クマスケ"
+          ],
+          "status": "available"
+        },
         {
           "title": "59_スリマンさん_FB修正2_坂野",
           "matched_keys": [
@@ -531,28 +567,14 @@
             "クマスケ"
           ],
           "status": "available"
-        },
-        {
-          "title": "50_りょうすけさん_対談_FB修正2_坂野",
-          "matched_keys": [
-            "くますけ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "50_りょうすけさん_対談_FB修正1_坂野",
-          "matched_keys": [
-            "くますけ"
-          ],
-          "status": "available"
         }
       ]
     },
     {
       "guest_name": "アンディさん",
       "search_keys": [
-        "あんでぃ",
-        "アンディ"
+        "アンディ",
+        "あんでぃ"
       ],
       "near_candidates": [
         {
@@ -595,18 +617,26 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ロキ",
-        "ろき"
+        "ろき",
+        "ロキ"
       ],
-      "near_candidates": []
+      "near_candidates": [
+        {
+          "title": "68_ひろきょうさん_対談_初稿_大胡",
+          "matched_keys": [
+            "ろき"
+          ],
+          "status": "available"
+        }
+      ]
     },
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "コテツ",
         "こてつ",
-        "コテ",
-        "こて"
+        "コテツ",
+        "こて",
+        "コテ"
       ],
       "near_candidates": [
         {
@@ -621,11 +651,25 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
+        "コスト",
         "こすと",
-        "kos",
-        "コスト"
+        "kos"
       ],
       "near_candidates": [
+        {
+          "title": "70_さといも・トーマスさん1.1倍_対談_修正_大胡",
+          "matched_keys": [
+            "コスト"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "70_さといも・トーマスさん_対談_初稿_大胡",
+          "matched_keys": [
+            "コスト"
+          ],
+          "status": "available"
+        },
         {
           "title": "20250731_tekoインタビュー動画ベル様_修正稿 (1080p)",
           "matched_keys": [
@@ -644,62 +688,6 @@
           "title": "20250624_tekoインタビュー｜ベルさん_初稿 (540p)",
           "matched_keys": [
             "kos"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "【スペース】 トップマーケッター対談　LIVE配信戦略について語る　（9/15小西）",
-          "matched_keys": [
-            "コスト"
-          ],
-          "status": "available"
-        }
-      ]
-    },
-    {
-      "guest_name": "さといも・トーマスさん",
-      "search_keys": [
-        "サトイモ・トーマス",
-        "トーマス",
-        "サトイモ",
-        "さといも・トーマス",
-        "とーます",
-        "さといも",
-        "さといも・とーます"
-      ],
-      "near_candidates": [
-        {
-          "title": "59_スリマンさん_FB修正2_坂野",
-          "matched_keys": [
-            "トーマス"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "ゆきもるさんボイチェン_対談_修正_大胡",
-          "matched_keys": [
-            "さといも"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "こもさん_対談_完成_大胡",
-          "matched_keys": [
-            "さといも"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "こもさん_対談_修正_大胡",
-          "matched_keys": [
-            "さといも"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "59_スリマンさん_初稿_坂野",
-          "matched_keys": [
-            "トーマス"
           ],
           "status": "available"
         }

@@ -51,7 +51,7 @@ info "前提条件を確認しています..."
 if ! command -v xcodebuild &>/dev/null; then
     error "xcodebuild が見つかりません。Xcode をインストールしてください。"
 fi
-XCODE_VERSION=$(xcodebuild -version | head -1)
+XCODE_VERSION=$(xcodebuild -version 2>/dev/null | head -1 || true)
 success "Xcode: $XCODE_VERSION"
 
 # xcodeプロジェクト存在確認

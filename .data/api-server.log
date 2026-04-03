@@ -3697,3 +3697,5 @@ INFO:     240a:61:32e6:59c6:258d:79d5:af73:83b7:0 - "GET /api/learning/summary H
 INFO:     240a:61:32e6:59c6:258d:79d5:af73:83b7:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     2400:2200:94c:82bc:f8c7:7427:a5a3:ee3b:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     2400:2200:94c:82bc:f8c7:7427:a5a3:ee3b:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:258d:79d5:af73:83b7:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:258d:79d5:af73:83b7:0 - "GET /healthz HTTP/1.1" 200 OK

@@ -124,7 +124,8 @@ xcodebuild -exportArchive \
     -archivePath "$ARCHIVE_DIR" \
     -exportOptionsPlist "$EXPORT_OPTIONS_PLIST" \
     -exportPath "$EXPORT_DIR" \
-    | tee "$WORKSPACE_ROOT/build/export.log" \
+    -allowProvisioningUpdates \
+    2>&1 | tee "$WORKSPACE_ROOT/build/export.log" \
     | grep -E "(error:|warning:|Export Succeeded|INFO)"
 
 IPA_PATH=$(find "$EXPORT_DIR" -name "*.ipa" | head -1)

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-04-05T00:24:47.975618",
+  "generated_at": "2026-04-05T01:26:26.016854",
   "summary": {
     "total_members": 29,
     "matched": 19,
     "unmatched": 10,
     "total_vimeo_videos": 376,
-    "taidan_videos": 99
+    "taidan_videos": 101
   },
   "matched": [
     {
@@ -414,6 +414,18 @@
       "guest_name": "さといも・トーマスさん",
       "videos": [
         {
+          "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
+          "vimeo_url": "https://vimeo.com/1180117094/50dc889045",
+          "status": "available",
+          "created": "2026-04-04"
+        },
+        {
+          "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
+          "vimeo_url": "https://vimeo.com/1180116492/63329b7335",
+          "status": "available",
+          "created": "2026-04-04"
+        },
+        {
           "title": "70_さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "vimeo_url": "https://vimeo.com/1179595419/6938b04726",
           "status": "available",
@@ -445,15 +457,31 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
+          "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
+          "matched_keys": [
+            "ヤーマン",
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
+          "matched_keys": [
+            "ヤーマン",
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
           "title": "70_さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
@@ -467,23 +495,8 @@
         {
           "title": "70_さといも・トーマスさん1.1倍_対談_修正_大胡",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "70_さといも・トーマスさん_対談_初稿_大胡",
-          "matched_keys": [
-            "やーまん",
-            "ヤーマン"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "59_スリマンさん_FB修正2_坂野",
-          "matched_keys": [
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         }
@@ -500,8 +513,8 @@
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "アサカツ",
-        "あさかつ"
+        "あさかつ",
+        "アサカツ"
       ],
       "near_candidates": [
         {
@@ -544,12 +557,26 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "クマキ",
         "クマスケ",
         "くますけ",
-        "くまき"
+        "くまき",
+        "クマキ"
       ],
       "near_candidates": [
+        {
+          "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
+          "matched_keys": [
+            "クマスケ"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
+          "matched_keys": [
+            "クマスケ"
+          ],
+          "status": "available"
+        },
         {
           "title": "70_さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
@@ -568,20 +595,6 @@
           "title": "70_さといも・トーマスさん_対談_初稿_大胡",
           "matched_keys": [
             "クマスケ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "59_スリマンさん_FB修正2_坂野",
-          "matched_keys": [
-            "クマスケ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "50_りょうすけさん_対談_FB修正3_坂野",
-          "matched_keys": [
-            "くますけ"
           ],
           "status": "available"
         }
@@ -650,10 +663,10 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
+        "こて",
         "コテツ",
-        "こてつ",
         "コテ",
-        "こて"
+        "こてつ"
       ],
       "near_candidates": [
         {
@@ -668,11 +681,25 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "kos",
+        "こすと",
         "コスト",
-        "こすと"
+        "kos"
       ],
       "near_candidates": [
+        {
+          "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
+          "matched_keys": [
+            "コスト"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
+          "matched_keys": [
+            "コスト"
+          ],
+          "status": "available"
+        },
         {
           "title": "70_さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
@@ -693,29 +720,15 @@
             "コスト"
           ],
           "status": "available"
-        },
-        {
-          "title": "20250731_tekoインタビュー動画ベル様_修正稿 (1080p)",
-          "matched_keys": [
-            "kos"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "20250711_tekoインタビューベル様_2稿 (1080p)",
-          "matched_keys": [
-            "kos"
-          ],
-          "status": "available"
         }
       ]
     },
     {
       "guest_name": "ハオさん",
       "search_keys": [
-        "はお",
+        "羽生",
         "ハオ",
-        "羽生"
+        "はお"
       ],
       "near_candidates": []
     }

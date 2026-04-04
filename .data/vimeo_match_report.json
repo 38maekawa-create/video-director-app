@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-05T02:28:19.707599",
+  "generated_at": "2026-04-05T03:29:57.760138",
   "summary": {
     "total_members": 29,
     "matched": 19,
@@ -463,31 +463,31 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
           "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "70_さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
@@ -501,8 +501,8 @@
         {
           "title": "70_さといも・トーマスさん1.1倍_対談_修正_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         }
@@ -519,8 +519,8 @@
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "アサカツ",
-        "あさかつ"
+        "あさかつ",
+        "アサカツ"
       ],
       "near_candidates": [
         {
@@ -563,10 +563,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "くまき",
+        "クマキ",
         "くますけ",
         "クマスケ",
-        "クマキ"
+        "くまき"
       ],
       "near_candidates": [
         {
@@ -653,8 +653,8 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ロキ",
-        "ろき"
+        "ろき",
+        "ロキ"
       ],
       "near_candidates": [
         {
@@ -676,10 +676,10 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "コテツ",
-        "こてつ",
         "コテ",
-        "こて"
+        "こて",
+        "こてつ",
+        "コテツ"
       ],
       "near_candidates": [
         {
@@ -694,8 +694,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "kos",
         "こすと",
+        "kos",
         "コスト"
       ],
       "near_candidates": [

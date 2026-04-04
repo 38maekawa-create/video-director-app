@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-04T03:32:45.015610",
+  "generated_at": "2026-04-04T14:08:35.464874",
   "summary": {
     "total_members": 29,
     "matched": 19,
@@ -445,15 +445,15 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
           "title": "70_さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
@@ -467,16 +467,16 @@
         {
           "title": "70_さといも・トーマスさん1.1倍_対談_修正_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "70_さといも・トーマスさん_対談_初稿_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
@@ -544,10 +544,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "クマキ",
+        "クマスケ",
         "くますけ",
-        "くまき",
-        "クマスケ"
+        "クマキ",
+        "くまき"
       ],
       "near_candidates": [
         {
@@ -634,8 +634,8 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ろき",
-        "ロキ"
+        "ロキ",
+        "ろき"
       ],
       "near_candidates": [
         {
@@ -650,9 +650,9 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "コテ",
         "こてつ",
         "こて",
+        "コテ",
         "コテツ"
       ],
       "near_candidates": [
@@ -668,9 +668,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
+        "コスト",
         "kos",
-        "こすと",
-        "コスト"
+        "こすと"
       ],
       "near_candidates": [
         {
@@ -713,8 +713,8 @@
     {
       "guest_name": "ハオさん",
       "search_keys": [
-        "羽生",
         "ハオ",
+        "羽生",
         "はお"
       ],
       "near_candidates": []

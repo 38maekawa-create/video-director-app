@@ -3702,3 +3702,16 @@ INFO:     240a:61:32e6:59c6:258d:79d5:af73:83b7:0 - "GET /healthz HTTP/1.1" 200 
 INFO:     240a:61:32e6:59c6:d1cc:98a9:713d:a7e0:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     240a:61:32e6:59c6:d1cc:98a9:713d:a7e0:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     127.0.0.1:59734 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/feedbacks?limit=50 HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/dashboard/quality-trend HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/audit/history HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/learning/summary HTTP/1.1" 200 OK

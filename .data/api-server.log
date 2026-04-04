@@ -3715,3 +3715,4 @@ INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/v1/dashboard/quali
 INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/tracking/insights HTTP/1.1" 200 OK
 INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /healthz HTTP/1.1" 200 OK

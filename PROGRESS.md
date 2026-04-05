@@ -57,8 +57,8 @@
 | # | タスク | 優先度 | 状態 |
 |---|--------|--------|------|
 | 1 | Xcodeビルド・TestFlight配布（承認フロー+QC Phase2含む） | P0 | 未着手 |
-| 2 | TASK_BATCH_REGEN.md — 29件再バッチ生成（Opus+全文注入+コンテンツライン反映） | P0 | 未着手 |
-| 3 | TASK_DESCRIPTION_INVESTIGATION.md — 概要欄未生成38%の原因調査 | P0 | 未着手 |
+| 2 | 29件再バッチ生成（Opus+全文注入+コンテンツライン反映）※詳細: archive/TASK_BATCH_REGEN.md | P0 | 未着手 |
+| 3 | 概要欄未生成38%の原因調査 ※詳細: archive/TASK_DESCRIPTION_INVESTIGATION.md | P0 | 未着手 |
 | 4 | Phase2実機テスト（実動画でマーケQCを実行し品質基準の判定精度確認） | P1 | 未着手 |
 | 5 | 事務への依頼送信（チャンネル変更+命名規則+メインカメラ再アップ） | P1 | 未着手 |
 | 6 | 新チャンネル確定後、素材動画自動連携の仕組み実装 | P1 | 待ち |

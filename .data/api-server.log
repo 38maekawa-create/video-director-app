@@ -3716,3 +3716,7 @@ INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/tracking/insights 
 INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /api/learning/summary HTTP/1.1" 200 OK
 INFO:     240a:61:32e6:59c6:f8d9:d3fb:3208:2209:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:811:553e:513a:5782:80a8:3423:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     2400:2200:811:553e:513a:5782:80a8:3423:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:811:553e:513a:5782:80a8:3423:0 - "GET /api/projects/p-20260101-%E3%82%86%E3%82%8A%E3%81%8B/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:2200:811:553e:513a:5782:80a8:3423:0 - "GET /healthz HTTP/1.1" 200 OK

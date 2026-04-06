@@ -1,0 +1,11 @@
+{
+  "run_at": "2026-04-06T09:00:05.220703",
+  "pipeline_status": "critical",
+  "pending_videos": 140,
+  "quality_anomalies": [],
+  "stale_projects": [],
+  "api_health": "healthy",
+  "db_health": "unhealthy",
+  "overall_health": "critical",
+  "details": {}
+}

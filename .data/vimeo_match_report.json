@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-04-07T03:29:03.160300",
+  "generated_at": "2026-04-07T16:18:02.043709",
   "summary": {
     "total_members": 29,
     "matched": 20,
     "unmatched": 9,
-    "total_vimeo_videos": 378,
-    "taidan_videos": 103
+    "total_vimeo_videos": 380,
+    "taidan_videos": 105
   },
   "matched": [
     {
@@ -74,6 +74,12 @@
     {
       "guest_name": "ひろきょうさん",
       "videos": [
+        {
+          "title": "68_ひろきょうさん_対談_修正2_大胡",
+          "vimeo_url": "https://vimeo.com/1180702718/50b49886b4",
+          "status": "available",
+          "created": "2026-04-07"
+        },
         {
           "title": "68_ひろきょうさん_対談_修正_大胡",
           "vimeo_url": "https://vimeo.com/1180125815/b87049eea1",
@@ -316,6 +322,12 @@
       "guest_name": "けーさん",
       "videos": [
         {
+          "title": "67_けーさん_対談_修正_大胡",
+          "vimeo_url": "https://vimeo.com/1180672397/41585f2ed5",
+          "status": "available",
+          "created": "2026-04-07"
+        },
+        {
           "title": "67_けーさん_対談_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1179560769/2b54cb01f9",
           "status": "available",
@@ -474,45 +486,44 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
+          "title": "67_けーさん_対談_修正_大胡",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
           "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "70_さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "67_けーさん_対談_初稿_大胡",
           "matched_keys": [
-            "やーまん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "70_さといも・トーマスさん1.1倍_対談_修正_大胡",
-          "matched_keys": [
-            "ヤーマン",
             "やーまん"
           ],
           "status": "available"
@@ -574,10 +585,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "くまき",
-        "くますけ",
+        "クマスケ",
         "クマキ",
-        "クマスケ"
+        "くまき",
+        "くますけ"
       ],
       "near_candidates": [
         {
@@ -664,10 +675,17 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ろき",
-        "ロキ"
+        "ロキ",
+        "ろき"
       ],
       "near_candidates": [
+        {
+          "title": "68_ひろきょうさん_対談_修正2_大胡",
+          "matched_keys": [
+            "ろき"
+          ],
+          "status": "available"
+        },
         {
           "title": "68_ひろきょうさん_対談_修正_大胡",
           "matched_keys": [
@@ -687,10 +705,10 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "コテ",
-        "こてつ",
+        "こて",
         "コテツ",
-        "こて"
+        "コテ",
+        "こてつ"
       ],
       "near_candidates": [
         {
@@ -705,9 +723,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "コスト",
         "kos",
-        "こすと"
+        "こすと",
+        "コスト"
       ],
       "near_candidates": [
         {

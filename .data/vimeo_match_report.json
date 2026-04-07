@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-08T02:35:19.560535",
+  "generated_at": "2026-04-08T03:37:15.448642",
   "summary": {
     "total_members": 29,
     "matched": 20,
@@ -467,7 +467,7 @@
       "guest_name": "ハオさん",
       "videos": [
         {
-          "title": "ハオさん　対談",
+          "title": "73_ハオさん_対談_修正_大胡",
           "vimeo_url": "https://vimeo.com/1180901959/f6c53e71cb",
           "status": "available",
           "created": "2026-04-07"
@@ -539,8 +539,8 @@
     {
       "guest_name": "ろくさん",
       "search_keys": [
-        "ロク",
-        "ろく"
+        "ろく",
+        "ロク"
       ],
       "near_candidates": []
     },
@@ -591,10 +591,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "クマスケ",
-        "くまき",
+        "くますけ",
         "クマキ",
-        "くますけ"
+        "クマスケ",
+        "くまき"
       ],
       "near_candidates": [
         {
@@ -711,10 +711,10 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "コテ",
         "コテツ",
-        "こて",
-        "こてつ"
+        "コテ",
+        "こてつ",
+        "こて"
       ],
       "near_candidates": [
         {
@@ -729,8 +729,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "こすと",
         "コスト",
+        "こすと",
         "kos"
       ],
       "near_candidates": [

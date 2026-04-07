@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-04-08T01:33:28.614621",
+  "generated_at": "2026-04-08T02:35:19.560535",
   "summary": {
     "total_members": 29,
     "matched": 20,
     "unmatched": 9,
-    "total_vimeo_videos": 380,
-    "taidan_videos": 105
+    "total_vimeo_videos": 382,
+    "taidan_videos": 107
   },
   "matched": [
     {
@@ -467,6 +467,12 @@
       "guest_name": "ハオさん",
       "videos": [
         {
+          "title": "ハオさん　対談",
+          "vimeo_url": "https://vimeo.com/1180901959/f6c53e71cb",
+          "status": "available",
+          "created": "2026-04-07"
+        },
+        {
           "title": "73_ハオさん_対談_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1180424572/8e75534561",
           "status": "available",
@@ -490,6 +496,13 @@
         "ヤーマン"
       ],
       "near_candidates": [
+        {
+          "title": "プロパーさん_対談_初稿_大胡",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "available"
+        },
         {
           "title": "67_けーさん_対談_修正_大胡",
           "matched_keys": [
@@ -520,29 +533,22 @@
             "ヤーマン"
           ],
           "status": "available"
-        },
-        {
-          "title": "67_けーさん_対談_初稿_大胡",
-          "matched_keys": [
-            "やーまん"
-          ],
-          "status": "available"
         }
       ]
     },
     {
       "guest_name": "ろくさん",
       "search_keys": [
-        "ろく",
-        "ロク"
+        "ロク",
+        "ろく"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "アサカツ",
-        "あさかつ"
+        "あさかつ",
+        "アサカツ"
       ],
       "near_candidates": [
         {
@@ -585,10 +591,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "くますけ",
         "クマスケ",
+        "くまき",
         "クマキ",
-        "くまき"
+        "くますけ"
       ],
       "near_candidates": [
         {
@@ -705,10 +711,10 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "こて",
+        "コテ",
         "コテツ",
-        "こてつ",
-        "コテ"
+        "こて",
+        "こてつ"
       ],
       "near_candidates": [
         {
@@ -724,8 +730,8 @@
       "guest_name": "kosさん",
       "search_keys": [
         "こすと",
-        "kos",
-        "コスト"
+        "コスト",
+        "kos"
       ],
       "near_candidates": [
         {

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-08T08:50:16.752245",
+  "generated_at": "2026-04-08T09:52:10.209821",
   "summary": {
     "total_members": 29,
     "matched": 20,
@@ -492,8 +492,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
@@ -513,24 +513,24 @@
         {
           "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "70_さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         }
@@ -539,16 +539,16 @@
     {
       "guest_name": "ろくさん",
       "search_keys": [
-        "ロク",
-        "ろく"
+        "ろく",
+        "ロク"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "あさかつ",
-        "アサカツ"
+        "アサカツ",
+        "あさかつ"
       ],
       "near_candidates": [
         {
@@ -591,9 +591,9 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "くますけ",
         "くまき",
         "クマキ",
+        "くますけ",
         "クマスケ"
       ],
       "near_candidates": [
@@ -637,8 +637,8 @@
     {
       "guest_name": "アンディさん",
       "search_keys": [
-        "あんでぃ",
-        "アンディ"
+        "アンディ",
+        "あんでぃ"
       ],
       "near_candidates": [
         {
@@ -730,8 +730,8 @@
       "guest_name": "kosさん",
       "search_keys": [
         "こすと",
-        "コスト",
-        "kos"
+        "kos",
+        "コスト"
       ],
       "near_candidates": [
         {

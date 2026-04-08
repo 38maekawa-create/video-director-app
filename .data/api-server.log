@@ -3728,3 +3728,4 @@ INFO:     2400:2200:8c0:4233:a974:d2cb:5321:93f5:0 - "GET /api/projects/p-202601
 INFO:     2400:2200:8c0:4233:a974:d2cb:5321:93f5:0 - "GET /api/projects/p-20260125-%E3%81%B2%E6%A8%B9%E4%BA%AC%E3%81%B2%E3%82%8D%E3%81%8D%E3%82%87%E3%81%86/youtube-assets HTTP/1.1" 200 OK
 INFO:     2400:2200:8c0:4233:a974:d2cb:5321:93f5:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     2400:2200:8c0:4233:a974:d2cb:5321:93f5:0 - "GET /api/projects/p-20260125-%E6%9D%BE%E6%9C%AC/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56288 - "GET /api/health HTTP/1.1" 200 OK

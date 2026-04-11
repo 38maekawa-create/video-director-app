@@ -1,0 +1,106 @@
+{
+  "project_id": "p-20260101-コテツ",
+  "status": "completed",
+  "checked_at": "2026-04-11T17:45:29.412595+00:00",
+  "frame_check": {
+    "total_frames_checked": 0,
+    "total_telops_found": 0,
+    "extraction_method": "none",
+    "extracted_telops": [],
+    "spelling_issues": [],
+    "consistency_issues": [],
+    "timing_issues": [],
+    "error_count": 0,
+    "warning_count": 0,
+    "overall_score": 100.0
+  },
+  "text_check": {
+    "total_telops": 10,
+    "error_count": 0,
+    "warning_count": 0,
+    "consistency_score": 100.0,
+    "candidates": [
+      {
+        "timestamp": "03:07",
+        "text": "商品を開発する中で",
+        "category": "属性テロップ",
+        "char_count": 9,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "04:56",
+        "text": "今で740とかで",
+        "category": "数字強調",
+        "char_count": 8,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "06:42",
+        "text": "ちょうど2024年の8月",
+        "category": "属性テロップ",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "07:42",
+        "text": "XとかのAXを見てたら",
+        "category": "一般テロップ",
+        "char_count": 11,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "08:28",
+        "text": "本当に何でも小中高大で過",
+        "category": "キー発言強調",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "09:15",
+        "text": "高校で高1と高2で学年が",
+        "category": "属性テロップ",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "11:30",
+        "text": "新卒の時に100万円ぐら",
+        "category": "数字強調",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "00:29",
+        "text": "結構",
+        "category": "キー発言強調",
+        "char_count": 2,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "02:02",
+        "text": "初月が5万ぐらいで",
+        "category": "数字強調",
+        "char_count": 9,
+        "is_valid": true,
+        "issues": []
+      },
+      {
+        "timestamp": "03:20",
+        "text": "娘が寝る前の時間を娘に時",
+        "category": "キー発言強調",
+        "char_count": 12,
+        "is_valid": true,
+        "issues": []
+      }
+    ],
+    "issues": []
+  }
+}

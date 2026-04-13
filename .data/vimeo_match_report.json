@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-13T15:39:30.656211",
+  "generated_at": "2026-04-13T16:41:10.832342",
   "summary": {
     "total_members": 29,
     "matched": 20,
@@ -615,10 +615,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "くますけ",
         "くまき",
-        "クマスケ",
-        "クマキ"
+        "クマキ",
+        "くますけ",
+        "クマスケ"
       ],
       "near_candidates": [
         {
@@ -661,8 +661,8 @@
     {
       "guest_name": "アンディさん",
       "search_keys": [
-        "あんでぃ",
-        "アンディ"
+        "アンディ",
+        "あんでぃ"
       ],
       "near_candidates": [
         {
@@ -735,8 +735,8 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "コテツ",
         "こてつ",
+        "コテツ",
         "こて",
         "コテ"
       ],
@@ -753,9 +753,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "こすと",
+        "コスト",
         "kos",
-        "コスト"
+        "こすと"
       ],
       "near_candidates": [
         {

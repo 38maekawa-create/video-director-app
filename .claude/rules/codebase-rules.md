@@ -5,7 +5,7 @@
 ## LLM呼び出しルール
 
 - **全てteko_core.llm経由**: API直叩き禁止。`from teko_core.llm import ...` を使う
-- **モデル選択の確認**: direction_generator/description_writer → Sonnet、marketing_qc → Opus、title_generator/thumbnail_designer → Claude（デフォルト）
+- **モデル選択の確認**: direction_generator/description_writer/title_generator/thumbnail_designer → Sonnet、marketing_qc → Opus
 - **プロンプトの動的注入**: prompts.py（344行）の構造を理解してから修正。変数名の意味を確認
 - **品質基準の注入**: quality_knowledge_loader.py 経由で `.claude/rules/quality-judgment-guide.md` から読み込む。ハードコードしない
 
@@ -35,7 +35,7 @@
 
 - pytest: `~/AI開発10/tests/`
 - 変更後は `pytest tests/ -v` で全件通過を確認
-- 全79テスト（既存43件+QC新規36件）
+- 2026-04-15時点: 1,417テスト
 
 ## 禁止事項
 

@@ -85,7 +85,7 @@ def generate_thumbnail_design(
     # LLM呼び出し（teko_core.llm経由 — MAX定額内）
     try:
         from teko_core.llm import ask
-        raw = ask(prompt, model="sonnet", max_tokens=2000, timeout=120)
+        raw = ask(prompt, model="opus", max_tokens=2000, timeout=120)
 
         # JSONパース
         return _parse_thumbnail_response(raw)

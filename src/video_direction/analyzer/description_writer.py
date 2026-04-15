@@ -108,7 +108,7 @@ def generate_description(
 
     try:
         from teko_core.llm import ask
-        raw = ask(prompt, model="sonnet", max_tokens=3000, timeout=120)
+        raw = ask(prompt, model="opus", max_tokens=3000, timeout=120)
         result = _parse_description_response(raw)
         # full_textが空 or 200文字未満（テンプレ欠落の検知）の場合はフォールバックに回す
         if not result.full_text or len(result.full_text.strip()) < 200:

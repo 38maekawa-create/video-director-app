@@ -302,7 +302,7 @@ class VideoAnalyzer:
 
         try:
             from teko_core.llm import ask
-            raw_text = ask(prompt, model="sonnet", max_tokens=800, timeout=120).strip()
+            raw_text = ask(prompt, model="opus", max_tokens=800, timeout=120).strip()
 
             # JSON部分を抽出
             parsed = self._extract_json(raw_text)

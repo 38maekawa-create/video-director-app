@@ -2555,7 +2555,7 @@ def convert_feedback(body: FeedbackConvertRequest):
             tracking_refs_text=tracking_refs_text,
         )
 
-        text = ask(user_prompt, system=system_prompt, model="sonnet", max_tokens=2048, timeout=120)
+        text = ask(user_prompt, system=system_prompt, model="opus", max_tokens=2048, timeout=120)
         # JSONブロックを抽出
         json_match = re.search(r'\{[\s\S]*\}', text)
         if json_match:
@@ -2675,7 +2675,7 @@ def convert_asset_feedback(body: AssetFeedbackConvertRequest):
         import re
         from teko_core.llm import ask
 
-        text = ask(user_prompt, system=system_prompt, model="sonnet", max_tokens=1024, timeout=120)
+        text = ask(user_prompt, system=system_prompt, model="opus", max_tokens=1024, timeout=120)
         json_match = re.search(r'\{[\s\S]*\}', text)
         if json_match:
             result = json.loads(json_match.group())
@@ -3654,7 +3654,7 @@ def convert_feedback_enhanced(body: FeedbackConvertEnhancedRequest):
             raw, category, learned_rules_text, tracking_refs_text
         )
 
-        text = ask(user_prompt, system=system_prompt, model="sonnet", max_tokens=2048, timeout=120)
+        text = ask(user_prompt, system=system_prompt, model="opus", max_tokens=2048, timeout=120)
         json_match = re.search(r'\{[\s\S]*\}', text)
         if json_match:
             result = json.loads(json_match.group())

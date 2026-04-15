@@ -629,7 +629,7 @@ def _llm_analyze(
 """
 
     from teko_core.llm import ask
-    return ask(prompt, model="sonnet", max_tokens=2000, timeout=120)
+    return ask(prompt, model="opus", max_tokens=2000, timeout=120)
 
 
 def get_learning_context(feedback_learner: "FeedbackLearner" = None, video_learner: "VideoLearner" = None, edit_learner: "EditLearner" = None) -> dict:

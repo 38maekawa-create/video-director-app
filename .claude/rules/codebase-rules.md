@@ -1,0 +1,45 @@
+# AI開発10 コードベースルール
+
+> 兵隊（Claude Code CLI）が自動参照する。開発・修正時に必ず従うこと。
+
+## LLM呼び出しルール
+
+- **全てteko_core.llm経由**: API直叩き禁止。`from teko_core.llm import ...` を使う
+- **モデル選択の確認**: direction_generator/description_writer → Sonnet、marketing_qc → Opus、title_generator/thumbnail_designer → Claude（デフォルト）
+- **プロンプトの動的注入**: prompts.py（344行）の構造を理解してから修正。変数名の意味を確認
+- **品質基準の注入**: quality_knowledge_loader.py 経由で `.claude/rules/quality-judgment-guide.md` から読み込む。ハードコードしない
+
+## FB承認フロー
+
+- **事前承認制**: なおとさん/パグさんが各々承認してから編集者に流す
+- **FBスタイル**: 1コメント1テーマ（複合FB分解は不要）
+- **承認APIエンドポイント**: api_server.py 内の4エンドポイント
+- **iOS承認画面**: VideoDirectorAgent 内の3View
+
+## ルールベース分類（if文/Regexの領域）
+
+以下はLLMではなくPythonルールベースで処理する。勝手にLLM化しない:
+- ゲスト層分類（guest_classifier.py）
+- 年収評価（income_evaluator.py）
+- 固有名詞フィルタ（proper_noun_filter.py）
+- ターゲットラベリング（target_labeler.py）
+- コンテンツライン判定（quality_knowledge_loader.py の determine_content_line）
+
+## DB操作
+
+- SQLite: `.data/video_direction.db`, `.data/projects.db`, `.data/video_director.db`
+- busy_timeout: 30秒（競合回避。変更するな）
+- JSONパース: エラーハンドリング必須
+
+## テスト
+
+- pytest: `~/AI開発10/tests/`
+- 変更後は `pytest tests/ -v` で全件通過を確認
+- 全79テスト（既存43件+QC新規36件）
+
+## 禁止事項
+
+- prompts.py のプロンプト構造を大幅に変更すること（344行の動的注入が壊れる）
+- quality_knowledge_loader.py を「もっとシンプルにできる」と書き直すこと（セクション抽出・コンテンツライン判定が必要）
+- launchd plistの `--reload` オプションを追加すること（ポート多重競合の原因。過去に修正済み）
+- distributed_processor.py を mission-dispatch.sh に統合すること（目的が違う。別物として維持）

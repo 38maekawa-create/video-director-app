@@ -1,0 +1,1 @@
+/Users/maekawanaoto/AI開発10/docs/QUALITY_JUDGMENT_GUIDE.md

@@ -11,7 +11,8 @@ from pathlib import Path
 
 
 # デフォルトのガイドファイルパス（環境変数で上書き可能）
-DEFAULT_GUIDE_PATH = Path.home() / "AI開発10" / "docs" / "QUALITY_JUDGMENT_GUIDE.md"
+# .claude/rules/ に一元化。symlinkで docs/QUALITY_JUDGMENT_GUIDE.md を参照する
+DEFAULT_GUIDE_PATH = Path.home() / "AI開発10" / ".claude" / "rules" / "quality-judgment-guide.md"
 
 # コンテンツライン判定用キーワード（不動産軸）
 REALESTATE_KEYWORDS = [

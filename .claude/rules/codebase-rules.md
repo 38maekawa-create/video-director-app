@@ -5,7 +5,7 @@
 ## LLM呼び出しルール
 
 - **全てteko_core.llm経由**: API直叩き禁止。`from teko_core.llm import ...` を使う
-- **モデル選択の確認**: direction_generator/description_writer/title_generator/thumbnail_designer → Sonnet、marketing_qc → Opus
+- **モデル選択の現状**: marketing_qc → Opus。他4モジュール（direction_generator/description_writer/title_generator/thumbnail_designer）→ Sonnet（API直叩き時代の残骸。定額内ならOpusに統一すべき。変更はなおとさん承認後）
 - **プロンプトの動的注入**: prompts.py（344行）の構造を理解してから修正。変数名の意味を確認
 - **品質基準の注入**: quality_knowledge_loader.py 経由で `.claude/rules/quality-judgment-guide.md` から読み込む。ハードコードしない
 

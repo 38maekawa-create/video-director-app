@@ -4,9 +4,9 @@
 
 ## LLM呼び出しルール
 
-- **全てteko_core.llm経由**: API直叩き禁止。`from teko_core.llm import ...` を使う
+- **原則teko_core.llm経由**: LLMテキスト生成は `from teko_core.llm import ...` を使う。API直叩き禁止
 - **モデル**: teko_core.llm経由の全モジュールは `model="opus"`（MAX定額内）
-- **API直叩き（teko_core.llm経由ではない）4モジュール**:
+- **例外: Vision/音声系4モジュールのみAPI直叩き可**:
   - telop_checker.py — Anthropic API直叩き（Claude Sonnet）。Vision画像入力のため
   - frame_evaluator.py — Anthropic API直叩き（Claude Sonnet）。Vision画像入力のため
   - telop_reader.py — OpenAI API直叩き（GPT-4o Vision）。テロップ読み取り
@@ -19,7 +19,7 @@
 - **事前承認制**: なおとさん/パグさんが各々承認してから編集者に流す
 - **FBスタイル**: 1コメント1テーマ（複合FB分解は不要）
 - **承認APIエンドポイント**: api_server.py 内の4エンドポイント
-- **iOS承認画面**: VideoDirectorAgent 内の3View
+- **iOS承認画面**: VideoDirectorAgent 内の2View（FeedbackApprovalListView, FeedbackApprovalDetailView）+ 1ViewModel
 
 ## ルールベース分類（if文/Regexの領域）
 

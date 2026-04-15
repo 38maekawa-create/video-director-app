@@ -35,6 +35,9 @@
 - SQLite: `.data/video_direction.db`, `.data/projects.db`, `.data/video_director.db`
 - busy_timeout: 30秒（競合回避。変更するな）
 - JSONパース: エラーハンドリング必須
+- **DB書き込み前にバックアップ**: `cp .data/xxx.db .data/xxx.db.bak_$(date +%Y%m%d%H%M%S)`
+- **手動UPDATE/DELETEは事前承認必須**（特にvideo_director.db — 承認・FBデータを含む）
+- マイグレーション・全件更新は事前承認必須
 
 ## テスト
 
@@ -44,6 +47,8 @@
 
 ## 禁止事項
 
+- `git reset --hard`、履歴書き換え、`filter-branch`、BFG、未追跡ファイル一括削除（.gitが131MBだが勝手に整理するな）
+- `launchctl bootout/unload/remove`、plist編集、KeepAlive変更（事前承認必須）
 - prompts.py のプロンプト構造を大幅に変更すること（344行の動的注入が壊れる）
 - quality_knowledge_loader.py を「もっとシンプルにできる」と書き直すこと（セクション抽出・コンテンツライン判定が必要）
 - launchd plistの `--reload` オプションを追加すること（ポート多重競合の原因。過去に修正済み）

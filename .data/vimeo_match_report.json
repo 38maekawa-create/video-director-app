@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-15T10:28:52.820165",
+  "generated_at": "2026-04-15T11:30:10.867471",
   "summary": {
     "total_members": 29,
     "matched": 20,
@@ -516,8 +516,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
@@ -537,24 +537,24 @@
         {
           "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
         {
           "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
         {
           "title": "70_さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         }
@@ -571,8 +571,8 @@
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "あさかつ",
-        "アサカツ"
+        "アサカツ",
+        "あさかつ"
       ],
       "near_candidates": [
         {
@@ -615,10 +615,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "くますけ",
-        "くまき",
         "クマスケ",
-        "クマキ"
+        "くまき",
+        "クマキ",
+        "くますけ"
       ],
       "near_candidates": [
         {
@@ -705,8 +705,8 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ろき",
-        "ロキ"
+        "ロキ",
+        "ろき"
       ],
       "near_candidates": [
         {
@@ -735,10 +735,10 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "コテ",
-        "こて",
         "こてつ",
-        "コテツ"
+        "こて",
+        "コテツ",
+        "コテ"
       ],
       "near_candidates": [
         {
@@ -753,8 +753,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "こすと",
         "kos",
+        "こすと",
         "コスト"
       ],
       "near_candidates": [

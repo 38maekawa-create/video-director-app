@@ -2,7 +2,7 @@
 
 **最終更新**: 2026-04-15
 **WS名称**: AI開発10（映像エージェント部署）
-**運用状態**: 二層構造で稼働中（Pythonバッチ + Claude Code兵隊）
+**運用状態**: Pythonバッチ稼働中 + Claude Code兵隊（Phase B-1整備完了・実機テスト未実施）
 **launchd**: com.maekawa.video-direction-api（ポート8210、KeepAlive）
 
 ## 1. 部署概要

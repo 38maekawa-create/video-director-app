@@ -68,6 +68,7 @@ user-invocable: true
 | 層分類ルール | rules/quality-judgment-guide.md セクション1 |
 | 演出ディレクション | rules/quality-judgment-guide.md セクション2 |
 | タイトル設計思想 | rules/quality-judgment-guide.md セクション3 |
+| 概要欄文章生成 | rules/quality-judgment-guide.md セクション4 |
 | ハイライト選定 | rules/quality-judgment-guide.md セクション5 |
 | コードルール | rules/codebase-rules.md |
 | ファイル命名 | rules/naming-rules.md |

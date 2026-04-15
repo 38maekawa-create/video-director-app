@@ -5,7 +5,12 @@
 ## LLM呼び出しルール
 
 - **全てteko_core.llm経由**: API直叩き禁止。`from teko_core.llm import ...` を使う
-- **モデル**: teko_core.llm経由の全モジュールは `model="opus"`（MAX定額内）。telop_checker/frame_evaluatorのみVision用にAPI直叩き（Sonnet）
+- **モデル**: teko_core.llm経由の全モジュールは `model="opus"`（MAX定額内）
+- **API直叩き（teko_core.llm経由ではない）4モジュール**:
+  - telop_checker.py — Anthropic API直叩き（Claude Sonnet）。Vision画像入力のため
+  - frame_evaluator.py — Anthropic API直叩き（Claude Sonnet）。Vision画像入力のため
+  - telop_reader.py — OpenAI API直叩き（GPT-4o Vision）。テロップ読み取り
+  - whisper_transcriber.py — OpenAI API直叩き（Whisper）。音声文字起こし
 - **プロンプトの動的注入**: prompts.py（344行）の構造を理解してから修正。変数名の意味を確認
 - **品質基準の注入**: quality_knowledge_loader.py 経由で `.claude/rules/quality-judgment-guide.md` から読み込む。ハードコードしない
 

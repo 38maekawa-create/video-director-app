@@ -20,6 +20,6 @@
 
 ## ゲスト名の表記
 
-- ゲスト名はナレッジ（MEMBER_MASTER.json — member_master.py経由、Supabase）と一致させる
+- ゲスト名はナレッジ（MEMBER_MASTER.json — member_master.py経由）と一致させる
 - 表記揺れ発見時は KNOWN_CORRECTIONS.md に記録してから修正
 - 名前誤表記は致命的バグ扱い（jp#18: 生成物に人名が含まれる場合は必ずナレッジで確認）

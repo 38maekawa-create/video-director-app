@@ -21,7 +21,7 @@ user-invocable: true
 
 1. ゲスト名 or C番号 or 動画IDから対象を特定
 2. 以下のデータを収集:
-   - ディレクションレポート（`output/reports/` or `.data/`）
+   - ディレクションレポート（`output/` 配下 or `.data/`）
    - 概要欄（description_writer.py の出力 or YouTube公開済み）
    - タイトル案（title_generator.py の出力）
    - ゲスト情報（層分類・コンテンツライン・年収区分）
@@ -40,7 +40,7 @@ user-invocable: true
 - [ ] 設計思想に沿っているか（QUALITY_JUDGMENT_GUIDE セクション3）
 
 ### ディレクションチェック
-- [ ] 層分類が正しいか（セクション1の5段階ルール）
+- [ ] 層分類が正しいか（セクション1の層a/b/c分類ルール）
 - [ ] 演出指示がテンプレ的・抽象的になっていないか（セクション2）
 - [ ] ハイライト選定が品質基準に沿っているか（セクション5）
 

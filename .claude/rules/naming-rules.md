@@ -13,8 +13,8 @@
 
 | 種別 | 出力先 |
 |------|--------|
-| ディレクションレポート | `output/reports/` |
-| トラッキング結果 | `output/tracking/` |
+| ディレクションレポート | `output/` 配下（cycle*_reports/, test_reports/ 等） |
+| トラッキング結果 | `.data/tracking/` |
 | ログ・エラーログ | `.data/` |
 | 生データ | `~/TEKO/knowledge/raw-data/video-direction/` |
 

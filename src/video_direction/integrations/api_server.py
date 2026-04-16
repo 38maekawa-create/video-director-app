@@ -608,7 +608,7 @@ def get_projects_by_category(category: str):
 
 
 @app.post("/api/v1/sync-categories")
-def sync_categories_from_sheet():
+def sync_categories_from_sheet(force_reset_unmatched: bool = False):
     """スプレッドシートのA列「コンテンツ」を基準にDBのプロジェクトカテゴリを一括同期する。
 
     スプシのA列値に基づくカテゴリマッピング:
@@ -616,6 +616,9 @@ def sync_categories_from_sheet():
     - 「オフ会インタビュー」→ teko_member
     - 「不動産対談」→ teko_realestate
     - それ以外 → null（未分類）
+
+    force_reset_unmatched=True: スプシに見つからないプロジェクトのcategoryをNULLへリセットする。
+    デフォルトFalse: スプシ未一致でも既存のcategoryを保持する（データ消失防止）。
     """
     try:
         from .sheets_manager import SheetsManager, _match_guest_name
@@ -712,11 +715,14 @@ def sync_categories_from_sheet():
             )
             updated.append({"id": proj_id, "guest_name": guest_name, "category": matched_category})
         else:
-            # スプシに存在しないプロジェクトはカテゴリをnullにリセット
-            conn.execute(
-                "UPDATE projects SET category = NULL, updated_at = ? WHERE id = ?",
-                (now, proj_id),
-            )
+            if force_reset_unmatched:
+                # 明示フラグがある場合のみNULLにリセット（データ消失防止）
+                logger.warning("sync_categories: スプシ未一致によりcategoryをNULLリセット: id=%s guest=%s", proj_id, guest_name)
+                conn.execute(
+                    "UPDATE projects SET category = NULL, updated_at = ? WHERE id = ?",
+                    (now, proj_id),
+                )
+            # force_reset_unmatched=False (デフォルト) は既存categoryを保持
             skipped.append({"id": proj_id, "guest_name": guest_name, "reason": "not_found_in_sheet"})
 
     conn.commit()
@@ -758,30 +764,26 @@ def upsert_youtube_assets(project_id: str, assets: YouTubeAssetsUpsert):
     now = datetime.now(timezone.utc).isoformat()
     # description_originalが空の場合は既存値を保持する（空文字上書き防止）
     desc_original_value = assets.description_original
-    desc_original_update = "description_original=excluded.description_original"
-    if not desc_original_value or not desc_original_value.strip():
-        # 空文字/Noneの場合: COALESCE で既存値を維持
-        desc_original_update = "description_original=COALESCE(youtube_assets.description_original, excluded.description_original)"
-    # UPSERT
+    # Noneまたは未送信項目はCOALESCEで既存値を維持し、NULL上書きを防ぐ
     conn.execute(
-        f"""INSERT INTO youtube_assets (project_id, thumbnail_design, title_proposals,
+        """INSERT INTO youtube_assets (project_id, thumbnail_design, title_proposals,
            description_original, description_edited, selected_title_index,
            edited_title, last_edited_by, generated_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(project_id) DO UPDATE SET
-             thumbnail_design=excluded.thumbnail_design,
-             title_proposals=excluded.title_proposals,
-             {desc_original_update},
-             description_edited=excluded.description_edited,
-             selected_title_index=excluded.selected_title_index,
-             edited_title=excluded.edited_title,
-             last_edited_by=excluded.last_edited_by,
+             thumbnail_design=COALESCE(excluded.thumbnail_design, youtube_assets.thumbnail_design),
+             title_proposals=COALESCE(excluded.title_proposals, youtube_assets.title_proposals),
+             description_original=COALESCE(excluded.description_original, youtube_assets.description_original),
+             description_edited=COALESCE(excluded.description_edited, youtube_assets.description_edited),
+             selected_title_index=COALESCE(excluded.selected_title_index, youtube_assets.selected_title_index),
+             edited_title=COALESCE(excluded.edited_title, youtube_assets.edited_title),
+             last_edited_by=COALESCE(excluded.last_edited_by, youtube_assets.last_edited_by),
              updated_at=excluded.updated_at""",
         (
             project_id,
             json.dumps(assets.thumbnail_design) if assets.thumbnail_design else None,
             json.dumps(assets.title_proposals) if assets.title_proposals else None,
-            desc_original_value,
+            desc_original_value if desc_original_value and desc_original_value.strip() else None,
             assets.description_edited,
             assets.selected_title_index,
             assets.edited_title,

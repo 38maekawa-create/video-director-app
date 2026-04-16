@@ -1994,8 +1994,10 @@ def run_audio_evaluation(project_id: str, body: AudioEvaluationRequest = AudioEv
 
     # プロジェクト取得
     conn = _get_db()
-    row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
-    conn.close()
+    try:
+        row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+    finally:
+        conn.close()
     if not row:
         raise HTTPException(404, "Project not found")
 
@@ -2408,16 +2410,18 @@ def post_vimeo_review(body: VimeoPostReviewRequest, dry_run: bool = True):
     # 本番投稿時: feedback_idを持つコメントの承認状態をチェック
     if not dry_run:
         conn = _get_db()
-        unapproved_ids = []
-        for comment in comments:
-            if comment.feedback_id and comment.feedback_id.isdigit():
-                fb = conn.execute(
-                    "SELECT id, approval_status FROM feedbacks WHERE id = ?",
-                    (int(comment.feedback_id),)
-                ).fetchone()
-                if fb and fb["approval_status"] not in ("approved", "modified"):
-                    unapproved_ids.append(comment.feedback_id)
-        conn.close()
+        try:
+            unapproved_ids = []
+            for comment in comments:
+                if comment.feedback_id and comment.feedback_id.isdigit():
+                    fb = conn.execute(
+                        "SELECT id, approval_status FROM feedbacks WHERE id = ?",
+                        (int(comment.feedback_id),)
+                    ).fetchone()
+                    if fb and fb["approval_status"] not in ("approved", "modified"):
+                        unapproved_ids.append(comment.feedback_id)
+        finally:
+            conn.close()
         if unapproved_ids:
             raise HTTPException(
                 403,
@@ -2509,28 +2513,28 @@ def get_vimeo_comments(project_id: str):
     import urllib.request
 
     conn = _get_db()
-    proj = conn.execute("SELECT id, edited_video FROM projects WHERE id = ?", (project_id,)).fetchone()
-    if not proj:
+    try:
+        proj = conn.execute("SELECT id, edited_video FROM projects WHERE id = ?", (project_id,)).fetchone()
+        if not proj:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        # 最新バージョンのvimeo_idを取得
+        latest = conn.execute(
+            "SELECT vimeo_id, version_label, version_order FROM video_versions "
+            "WHERE project_id = ? ORDER BY version_order DESC LIMIT 1",
+            (project_id,),
+        ).fetchone()
+
+        vimeo_ids = []
+        if latest and latest["vimeo_id"]:
+            vimeo_ids.append({"vimeo_id": latest["vimeo_id"], "label": latest["version_label"], "order": latest["version_order"]})
+        else:
+            ev = proj["edited_video"] or ""
+            m = re.search(r"vimeo\.com/(\d+)", ev)
+            if m:
+                vimeo_ids.append({"vimeo_id": m.group(1), "label": "最新", "order": 0})
+    finally:
         conn.close()
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    # 最新バージョンのvimeo_idを取得
-    latest = conn.execute(
-        "SELECT vimeo_id, version_label, version_order FROM video_versions "
-        "WHERE project_id = ? ORDER BY version_order DESC LIMIT 1",
-        (project_id,),
-    ).fetchone()
-
-    vimeo_ids = []
-    if latest and latest["vimeo_id"]:
-        vimeo_ids.append({"vimeo_id": latest["vimeo_id"], "label": latest["version_label"], "order": latest["version_order"]})
-    else:
-        ev = proj["edited_video"] or ""
-        m = re.search(r"vimeo\.com/(\d+)", ev)
-        if m:
-            vimeo_ids.append({"vimeo_id": m.group(1), "label": "最新", "order": 0})
-
-    conn.close()
 
     if not vimeo_ids:
         return {"project_id": project_id, "comments": [], "message": "Vimeo動画が未登録です"}
@@ -3038,10 +3042,12 @@ def generate_edit_feedback(project_id: str, body: EditFeedbackRequest):
     ディレクションとの差分を分析してフィードバックを生成する。
     """
     conn = _get_db()
-    project_row = conn.execute(
-        "SELECT * FROM projects WHERE id = ?", (project_id,)
-    ).fetchone()
-    conn.close()
+    try:
+        project_row = conn.execute(
+            "SELECT * FROM projects WHERE id = ?", (project_id,)
+        ).fetchone()
+    finally:
+        conn.close()
 
     if not project_row:
         raise HTTPException(404, "Project not found")
@@ -3146,8 +3152,10 @@ def generate_direction(project_id: str, body: GenerateDirectionRequest = Generat
     """
     # プロジェクト取得
     conn = _get_db()
-    row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
-    conn.close()
+    try:
+        row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+    finally:
+        conn.close()
     if not row:
         raise HTTPException(404, "Project not found")
 
@@ -3311,16 +3319,17 @@ def run_e2e_pipeline(project_id: str, body: E2EPipelineRequest = E2EPipelineRequ
 
     # --- Step 1: プロジェクトとFB一覧取得 ---
     conn = _get_db()
-    project_row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
-    if not project_row:
-        conn.close()
-        raise HTTPException(404, "Project not found")
+    try:
+        project_row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+        if not project_row:
+            raise HTTPException(404, "Project not found")
 
-    fb_rows = conn.execute(
-        "SELECT * FROM feedbacks WHERE project_id = ? ORDER BY created_at DESC",
-        (project_id,)
-    ).fetchall()
-    conn.close()
+        fb_rows = conn.execute(
+            "SELECT * FROM feedbacks WHERE project_id = ? ORDER BY created_at DESC",
+            (project_id,)
+        ).fetchall()
+    finally:
+        conn.close()
 
     project_data = dict(project_row)
     feedbacks = [dict(r) for r in fb_rows]
@@ -3897,60 +3906,59 @@ def list_project_source_videos(project_id: str):
     source_videosテーブルと、既存のprojects.source_video JSONの両方を統合して返す。
     """
     conn = _get_db()
+    try:
+        # プロジェクト存在チェック
+        proj = conn.execute("SELECT id, source_video FROM projects WHERE id = ?", (project_id,)).fetchone()
+        if not proj:
+            raise HTTPException(status_code=404, detail="Project not found")
 
-    # プロジェクト存在チェック
-    proj = conn.execute("SELECT id, source_video FROM projects WHERE id = ?", (project_id,)).fetchone()
-    if not proj:
+        videos = []
+
+        # 1. source_videosテーブルから取得
+        rows = conn.execute(
+            "SELECT * FROM source_videos WHERE project_id = ? ORDER BY created_at DESC",
+            (project_id,),
+        ).fetchall()
+        for row in rows:
+            videos.append({
+                "id": row["id"],
+                "project_id": row["project_id"],
+                "youtube_url": row["youtube_url"],
+                "video_id": row["video_id"],
+                "title": row["title"],
+                "duration": row["duration"],
+                "quality_status": row["quality_status"],
+                "source": row["source"],
+                "knowledge_file": row["knowledge_file"],
+                "created_at": row["created_at"],
+            })
+
+        # 2. projects.source_video JSON（レガシー互換）がテーブルに未登録なら追加表示
+        legacy = proj["source_video"]
+        if legacy:
+            try:
+                data = json.loads(legacy) if isinstance(legacy, str) else legacy
+                if data and data.get("url"):
+                    legacy_url = data["url"]
+                    legacy_vid = _extract_video_id(legacy_url)
+                    # 重複チェック: 既にsource_videosテーブルに同じvideo_idがあればスキップ
+                    if legacy_vid and not any(v["video_id"] == legacy_vid for v in videos):
+                        videos.append({
+                            "id": None,
+                            "project_id": project_id,
+                            "youtube_url": legacy_url,
+                            "video_id": legacy_vid,
+                            "title": None,
+                            "duration": None,
+                            "quality_status": data.get("quality", "pending"),
+                            "source": data.get("source", "ai_dev5"),
+                            "knowledge_file": data.get("knowledge_file"),
+                            "created_at": data.get("linked_at"),
+                        })
+            except (json.JSONDecodeError, TypeError):
+                pass
+    finally:
         conn.close()
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    videos = []
-
-    # 1. source_videosテーブルから取得
-    rows = conn.execute(
-        "SELECT * FROM source_videos WHERE project_id = ? ORDER BY created_at DESC",
-        (project_id,),
-    ).fetchall()
-    for row in rows:
-        videos.append({
-            "id": row["id"],
-            "project_id": row["project_id"],
-            "youtube_url": row["youtube_url"],
-            "video_id": row["video_id"],
-            "title": row["title"],
-            "duration": row["duration"],
-            "quality_status": row["quality_status"],
-            "source": row["source"],
-            "knowledge_file": row["knowledge_file"],
-            "created_at": row["created_at"],
-        })
-
-    # 2. projects.source_video JSON（レガシー互換）がテーブルに未登録なら追加表示
-    legacy = proj["source_video"]
-    if legacy:
-        try:
-            data = json.loads(legacy) if isinstance(legacy, str) else legacy
-            if data and data.get("url"):
-                legacy_url = data["url"]
-                legacy_vid = _extract_video_id(legacy_url)
-                # 重複チェック: 既にsource_videosテーブルに同じvideo_idがあればスキップ
-                if legacy_vid and not any(v["video_id"] == legacy_vid for v in videos):
-                    videos.append({
-                        "id": None,
-                        "project_id": project_id,
-                        "youtube_url": legacy_url,
-                        "video_id": legacy_vid,
-                        "title": None,
-                        "duration": None,
-                        "quality_status": data.get("quality", "pending"),
-                        "source": data.get("source", "ai_dev5"),
-                        "knowledge_file": data.get("knowledge_file"),
-                        "created_at": data.get("linked_at"),
-                    })
-        except (json.JSONDecodeError, TypeError):
-            pass
-
-    conn.close()
     return {
         "project_id": project_id,
         "total": len(videos),
@@ -3962,40 +3970,38 @@ def list_project_source_videos(project_id: str):
 def add_project_source_video(project_id: str, req: SourceVideoCreate):
     """素材動画URLを手動登録する"""
     conn = _get_db()
+    try:
+        # プロジェクト存在チェック
+        proj = conn.execute("SELECT id FROM projects WHERE id = ?", (project_id,)).fetchone()
+        if not proj:
+            raise HTTPException(status_code=404, detail="Project not found")
 
-    # プロジェクト存在チェック
-    proj = conn.execute("SELECT id FROM projects WHERE id = ?", (project_id,)).fetchone()
-    if not proj:
+        video_id = _extract_video_id(req.youtube_url)
+        if not video_id:
+            raise HTTPException(status_code=400, detail="Invalid YouTube URL: could not extract video_id")
+
+        # 重複チェック
+        existing = conn.execute(
+            "SELECT id FROM source_videos WHERE project_id = ? AND video_id = ?",
+            (project_id, video_id),
+        ).fetchone()
+        if existing:
+            raise HTTPException(status_code=409, detail="This video is already registered for this project")
+
+        conn.execute(
+            """INSERT INTO source_videos (project_id, youtube_url, video_id, title, duration, quality_status, source)
+               VALUES (?, ?, ?, ?, ?, ?, 'manual')""",
+            (project_id, req.youtube_url, video_id, req.title, req.duration, req.quality_status),
+        )
+        conn.commit()
+
+        # 登録したレコードを返す
+        row = conn.execute(
+            "SELECT * FROM source_videos WHERE project_id = ? AND video_id = ?",
+            (project_id, video_id),
+        ).fetchone()
+    finally:
         conn.close()
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    video_id = _extract_video_id(req.youtube_url)
-    if not video_id:
-        conn.close()
-        raise HTTPException(status_code=400, detail="Invalid YouTube URL: could not extract video_id")
-
-    # 重複チェック
-    existing = conn.execute(
-        "SELECT id FROM source_videos WHERE project_id = ? AND video_id = ?",
-        (project_id, video_id),
-    ).fetchone()
-    if existing:
-        conn.close()
-        raise HTTPException(status_code=409, detail="This video is already registered for this project")
-
-    conn.execute(
-        """INSERT INTO source_videos (project_id, youtube_url, video_id, title, duration, quality_status, source)
-           VALUES (?, ?, ?, ?, ?, ?, 'manual')""",
-        (project_id, req.youtube_url, video_id, req.title, req.duration, req.quality_status),
-    )
-    conn.commit()
-
-    # 登録したレコードを返す
-    row = conn.execute(
-        "SELECT * FROM source_videos WHERE project_id = ? AND video_id = ?",
-        (project_id, video_id),
-    ).fetchone()
-    conn.close()
 
     # 自動レポート生成をバックグラウンドで実行
     try:
@@ -4095,145 +4101,144 @@ def source_videos_status():
 def get_before_after(project_id: str):
     """プロジェクトの全動画バージョン一覧（素材 vs 編集後 vs FB後再編集版）を返す。"""
     conn = _get_db()
+    try:
+        proj = conn.execute(
+            "SELECT id, guest_name, title, source_video, edited_video FROM projects WHERE id = ?",
+            (project_id,),
+        ).fetchone()
+        if not proj:
+            raise HTTPException(status_code=404, detail="Project not found")
 
-    proj = conn.execute(
-        "SELECT id, guest_name, title, source_video, edited_video FROM projects WHERE id = ?",
-        (project_id,),
-    ).fetchone()
-    if not proj:
-        conn.close()
-        raise HTTPException(status_code=404, detail="Project not found")
+        # 素材動画（YouTube）の収集
+        source_videos = []
+        rows = conn.execute(
+            "SELECT * FROM source_videos WHERE project_id = ? ORDER BY created_at DESC",
+            (project_id,),
+        ).fetchall()
+        for row in rows:
+            source_videos.append({
+                "youtube_url": row["youtube_url"],
+                "video_id": row["video_id"],
+                "title": row["title"],
+                "duration": row["duration"],
+                "embed_url": f"https://www.youtube.com/embed/{row['video_id']}?playsinline=1&rel=0",
+            })
 
-    # 素材動画（YouTube）の収集
-    source_videos = []
-    rows = conn.execute(
-        "SELECT * FROM source_videos WHERE project_id = ? ORDER BY created_at DESC",
-        (project_id,),
-    ).fetchall()
-    for row in rows:
-        source_videos.append({
-            "youtube_url": row["youtube_url"],
-            "video_id": row["video_id"],
-            "title": row["title"],
-            "duration": row["duration"],
-            "embed_url": f"https://www.youtube.com/embed/{row['video_id']}?playsinline=1&rel=0",
-        })
-
-    # レガシー source_video JSON
-    legacy = proj["source_video"]
-    if legacy:
-        try:
-            data = json.loads(legacy) if isinstance(legacy, str) else legacy
-            if data and data.get("url"):
-                legacy_vid = _extract_video_id(data["url"])
-                if legacy_vid and not any(v["video_id"] == legacy_vid for v in source_videos):
-                    source_videos.append({
-                        "youtube_url": data["url"],
-                        "video_id": legacy_vid,
-                        "title": None,
-                        "duration": None,
-                        "embed_url": f"https://www.youtube.com/embed/{legacy_vid}?playsinline=1&rel=0",
-                    })
-        except (json.JSONDecodeError, TypeError):
-            pass
-
-    # --- video_versionsテーブルからバージョン情報を取得 ---
-    versions = conn.execute(
-        "SELECT * FROM video_versions WHERE project_id = ? ORDER BY version_order ASC",
-        (project_id,),
-    ).fetchall()
-
-    def _build_vimeo_entry(row):
-        """video_versionsの行からVimeo情報を構築"""
-        vimeo_url = row["vimeo_url"] or ""
-        vimeo_id = row["vimeo_id"] or ""
-        privacy_hash = row["privacy_hash"] or ""
-        embed_url = None
-        if vimeo_id:
-            hash_param = f"?h={privacy_hash}" if privacy_hash else ""
-            embed_url = f"https://player.vimeo.com/video/{vimeo_id}{hash_param}"
-        return {
-            "vimeo_url": vimeo_url,
-            "vimeo_id": vimeo_id,
-            "embed_url": embed_url,
-            "version_label": row["version_label"],
-            "version_order": row["version_order"],
-            "editor_name": row["editor_name"],
-        }
-
-    # 編集後動画 = 初稿（version_order=0）
-    edited_video = None
-    # FB後再編集版 = 最新のFB修正版（version_order最大、ただし初稿以外）
-    fb_revised_video = None
-    # 全バージョン一覧
-    all_versions = []
-
-    if versions:
-        for v in versions:
-            all_versions.append(_build_vimeo_entry(v))
-
-        # 初稿を探す（version_order=0）
-        shoko_versions = [v for v in versions if v["version_order"] == 0]
-        if shoko_versions:
-            edited_video = _build_vimeo_entry(shoko_versions[0])
-
-        # FB修正版を探す（version_order > 0 かつ 完成(100)以外、最新=最大order）
-        fb_versions = [v for v in versions if 0 < v["version_order"] < 100]
-        if fb_versions:
-            latest_fb = max(fb_versions, key=lambda v: v["version_order"])
-            fb_revised_video = _build_vimeo_entry(latest_fb)
-    else:
-        # video_versionsにデータがない場合、レガシーのprojects.edited_videoから取得
-        ev = proj["edited_video"]
-        if ev:
-            vimeo_url = None
+        # レガシー source_video JSON
+        legacy = proj["source_video"]
+        if legacy:
             try:
-                ev_data = json.loads(ev) if isinstance(ev, str) else ev
-                if ev_data and isinstance(ev_data, dict) and ev_data.get("url"):
-                    vimeo_url = ev_data["url"]
+                data = json.loads(legacy) if isinstance(legacy, str) else legacy
+                if data and data.get("url"):
+                    legacy_vid = _extract_video_id(data["url"])
+                    if legacy_vid and not any(v["video_id"] == legacy_vid for v in source_videos):
+                        source_videos.append({
+                            "youtube_url": data["url"],
+                            "video_id": legacy_vid,
+                            "title": None,
+                            "duration": None,
+                            "embed_url": f"https://www.youtube.com/embed/{legacy_vid}?playsinline=1&rel=0",
+                        })
             except (json.JSONDecodeError, TypeError):
-                if isinstance(ev, str) and "vimeo.com" in ev:
-                    vimeo_url = ev.strip()
+                pass
 
-            if vimeo_url:
-                vimeo_id = ""
-                privacy_hash = ""
-                m = re.search(r"vimeo\.com/(\d+)", vimeo_url)
-                if m:
-                    vimeo_id = m.group(1)
-                m_hash = re.search(r"vimeo\.com/\d+/([a-f0-9]+)", vimeo_url)
-                if m_hash:
-                    privacy_hash = m_hash.group(1)
-                embed_url = None
-                if vimeo_id:
-                    hash_param = f"?h={privacy_hash}" if privacy_hash else ""
-                    embed_url = f"https://player.vimeo.com/video/{vimeo_id}{hash_param}"
-                edited_video = {
-                    "vimeo_url": vimeo_url,
-                    "vimeo_id": vimeo_id,
-                    "embed_url": embed_url,
-                    "version_label": "不明",
-                    "version_order": -1,
-                    "editor_name": None,
-                }
+        # --- video_versionsテーブルからバージョン情報を取得 ---
+        versions = conn.execute(
+            "SELECT * FROM video_versions WHERE project_id = ? ORDER BY version_order ASC",
+            (project_id,),
+        ).fetchall()
 
-    # FBタイムスタンプ一覧（diff_highlights）
-    fb_rows = conn.execute(
-        "SELECT timestamp_mark, category, converted_text, priority FROM feedbacks "
-        "WHERE project_id = ? AND timestamp_mark IS NOT NULL AND timestamp_mark != '' "
-        "ORDER BY timestamp_mark",
-        (project_id,),
-    ).fetchall()
-    diff_highlights = []
-    for fb in fb_rows:
-        diff_highlights.append({
-            "timestamp": fb["timestamp_mark"],
-            "category": fb["category"],
-            "text": fb["converted_text"] or "",
-            "priority": fb["priority"],
-        })
+        def _build_vimeo_entry(row):
+            """video_versionsの行からVimeo情報を構築"""
+            vimeo_url = row["vimeo_url"] or ""
+            vimeo_id = row["vimeo_id"] or ""
+            privacy_hash = row["privacy_hash"] or ""
+            embed_url = None
+            if vimeo_id:
+                hash_param = f"?h={privacy_hash}" if privacy_hash else ""
+                embed_url = f"https://player.vimeo.com/video/{vimeo_id}{hash_param}"
+            return {
+                "vimeo_url": vimeo_url,
+                "vimeo_id": vimeo_id,
+                "embed_url": embed_url,
+                "version_label": row["version_label"],
+                "version_order": row["version_order"],
+                "editor_name": row["editor_name"],
+            }
 
-    conn.close()
+        # 編集後動画 = 初稿（version_order=0）
+        edited_video = None
+        # FB後再編集版 = 最新のFB修正版（version_order最大、ただし初稿以外）
+        fb_revised_video = None
+        # 全バージョン一覧
+        all_versions = []
+
+        if versions:
+            for v in versions:
+                all_versions.append(_build_vimeo_entry(v))
+
+            # 初稿を探す（version_order=0）
+            shoko_versions = [v for v in versions if v["version_order"] == 0]
+            if shoko_versions:
+                edited_video = _build_vimeo_entry(shoko_versions[0])
+
+            # FB修正版を探す（version_order > 0 かつ 完成(100)以外、最新=最大order）
+            fb_versions = [v for v in versions if 0 < v["version_order"] < 100]
+            if fb_versions:
+                latest_fb = max(fb_versions, key=lambda v: v["version_order"])
+                fb_revised_video = _build_vimeo_entry(latest_fb)
+        else:
+            # video_versionsにデータがない場合、レガシーのprojects.edited_videoから取得
+            ev = proj["edited_video"]
+            if ev:
+                vimeo_url = None
+                try:
+                    ev_data = json.loads(ev) if isinstance(ev, str) else ev
+                    if ev_data and isinstance(ev_data, dict) and ev_data.get("url"):
+                        vimeo_url = ev_data["url"]
+                except (json.JSONDecodeError, TypeError):
+                    if isinstance(ev, str) and "vimeo.com" in ev:
+                        vimeo_url = ev.strip()
+
+                if vimeo_url:
+                    vimeo_id = ""
+                    privacy_hash = ""
+                    m = re.search(r"vimeo\.com/(\d+)", vimeo_url)
+                    if m:
+                        vimeo_id = m.group(1)
+                    m_hash = re.search(r"vimeo\.com/\d+/([a-f0-9]+)", vimeo_url)
+                    if m_hash:
+                        privacy_hash = m_hash.group(1)
+                    embed_url = None
+                    if vimeo_id:
+                        hash_param = f"?h={privacy_hash}" if privacy_hash else ""
+                        embed_url = f"https://player.vimeo.com/video/{vimeo_id}{hash_param}"
+                    edited_video = {
+                        "vimeo_url": vimeo_url,
+                        "vimeo_id": vimeo_id,
+                        "embed_url": embed_url,
+                        "version_label": "不明",
+                        "version_order": -1,
+                        "editor_name": None,
+                    }
+
+        # FBタイムスタンプ一覧（diff_highlights）
+        fb_rows = conn.execute(
+            "SELECT timestamp_mark, category, converted_text, priority FROM feedbacks "
+            "WHERE project_id = ? AND timestamp_mark IS NOT NULL AND timestamp_mark != '' "
+            "ORDER BY timestamp_mark",
+            (project_id,),
+        ).fetchall()
+        diff_highlights = []
+        for fb in fb_rows:
+            diff_highlights.append({
+                "timestamp": fb["timestamp_mark"],
+                "category": fb["category"],
+                "text": fb["converted_text"] or "",
+                "priority": fb["priority"],
+            })
+    finally:
+        conn.close()
 
     return {
         "project_id": project_id,

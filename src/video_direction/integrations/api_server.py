@@ -972,11 +972,16 @@ def approve_feedback(feedback_id: int, body: dict = None):
             detail="FB投稿者本人のみが承認できます"
         )
 
-    conn.execute(
+    cur = conn.execute(
         "UPDATE feedbacks SET approval_status = 'approved', "
-        "approved_at = datetime('now'), approved_by = ? WHERE id = ?",
+        "approved_at = datetime('now'), approved_by = ? "
+        "WHERE id = ? AND COALESCE(approval_status, 'pending') = 'pending'",
         (approved_by, feedback_id),
     )
+    if cur.rowcount == 0:
+        conn.rollback()
+        conn.close()
+        raise HTTPException(status_code=409, detail="このFBは既に承認・却下済みです")
     conn.commit()
     conn.close()
     return {"status": "approved", "feedback_id": feedback_id, "approved_by": approved_by}
@@ -1006,11 +1011,16 @@ def modify_feedback(feedback_id: int, body: dict):
             detail="FB投稿者本人のみが修正承認できます"
         )
 
-    conn.execute(
+    cur = conn.execute(
         "UPDATE feedbacks SET approval_status = 'modified', "
-        "approved_at = datetime('now'), modified_text = ?, approved_by = ? WHERE id = ?",
+        "approved_at = datetime('now'), modified_text = ?, approved_by = ? "
+        "WHERE id = ? AND COALESCE(approval_status, 'pending') = 'pending'",
         (modified_text, approved_by, feedback_id),
     )
+    if cur.rowcount == 0:
+        conn.rollback()
+        conn.close()
+        raise HTTPException(status_code=409, detail="このFBは既に承認・却下済みです")
     conn.commit()
     conn.close()
     return {
@@ -1041,11 +1051,16 @@ def reject_feedback(feedback_id: int, body: dict = None):
             detail="FB投稿者本人のみが却下できます"
         )
 
-    conn.execute(
+    cur = conn.execute(
         "UPDATE feedbacks SET approval_status = 'rejected', "
-        "approved_at = datetime('now'), approved_by = ? WHERE id = ?",
+        "approved_at = datetime('now'), approved_by = ? "
+        "WHERE id = ? AND COALESCE(approval_status, 'pending') = 'pending'",
         (approved_by, feedback_id),
     )
+    if cur.rowcount == 0:
+        conn.rollback()
+        conn.close()
+        raise HTTPException(status_code=409, detail="このFBは既に承認・却下済みです")
     conn.commit()
     conn.close()
     return {"status": "rejected", "feedback_id": feedback_id, "approved_by": approved_by}
@@ -1436,17 +1451,21 @@ def analyze_tracking_video(video_id: str, use_llm: bool = True, auto_learn: bool
 
     # 分析実行（字幕・メタデータを渡す）
     tracker.update_analysis(video_id, {}, "analyzing")
-    result = analyzer.analyze(
-        video_url=video.url,
-        transcript=transcript,
-        title=video.title,
-        channel_name=video.channel_name,
-        duration_seconds=video.duration_seconds,
-        use_llm=use_llm,
-    )
-    from dataclasses import asdict
-    result_dict = asdict(result)
-    tracker.update_analysis(video_id, result_dict, "completed")
+    try:
+        result = analyzer.analyze(
+            video_url=video.url,
+            transcript=transcript,
+            title=video.title,
+            channel_name=video.channel_name,
+            duration_seconds=video.duration_seconds,
+            use_llm=use_llm,
+        )
+        from dataclasses import asdict
+        result_dict = asdict(result)
+        tracker.update_analysis(video_id, result_dict, "completed")
+    except Exception as e:
+        tracker.update_analysis(video_id, {"error": str(e)}, "error")
+        raise HTTPException(500, f"分析実行エラー: {str(e)[:200]}")
 
     # 自動学習: 分析結果をVideoLearnerに投入
     learned_patterns = []
@@ -1606,8 +1625,17 @@ def get_frame_evaluation(project_id: str):
     # キャッシュされた評価結果を読み込む
     cache_path = Path.home() / "AI開発10" / ".data" / "frame_evaluations" / f"{project_id}.json"
     if cache_path.exists():
-        data = json.loads(cache_path.read_text())
-        return data
+        try:
+            data = json.loads(cache_path.read_text())
+            return data
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning("フレーム評価キャッシュ読み込みエラー: project_id=%s error=%s", project_id, e)
+            return {
+                "project_id": project_id,
+                "status": "corrupt_cache",
+                "message": "キャッシュが破損しています。POSTで再評価を実行してください。",
+                "evaluations": [],
+            }
 
     return {
         "project_id": project_id,
@@ -1686,11 +1714,14 @@ def run_frame_evaluation(project_id: str, body: FrameEvaluationRequest = FrameEv
         "evaluations": result_dict.get("evaluations", []),
     }
 
-    # 結果をキャッシュに保存
+    # 結果をキャッシュに保存（tmpファイル経由で原子的書き込み）
     cache_dir = Path.home() / "AI開発10" / ".data" / "frame_evaluations"
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_path = cache_dir / f"{project_id}.json"
-    cache_path.write_text(json.dumps(response, ensure_ascii=False, indent=2))
+    cache_tmp = cache_dir / f"{project_id}.json.tmp"
+    cache_tmp.write_text(json.dumps(response, ensure_ascii=False, indent=2))
+    import os as _os
+    _os.replace(str(cache_tmp), str(cache_path))
 
     return response
 
@@ -1729,7 +1760,15 @@ def get_telop_check(project_id: str):
     # キャッシュされた結果を読み込む
     cache_path = Path.home() / "AI開発10" / ".data" / "telop_checks" / f"{project_id}.json"
     if cache_path.exists():
-        return json.loads(cache_path.read_text())
+        try:
+            return json.loads(cache_path.read_text())
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning("テロップチェックキャッシュ読み込みエラー: project_id=%s error=%s", project_id, e)
+            return {
+                "project_id": project_id,
+                "status": "corrupt_cache",
+                "message": "キャッシュが破損しています。POSTで再実行してください。",
+            }
 
     return {
         "project_id": project_id,
@@ -1832,11 +1871,14 @@ def run_telop_check(project_id: str, body: TelopCheckRequest = TelopCheckRequest
             "issues": text_dict["issues"],
         }
 
-    # 結果をキャッシュに保存
+    # 結果をキャッシュに保存（tmpファイル経由で原子的書き込み）
     cache_dir = Path.home() / "AI開発10" / ".data" / "telop_checks"
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_path = cache_dir / f"{project_id}.json"
-    cache_path.write_text(json.dumps(response, ensure_ascii=False, indent=2))
+    cache_tmp = cache_dir / f"{project_id}.json.tmp"
+    cache_tmp.write_text(json.dumps(response, ensure_ascii=False, indent=2))
+    import os as _os
+    _os.replace(str(cache_tmp), str(cache_path))
 
     return response
 
@@ -1876,8 +1918,17 @@ def get_audio_evaluation(project_id: str):
     # キャッシュされた評価結果を読み込む
     cache_path = Path.home() / "AI開発10" / ".data" / "audio_evaluations" / f"{project_id}.json"
     if cache_path.exists():
-        data = json.loads(cache_path.read_text())
-        return data
+        try:
+            data = json.loads(cache_path.read_text())
+            return data
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning("音声評価キャッシュ読み込みエラー: project_id=%s error=%s", project_id, e)
+            return {
+                "project_id": project_id,
+                "status": "corrupt_cache",
+                "message": "キャッシュが破損しています。POSTで再評価を実行してください。",
+                "evaluation": {},
+            }
 
     return {
         "project_id": project_id,
@@ -1977,11 +2028,14 @@ def run_audio_evaluation(project_id: str, body: AudioEvaluationRequest = AudioEv
         "warning_count": result_dict.get("warning_count", 0),
     }
 
-    # 結果をキャッシュに保存
+    # 結果をキャッシュに保存（tmpファイル経由で原子的書き込み）
     cache_dir = Path.home() / "AI開発10" / ".data" / "audio_evaluations"
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_path = cache_dir / f"{project_id}.json"
-    cache_path.write_text(json.dumps(response, ensure_ascii=False, indent=2))
+    cache_tmp = cache_dir / f"{project_id}.json.tmp"
+    cache_tmp.write_text(json.dumps(response, ensure_ascii=False, indent=2))
+    import os as _os
+    _os.replace(str(cache_tmp), str(cache_path))
 
     return response
 

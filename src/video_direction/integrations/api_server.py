@@ -519,24 +519,29 @@ def create_project(project: ProjectCreate):
 def update_project(project_id: str, project: ProjectCreate):
     conn = _get_db()
     now = datetime.now(timezone.utc).isoformat()
-    conn.execute(
-        """UPDATE projects SET guest_name=?, title=?, status=?, shoot_date=?,
-           guest_age=?, guest_occupation=?, quality_score=?, direction_report_url=?,
-           source_video=?, edited_video=?, feedback_summary=?, knowledge=?, category=?, updated_at=?
-           WHERE id=?""",
-        (
-            project.guest_name, project.title, project.status, project.shoot_date,
-            project.guest_age, project.guest_occupation, project.quality_score,
-            project.direction_report_url,
-            json.dumps(project.source_video) if project.source_video else None,
-            json.dumps(project.edited_video) if project.edited_video else None,
-            json.dumps(project.feedback_summary) if project.feedback_summary else None,
-            json.dumps(project.knowledge) if project.knowledge else None,
-            project.category, now, project_id,
+    try:
+        cur = conn.execute(
+            """UPDATE projects SET guest_name=?, title=?, status=?, shoot_date=?,
+               guest_age=?, guest_occupation=?, quality_score=?, direction_report_url=?,
+               source_video=?, edited_video=?, feedback_summary=?, knowledge=?, category=?, updated_at=?
+               WHERE id=?""",
+            (
+                project.guest_name, project.title, project.status, project.shoot_date,
+                project.guest_age, project.guest_occupation, project.quality_score,
+                project.direction_report_url,
+                json.dumps(project.source_video) if project.source_video else None,
+                json.dumps(project.edited_video) if project.edited_video else None,
+                json.dumps(project.feedback_summary) if project.feedback_summary else None,
+                json.dumps(project.knowledge) if project.knowledge else None,
+                project.category, now, project_id,
+            )
         )
-    )
-    conn.commit()
-    conn.close()
+        if cur.rowcount == 0:
+            conn.rollback()
+            raise HTTPException(404, "Project not found")
+        conn.commit()
+    finally:
+        conn.close()
     return {"status": "updated", "id": project_id}
 
 
@@ -793,14 +798,19 @@ def upsert_youtube_assets(project_id: str, assets: YouTubeAssetsUpsert):
 def update_description(project_id: str, body: DescriptionUpdate):
     conn = _get_db()
     now = datetime.now(timezone.utc).isoformat()
-    conn.execute(
-        """UPDATE youtube_assets SET description_edited=?, description_finalized_by=?,
-           description_finalized_at=?, last_edited_by=?, updated_at=?
-           WHERE project_id=?""",
-        (body.edited, body.by, now, body.by, now, project_id)
-    )
-    conn.commit()
-    conn.close()
+    try:
+        cur = conn.execute(
+            """UPDATE youtube_assets SET description_edited=?, description_finalized_by=?,
+               description_finalized_at=?, last_edited_by=?, updated_at=?
+               WHERE project_id=?""",
+            (body.edited, body.by, now, body.by, now, project_id)
+        )
+        if cur.rowcount == 0:
+            conn.rollback()
+            raise HTTPException(404, "YouTube assets not found for project")
+        conn.commit()
+    finally:
+        conn.close()
     return {"status": "updated"}
 
 

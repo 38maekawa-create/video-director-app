@@ -14,6 +14,7 @@ import os
 import re
 import sqlite3
 import unicodedata
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -391,8 +392,24 @@ def startup():
 
 
 def repair_known_shoot_dates():
-    """既知の誤投入データを起動時に補正する。"""
+    """既知の誤投入データを起動時に補正する。既補正済みの場合はスキップ（ログノイズ防止）。"""
     conn = _get_db()
+    # まず補正対象が残っているか確認（毎回updated_atを更新するノイズを防ぐ）
+    remaining = conn.execute(
+        """SELECT COUNT(*) FROM projects
+           WHERE shoot_date = ?
+             AND (title LIKE ? OR guest_name IN (?, ?, ?, ?, ?, ?, ?, ?))""",
+        (
+            "2026/01/01",
+            "%2月28日 大阪%",
+            "コテさん", "kosさん", "メンイチさん", "さといも・トーマスさん",
+            "ハオさん", "けーさん", "さくらさん", "ゆりかさん",
+        ),
+    ).fetchone()[0]
+    if remaining == 0:
+        conn.close()
+        return  # 既補正済み: スキップ
+
     # 初期シードデータ（開発用）: 2026/02/28 大阪撮影のゲスト名ハードコード
     conn.execute(
         """UPDATE projects
@@ -404,18 +421,12 @@ def repair_known_shoot_dates():
             datetime.now(timezone.utc).isoformat(),
             "2026/01/01",
             "%2月28日 大阪%",
-            # 初期シードデータ（開発用）: 2026/02/28 大阪撮影の参加ゲスト
-            "コテさん",
-            "kosさん",
-            "メンイチさん",
-            "さといも・トーマスさん",
-            "ハオさん",
-            "けーさん",
-            "さくらさん",
-            "ゆりかさん",
+            "コテさん", "kosさん", "メンイチさん", "さといも・トーマスさん",
+            "ハオさん", "けーさん", "さくらさん", "ゆりかさん",
         ),
     )
     conn.commit()
+    logger.info("repair_known_shoot_dates: %d件を補正しました", remaining)
     conn.close()
 
 
@@ -1718,10 +1729,9 @@ def run_frame_evaluation(project_id: str, body: FrameEvaluationRequest = FrameEv
     cache_dir = Path.home() / "AI開発10" / ".data" / "frame_evaluations"
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_path = cache_dir / f"{project_id}.json"
-    cache_tmp = cache_dir / f"{project_id}.json.tmp"
+    cache_tmp = cache_dir / f"{project_id}.json.{uuid.uuid4().hex}.tmp"
     cache_tmp.write_text(json.dumps(response, ensure_ascii=False, indent=2))
-    import os as _os
-    _os.replace(str(cache_tmp), str(cache_path))
+    os.replace(str(cache_tmp), str(cache_path))
 
     return response
 
@@ -1875,10 +1885,9 @@ def run_telop_check(project_id: str, body: TelopCheckRequest = TelopCheckRequest
     cache_dir = Path.home() / "AI開発10" / ".data" / "telop_checks"
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_path = cache_dir / f"{project_id}.json"
-    cache_tmp = cache_dir / f"{project_id}.json.tmp"
+    cache_tmp = cache_dir / f"{project_id}.json.{uuid.uuid4().hex}.tmp"
     cache_tmp.write_text(json.dumps(response, ensure_ascii=False, indent=2))
-    import os as _os
-    _os.replace(str(cache_tmp), str(cache_path))
+    os.replace(str(cache_tmp), str(cache_path))
 
     return response
 
@@ -2032,10 +2041,9 @@ def run_audio_evaluation(project_id: str, body: AudioEvaluationRequest = AudioEv
     cache_dir = Path.home() / "AI開発10" / ".data" / "audio_evaluations"
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_path = cache_dir / f"{project_id}.json"
-    cache_tmp = cache_dir / f"{project_id}.json.tmp"
+    cache_tmp = cache_dir / f"{project_id}.json.{uuid.uuid4().hex}.tmp"
     cache_tmp.write_text(json.dumps(response, ensure_ascii=False, indent=2))
-    import os as _os
-    _os.replace(str(cache_tmp), str(cache_path))
+    os.replace(str(cache_tmp), str(cache_path))
 
     return response
 
@@ -4978,8 +4986,9 @@ def readyz():
         conn.execute("SELECT 1").fetchone()
         conn.close()
         return {"status": "ok"}
-    except Exception:
-        logger.exception("readyz: DB疎通失敗")
+    except Exception as e:
+        # readiness probeは高頻度で呼ばれるためexceptionログではなくwarningに留める（ログ肥大化防止）
+        logger.warning("readyz: DB疎通失敗: %s", e)
         raise HTTPException(status_code=503, detail="Database not ready")
 
 

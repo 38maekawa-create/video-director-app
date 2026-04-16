@@ -818,14 +818,19 @@ def update_description(project_id: str, body: DescriptionUpdate):
 def select_title(project_id: str, body: TitleSelect):
     conn = _get_db()
     now = datetime.now(timezone.utc).isoformat()
-    conn.execute(
-        """UPDATE youtube_assets SET selected_title_index=?, edited_title=?,
-           last_edited_by=?, updated_at=?
-           WHERE project_id=?""",
-        (body.index, body.edited_title, body.by, now, project_id)
-    )
-    conn.commit()
-    conn.close()
+    try:
+        cur = conn.execute(
+            """UPDATE youtube_assets SET selected_title_index=?, edited_title=?,
+               last_edited_by=?, updated_at=?
+               WHERE project_id=?""",
+            (body.index, body.edited_title, body.by, now, project_id)
+        )
+        if cur.rowcount == 0:
+            conn.rollback()
+            raise HTTPException(404, "YouTube assets not found for project")
+        conn.commit()
+    finally:
+        conn.close()
     return {"status": "updated"}
 
 
@@ -4889,10 +4894,12 @@ def list_all_qc_results():
 @app.get("/api/health")
 def health():
     conn = _get_db()
-    project_count = conn.execute("SELECT COUNT(*) FROM projects").fetchone()[0]
-    assets_count = conn.execute("SELECT COUNT(*) FROM youtube_assets").fetchone()[0]
-    feedback_count = conn.execute("SELECT COUNT(*) FROM feedbacks").fetchone()[0]
-    conn.close()
+    try:
+        project_count = conn.execute("SELECT COUNT(*) FROM projects").fetchone()[0]
+        assets_count = conn.execute("SELECT COUNT(*) FROM youtube_assets").fetchone()[0]
+        feedback_count = conn.execute("SELECT COUNT(*) FROM feedbacks").fetchone()[0]
+    finally:
+        conn.close()
     return {
         "status": "ok",
         "projects": project_count,

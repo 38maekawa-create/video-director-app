@@ -998,8 +998,12 @@ def _sample_frames_from_video(
         logger.warning(f"動画ファイルが見つかりません: {video_path}")
         return []
 
+    if num_samples <= 0:
+        return []
+
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
+        cap.release()
         return []
 
     try:

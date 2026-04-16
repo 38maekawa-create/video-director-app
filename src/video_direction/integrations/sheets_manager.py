@@ -25,27 +25,31 @@ def _load_member_alias_map() -> dict[str, str]:
     if _MEMBER_ALIAS_MAP is not None:
         return _MEMBER_ALIAS_MAP
 
-    _MEMBER_ALIAS_MAP = {}
     master_path = Path.home() / "TEKO" / "knowledge" / "people" / "MEMBER_MASTER.json"
     if not master_path.exists():
+        _MEMBER_ALIAS_MAP = {}
         return _MEMBER_ALIAS_MAP
 
     try:
         data = json.loads(master_path.read_text(encoding="utf-8"))
+        built: dict[str, str] = {}
         for m in data.get("members", []):
             canonical = m.get("canonical_name", "")
             if not canonical:
                 continue
             # canonical_name自身
-            _MEMBER_ALIAS_MAP[_normalize_name(canonical)] = canonical
+            built[_normalize_name(canonical)] = canonical
             # aliases
             for alias in m.get("aliases", []):
-                _MEMBER_ALIAS_MAP[_normalize_name(alias)] = canonical
+                built[_normalize_name(alias)] = canonical
             # transcription_errors（文字起こし誤変換）
             for te in m.get("transcription_errors", []):
-                _MEMBER_ALIAS_MAP[_normalize_name(te)] = canonical
+                built[_normalize_name(te)] = canonical
+        # パース成功時のみグローバルにキャッシュ
+        _MEMBER_ALIAS_MAP = built
     except Exception:
-        pass
+        # パース失敗時はキャッシュしない（空マップが固定化されるのを防ぐ）
+        return {}
 
     return _MEMBER_ALIAS_MAP
 
@@ -67,20 +71,24 @@ def _load_member_default_category_map() -> dict[str, str]:
     if _MEMBER_DEFAULT_CATEGORY_MAP is not None:
         return _MEMBER_DEFAULT_CATEGORY_MAP
 
-    _MEMBER_DEFAULT_CATEGORY_MAP = {}
     master_path = Path.home() / "TEKO" / "knowledge" / "people" / "MEMBER_MASTER.json"
     if not master_path.exists():
+        _MEMBER_DEFAULT_CATEGORY_MAP = {}
         return _MEMBER_DEFAULT_CATEGORY_MAP
 
     try:
         data = json.loads(master_path.read_text(encoding="utf-8"))
+        built: dict[str, str] = {}
         for m in data.get("members", []):
             canonical = m.get("canonical_name", "")
             default_cat = m.get("default_category")
             if canonical and default_cat:
-                _MEMBER_DEFAULT_CATEGORY_MAP[canonical] = default_cat
+                built[canonical] = default_cat
+        # パース成功時のみグローバルにキャッシュ
+        _MEMBER_DEFAULT_CATEGORY_MAP = built
     except Exception:
-        pass
+        # パース失敗時はキャッシュしない（空マップが固定化されるのを防ぐ）
+        return {}
 
     return _MEMBER_DEFAULT_CATEGORY_MAP
 

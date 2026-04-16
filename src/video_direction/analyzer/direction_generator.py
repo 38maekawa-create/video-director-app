@@ -368,8 +368,12 @@ def _apply_learned_rules(
     if applied_rules:
         try:
             feedback_learner._save()
-        except Exception:
-            pass
+        except Exception as e:
+            # applied_count は既にインメモリで更新済み。永続化失敗はログに残す。
+            import logging as _logging
+            _logging.getLogger(__name__).warning(
+                "FeedbackLearner._save() 失敗: applied_count の永続化がスキップされました: %s", e
+            )
 
     return entries, applied_rules
 

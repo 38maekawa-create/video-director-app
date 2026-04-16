@@ -73,8 +73,10 @@ class SourceVideoLinker:
 
     def _get_db(self) -> sqlite3.Connection:
         """DB接続を取得"""
-        conn = sqlite3.connect(str(self.db_path))
+        conn = sqlite3.connect(str(self.db_path), timeout=30)
         conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA busy_timeout=30000")
+        conn.execute("PRAGMA journal_mode=WAL")
         return conn
 
     def _get_projects(self) -> list[dict]:
@@ -445,10 +447,18 @@ class SourceVideoLinker:
                         "knowledge_file": Path(candidate.knowledge_file).name if candidate.knowledge_file else "",
                         "linked_at": datetime.utcnow().isoformat(),
                     })
-                    conn.execute(
-                        "UPDATE projects SET source_video = ?, updated_at = datetime('now') WHERE id = ?",
+                    # source_video が未設定の行のみ更新（TOCTOU: 既リンク済みを上書きしない）
+                    cur = conn.execute(
+                        "UPDATE projects SET source_video = ?, updated_at = datetime('now') "
+                        "WHERE id = ? AND (source_video IS NULL OR source_video = '')",
                         (source_video_json, candidate.project_id),
                     )
+                    if cur.rowcount == 0:
+                        logger.info(
+                            "リンクスキップ（既にリンク済み）: project=%s",
+                            candidate.project_id,
+                        )
+                        continue
                     linked_final.append(candidate)
                     logger.info(
                         "リンク成功: project=%s, url=%s",

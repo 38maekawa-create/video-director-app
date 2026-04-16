@@ -202,8 +202,8 @@ def _parse_description_response(raw: str) -> VideoDescription:
         pass
 
     # 戦略2: "full_text"の値を直接抽出（JSONパース失敗時）
-    # "full_text": "..." の中身を最後の閉じ"} まで取得
-    ft_match = re.search(r'"full_text"\s*:\s*"([\s\S]*)"', json_str)
+    # 非貪欲マッチ: エスケープされた引用符(\")を含む値全体を正確に取得
+    ft_match = re.search(r'"full_text"\s*:\s*"((?:[^"\\]|\\[\s\S])*)"', json_str)
     if ft_match:
         extracted = ft_match.group(1)
         # エスケープされた改行を実際の改行に変換

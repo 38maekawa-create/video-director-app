@@ -774,7 +774,17 @@ def _frame_to_pil(frame):
 
 
 def _frame_to_tempfile(frame) -> str:
-    """cv2フレームを一時ファイルに保存しパスを返す"""
+    """cv2フレームを一時ファイルに保存しパスを返す
+
+    注意: 呼び出し元で必ず os.unlink(path) を呼んでファイルを削除すること。
+    削除忘れは一時ファイルの蓄積（リソースリーク）につながる。
+    例:
+        path = _frame_to_tempfile(frame)
+        try:
+            process(path)
+        finally:
+            os.unlink(path)
+    """
     fd, path = tempfile.mkstemp(suffix=".jpg")
     os.close(fd)
     cv2.imwrite(path, frame, [cv2.IMWRITE_JPEG_QUALITY, 85])

@@ -616,9 +616,12 @@ def _text_similarity(text1: str, text2: str) -> float:
 
 def _ts_to_seconds(ts: str) -> int:
     """タイムスタンプを秒数に変換"""
-    parts = ts.split(":")
-    if len(parts) == 2:
-        return int(parts[0]) * 60 + int(parts[1])
-    elif len(parts) == 3:
-        return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+    try:
+        parts = ts.split(":")
+        if len(parts) == 2:
+            return int(parts[0]) * 60 + int(parts[1])
+        elif len(parts) == 3:
+            return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+    except (ValueError, AttributeError):
+        pass
     return 0

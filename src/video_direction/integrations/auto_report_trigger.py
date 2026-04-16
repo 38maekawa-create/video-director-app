@@ -281,6 +281,8 @@ def generate_report_for_project(project_id: str) -> Optional[str]:
         logger.info("レポート公開成功: project=%s, url=%s", project_id, url)
 
         # --- Step 5: DBのdirection_report_urlを更新 ---
+        # publish後にDB更新が失敗した場合、URLは公開済みだがDBに反映されない状態になる。
+        # この場合は例外を外側のexceptに伝播させ、呼び出し元がエラーとして認識できるようにする。
         conn = _get_db()
         try:
             conn.execute(
@@ -289,6 +291,13 @@ def generate_report_for_project(project_id: str) -> Optional[str]:
             )
             conn.commit()
             logger.info("DB更新完了: project=%s, direction_report_url=%s", project_id, url)
+        except Exception as db_err:
+            # DB更新失敗: URLは公開済みのためログに残してエラーを伝播
+            logger.error(
+                "DB更新失敗（URLは公開済み）: project=%s, url=%s, error=%s",
+                project_id, url, db_err,
+            )
+            raise
         finally:
             conn.close()
 

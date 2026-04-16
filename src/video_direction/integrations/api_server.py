@@ -394,40 +394,41 @@ def startup():
 def repair_known_shoot_dates():
     """既知の誤投入データを起動時に補正する。既補正済みの場合はスキップ（ログノイズ防止）。"""
     conn = _get_db()
-    # まず補正対象が残っているか確認（毎回updated_atを更新するノイズを防ぐ）
-    remaining = conn.execute(
-        """SELECT COUNT(*) FROM projects
-           WHERE shoot_date = ?
-             AND (title LIKE ? OR guest_name IN (?, ?, ?, ?, ?, ?, ?, ?))""",
-        (
-            "2026/01/01",
-            "%2月28日 大阪%",
-            "コテさん", "kosさん", "メンイチさん", "さといも・トーマスさん",
-            "ハオさん", "けーさん", "さくらさん", "ゆりかさん",
-        ),
-    ).fetchone()[0]
-    if remaining == 0:
-        conn.close()
-        return  # 既補正済み: スキップ
+    try:
+        # まず補正対象が残っているか確認（毎回updated_atを更新するノイズを防ぐ）
+        remaining = conn.execute(
+            """SELECT COUNT(*) FROM projects
+               WHERE shoot_date = ?
+                 AND (title LIKE ? OR guest_name IN (?, ?, ?, ?, ?, ?, ?, ?))""",
+            (
+                "2026/01/01",
+                "%2月28日 大阪%",
+                "コテさん", "kosさん", "メンイチさん", "さといも・トーマスさん",
+                "ハオさん", "けーさん", "さくらさん", "ゆりかさん",
+            ),
+        ).fetchone()[0]
+        if remaining == 0:
+            return  # 既補正済み: スキップ
 
-    # 初期シードデータ（開発用）: 2026/02/28 大阪撮影のゲスト名ハードコード
-    conn.execute(
-        """UPDATE projects
-           SET shoot_date = ?, updated_at = ?
-           WHERE shoot_date = ?
-             AND (title LIKE ? OR guest_name IN (?, ?, ?, ?, ?, ?, ?, ?))""",
-        (
-            "2026/02/28",
-            datetime.now(timezone.utc).isoformat(),
-            "2026/01/01",
-            "%2月28日 大阪%",
-            "コテさん", "kosさん", "メンイチさん", "さといも・トーマスさん",
-            "ハオさん", "けーさん", "さくらさん", "ゆりかさん",
-        ),
-    )
-    conn.commit()
-    logger.info("repair_known_shoot_dates: %d件を補正しました", remaining)
-    conn.close()
+        # 初期シードデータ（開発用）: 2026/02/28 大阪撮影のゲスト名ハードコード
+        conn.execute(
+            """UPDATE projects
+               SET shoot_date = ?, updated_at = ?
+               WHERE shoot_date = ?
+                 AND (title LIKE ? OR guest_name IN (?, ?, ?, ?, ?, ?, ?, ?))""",
+            (
+                "2026/02/28",
+                datetime.now(timezone.utc).isoformat(),
+                "2026/01/01",
+                "%2月28日 大阪%",
+                "コテさん", "kosさん", "メンイチさん", "さといも・トーマスさん",
+                "ハオさん", "けーさん", "さくらさん", "ゆりかさん",
+            ),
+        )
+        conn.commit()
+        logger.info("repair_known_shoot_dates: %d件を補正しました", remaining)
+    finally:
+        conn.close()
 
 
 # --- プロジェクト ---
@@ -570,18 +571,19 @@ def update_project_category(project_id: str, body: CategoryUpdate):
         raise HTTPException(400, f"Invalid category. Must be one of: {valid_categories}")
 
     conn = _get_db()
-    row = conn.execute("SELECT id FROM projects WHERE id = ?", (project_id,)).fetchone()
-    if not row:
-        conn.close()
-        raise HTTPException(404, "Project not found")
+    try:
+        row = conn.execute("SELECT id FROM projects WHERE id = ?", (project_id,)).fetchone()
+        if not row:
+            raise HTTPException(404, "Project not found")
 
-    now = datetime.now(timezone.utc).isoformat()
-    conn.execute(
-        "UPDATE projects SET category = ?, updated_at = ? WHERE id = ?",
-        (body.category, now, project_id),
-    )
-    conn.commit()
-    conn.close()
+        now = datetime.now(timezone.utc).isoformat()
+        conn.execute(
+            "UPDATE projects SET category = ?, updated_at = ? WHERE id = ?",
+            (body.category, now, project_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
     return {"status": "updated", "id": project_id, "category": body.category}
 
 
@@ -593,16 +595,18 @@ def get_projects_by_category(category: str):
         raise HTTPException(400, f"Invalid category. Must be one of: {valid_categories}")
 
     conn = _get_db()
-    if category == "uncategorized":
-        rows = conn.execute(
-            "SELECT * FROM projects WHERE category IS NULL ORDER BY shoot_date DESC"
-        ).fetchall()
-    else:
-        rows = conn.execute(
-            "SELECT * FROM projects WHERE category = ? ORDER BY shoot_date DESC",
-            (category,),
-        ).fetchall()
-    conn.close()
+    try:
+        if category == "uncategorized":
+            rows = conn.execute(
+                "SELECT * FROM projects WHERE category IS NULL ORDER BY shoot_date DESC"
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM projects WHERE category = ? ORDER BY shoot_date DESC",
+                (category,),
+            ).fetchall()
+    finally:
+        conn.close()
 
     result = []
     for r in rows:
@@ -647,100 +651,102 @@ def sync_categories_from_sheet(force_reset_unmatched: bool = False):
         raise HTTPException(502, "Failed to fetch categories from spreadsheet")
 
     conn = _get_db()
-    projects = conn.execute("SELECT id, guest_name, title FROM projects").fetchall()
+    try:
+        projects = conn.execute("SELECT id, guest_name, title FROM projects").fetchall()
 
-    updated = []
-    skipped = []
-    now = datetime.now(timezone.utc).isoformat()
+        updated = []
+        skipped = []
+        now = datetime.now(timezone.utc).isoformat()
 
-    from .sheets_manager import _normalize_name, _resolve_via_member_master, _to_hiragana, _to_katakana, _get_member_default_category
+        from .sheets_manager import _normalize_name, _resolve_via_member_master, _to_hiragana, _to_katakana, _get_member_default_category
 
-    for proj in projects:
-        proj_id = proj["id"]
-        guest_name = proj["guest_name"] or ""
-        title = proj["title"] or ""
+        for proj in projects:
+            proj_id = proj["id"]
+            guest_name = proj["guest_name"] or ""
+            title = proj["title"] or ""
 
-        # テストゲスト除外: カテゴリ決定の前に最初にチェック
-        if guest_name and "テスト" in guest_name:
-            skipped.append({"id": proj_id, "guest_name": guest_name, "reason": "test_guest"})
-            continue
+            # テストゲスト除外: カテゴリ決定の前に最初にチェック
+            if guest_name and "テスト" in guest_name:
+                skipped.append({"id": proj_id, "guest_name": guest_name, "reason": "test_guest"})
+                continue
 
-        # 多段階マッチング: 精度の高い方法から順に試す
-        matched_category = None
-        db_norm = _normalize_name(guest_name)
+            # 多段階マッチング: 精度の高い方法から順に試す
+            matched_category = None
+            db_norm = _normalize_name(guest_name)
 
-        # ステージ1: 正規化後の完全一致
-        for sheet_guest, cat in sheet_categories.items():
-            sheet_norm = _normalize_name(sheet_guest)
-            if db_norm and sheet_norm and db_norm == sheet_norm:
-                matched_category = cat
-                break
-
-        # ステージ2: MEMBER_MASTER.jsonのcanonical_name解決
-        if matched_category is None:
-            db_canonical = _resolve_via_member_master(guest_name)
-            if db_canonical:
-                db_can_norm = _normalize_name(db_canonical)
-                for sheet_guest, cat in sheet_categories.items():
-                    sheet_canonical = _resolve_via_member_master(sheet_guest)
-                    if sheet_canonical and db_can_norm == _normalize_name(sheet_canonical):
-                        matched_category = cat
-                        break
-
-        # ステージ3: ひらがな/カタカナ変換後の完全一致
-        if matched_category is None and db_norm:
-            db_hira = _to_hiragana(db_norm)
-            db_kata = _to_katakana(db_norm)
+            # ステージ1: 正規化後の完全一致
             for sheet_guest, cat in sheet_categories.items():
                 sheet_norm = _normalize_name(sheet_guest)
-                if not sheet_norm:
-                    continue
-                sheet_hira = _to_hiragana(sheet_norm)
-                if db_hira == sheet_hira or db_kata == _to_katakana(sheet_norm):
+                if db_norm and sheet_norm and db_norm == sheet_norm:
                     matched_category = cat
                     break
 
-        # ステージ4: _match_guest_nameによる柔軟マッチング（部分一致含む）
-        # ただしカテゴリがNoneのエントリとの部分一致はスキップ（誤爆防止）
-        if matched_category is None:
-            for sheet_guest, cat in sheet_categories.items():
-                if _match_guest_name(guest_name, sheet_guest):
-                    # 部分一致でカテゴリNoneにマッチした場合は、それが本当の一致か検証
-                    if cat is not None:
-                        matched_category = cat
-                        break
-                    # カテゴリNoneでも正規化完全一致なら信頼できる
-                    if _normalize_name(guest_name) == _normalize_name(sheet_guest):
+            # ステージ2: MEMBER_MASTER.jsonのcanonical_name解決
+            if matched_category is None:
+                db_canonical = _resolve_via_member_master(guest_name)
+                if db_canonical:
+                    db_can_norm = _normalize_name(db_canonical)
+                    for sheet_guest, cat in sheet_categories.items():
+                        sheet_canonical = _resolve_via_member_master(sheet_guest)
+                        if sheet_canonical and db_can_norm == _normalize_name(sheet_canonical):
+                            matched_category = cat
+                            break
+
+            # ステージ3: ひらがな/カタカナ変換後の完全一致
+            if matched_category is None and db_norm:
+                db_hira = _to_hiragana(db_norm)
+                db_kata = _to_katakana(db_norm)
+                for sheet_guest, cat in sheet_categories.items():
+                    sheet_norm = _normalize_name(sheet_guest)
+                    if not sheet_norm:
+                        continue
+                    sheet_hira = _to_hiragana(sheet_norm)
+                    if db_hira == sheet_hira or db_kata == _to_katakana(sheet_norm):
                         matched_category = cat
                         break
 
-        # ステージ5: MEMBER_MASTER.jsonのdefault_categoryフォールバック/オーバーライド
-        # スプシからカテゴリが取れなかった場合のフォールバック、
-        # または MEMBER_MASTER に明示的なdefault_categoryがある場合はオーバーライド
-        if guest_name:
-            member_category = _get_member_default_category(guest_name)
-            if member_category is not None:
-                matched_category = member_category
+            # ステージ4: _match_guest_nameによる柔軟マッチング（部分一致含む）
+            # ただしカテゴリがNoneのエントリとの部分一致はスキップ（誤爆防止）
+            if matched_category is None:
+                for sheet_guest, cat in sheet_categories.items():
+                    if _match_guest_name(guest_name, sheet_guest):
+                        # 部分一致でカテゴリNoneにマッチした場合は、それが本当の一致か検証
+                        if cat is not None:
+                            matched_category = cat
+                            break
+                        # カテゴリNoneでも正規化完全一致なら信頼できる
+                        if _normalize_name(guest_name) == _normalize_name(sheet_guest):
+                            matched_category = cat
+                            break
 
-        if matched_category is not None:
-            conn.execute(
-                "UPDATE projects SET category = ?, updated_at = ? WHERE id = ?",
-                (matched_category, now, proj_id),
-            )
-            updated.append({"id": proj_id, "guest_name": guest_name, "category": matched_category})
-        else:
-            if force_reset_unmatched:
-                # 明示フラグがある場合のみNULLにリセット（データ消失防止）
-                logger.warning("sync_categories: スプシ未一致によりcategoryをNULLリセット: id=%s guest=%s", proj_id, guest_name)
+            # ステージ5: MEMBER_MASTER.jsonのdefault_categoryフォールバック/オーバーライド
+            # スプシからカテゴリが取れなかった場合のフォールバック、
+            # または MEMBER_MASTER に明示的なdefault_categoryがある場合はオーバーライド
+            if guest_name:
+                member_category = _get_member_default_category(guest_name)
+                if member_category is not None:
+                    matched_category = member_category
+
+            if matched_category is not None:
                 conn.execute(
-                    "UPDATE projects SET category = NULL, updated_at = ? WHERE id = ?",
-                    (now, proj_id),
+                    "UPDATE projects SET category = ?, updated_at = ? WHERE id = ?",
+                    (matched_category, now, proj_id),
                 )
-            # force_reset_unmatched=False (デフォルト) は既存categoryを保持
-            skipped.append({"id": proj_id, "guest_name": guest_name, "reason": "not_found_in_sheet"})
+                updated.append({"id": proj_id, "guest_name": guest_name, "category": matched_category})
+            else:
+                if force_reset_unmatched:
+                    # 明示フラグがある場合のみNULLにリセット（データ消失防止）
+                    logger.warning("sync_categories: スプシ未一致によりcategoryをNULLリセット: id=%s guest=%s", proj_id, guest_name)
+                    conn.execute(
+                        "UPDATE projects SET category = NULL, updated_at = ? WHERE id = ?",
+                        (now, proj_id),
+                    )
+                # force_reset_unmatched=False (デフォルト) は既存categoryを保持
+                skipped.append({"id": proj_id, "guest_name": guest_name, "reason": "not_found_in_sheet"})
 
-    conn.commit()
-    conn.close()
+        conn.commit()
+    finally:
+        conn.close()
 
     return {
         "status": "synced",
@@ -756,10 +762,12 @@ def sync_categories_from_sheet(force_reset_unmatched: bool = False):
 @app.get("/api/projects/{project_id}/youtube-assets")
 def get_youtube_assets(project_id: str):
     conn = _get_db()
-    row = conn.execute(
-        "SELECT * FROM youtube_assets WHERE project_id = ?", (project_id,)
-    ).fetchone()
-    conn.close()
+    try:
+        row = conn.execute(
+            "SELECT * FROM youtube_assets WHERE project_id = ?", (project_id,)
+        ).fetchone()
+    finally:
+        conn.close()
     if not row:
         raise HTTPException(404, "YouTube assets not found")
     d = dict(row)
@@ -775,38 +783,40 @@ def get_youtube_assets(project_id: str):
 @app.put("/api/projects/{project_id}/youtube-assets")
 def upsert_youtube_assets(project_id: str, assets: YouTubeAssetsUpsert):
     conn = _get_db()
-    now = datetime.now(timezone.utc).isoformat()
-    # description_originalが空の場合は既存値を保持する（空文字上書き防止）
-    desc_original_value = assets.description_original
-    # Noneまたは未送信項目はCOALESCEで既存値を維持し、NULL上書きを防ぐ
-    conn.execute(
-        """INSERT INTO youtube_assets (project_id, thumbnail_design, title_proposals,
-           description_original, description_edited, selected_title_index,
-           edited_title, last_edited_by, generated_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-           ON CONFLICT(project_id) DO UPDATE SET
-             thumbnail_design=COALESCE(excluded.thumbnail_design, youtube_assets.thumbnail_design),
-             title_proposals=COALESCE(excluded.title_proposals, youtube_assets.title_proposals),
-             description_original=COALESCE(excluded.description_original, youtube_assets.description_original),
-             description_edited=COALESCE(excluded.description_edited, youtube_assets.description_edited),
-             selected_title_index=COALESCE(excluded.selected_title_index, youtube_assets.selected_title_index),
-             edited_title=COALESCE(excluded.edited_title, youtube_assets.edited_title),
-             last_edited_by=COALESCE(excluded.last_edited_by, youtube_assets.last_edited_by),
-             updated_at=excluded.updated_at""",
-        (
-            project_id,
-            json.dumps(assets.thumbnail_design) if assets.thumbnail_design else None,
-            json.dumps(assets.title_proposals) if assets.title_proposals else None,
-            desc_original_value if desc_original_value and desc_original_value.strip() else None,
-            assets.description_edited,
-            assets.selected_title_index,
-            assets.edited_title,
-            assets.last_edited_by,
-            now, now,
+    try:
+        now = datetime.now(timezone.utc).isoformat()
+        # description_originalが空の場合は既存値を保持する（空文字上書き防止）
+        desc_original_value = assets.description_original
+        # Noneまたは未送信項目はCOALESCEで既存値を維持し、NULL上書きを防ぐ
+        conn.execute(
+            """INSERT INTO youtube_assets (project_id, thumbnail_design, title_proposals,
+               description_original, description_edited, selected_title_index,
+               edited_title, last_edited_by, generated_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+               ON CONFLICT(project_id) DO UPDATE SET
+                 thumbnail_design=COALESCE(excluded.thumbnail_design, youtube_assets.thumbnail_design),
+                 title_proposals=COALESCE(excluded.title_proposals, youtube_assets.title_proposals),
+                 description_original=COALESCE(excluded.description_original, youtube_assets.description_original),
+                 description_edited=COALESCE(excluded.description_edited, youtube_assets.description_edited),
+                 selected_title_index=COALESCE(excluded.selected_title_index, youtube_assets.selected_title_index),
+                 edited_title=COALESCE(excluded.edited_title, youtube_assets.edited_title),
+                 last_edited_by=COALESCE(excluded.last_edited_by, youtube_assets.last_edited_by),
+                 updated_at=excluded.updated_at""",
+            (
+                project_id,
+                json.dumps(assets.thumbnail_design) if assets.thumbnail_design else None,
+                json.dumps(assets.title_proposals) if assets.title_proposals else None,
+                desc_original_value if desc_original_value and desc_original_value.strip() else None,
+                assets.description_edited,
+                assets.selected_title_index,
+                assets.edited_title,
+                assets.last_edited_by,
+                now, now,
+            )
         )
-    )
-    conn.commit()
-    conn.close()
+        conn.commit()
+    finally:
+        conn.close()
     return {"status": "upserted", "project_id": project_id}
 
 
@@ -855,36 +865,40 @@ def select_title(project_id: str, body: TitleSelect):
 @app.get("/api/projects/{project_id}/feedbacks")
 def list_feedbacks(project_id: str):
     conn = _get_db()
-    rows = conn.execute(
-        "SELECT f.*, p.guest_name, p.title as project_title "
-        "FROM feedbacks f "
-        "LEFT JOIN projects p ON f.project_id = p.id "
-        "WHERE f.project_id = ? ORDER BY f.created_at DESC",
-        (project_id,)
-    ).fetchall()
-    conn.close()
+    try:
+        rows = conn.execute(
+            "SELECT f.*, p.guest_name, p.title as project_title "
+            "FROM feedbacks f "
+            "LEFT JOIN projects p ON f.project_id = p.id "
+            "WHERE f.project_id = ? ORDER BY f.created_at DESC",
+            (project_id,)
+        ).fetchall()
+    finally:
+        conn.close()
     return [dict(r) for r in rows]
 
 
 @app.post("/api/projects/{project_id}/feedbacks")
 def create_feedback(project_id: str, fb: FeedbackCreate):
     conn = _get_db()
-    cursor = conn.execute(
-        """INSERT INTO feedbacks (project_id, timestamp_mark, raw_voice_text,
-           converted_text, category, priority, created_by, feedback_target)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-        (project_id, fb.timestamp_mark, fb.raw_voice_text,
-         fb.converted_text, fb.category, fb.priority, fb.created_by,
-         fb.feedback_target)
-    )
-    # プロジェクトの未レビュー数を更新
-    conn.execute(
-        "UPDATE projects SET unreviewed_count = unreviewed_count + 1, "
-        "has_unsent_feedback = 1, updated_at = datetime('now') WHERE id = ?",
-        (project_id,)
-    )
-    conn.commit()
-    conn.close()
+    try:
+        cursor = conn.execute(
+            """INSERT INTO feedbacks (project_id, timestamp_mark, raw_voice_text,
+               converted_text, category, priority, created_by, feedback_target)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (project_id, fb.timestamp_mark, fb.raw_voice_text,
+             fb.converted_text, fb.category, fb.priority, fb.created_by,
+             fb.feedback_target)
+        )
+        # プロジェクトの未レビュー数を更新
+        conn.execute(
+            "UPDATE projects SET unreviewed_count = unreviewed_count + 1, "
+            "has_unsent_feedback = 1, updated_at = datetime('now') WHERE id = ?",
+            (project_id,)
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
     # FB学習ループ: 保存されたFBを学習データとして取り込む
     learned = False
@@ -938,14 +952,16 @@ def create_feedback(project_id: str, fb: FeedbackCreate):
 def list_all_feedbacks(limit: int = 100):
     """全フィードバック一覧（プロジェクト名・ゲスト名付き）"""
     conn = _get_db()
-    rows = conn.execute(
-        "SELECT f.*, p.guest_name, p.title as project_title "
-        "FROM feedbacks f "
-        "LEFT JOIN projects p ON f.project_id = p.id "
-        "ORDER BY f.created_at DESC LIMIT ?",
-        (limit,)
-    ).fetchall()
-    conn.close()
+    try:
+        rows = conn.execute(
+            "SELECT f.*, p.guest_name, p.title as project_title "
+            "FROM feedbacks f "
+            "LEFT JOIN projects p ON f.project_id = p.id "
+            "ORDER BY f.created_at DESC LIMIT ?",
+            (limit,)
+        ).fetchall()
+    finally:
+        conn.close()
     return [dict(r) for r in rows]
 
 
@@ -955,14 +971,16 @@ def list_all_feedbacks(limit: int = 100):
 def list_pending_feedbacks():
     """承認待ちFB一覧（approval_status='pending'のFBをプロジェクト情報付きで返す）"""
     conn = _get_db()
-    rows = conn.execute(
-        "SELECT f.*, p.guest_name, p.title as project_title "
-        "FROM feedbacks f "
-        "LEFT JOIN projects p ON f.project_id = p.id "
-        "WHERE (f.approval_status = 'pending' OR f.approval_status IS NULL) "
-        "ORDER BY f.created_at DESC"
-    ).fetchall()
-    conn.close()
+    try:
+        rows = conn.execute(
+            "SELECT f.*, p.guest_name, p.title as project_title "
+            "FROM feedbacks f "
+            "LEFT JOIN projects p ON f.project_id = p.id "
+            "WHERE (f.approval_status = 'pending' OR f.approval_status IS NULL) "
+            "ORDER BY f.created_at DESC"
+        ).fetchall()
+    finally:
+        conn.close()
     return [dict(r) for r in rows]
 
 
@@ -1089,17 +1107,19 @@ def reject_feedback(feedback_id: int, body: dict = None):
 def sync_check(project_id: str):
     """クライアントがポーリングで最終更新時刻を確認するためのエンドポイント"""
     conn = _get_db()
-    row = conn.execute(
-        "SELECT updated_at FROM projects WHERE id = ?", (project_id,)
-    ).fetchone()
-    assets_row = conn.execute(
-        "SELECT updated_at, last_edited_by FROM youtube_assets WHERE project_id = ?",
-        (project_id,)
-    ).fetchone()
-    fb_count = conn.execute(
-        "SELECT COUNT(*) FROM feedbacks WHERE project_id = ?", (project_id,)
-    ).fetchone()[0]
-    conn.close()
+    try:
+        row = conn.execute(
+            "SELECT updated_at FROM projects WHERE id = ?", (project_id,)
+        ).fetchone()
+        assets_row = conn.execute(
+            "SELECT updated_at, last_edited_by FROM youtube_assets WHERE project_id = ?",
+            (project_id,)
+        ).fetchone()
+        fb_count = conn.execute(
+            "SELECT COUNT(*) FROM feedbacks WHERE project_id = ?", (project_id,)
+        ).fetchone()[0]
+    finally:
+        conn.close()
     return {
         "project_updated_at": row["updated_at"] if row else None,
         "assets_updated_at": assets_row["updated_at"] if assets_row else None,
@@ -1114,23 +1134,25 @@ def sync_check(project_id: str):
 def dashboard_summary():
     """品質ダッシュボードのサマリーデータ"""
     conn = _get_db()
-    total = conn.execute("SELECT COUNT(*) FROM projects").fetchone()[0]
-    with_assets = conn.execute("SELECT COUNT(*) FROM youtube_assets").fetchone()[0]
-    avg_score = conn.execute(
-        "SELECT AVG(quality_score) FROM projects WHERE quality_score IS NOT NULL"
-    ).fetchone()[0]
-    status_counts = conn.execute(
-        "SELECT status, COUNT(*) as cnt FROM projects GROUP BY status"
-    ).fetchall()
-    recent_fbs = conn.execute(
-        "SELECT f.*, p.guest_name FROM feedbacks f "
-        "JOIN projects p ON f.project_id = p.id "
-        "ORDER BY f.created_at DESC LIMIT 10"
-    ).fetchall()
-    unsent_count = conn.execute(
-        "SELECT COUNT(*) FROM projects WHERE has_unsent_feedback = 1"
-    ).fetchone()[0]
-    conn.close()
+    try:
+        total = conn.execute("SELECT COUNT(*) FROM projects").fetchone()[0]
+        with_assets = conn.execute("SELECT COUNT(*) FROM youtube_assets").fetchone()[0]
+        avg_score = conn.execute(
+            "SELECT AVG(quality_score) FROM projects WHERE quality_score IS NOT NULL"
+        ).fetchone()[0]
+        status_counts = conn.execute(
+            "SELECT status, COUNT(*) as cnt FROM projects GROUP BY status"
+        ).fetchall()
+        recent_fbs = conn.execute(
+            "SELECT f.*, p.guest_name FROM feedbacks f "
+            "JOIN projects p ON f.project_id = p.id "
+            "ORDER BY f.created_at DESC LIMIT 10"
+        ).fetchall()
+        unsent_count = conn.execute(
+            "SELECT COUNT(*) FROM projects WHERE has_unsent_feedback = 1"
+        ).fetchone()[0]
+    finally:
+        conn.close()
     return {
         "total_projects": total,
         "projects_with_assets": with_assets,
@@ -1145,11 +1167,13 @@ def dashboard_summary():
 def quality_trend():
     """品質スコアの推移データ"""
     conn = _get_db()
-    rows = conn.execute(
-        "SELECT guest_name, shoot_date, quality_score FROM projects "
-        "WHERE quality_score IS NOT NULL ORDER BY shoot_date ASC"
-    ).fetchall()
-    conn.close()
+    try:
+        rows = conn.execute(
+            "SELECT guest_name, shoot_date, quality_score FROM projects "
+            "WHERE quality_score IS NOT NULL ORDER BY shoot_date ASC"
+        ).fetchall()
+    finally:
+        conn.close()
     return [dict(r) for r in rows]
 
 
@@ -1178,46 +1202,46 @@ def quality_dashboard_stats():
     iOS品質ダッシュボードの実データ連動に使用する。
     """
     conn = _get_db()
+    try:
+        # 全プロジェクトのスコア取得
+        all_rows = conn.execute(
+            "SELECT guest_name, shoot_date, quality_score FROM projects ORDER BY shoot_date ASC"
+        ).fetchall()
 
-    # 全プロジェクトのスコア取得
-    all_rows = conn.execute(
-        "SELECT guest_name, shoot_date, quality_score FROM projects ORDER BY shoot_date ASC"
-    ).fetchall()
+        scored_rows = [r for r in all_rows if r["quality_score"] is not None]
+        unscored_count = len(all_rows) - len(scored_rows)
 
-    scored_rows = [r for r in all_rows if r["quality_score"] is not None]
-    unscored_count = len(all_rows) - len(scored_rows)
+        # グレード分布を集計
+        grade_order = ["A+", "A", "B+", "B", "C", "D", "E"]
+        grade_distribution: dict[str, int] = {g: 0 for g in grade_order}
+        for row in scored_rows:
+            g = _grade_from_score_100(row["quality_score"])
+            grade_distribution[g] += 1
 
-    # グレード分布を集計
-    grade_order = ["A+", "A", "B+", "B", "C", "D", "E"]
-    grade_distribution: dict[str, int] = {g: 0 for g in grade_order}
-    for row in scored_rows:
-        g = _grade_from_score_100(row["quality_score"])
-        grade_distribution[g] += 1
+        # 平均スコア
+        avg_score = None
+        if scored_rows:
+            avg_score = round(sum(r["quality_score"] for r in scored_rows) / len(scored_rows), 1)
 
-    # 平均スコア
-    avg_score = None
-    if scored_rows:
-        avg_score = round(sum(r["quality_score"] for r in scored_rows) / len(scored_rows), 1)
+        # 直近5件のトレンド（shoot_date降順で取得後反転）
+        recent_rows = conn.execute(
+            "SELECT guest_name, shoot_date, quality_score FROM projects "
+            "WHERE quality_score IS NOT NULL ORDER BY shoot_date DESC LIMIT 5"
+        ).fetchall()
+        recent_trend = [dict(r) for r in reversed(recent_rows)]
 
-    # 直近5件のトレンド（shoot_date降順で取得後反転）
-    recent_rows = conn.execute(
-        "SELECT guest_name, shoot_date, quality_score FROM projects "
-        "WHERE quality_score IS NOT NULL ORDER BY shoot_date DESC LIMIT 5"
-    ).fetchall()
-    recent_trend = [dict(r) for r in reversed(recent_rows)]
-
-    # 改善傾向: 直近3件の平均 vs その前3件の平均
-    improvement_delta = None
-    if len(scored_rows) >= 6:
-        recent3 = [r["quality_score"] for r in scored_rows[-3:]]
-        prev3 = [r["quality_score"] for r in scored_rows[-6:-3]]
-        improvement_delta = round(sum(recent3) / 3 - sum(prev3) / 3, 1)
-    elif len(scored_rows) >= 2:
-        improvement_delta = round(
-            scored_rows[-1]["quality_score"] - scored_rows[0]["quality_score"], 1
-        )
-
-    conn.close()
+        # 改善傾向: 直近3件の平均 vs その前3件の平均
+        improvement_delta = None
+        if len(scored_rows) >= 6:
+            recent3 = [r["quality_score"] for r in scored_rows[-3:]]
+            prev3 = [r["quality_score"] for r in scored_rows[-6:-3]]
+            improvement_delta = round(sum(recent3) / 3 - sum(prev3) / 3, 1)
+        elif len(scored_rows) >= 2:
+            improvement_delta = round(
+                scored_rows[-1]["quality_score"] - scored_rows[0]["quality_score"], 1
+            )
+    finally:
+        conn.close()
 
     return {
         "total_scored": len(scored_rows),
@@ -1675,8 +1699,10 @@ def run_frame_evaluation(project_id: str, body: FrameEvaluationRequest = FrameEv
 
     # プロジェクト取得
     conn = _get_db()
-    row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
-    conn.close()
+    try:
+        row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+    finally:
+        conn.close()
     if not row:
         raise HTTPException(404, "Project not found")
 
@@ -1806,8 +1832,10 @@ def run_telop_check(project_id: str, body: TelopCheckRequest = TelopCheckRequest
 
     # プロジェクト取得
     conn = _get_db()
-    row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
-    conn.close()
+    try:
+        row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+    finally:
+        conn.close()
     if not row:
         raise HTTPException(404, "Project not found")
 

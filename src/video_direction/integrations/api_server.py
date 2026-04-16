@@ -983,18 +983,19 @@ def approve_feedback(feedback_id: int, body: dict = None):
             detail="FB投稿者本人のみが承認できます"
         )
 
-    cur = conn.execute(
-        "UPDATE feedbacks SET approval_status = 'approved', "
-        "approved_at = datetime('now'), approved_by = ? "
-        "WHERE id = ? AND COALESCE(approval_status, 'pending') = 'pending'",
-        (approved_by, feedback_id),
-    )
-    if cur.rowcount == 0:
-        conn.rollback()
+    try:
+        cur = conn.execute(
+            "UPDATE feedbacks SET approval_status = 'approved', "
+            "approved_at = datetime('now'), approved_by = ? "
+            "WHERE id = ? AND COALESCE(approval_status, 'pending') = 'pending'",
+            (approved_by, feedback_id),
+        )
+        if cur.rowcount == 0:
+            conn.rollback()
+            raise HTTPException(status_code=409, detail="このFBは既に承認・却下済みです")
+        conn.commit()
+    finally:
         conn.close()
-        raise HTTPException(status_code=409, detail="このFBは既に承認・却下済みです")
-    conn.commit()
-    conn.close()
     return {"status": "approved", "feedback_id": feedback_id, "approved_by": approved_by}
 
 
@@ -1022,18 +1023,19 @@ def modify_feedback(feedback_id: int, body: dict):
             detail="FB投稿者本人のみが修正承認できます"
         )
 
-    cur = conn.execute(
-        "UPDATE feedbacks SET approval_status = 'modified', "
-        "approved_at = datetime('now'), modified_text = ?, approved_by = ? "
-        "WHERE id = ? AND COALESCE(approval_status, 'pending') = 'pending'",
-        (modified_text, approved_by, feedback_id),
-    )
-    if cur.rowcount == 0:
-        conn.rollback()
+    try:
+        cur = conn.execute(
+            "UPDATE feedbacks SET approval_status = 'modified', "
+            "approved_at = datetime('now'), modified_text = ?, approved_by = ? "
+            "WHERE id = ? AND COALESCE(approval_status, 'pending') = 'pending'",
+            (modified_text, approved_by, feedback_id),
+        )
+        if cur.rowcount == 0:
+            conn.rollback()
+            raise HTTPException(status_code=409, detail="このFBは既に承認・却下済みです")
+        conn.commit()
+    finally:
         conn.close()
-        raise HTTPException(status_code=409, detail="このFBは既に承認・却下済みです")
-    conn.commit()
-    conn.close()
     return {
         "status": "modified",
         "feedback_id": feedback_id,
@@ -1062,18 +1064,19 @@ def reject_feedback(feedback_id: int, body: dict = None):
             detail="FB投稿者本人のみが却下できます"
         )
 
-    cur = conn.execute(
-        "UPDATE feedbacks SET approval_status = 'rejected', "
-        "approved_at = datetime('now'), approved_by = ? "
-        "WHERE id = ? AND COALESCE(approval_status, 'pending') = 'pending'",
-        (approved_by, feedback_id),
-    )
-    if cur.rowcount == 0:
-        conn.rollback()
+    try:
+        cur = conn.execute(
+            "UPDATE feedbacks SET approval_status = 'rejected', "
+            "approved_at = datetime('now'), approved_by = ? "
+            "WHERE id = ? AND COALESCE(approval_status, 'pending') = 'pending'",
+            (approved_by, feedback_id),
+        )
+        if cur.rowcount == 0:
+            conn.rollback()
+            raise HTTPException(status_code=409, detail="このFBは既に承認・却下済みです")
+        conn.commit()
+    finally:
         conn.close()
-        raise HTTPException(status_code=409, detail="このFBは既に承認・却下済みです")
-    conn.commit()
-    conn.close()
     return {"status": "rejected", "feedback_id": feedback_id, "approved_by": approved_by}
 
 

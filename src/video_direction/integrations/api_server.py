@@ -436,21 +436,23 @@ def repair_known_shoot_dates():
 def list_projects(category: Optional[str] = None):
     """プロジェクト一覧を取得する。categoryパラメータでフィルタ可能。"""
     conn = _get_db()
-    if category:
-        if category == "uncategorized":
-            rows = conn.execute(
-                "SELECT * FROM projects WHERE category IS NULL ORDER BY shoot_date DESC"
-            ).fetchall()
+    try:
+        if category:
+            if category == "uncategorized":
+                rows = conn.execute(
+                    "SELECT * FROM projects WHERE category IS NULL ORDER BY shoot_date DESC"
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM projects WHERE category = ? ORDER BY shoot_date DESC",
+                    (category,),
+                ).fetchall()
         else:
             rows = conn.execute(
-                "SELECT * FROM projects WHERE category = ? ORDER BY shoot_date DESC",
-                (category,),
+                "SELECT * FROM projects ORDER BY shoot_date DESC"
             ).fetchall()
-    else:
-        rows = conn.execute(
-            "SELECT * FROM projects ORDER BY shoot_date DESC"
-        ).fetchall()
-    conn.close()
+    finally:
+        conn.close()
     result = []
     for r in rows:
         d = dict(r)
@@ -476,12 +478,13 @@ def list_projects(category: Optional[str] = None):
 @app.get("/api/projects/{project_id}")
 def get_project(project_id: str):
     conn = _get_db()
-    row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
-    if not row:
+    try:
+        row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+        if not row:
+            raise HTTPException(404, "Project not found")
+        d = dict(row)
+    finally:
         conn.close()
-        raise HTTPException(404, "Project not found")
-    d = dict(row)
-    conn.close()
     for bool_field in ("has_unsent_feedback",):
         if bool_field in d:
             d[bool_field] = bool(d[bool_field])

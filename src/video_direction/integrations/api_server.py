@@ -5021,14 +5021,25 @@ for ext in ["js", "css"]:
 
 @app.get("/{filename:path}")
 def serve_root_static(filename: str):
-    """APIパスでないリクエストを静的ファイルとして配信"""
+    """APIパスでないリクエストを静的ファイルとして配信（webappディレクトリのみ）"""
     if filename.startswith("api/"):
         raise HTTPException(status_code=404)
+    # 🔴 機密ファイル・ディレクトリへのアクセスを遮断
+    _BLOCKED_PREFIXES = (
+        ".data", ".env", ".git", ".cache", ".claude", "src", "venv",
+        "__pycache__", "tests", "archive", "docs", ".venv",
+    )
+    if any(filename.startswith(p) or f"/{p}" in filename for p in _BLOCKED_PREFIXES):
+        raise HTTPException(status_code=403, detail="Access denied")
+    # 許可する拡張子を限定（静的アセットのみ）
+    _ALLOWED_EXTENSIONS = {".js", ".css", ".html", ".json", ".png", ".jpg", ".svg", ".ico", ".woff", ".woff2"}
     # パストラバーサル防止
     base_dir = Path.home() / "AI開発10"
     file_path = (base_dir / filename).resolve()
     if not str(file_path).startswith(str(base_dir.resolve())):
         raise HTTPException(status_code=403, detail="Access denied")
+    if file_path.suffix not in _ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=403, detail="File type not allowed")
     if file_path.exists() and file_path.is_file():
         suffix = file_path.suffix
         media_types = {

@@ -43,20 +43,22 @@ def _get_db() -> sqlite3.Connection:
 def _init_asset_edits_table():
     """asset_editsテーブルを作成する（冪等）。"""
     conn = _get_db()
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS asset_edits (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            project_id TEXT NOT NULL REFERENCES projects(id),
-            asset_type TEXT NOT NULL CHECK(asset_type IN ('title', 'description', 'thumbnail')),
-            original_content TEXT,
-            edited_content TEXT NOT NULL,
-            edited_by TEXT NOT NULL,
-            diff_summary TEXT,
-            created_at TEXT DEFAULT (datetime('now'))
-        )
-    """)
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS asset_edits (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id TEXT NOT NULL REFERENCES projects(id),
+                asset_type TEXT NOT NULL CHECK(asset_type IN ('title', 'description', 'thumbnail')),
+                original_content TEXT,
+                edited_content TEXT NOT NULL,
+                edited_by TEXT NOT NULL,
+                diff_summary TEXT,
+                created_at TEXT DEFAULT (datetime('now'))
+            )
+        """)
+        conn.commit()
+    finally:
+        conn.close()
 
 
 # モジュールインポート時にテーブル作成

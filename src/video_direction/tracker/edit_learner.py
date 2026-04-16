@@ -2,6 +2,7 @@ from __future__ import annotations
 
 """手修正学習: 手修正のdiff結果からパターンを抽出し、ディレクションルールに自動反映"""
 import json
+import logging
 import re
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -40,6 +41,9 @@ class EditLearningRule:
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
 
+logger = logging.getLogger(__name__)
+
+
 class EditLearner:
     """手修正のdiff結果からパターンを抽出し、ディレクションルールに反映
 
@@ -68,15 +72,29 @@ class EditLearner:
     def _load(self):
         """永続化されたパターン・ルールを読み込む"""
         if self.patterns_path.exists():
-            data = json.loads(self.patterns_path.read_text())
-            for p in data.get("patterns", []):
-                pattern = EditPattern(**p)
-                self._patterns[pattern.id] = pattern
+            try:
+                data = json.loads(self.patterns_path.read_text(encoding="utf-8"))
+                for p in data.get("patterns", []):
+                    try:
+                        pattern = EditPattern(**p)
+                        self._patterns[pattern.id] = pattern
+                    except TypeError as e:
+                        logger.warning("EditPatternの復元をスキップ（不正データ）: %s", e)
+            except (json.JSONDecodeError, KeyError, TypeError) as e:
+                logger.warning("手修正パターンデータの読み込みに失敗。空辞書にフォールバック: %s", e)
+                self._patterns = {}
         if self.rules_path.exists():
-            data = json.loads(self.rules_path.read_text())
-            for r in data.get("rules", []):
-                rule = EditLearningRule(**r)
-                self._rules[rule.id] = rule
+            try:
+                data = json.loads(self.rules_path.read_text(encoding="utf-8"))
+                for r in data.get("rules", []):
+                    try:
+                        rule = EditLearningRule(**r)
+                        self._rules[rule.id] = rule
+                    except TypeError as e:
+                        logger.warning("EditLearningRuleの復元をスキップ（不正データ）: %s", e)
+            except (json.JSONDecodeError, KeyError, TypeError) as e:
+                logger.warning("手修正ルールデータの読み込みに失敗。空辞書にフォールバック: %s", e)
+                self._rules = {}
 
     def _save(self):
         """パターン・ルールを永続化"""
@@ -88,7 +106,8 @@ class EditLearner:
                 },
                 ensure_ascii=False,
                 indent=2,
-            )
+            ),
+            encoding="utf-8",
         )
         self.rules_path.write_text(
             json.dumps(
@@ -98,7 +117,8 @@ class EditLearner:
                 },
                 ensure_ascii=False,
                 indent=2,
-            )
+            ),
+            encoding="utf-8",
         )
 
     def ingest_edit(self, project_id: str, asset_type: str, diff_result) -> dict:

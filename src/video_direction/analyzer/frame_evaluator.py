@@ -340,6 +340,7 @@ def _extract_single_frame_b64(video_path: str, timestamp: str) -> str | None:
 
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
+        cap.release()
         return None
 
     try:
@@ -664,6 +665,7 @@ def extract_frames_from_video(
 
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
+        cap.release()
         logger.warning(f"動画ファイルを開けません: {video_path}")
         return []
 

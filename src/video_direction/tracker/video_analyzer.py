@@ -145,32 +145,34 @@ class VideoAnalyzer:
 
             cap = cv2.VideoCapture(video_path)
             if not cap.isOpened():
+                cap.release()
                 return result
 
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            duration = total_frames / fps if fps > 0 else 0
+            try:
+                fps = cap.get(cv2.CAP_PROP_FPS)
+                total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                duration = total_frames / fps if fps > 0 else 0
 
-            # シーンチェンジ検出
-            scene_changes = []
-            prev_frame = None
-            sample_interval = max(1, int(fps))  # 1秒ごとにサンプリング
+                # シーンチェンジ検出
+                scene_changes = []
+                prev_frame = None
+                sample_interval = max(1, int(fps))  # 1秒ごとにサンプリング
 
-            for i in range(0, total_frames, sample_interval):
-                cap.set(cv2.CAP_PROP_POS_FRAMES, i)
-                ret, frame = cap.read()
-                if not ret:
-                    break
+                for i in range(0, total_frames, sample_interval):
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, i)
+                    ret, frame = cap.read()
+                    if not ret:
+                        break
 
-                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                if prev_frame is not None:
-                    diff = cv2.absdiff(prev_frame, gray)
-                    mean_diff = diff.mean()
-                    if mean_diff > 30:  # シーンチェンジ閾値
-                        scene_changes.append(i / fps)
-                prev_frame = gray
-
-            cap.release()
+                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    if prev_frame is not None:
+                        diff = cv2.absdiff(prev_frame, gray)
+                        mean_diff = diff.mean()
+                        if mean_diff > 30:  # シーンチェンジ閾値
+                            scene_changes.append(i / fps)
+                    prev_frame = gray
+            finally:
+                cap.release()
 
             result.frame_count = total_frames
             num_scenes = len(scene_changes) + 1
@@ -201,18 +203,20 @@ class VideoAnalyzer:
 
             # 色彩分析（代表フレームの平均色）
             cap = cv2.VideoCapture(video_path)
-            cap.set(cv2.CAP_PROP_POS_FRAMES, total_frames // 2)
-            ret, mid_frame = cap.read()
-            if ret:
-                avg_color = mid_frame.mean(axis=(0, 1))
-                b, g, r = avg_color
-                if r > g and r > b:
-                    result.color_grading = "暖色系 — 温かみのあるトーン"
-                elif b > r and b > g:
-                    result.color_grading = "寒色系 — クールなトーン"
-                else:
-                    result.color_grading = "ニュートラル — 自然な色合い"
-            cap.release()
+            try:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, total_frames // 2)
+                ret, mid_frame = cap.read()
+                if ret:
+                    avg_color = mid_frame.mean(axis=(0, 1))
+                    b, g, r = avg_color
+                    if r > g and r > b:
+                        result.color_grading = "暖色系 — 温かみのあるトーン"
+                    elif b > r and b > g:
+                        result.color_grading = "寒色系 — クールなトーン"
+                    else:
+                        result.color_grading = "ニュートラル — 自然な色合い"
+            finally:
+                cap.release()
 
         except ImportError:
             result.cutting_style = "（opencv未インストール — 推定値）"

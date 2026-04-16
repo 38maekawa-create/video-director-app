@@ -174,14 +174,16 @@ class QualityStatsCalculator:
             return cached
 
         conn = self._get_db()
-        rows = conn.execute(
-            "SELECT id, guest_name, title, shoot_date, quality_score, status, "
-            "created_at, updated_at "
-            "FROM projects WHERE quality_score IS NOT NULL "
-            "ORDER BY shoot_date DESC LIMIT ?",
-            (limit,),
-        ).fetchall()
-        conn.close()
+        try:
+            rows = conn.execute(
+                "SELECT id, guest_name, title, shoot_date, quality_score, status, "
+                "created_at, updated_at "
+                "FROM projects WHERE quality_score IS NOT NULL "
+                "ORDER BY shoot_date DESC LIMIT ?",
+                (limit,),
+            ).fetchall()
+        finally:
+            conn.close()
 
         trends = []
         for r in rows:
@@ -217,41 +219,42 @@ class QualityStatsCalculator:
             return cached
 
         conn = self._get_db()
+        try:
+            # 全件数
+            total_count = conn.execute(
+                "SELECT COUNT(*) FROM feedbacks WHERE category IS NOT NULL AND category != ''"
+            ).fetchone()[0]
 
-        # 全件数
-        total_count = conn.execute(
-            "SELECT COUNT(*) FROM feedbacks WHERE category IS NOT NULL AND category != ''"
-        ).fetchone()[0]
-
-        # カテゴリ別集計
-        rows = conn.execute(
-            "SELECT category, COUNT(*) as cnt FROM feedbacks "
-            "WHERE category IS NOT NULL AND category != '' "
-            "GROUP BY category ORDER BY cnt DESC LIMIT ?",
-            (limit,),
-        ).fetchall()
-
-        ranking = []
-        for r in rows:
-            # 直近の事例を3件取得
-            examples = conn.execute(
-                "SELECT converted_text, project_id FROM feedbacks "
-                "WHERE category = ? ORDER BY created_at DESC LIMIT 3",
-                (r["category"],),
+            # カテゴリ別集計
+            rows = conn.execute(
+                "SELECT category, COUNT(*) as cnt FROM feedbacks "
+                "WHERE category IS NOT NULL AND category != '' "
+                "GROUP BY category ORDER BY cnt DESC LIMIT ?",
+                (limit,),
             ).fetchall()
 
-            pct = round(r["cnt"] / total_count * 100, 1) if total_count > 0 else 0
-            ranking.append({
-                "category": r["category"],
-                "count": r["cnt"],
-                "percentage": pct,
-                "recent_examples": [
-                    {"text": ex["converted_text"], "project_id": ex["project_id"]}
-                    for ex in examples
-                ],
-            })
+            ranking = []
+            for r in rows:
+                # 直近の事例を3件取得
+                examples = conn.execute(
+                    "SELECT converted_text, project_id FROM feedbacks "
+                    "WHERE category = ? ORDER BY created_at DESC LIMIT 3",
+                    (r["category"],),
+                ).fetchall()
 
-        conn.close()
+                pct = round(r["cnt"] / total_count * 100, 1) if total_count > 0 else 0
+                ranking.append({
+                    "category": r["category"],
+                    "count": r["cnt"],
+                    "percentage": pct,
+                    "recent_examples": [
+                        {"text": ex["converted_text"], "project_id": ex["project_id"]}
+                        for ex in examples
+                    ],
+                })
+        finally:
+            conn.close()
+
         self._set_cached(cache_key, ranking)
         return ranking
 
@@ -271,17 +274,18 @@ class QualityStatsCalculator:
             return cached
 
         conn = self._get_db()
-
-        # feedbacksのcreated_byでグルーピングし、関連プロジェクトのスコアを取得
-        rows = conn.execute(
-            "SELECT DISTINCT f.created_by, f.project_id, p.quality_score, p.shoot_date "
-            "FROM feedbacks f "
-            "JOIN projects p ON f.project_id = p.id "
-            "WHERE f.created_by IS NOT NULL AND f.created_by != '' "
-            "AND p.quality_score IS NOT NULL "
-            "ORDER BY f.created_by, p.shoot_date ASC"
-        ).fetchall()
-        conn.close()
+        try:
+            # feedbacksのcreated_byでグルーピングし、関連プロジェクトのスコアを取得
+            rows = conn.execute(
+                "SELECT DISTINCT f.created_by, f.project_id, p.quality_score, p.shoot_date "
+                "FROM feedbacks f "
+                "JOIN projects p ON f.project_id = p.id "
+                "WHERE f.created_by IS NOT NULL AND f.created_by != '' "
+                "AND p.quality_score IS NOT NULL "
+                "ORDER BY f.created_by, p.shoot_date ASC"
+            ).fetchall()
+        finally:
+            conn.close()
 
         # 編集者ごとに集計
         editor_data: dict[str, list] = defaultdict(list)
@@ -375,21 +379,21 @@ class QualityStatsCalculator:
             return []
 
         conn = self._get_db()
+        try:
+            # 全プロジェクトのスコアと日時を取得
+            all_projects = conn.execute(
+                "SELECT id, quality_score, created_at FROM projects "
+                "WHERE quality_score IS NOT NULL ORDER BY created_at ASC"
+            ).fetchall()
 
-        # 全プロジェクトのスコアと日時を取得
-        all_projects = conn.execute(
-            "SELECT id, quality_score, created_at FROM projects "
-            "WHERE quality_score IS NOT NULL ORDER BY created_at ASC"
-        ).fetchall()
-
-        # カテゴリ別のフィードバック数を取得
-        fb_counts = conn.execute(
-            "SELECT category, COUNT(*) as cnt FROM feedbacks "
-            "WHERE category IS NOT NULL GROUP BY category"
-        ).fetchall()
-        fb_count_map = {r["category"]: r["cnt"] for r in fb_counts}
-
-        conn.close()
+            # カテゴリ別のフィードバック数を取得
+            fb_counts = conn.execute(
+                "SELECT category, COUNT(*) as cnt FROM feedbacks "
+                "WHERE category IS NOT NULL GROUP BY category"
+            ).fetchall()
+            fb_count_map = {r["category"]: r["cnt"] for r in fb_counts}
+        finally:
+            conn.close()
 
         effects = []
         for rule in rules:
@@ -449,12 +453,14 @@ class QualityStatsCalculator:
             return cached
 
         conn = self._get_db()
-        rows = conn.execute(
-            "SELECT quality_score, shoot_date FROM projects "
-            "WHERE quality_score IS NOT NULL "
-            "ORDER BY shoot_date ASC"
-        ).fetchall()
-        conn.close()
+        try:
+            rows = conn.execute(
+                "SELECT quality_score, shoot_date FROM projects "
+                "WHERE quality_score IS NOT NULL "
+                "ORDER BY shoot_date ASC"
+            ).fetchall()
+        finally:
+            conn.close()
 
         scores = [r["quality_score"] for r in rows]
 
@@ -514,12 +520,14 @@ class QualityStatsCalculator:
             return cached
 
         conn = self._get_db()
-        rows = conn.execute(
-            "SELECT shoot_date, quality_score FROM projects "
-            "WHERE quality_score IS NOT NULL AND shoot_date IS NOT NULL "
-            "ORDER BY shoot_date ASC"
-        ).fetchall()
-        conn.close()
+        try:
+            rows = conn.execute(
+                "SELECT shoot_date, quality_score FROM projects "
+                "WHERE quality_score IS NOT NULL AND shoot_date IS NOT NULL "
+                "ORDER BY shoot_date ASC"
+            ).fetchall()
+        finally:
+            conn.close()
 
         # 月別に集計
         monthly: dict[str, list[int]] = defaultdict(list)
@@ -560,13 +568,14 @@ class QualityStatsCalculator:
             return cached
 
         conn = self._get_db()
-
-        # 基本統計
-        total = conn.execute("SELECT COUNT(*) FROM projects").fetchone()[0]
-        scored_rows = conn.execute(
-            "SELECT quality_score FROM projects WHERE quality_score IS NOT NULL"
-        ).fetchall()
-        conn.close()
+        try:
+            # 基本統計
+            total = conn.execute("SELECT COUNT(*) FROM projects").fetchone()[0]
+            scored_rows = conn.execute(
+                "SELECT quality_score FROM projects WHERE quality_score IS NOT NULL"
+            ).fetchall()
+        finally:
+            conn.close()
 
         scores = [r["quality_score"] for r in scored_rows]
 

@@ -27,8 +27,9 @@ router = APIRouter()
 def _get_db() -> sqlite3.Connection:
     """DB接続を取得する。api_server.pyと同一方式。"""
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(DB_PATH))
+    conn = sqlite3.connect(str(DB_PATH), timeout=10)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA busy_timeout=10000")
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
@@ -37,20 +38,22 @@ def _get_db() -> sqlite3.Connection:
 def _init_direction_edits_table():
     """direction_editsテーブルを作成する（冪等）。"""
     conn = _get_db()
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS direction_edits (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            project_id TEXT NOT NULL REFERENCES projects(id),
-            original_content TEXT,
-            edited_content TEXT NOT NULL,
-            edited_by TEXT NOT NULL,
-            edit_notes TEXT,
-            diff_summary TEXT,
-            created_at TEXT DEFAULT (datetime('now'))
-        )
-    """)
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS direction_edits (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id TEXT NOT NULL REFERENCES projects(id),
+                original_content TEXT,
+                edited_content TEXT NOT NULL,
+                edited_by TEXT NOT NULL,
+                edit_notes TEXT,
+                diff_summary TEXT,
+                created_at TEXT DEFAULT (datetime('now'))
+            )
+        """)
+        conn.commit()
+    finally:
+        conn.close()
 
 
 # モジュールインポート時にテーブル作成

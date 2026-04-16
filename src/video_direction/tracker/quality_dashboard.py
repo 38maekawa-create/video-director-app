@@ -9,12 +9,15 @@ from __future__ import annotations
 """
 
 import json
+import logging
 import os
 from datetime import datetime
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Optional
 
+
+logger = logging.getLogger(__name__)
 
 # デフォルトのデータ保存先
 DEFAULT_DATA_DIR = Path.home() / "TEKO" / "knowledge" / "raw-data" / "video-direction"
@@ -103,21 +106,27 @@ class QualityDashboard:
             try:
                 data = json.loads(self.data_file.read_text(encoding="utf-8"))
                 for vid, record_data in data.get("records", {}).items():
-                    snapshots = [
-                        QualitySnapshot(**s) for s in record_data.get("snapshots", [])
-                    ]
-                    self.records[vid] = VideoQualityRecord(
-                        video_id=record_data["video_id"],
-                        guest_name=record_data["guest_name"],
-                        video_title=record_data["video_title"],
-                        created_at=record_data["created_at"],
-                        updated_at=record_data["updated_at"],
-                        snapshots=snapshots,
-                        editor=record_data.get("editor", ""),
-                        improvement_rate=record_data.get("improvement_rate", 0.0),
-                    )
-            except (json.JSONDecodeError, KeyError, TypeError):
-                # データ破損の場合は空で初期化
+                    try:
+                        snapshots = []
+                        for s in record_data.get("snapshots", []):
+                            try:
+                                snapshots.append(QualitySnapshot(**s))
+                            except TypeError as e:
+                                logger.warning("QualitySnapshotの復元をスキップ（動画 %s）: %s", vid, e)
+                        self.records[vid] = VideoQualityRecord(
+                            video_id=record_data["video_id"],
+                            guest_name=record_data["guest_name"],
+                            video_title=record_data["video_title"],
+                            created_at=record_data["created_at"],
+                            updated_at=record_data["updated_at"],
+                            snapshots=snapshots,
+                            editor=record_data.get("editor", ""),
+                            improvement_rate=record_data.get("improvement_rate", 0.0),
+                        )
+                    except (KeyError, TypeError) as e:
+                        logger.warning("VideoQualityRecordの復元をスキップ（動画 %s）: %s", vid, e)
+            except (json.JSONDecodeError, KeyError, TypeError) as e:
+                logger.warning("品質ダッシュボードデータの読み込みに失敗。空で初期化: %s", e)
                 self.records = {}
 
     def _save(self):

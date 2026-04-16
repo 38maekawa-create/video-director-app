@@ -326,12 +326,15 @@ def _suggest_closing(
 
 def _timestamp_to_seconds(ts: str) -> int:
     """タイムスタンプを秒数に変換"""
-    parts = ts.split(":")
-    if len(parts) == 2:
-        return int(parts[0]) * 60 + int(parts[1])
-    elif len(parts) == 3:
-        return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
-    return 0
+    try:
+        parts = ts.split(":")
+        if len(parts) == 2:
+            return int(parts[0]) * 60 + int(parts[1])
+        elif len(parts) == 3:
+            return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+        return 0
+    except (ValueError, AttributeError):
+        return 0
 
 
 def _seconds_to_timestamp(seconds: int) -> str:

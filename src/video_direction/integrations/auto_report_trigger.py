@@ -312,14 +312,29 @@ def generate_report_for_project(project_id: str) -> Optional[str]:
         return None
 
 
+# スレッド重複実行防止用
+_running_projects: set = set()
+_running_lock = threading.Lock()
+
+
 def trigger_auto_report(project_id: str) -> None:
     """source_videos登録後に呼ばれるトリガー関数
 
     バックグラウンドスレッドでレポート生成を非同期実行する。
     既にレポートが生成済みの場合はスキップする。
+    同一project_idのスレッドが既に実行中の場合もスキップする。
     """
     if not should_generate_report(project_id):
         return
+
+    with _running_lock:
+        if project_id in _running_projects:
+            logger.info(
+                "自動レポート生成: 既に実行中のためスキップ: project=%s",
+                project_id,
+            )
+            return
+        _running_projects.add(project_id)
 
     def _run():
         try:
@@ -340,6 +355,9 @@ def trigger_auto_report(project_id: str) -> None:
                 project_id, e,
                 exc_info=True,
             )
+        finally:
+            with _running_lock:
+                _running_projects.discard(project_id)
 
     thread = threading.Thread(
         target=_run,

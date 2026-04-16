@@ -52,7 +52,7 @@ class AlternativeStrength:
 def evaluate_income(video_data: VideoData) -> IncomeEvaluation:
     """年収演出判断を行う"""
     profile = video_data.profiles[0] if video_data.profiles else None
-    if not profile:
+    if profile is None:
         return IncomeEvaluation(
             income_value=None, age_bracket="不明",
             threshold=700, emphasize=False,

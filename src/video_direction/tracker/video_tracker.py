@@ -6,6 +6,7 @@ YouTube URLを登録し、メタデータ・字幕を自動取得。
 分析→学習→ディレクション反映のE2Eフローの起点。
 """
 import json
+import logging
 import subprocess
 import re
 from pathlib import Path
@@ -33,6 +34,9 @@ class TrackedVideo:
     updated_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
 
+logger = logging.getLogger(__name__)
+
+
 class VideoTracker:
     """外部映像の収集・追跡を管理"""
 
@@ -46,10 +50,17 @@ class VideoTracker:
     def _load_index(self):
         """インデックスファイルからトラッキングデータを読み込み"""
         if self.index_path.exists():
-            data = json.loads(self.index_path.read_text())
-            for v in data.get("videos", []):
-                video = TrackedVideo(**v)
-                self._videos[video.id] = video
+            try:
+                data = json.loads(self.index_path.read_text())
+                for v in data.get("videos", []):
+                    try:
+                        video = TrackedVideo(**v)
+                        self._videos[video.id] = video
+                    except TypeError as e:
+                        logger.warning("TrackedVideoの復元をスキップ（不正データ）: %s", e)
+            except (json.JSONDecodeError, KeyError, TypeError) as e:
+                logger.warning("トラッキングインデックスの読み込みに失敗。空辞書にフォールバック: %s", e)
+                self._videos = {}
 
     def _save_index(self):
         """インデックスファイルに保存"""

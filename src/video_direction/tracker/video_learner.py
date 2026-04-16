@@ -2,6 +2,7 @@ from __future__ import annotations
 
 """トラッキング映像学習: 分析結果からパターンを学習"""
 import json
+import logging
 from pathlib import Path
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
@@ -40,6 +41,9 @@ class VideoLearningRule:
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
 
+logger = logging.getLogger(__name__)
+
+
 class VideoLearner:
     """トラッキング映像の分析結果からパターンを学習"""
 
@@ -52,10 +56,17 @@ class VideoLearner:
 
     def _load(self):
         if self.patterns_path.exists():
-            data = json.loads(self.patterns_path.read_text())
-            for p in data.get("patterns", []):
-                pattern = VideoPattern(**p)
-                self._patterns[pattern.id] = pattern
+            try:
+                data = json.loads(self.patterns_path.read_text())
+                for p in data.get("patterns", []):
+                    try:
+                        pattern = VideoPattern(**p)
+                        self._patterns[pattern.id] = pattern
+                    except TypeError as e:
+                        logger.warning("VideoPatternの復元をスキップ（不正データ）: %s", e)
+            except (json.JSONDecodeError, KeyError, TypeError) as e:
+                logger.warning("映像パターンデータの読み込みに失敗。空辞書にフォールバック: %s", e)
+                self._patterns = {}
 
     def _save(self):
         self.patterns_path.write_text(

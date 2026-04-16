@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """編集者管理: 名簿・スキル・工程・実績の統合管理"""
 import json
 from pathlib import Path

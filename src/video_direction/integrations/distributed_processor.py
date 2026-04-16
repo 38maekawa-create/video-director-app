@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """マルチMac分散処理: SSH経由で重い処理を他Macに分散"""
 import subprocess
 import json

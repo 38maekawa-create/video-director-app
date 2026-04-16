@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """映像トラッキング: 外部映像の収集・追跡
 
 YouTube URLを登録し、メタデータ・字幕を自動取得。

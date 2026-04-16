@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """トラッキング映像学習: 分析結果からパターンを学習"""
 import json
 from pathlib import Path

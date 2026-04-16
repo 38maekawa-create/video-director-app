@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # 映像品質トラッキングモジュール
 from .video_tracker import VideoTracker, TrackedVideo
 from .video_analyzer import VideoAnalyzer, VideoAnalysisResult

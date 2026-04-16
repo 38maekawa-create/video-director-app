@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """品質改善ループ: ディレクション→編集→評価→FB→ルール更新のPDCA自動化"""
 import json
 from pathlib import Path

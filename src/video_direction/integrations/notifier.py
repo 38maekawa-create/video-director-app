@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """通知: Telegram/LINE通知連携"""
 import json
 import urllib.request

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """タイミング3: 編集後自動QCパイプライン
 
 Phase1: Whisper音声文字起こし + GPT-4oビジョンテロップ読み取り + 突合によるテロップ誤字・脱字の自動検出。

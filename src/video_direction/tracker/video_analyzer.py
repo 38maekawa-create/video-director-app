@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """トラッキング映像分析: 映像の要素分解
 
 ルールベース分析 + LLM分析（Claude Sonnet）を組み合わせた多層分析。

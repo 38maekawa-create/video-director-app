@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """手修正学習: 手修正のdiff結果からパターンを抽出し、ディレクションルールに自動反映"""
 import json
 import re

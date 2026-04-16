@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """人間フィードバック学習: FB蓄積→ディレクションルール自動反映"""
 import json
 import re

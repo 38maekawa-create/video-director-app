@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """音声FBをEditLearnerのingest_edit()互換形式に変換するアダプター
 
 AI生成物（タイトル・概要欄等）への音声FBを、EditLearnerが期待する

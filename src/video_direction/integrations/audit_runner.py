@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """定期巡回監査: パイプライン死活監視・品質異常値検出・滞留アラート"""
 import json
 import sqlite3

@@ -48,110 +48,111 @@ def _get_db() -> sqlite3.Connection:
 def init_db():
     """テーブル作成（冪等）"""
     conn = _get_db()
-    conn.executescript("""
-        CREATE TABLE IF NOT EXISTS projects (
-            id TEXT PRIMARY KEY,
-            guest_name TEXT NOT NULL,
-            title TEXT NOT NULL,
-            status TEXT NOT NULL DEFAULT 'directed',
-            shoot_date TEXT,
-            guest_age INTEGER,
-            guest_occupation TEXT,
-            quality_score INTEGER,
-            has_unsent_feedback INTEGER DEFAULT 0,
-            unreviewed_count INTEGER DEFAULT 0,
-            direction_report_url TEXT,
-            source_video TEXT,       -- JSON
-            edited_video TEXT,       -- JSON
-            feedback_summary TEXT,   -- JSON
-            knowledge TEXT,          -- JSON
-            category TEXT,           -- プロジェクトカテゴリ: teko_member / teko_realestate / NULL
-            created_at TEXT DEFAULT (datetime('now')),
-            updated_at TEXT DEFAULT (datetime('now'))
-        );
+    try:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS projects (
+                id TEXT PRIMARY KEY,
+                guest_name TEXT NOT NULL,
+                title TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'directed',
+                shoot_date TEXT,
+                guest_age INTEGER,
+                guest_occupation TEXT,
+                quality_score INTEGER,
+                has_unsent_feedback INTEGER DEFAULT 0,
+                unreviewed_count INTEGER DEFAULT 0,
+                direction_report_url TEXT,
+                source_video TEXT,       -- JSON
+                edited_video TEXT,       -- JSON
+                feedback_summary TEXT,   -- JSON
+                knowledge TEXT,          -- JSON
+                category TEXT,           -- プロジェクトカテゴリ: teko_member / teko_realestate / NULL
+                created_at TEXT DEFAULT (datetime('now')),
+                updated_at TEXT DEFAULT (datetime('now'))
+            );
 
-        CREATE TABLE IF NOT EXISTS youtube_assets (
-            project_id TEXT PRIMARY KEY REFERENCES projects(id),
-            thumbnail_design TEXT,   -- JSON
-            title_proposals TEXT,    -- JSON
-            description_original TEXT,
-            description_edited TEXT,
-            description_finalized_at TEXT,
-            description_finalized_by TEXT,
-            selected_title_index INTEGER,
-            edited_title TEXT,
-            last_edited_by TEXT,
-            generated_at TEXT DEFAULT (datetime('now')),
-            updated_at TEXT DEFAULT (datetime('now'))
-        );
+            CREATE TABLE IF NOT EXISTS youtube_assets (
+                project_id TEXT PRIMARY KEY REFERENCES projects(id),
+                thumbnail_design TEXT,   -- JSON
+                title_proposals TEXT,    -- JSON
+                description_original TEXT,
+                description_edited TEXT,
+                description_finalized_at TEXT,
+                description_finalized_by TEXT,
+                selected_title_index INTEGER,
+                edited_title TEXT,
+                last_edited_by TEXT,
+                generated_at TEXT DEFAULT (datetime('now')),
+                updated_at TEXT DEFAULT (datetime('now'))
+            );
 
-        CREATE TABLE IF NOT EXISTS feedbacks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            project_id TEXT REFERENCES projects(id),
-            timestamp_mark TEXT,
-            raw_voice_text TEXT,
-            converted_text TEXT,
-            category TEXT,
-            priority TEXT DEFAULT 'medium',
-            created_by TEXT,
-            is_sent INTEGER DEFAULT 0,
-            editor_status TEXT DEFAULT '未対応',
-            learning_effect TEXT,
-            created_at TEXT DEFAULT (datetime('now'))
-        );
+            CREATE TABLE IF NOT EXISTS feedbacks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id TEXT REFERENCES projects(id),
+                timestamp_mark TEXT,
+                raw_voice_text TEXT,
+                converted_text TEXT,
+                category TEXT,
+                priority TEXT DEFAULT 'medium',
+                created_by TEXT,
+                is_sent INTEGER DEFAULT 0,
+                editor_status TEXT DEFAULT '未対応',
+                learning_effect TEXT,
+                created_at TEXT DEFAULT (datetime('now'))
+            );
 
-        CREATE TABLE IF NOT EXISTS source_videos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            project_id TEXT NOT NULL REFERENCES projects(id),
-            youtube_url TEXT NOT NULL,
-            video_id TEXT NOT NULL,
-            title TEXT,
-            duration TEXT,
-            quality_status TEXT DEFAULT 'pending',
-            source TEXT DEFAULT 'manual',
-            knowledge_file TEXT,
-            created_at TEXT DEFAULT (datetime('now'))
-        );
+            CREATE TABLE IF NOT EXISTS source_videos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id TEXT NOT NULL REFERENCES projects(id),
+                youtube_url TEXT NOT NULL,
+                video_id TEXT NOT NULL,
+                title TEXT,
+                duration TEXT,
+                quality_status TEXT DEFAULT 'pending',
+                source TEXT DEFAULT 'manual',
+                knowledge_file TEXT,
+                created_at TEXT DEFAULT (datetime('now'))
+            );
 
-        CREATE TABLE IF NOT EXISTS fb_tracking (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            project_id TEXT NOT NULL REFERENCES projects(id),
-            comment_uri TEXT NOT NULL,
-            status TEXT NOT NULL DEFAULT 'pending',
-            updated_at TEXT DEFAULT (datetime('now')),
-            UNIQUE(project_id, comment_uri)
-        );
-    """)
-    conn.commit()
-
-    # categoryカラムのマイグレーション（既存DBへの追加対応）
-    columns = [row[1] for row in conn.execute("PRAGMA table_info(projects)").fetchall()]
-    if "category" not in columns:
-        conn.execute("ALTER TABLE projects ADD COLUMN category TEXT")
+            CREATE TABLE IF NOT EXISTS fb_tracking (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id TEXT NOT NULL REFERENCES projects(id),
+                comment_uri TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'pending',
+                updated_at TEXT DEFAULT (datetime('now')),
+                UNIQUE(project_id, comment_uri)
+            );
+        """)
         conn.commit()
 
-    # feedback_targetカラムのマイグレーション（AI生成物へのFB種別管理）
-    fb_columns = [row[1] for row in conn.execute("PRAGMA table_info(feedbacks)").fetchall()]
-    if "feedback_target" not in fb_columns:
-        conn.execute("ALTER TABLE feedbacks ADD COLUMN feedback_target TEXT DEFAULT 'direction'")
-        conn.commit()
+        # categoryカラムのマイグレーション（既存DBへの追加対応）
+        columns = [row[1] for row in conn.execute("PRAGMA table_info(projects)").fetchall()]
+        if "category" not in columns:
+            conn.execute("ALTER TABLE projects ADD COLUMN category TEXT")
+            conn.commit()
 
-    # 承認フロー用カラムのマイグレーション（FB変換結果の事前承認制）
-    fb_columns = [row[1] for row in conn.execute("PRAGMA table_info(feedbacks)").fetchall()]
-    if "approval_status" not in fb_columns:
-        conn.execute("ALTER TABLE feedbacks ADD COLUMN approval_status TEXT DEFAULT 'pending'")
-        conn.commit()
-    if "approved_at" not in fb_columns:
-        conn.execute("ALTER TABLE feedbacks ADD COLUMN approved_at TEXT")
-        conn.commit()
-    if "modified_text" not in fb_columns:
-        conn.execute("ALTER TABLE feedbacks ADD COLUMN modified_text TEXT")
-        conn.commit()
-    if "approved_by" not in fb_columns:
-        conn.execute("ALTER TABLE feedbacks ADD COLUMN approved_by TEXT")
-        conn.commit()
+        # feedback_targetカラムのマイグレーション（AI生成物へのFB種別管理）
+        fb_columns = [row[1] for row in conn.execute("PRAGMA table_info(feedbacks)").fetchall()]
+        if "feedback_target" not in fb_columns:
+            conn.execute("ALTER TABLE feedbacks ADD COLUMN feedback_target TEXT DEFAULT 'direction'")
+            conn.commit()
 
-    conn.close()
+        # 承認フロー用カラムのマイグレーション（FB変換結果の事前承認制）
+        fb_columns = [row[1] for row in conn.execute("PRAGMA table_info(feedbacks)").fetchall()]
+        if "approval_status" not in fb_columns:
+            conn.execute("ALTER TABLE feedbacks ADD COLUMN approval_status TEXT DEFAULT 'pending'")
+            conn.commit()
+        if "approved_at" not in fb_columns:
+            conn.execute("ALTER TABLE feedbacks ADD COLUMN approved_at TEXT")
+            conn.commit()
+        if "modified_text" not in fb_columns:
+            conn.execute("ALTER TABLE feedbacks ADD COLUMN modified_text TEXT")
+            conn.commit()
+        if "approved_by" not in fb_columns:
+            conn.execute("ALTER TABLE feedbacks ADD COLUMN approved_by TEXT")
+            conn.commit()
+    finally:
+        conn.close()
 
 
 # --- ナレッジページURL マッチング ---
@@ -538,7 +539,11 @@ def update_project(project_id: str, project: ProjectCreate):
         cur = conn.execute(
             """UPDATE projects SET guest_name=?, title=?, status=?, shoot_date=?,
                guest_age=?, guest_occupation=?, quality_score=?, direction_report_url=?,
-               source_video=?, edited_video=?, feedback_summary=?, knowledge=?, category=?, updated_at=?
+               source_video=COALESCE(?, projects.source_video),
+               edited_video=COALESCE(?, projects.edited_video),
+               feedback_summary=COALESCE(?, projects.feedback_summary),
+               knowledge=COALESCE(?, projects.knowledge),
+               category=?, updated_at=?
                WHERE id=?""",
             (
                 project.guest_name, project.title, project.status, project.shoot_date,
@@ -988,23 +993,21 @@ def list_pending_feedbacks():
 def approve_feedback(feedback_id: int, body: dict = None):
     """FBを承認する（approval_status='approved'に変更）"""
     conn = _get_db()
-    existing = conn.execute(
-        "SELECT id, created_by FROM feedbacks WHERE id = ?", (feedback_id,)
-    ).fetchone()
-    if not existing:
-        conn.close()
-        raise HTTPException(status_code=404, detail="Feedback not found")
-
-    # 承認者のチェック（bodyにapproved_byがあれば、created_byと一致するか検証）
-    approved_by = (body or {}).get("approved_by", existing["created_by"])
-    if approved_by != existing["created_by"]:
-        conn.close()
-        raise HTTPException(
-            status_code=403,
-            detail="FB投稿者本人のみが承認できます"
-        )
-
     try:
+        existing = conn.execute(
+            "SELECT id, created_by FROM feedbacks WHERE id = ?", (feedback_id,)
+        ).fetchone()
+        if not existing:
+            raise HTTPException(status_code=404, detail="Feedback not found")
+
+        # 承認者のチェック（bodyにapproved_byがあれば、created_byと一致するか検証）
+        approved_by = (body or {}).get("approved_by", existing["created_by"])
+        if approved_by != existing["created_by"]:
+            raise HTTPException(
+                status_code=403,
+                detail="FB投稿者本人のみが承認できます"
+            )
+
         cur = conn.execute(
             "UPDATE feedbacks SET approval_status = 'approved', "
             "approved_at = datetime('now'), approved_by = ? "
@@ -1028,23 +1031,21 @@ def modify_feedback(feedback_id: int, body: dict):
         raise HTTPException(status_code=400, detail="modified_text is required")
 
     conn = _get_db()
-    existing = conn.execute(
-        "SELECT id, created_by FROM feedbacks WHERE id = ?", (feedback_id,)
-    ).fetchone()
-    if not existing:
-        conn.close()
-        raise HTTPException(status_code=404, detail="Feedback not found")
-
-    # 承認者のチェック
-    approved_by = body.get("approved_by", existing["created_by"])
-    if approved_by != existing["created_by"]:
-        conn.close()
-        raise HTTPException(
-            status_code=403,
-            detail="FB投稿者本人のみが修正承認できます"
-        )
-
     try:
+        existing = conn.execute(
+            "SELECT id, created_by FROM feedbacks WHERE id = ?", (feedback_id,)
+        ).fetchone()
+        if not existing:
+            raise HTTPException(status_code=404, detail="Feedback not found")
+
+        # 承認者のチェック
+        approved_by = body.get("approved_by", existing["created_by"])
+        if approved_by != existing["created_by"]:
+            raise HTTPException(
+                status_code=403,
+                detail="FB投稿者本人のみが修正承認できます"
+            )
+
         cur = conn.execute(
             "UPDATE feedbacks SET approval_status = 'modified', "
             "approved_at = datetime('now'), modified_text = ?, approved_by = ? "
@@ -1069,23 +1070,21 @@ def modify_feedback(feedback_id: int, body: dict):
 def reject_feedback(feedback_id: int, body: dict = None):
     """FBを却下する（approval_status='rejected'に変更）"""
     conn = _get_db()
-    existing = conn.execute(
-        "SELECT id, created_by FROM feedbacks WHERE id = ?", (feedback_id,)
-    ).fetchone()
-    if not existing:
-        conn.close()
-        raise HTTPException(status_code=404, detail="Feedback not found")
-
-    # 承認者のチェック
-    approved_by = (body or {}).get("approved_by", existing["created_by"])
-    if approved_by != existing["created_by"]:
-        conn.close()
-        raise HTTPException(
-            status_code=403,
-            detail="FB投稿者本人のみが却下できます"
-        )
-
     try:
+        existing = conn.execute(
+            "SELECT id, created_by FROM feedbacks WHERE id = ?", (feedback_id,)
+        ).fetchone()
+        if not existing:
+            raise HTTPException(status_code=404, detail="Feedback not found")
+
+        # 承認者のチェック
+        approved_by = (body or {}).get("approved_by", existing["created_by"])
+        if approved_by != existing["created_by"]:
+            raise HTTPException(
+                status_code=403,
+                detail="FB投稿者本人のみが却下できます"
+            )
+
         cur = conn.execute(
             "UPDATE feedbacks SET approval_status = 'rejected', "
             "approved_at = datetime('now'), approved_by = ? "
@@ -4260,111 +4259,110 @@ def get_fb_tracker(project_id: str):
     import urllib.request
 
     conn = _get_db()
-    proj = conn.execute("SELECT id, edited_video FROM projects WHERE id = ?", (project_id,)).fetchone()
-    if not proj:
+    try:
+        proj = conn.execute("SELECT id, edited_video FROM projects WHERE id = ?", (project_id,)).fetchone()
+        if not proj:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        # 全バージョンのvimeo_idを取得
+        versions = conn.execute(
+            "SELECT vimeo_id, version_label, version_order FROM video_versions "
+            "WHERE project_id = ? ORDER BY version_order ASC",
+            (project_id,),
+        ).fetchall()
+
+        vimeo_ids = []
+        if versions:
+            for v in versions:
+                if v["vimeo_id"]:
+                    vimeo_ids.append({"vimeo_id": v["vimeo_id"], "label": v["version_label"], "order": v["version_order"]})
+        else:
+            ev = proj["edited_video"] or ""
+            m = re.search(r"vimeo\.com/(\d+)", ev)
+            if m:
+                vimeo_ids.append({"vimeo_id": m.group(1), "label": "最新", "order": 0})
+
+        if not vimeo_ids:
+            return {"project_id": project_id, "items": [], "summary": {"total": 0, "resolved": 0, "pending": 0}}
+
+        # Vimeoトークン取得
+        token = os.environ.get("VIMEO_ACCESS_TOKEN", "")
+        if not token:
+            api_keys_path = Path.home() / ".config" / "maekawa" / "api-keys.env"
+            if api_keys_path.exists():
+                for line in api_keys_path.read_text().splitlines():
+                    if line.startswith("VIMEO_ACCESS_TOKEN="):
+                        token = line.split("=", 1)[1].strip().strip('"').strip("'")
+                        break
+        if not token:
+            return {"project_id": project_id, "items": [], "message": "VIMEO_ACCESS_TOKENが未設定です"}
+
+        # 既存のトラッキングステータスをDB取得
+        tracking_rows = conn.execute(
+            "SELECT comment_uri, status, updated_at FROM fb_tracking WHERE project_id = ?",
+            (project_id,),
+        ).fetchall()
+        tracking_map = {r["comment_uri"]: {"status": r["status"], "updated_at": r["updated_at"]} for r in tracking_rows}
+
+        # Vimeoコメント取得＋ステータスマージ
+        items = []
+        for vid_info in vimeo_ids:
+            vid = vid_info["vimeo_id"]
+            label = vid_info["label"]
+            url = f"https://api.vimeo.com/videos/{vid}/comments?per_page=100"
+            try:
+                req = urllib.request.Request(url, headers={
+                    "Authorization": f"Bearer {token}",
+                    "Accept": "application/json",
+                })
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    for c in data.get("data", []):
+                        uri = c.get("uri", "")
+                        text = c.get("text", "")
+                        timecode = None
+                        tc_match = re.search(r"\[?(\d{1,2}:\d{2}(?::\d{2})?)\]?", text)
+                        if tc_match:
+                            timecode = tc_match.group(1)
+
+                        tracking = tracking_map.get(uri, {})
+                        status = tracking.get("status", "pending")
+
+                        # 新規コメントはDBに自動登録
+                        if uri and uri not in tracking_map:
+                            try:
+                                conn.execute(
+                                    "INSERT OR IGNORE INTO fb_tracking (project_id, comment_uri, status) VALUES (?, ?, 'pending')",
+                                    (project_id, uri),
+                                )
+                            except Exception:
+                                pass
+
+                        items.append({
+                            "uri": uri,
+                            "vimeo_id": vid,
+                            "version_label": label,
+                            "text": text,
+                            "timecode": timecode,
+                            "created_time": c.get("created_time", ""),
+                            "user": c.get("user", {}).get("name", ""),
+                            "status": status,
+                        })
+            except Exception as e:
+                items.append({
+                    "uri": "",
+                    "vimeo_id": vid,
+                    "version_label": label,
+                    "text": f"取得エラー: {str(e)}",
+                    "timecode": None,
+                    "created_time": "",
+                    "user": "system",
+                    "status": "error",
+                })
+
+        conn.commit()
+    finally:
         conn.close()
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    # 全バージョンのvimeo_idを取得
-    versions = conn.execute(
-        "SELECT vimeo_id, version_label, version_order FROM video_versions "
-        "WHERE project_id = ? ORDER BY version_order ASC",
-        (project_id,),
-    ).fetchall()
-
-    vimeo_ids = []
-    if versions:
-        for v in versions:
-            if v["vimeo_id"]:
-                vimeo_ids.append({"vimeo_id": v["vimeo_id"], "label": v["version_label"], "order": v["version_order"]})
-    else:
-        ev = proj["edited_video"] or ""
-        m = re.search(r"vimeo\.com/(\d+)", ev)
-        if m:
-            vimeo_ids.append({"vimeo_id": m.group(1), "label": "最新", "order": 0})
-
-    if not vimeo_ids:
-        conn.close()
-        return {"project_id": project_id, "items": [], "summary": {"total": 0, "resolved": 0, "pending": 0}}
-
-    # Vimeoトークン取得
-    token = os.environ.get("VIMEO_ACCESS_TOKEN", "")
-    if not token:
-        api_keys_path = Path.home() / ".config" / "maekawa" / "api-keys.env"
-        if api_keys_path.exists():
-            for line in api_keys_path.read_text().splitlines():
-                if line.startswith("VIMEO_ACCESS_TOKEN="):
-                    token = line.split("=", 1)[1].strip().strip('"').strip("'")
-                    break
-    if not token:
-        conn.close()
-        return {"project_id": project_id, "items": [], "message": "VIMEO_ACCESS_TOKENが未設定です"}
-
-    # 既存のトラッキングステータスをDB取得
-    tracking_rows = conn.execute(
-        "SELECT comment_uri, status, updated_at FROM fb_tracking WHERE project_id = ?",
-        (project_id,),
-    ).fetchall()
-    tracking_map = {r["comment_uri"]: {"status": r["status"], "updated_at": r["updated_at"]} for r in tracking_rows}
-
-    # Vimeoコメント取得＋ステータスマージ
-    items = []
-    for vid_info in vimeo_ids:
-        vid = vid_info["vimeo_id"]
-        label = vid_info["label"]
-        url = f"https://api.vimeo.com/videos/{vid}/comments?per_page=100"
-        try:
-            req = urllib.request.Request(url, headers={
-                "Authorization": f"Bearer {token}",
-                "Accept": "application/json",
-            })
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                for c in data.get("data", []):
-                    uri = c.get("uri", "")
-                    text = c.get("text", "")
-                    timecode = None
-                    tc_match = re.search(r"\[?(\d{1,2}:\d{2}(?::\d{2})?)\]?", text)
-                    if tc_match:
-                        timecode = tc_match.group(1)
-
-                    tracking = tracking_map.get(uri, {})
-                    status = tracking.get("status", "pending")
-
-                    # 新規コメントはDBに自動登録
-                    if uri and uri not in tracking_map:
-                        try:
-                            conn.execute(
-                                "INSERT OR IGNORE INTO fb_tracking (project_id, comment_uri, status) VALUES (?, ?, 'pending')",
-                                (project_id, uri),
-                            )
-                        except Exception:
-                            pass
-
-                    items.append({
-                        "uri": uri,
-                        "vimeo_id": vid,
-                        "version_label": label,
-                        "text": text,
-                        "timecode": timecode,
-                        "created_time": c.get("created_time", ""),
-                        "user": c.get("user", {}).get("name", ""),
-                        "status": status,
-                    })
-        except Exception as e:
-            items.append({
-                "uri": "",
-                "vimeo_id": vid,
-                "version_label": label,
-                "text": f"取得エラー: {str(e)}",
-                "timecode": None,
-                "created_time": "",
-                "user": "system",
-                "status": "error",
-            })
-
-    conn.commit()
-    conn.close()
 
     resolved = sum(1 for i in items if i["status"] == "resolved")
     return {
@@ -4389,15 +4387,17 @@ def update_fb_tracking(project_id: str, comment_uri: str, body: FBTrackingUpdate
         raise HTTPException(status_code=400, detail="statusは 'pending' または 'resolved' のみ")
 
     conn = _get_db()
-    # UPSERT
-    conn.execute(
-        "INSERT INTO fb_tracking (project_id, comment_uri, status, updated_at) "
-        "VALUES (?, ?, ?, datetime('now')) "
-        "ON CONFLICT(project_id, comment_uri) DO UPDATE SET status = excluded.status, updated_at = excluded.updated_at",
-        (project_id, comment_uri, body.status),
-    )
-    conn.commit()
-    conn.close()
+    try:
+        # UPSERT
+        conn.execute(
+            "INSERT INTO fb_tracking (project_id, comment_uri, status, updated_at) "
+            "VALUES (?, ?, ?, datetime('now')) "
+            "ON CONFLICT(project_id, comment_uri) DO UPDATE SET status = excluded.status, updated_at = excluded.updated_at",
+            (project_id, comment_uri, body.status),
+        )
+        conn.commit()
+    finally:
+        conn.close()
     return {"ok": True, "comment_uri": comment_uri, "status": body.status}
 
 
@@ -4591,58 +4591,56 @@ def get_transcript_diff(project_id: str, version: Optional[str] = None):
     version: 比較対象のバージョン（指定なし=最新版）
     """
     conn = _get_db()
-
-    proj = conn.execute(
-        "SELECT id, guest_name, shoot_date, edited_video FROM projects WHERE id = ?",
-        (project_id,),
-    ).fetchone()
-    if not proj:
-        conn.close()
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    guest_name = proj["guest_name"]
-    shoot_date = proj["shoot_date"]
-
-    # 素材の文字起こし全文を読み込み
-    transcript_text = _load_transcript(guest_name, shoot_date)
-    if not transcript_text:
-        conn.close()
-        return {
-            "project_id": project_id,
-            "status": "no_transcript",
-            "message": f"ゲスト '{guest_name}' の文字起こしファイルが見つかりません",
-            "segments": [],
-        }
-
-    # 比較対象のVimeo動画IDを取得
-    if version:
-        ver_row = conn.execute(
-            "SELECT vimeo_id, version_label FROM video_versions "
-            "WHERE project_id = ? AND version_label = ?",
-            (project_id, version),
-        ).fetchone()
-    else:
-        # 最新版を取得
-        ver_row = conn.execute(
-            "SELECT vimeo_id, version_label FROM video_versions "
-            "WHERE project_id = ? ORDER BY version_order DESC LIMIT 1",
+    try:
+        proj = conn.execute(
+            "SELECT id, guest_name, shoot_date, edited_video FROM projects WHERE id = ?",
             (project_id,),
         ).fetchone()
+        if not proj:
+            raise HTTPException(status_code=404, detail="Project not found")
 
-    compare_vimeo_id = None
-    compare_label = "不明"
-    if ver_row and ver_row["vimeo_id"]:
-        compare_vimeo_id = str(ver_row["vimeo_id"])
-        compare_label = ver_row["version_label"]
-    else:
-        # video_versionsにない場合、edited_videoからフォールバック
-        ev = proj["edited_video"] or ""
-        m = re.search(r"vimeo\.com/(\d+)", ev)
-        if m:
-            compare_vimeo_id = m.group(1)
-            compare_label = "最新"
+        guest_name = proj["guest_name"]
+        shoot_date = proj["shoot_date"]
 
-    conn.close()
+        # 素材の文字起こし全文を読み込み
+        transcript_text = _load_transcript(guest_name, shoot_date)
+        if not transcript_text:
+            return {
+                "project_id": project_id,
+                "status": "no_transcript",
+                "message": f"ゲスト '{guest_name}' の文字起こしファイルが見つかりません",
+                "segments": [],
+            }
+
+        # 比較対象のVimeo動画IDを取得
+        if version:
+            ver_row = conn.execute(
+                "SELECT vimeo_id, version_label FROM video_versions "
+                "WHERE project_id = ? AND version_label = ?",
+                (project_id, version),
+            ).fetchone()
+        else:
+            # 最新版を取得
+            ver_row = conn.execute(
+                "SELECT vimeo_id, version_label FROM video_versions "
+                "WHERE project_id = ? ORDER BY version_order DESC LIMIT 1",
+                (project_id,),
+            ).fetchone()
+
+        compare_vimeo_id = None
+        compare_label = "不明"
+        if ver_row and ver_row["vimeo_id"]:
+            compare_vimeo_id = str(ver_row["vimeo_id"])
+            compare_label = ver_row["version_label"]
+        else:
+            # video_versionsにない場合、edited_videoからフォールバック
+            ev = proj["edited_video"] or ""
+            m = re.search(r"vimeo\.com/(\d+)", ev)
+            if m:
+                compare_vimeo_id = m.group(1)
+                compare_label = "最新"
+    finally:
+        conn.close()
 
     # Vimeo字幕を取得
     caption_text = None
@@ -4712,39 +4710,39 @@ def get_transcript_diff(project_id: str, version: Optional[str] = None):
 def get_feedbacks_with_timecodes(project_id: str):
     """レビュータブ用: タイムコード付きフィードバック一覧を返す。"""
     conn = _get_db()
+    try:
+        proj = conn.execute(
+            "SELECT id, edited_video FROM projects WHERE id = ?", (project_id,)
+        ).fetchone()
+        if not proj:
+            raise HTTPException(status_code=404, detail="Project not found")
 
-    proj = conn.execute(
-        "SELECT id, edited_video FROM projects WHERE id = ?", (project_id,)
-    ).fetchone()
-    if not proj:
+        # 最新バージョンのvimeo_idを取得
+        vimeo_id = ""
+        latest_ver = conn.execute(
+            "SELECT vimeo_id FROM video_versions WHERE project_id = ? "
+            "ORDER BY version_order DESC LIMIT 1",
+            (project_id,),
+        ).fetchone()
+        if latest_ver and latest_ver["vimeo_id"]:
+            vimeo_id = latest_ver["vimeo_id"]
+        else:
+            # フォールバック: projects.edited_video
+            ev = proj["edited_video"] or ""
+            m = re.search(r"vimeo\.com/(\d+)", ev)
+            if m:
+                vimeo_id = m.group(1)
+
+        # feedbacksからタイムコード付きのものを取得
+        fb_rows = conn.execute(
+            "SELECT id, timestamp_mark, converted_text, raw_voice_text, category, priority "
+            "FROM feedbacks "
+            "WHERE project_id = ? AND timestamp_mark IS NOT NULL AND timestamp_mark != '' "
+            "ORDER BY timestamp_mark",
+            (project_id,),
+        ).fetchall()
+    finally:
         conn.close()
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    # 最新バージョンのvimeo_idを取得
-    vimeo_id = ""
-    latest_ver = conn.execute(
-        "SELECT vimeo_id FROM video_versions WHERE project_id = ? "
-        "ORDER BY version_order DESC LIMIT 1",
-        (project_id,),
-    ).fetchone()
-    if latest_ver and latest_ver["vimeo_id"]:
-        vimeo_id = latest_ver["vimeo_id"]
-    else:
-        # フォールバック: projects.edited_video
-        ev = proj["edited_video"] or ""
-        m = re.search(r"vimeo\.com/(\d+)", ev)
-        if m:
-            vimeo_id = m.group(1)
-
-    # feedbacksからタイムコード付きのものを取得
-    fb_rows = conn.execute(
-        "SELECT id, timestamp_mark, converted_text, raw_voice_text, category, priority "
-        "FROM feedbacks "
-        "WHERE project_id = ? AND timestamp_mark IS NOT NULL AND timestamp_mark != '' "
-        "ORDER BY timestamp_mark",
-        (project_id,),
-    ).fetchall()
-    conn.close()
 
     import uuid as _uuid
     results = []
@@ -4793,17 +4791,18 @@ def update_feedback_converted_text(feedback_id: int, body: dict):
         raise HTTPException(status_code=400, detail="converted_text is required")
 
     conn = _get_db()
-    existing = conn.execute("SELECT id FROM feedbacks WHERE id = ?", (feedback_id,)).fetchone()
-    if not existing:
-        conn.close()
-        raise HTTPException(status_code=404, detail="Feedback not found")
+    try:
+        existing = conn.execute("SELECT id FROM feedbacks WHERE id = ?", (feedback_id,)).fetchone()
+        if not existing:
+            raise HTTPException(status_code=404, detail="Feedback not found")
 
-    conn.execute(
-        "UPDATE feedbacks SET converted_text = ? WHERE id = ?",
-        (new_text, feedback_id),
-    )
-    conn.commit()
-    conn.close()
+        conn.execute(
+            "UPDATE feedbacks SET converted_text = ? WHERE id = ?",
+            (new_text, feedback_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
     return {"status": "ok", "feedback_id": feedback_id, "converted_text": new_text}
 
@@ -5022,8 +5021,10 @@ def readyz():
     """レディネスチェック（DB疎通確認）"""
     try:
         conn = _get_db()
-        conn.execute("SELECT 1").fetchone()
-        conn.close()
+        try:
+            conn.execute("SELECT 1").fetchone()
+        finally:
+            conn.close()
         return {"status": "ok"}
     except Exception as e:
         # readiness probeは高頻度で呼ばれるためexceptionログではなくwarningに留める（ログ肥大化防止）

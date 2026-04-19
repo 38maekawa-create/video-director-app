@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-19T09:40:10.268905",
+  "generated_at": "2026-04-19T10:41:44.507939",
   "summary": {
     "total_members": 29,
     "matched": 21,
@@ -527,8 +527,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
@@ -548,24 +548,24 @@
         {
           "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "70_さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         }
@@ -574,8 +574,8 @@
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "あさかつ",
-        "アサカツ"
+        "アサカツ",
+        "あさかつ"
       ],
       "near_candidates": [
         {
@@ -619,8 +619,8 @@
       "guest_name": "くますけさん",
       "search_keys": [
         "くまき",
-        "クマスケ",
         "くますけ",
+        "クマスケ",
         "クマキ"
       ],
       "near_candidates": [
@@ -708,8 +708,8 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ろき",
-        "ロキ"
+        "ロキ",
+        "ろき"
       ],
       "near_candidates": [
         {
@@ -738,10 +738,10 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "こてつ",
+        "コテツ",
         "コテ",
         "こて",
-        "コテツ"
+        "こてつ"
       ],
       "near_candidates": [
         {
@@ -757,8 +757,8 @@
       "guest_name": "kosさん",
       "search_keys": [
         "コスト",
-        "kos",
-        "こすと"
+        "こすと",
+        "kos"
       ],
       "near_candidates": [
         {

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-04-20T19:24:07.486513",
+  "generated_at": "2026-04-20T22:28:04.644443",
   "summary": {
     "total_members": 29,
     "matched": 21,
     "unmatched": 8,
-    "total_vimeo_videos": 387,
-    "taidan_videos": 112
+    "total_vimeo_videos": 388,
+    "taidan_videos": 113
   },
   "matched": [
     {
@@ -74,6 +74,12 @@
     {
       "guest_name": "ろくさん",
       "videos": [
+        {
+          "title": "64_ろくさん_FB修正1_坂野",
+          "vimeo_url": "https://vimeo.com/1184816552",
+          "status": "uploading",
+          "created": "2026-04-20"
+        },
         {
           "title": "64_ろくさん_初稿_坂野",
           "vimeo_url": "https://vimeo.com/1183995184",
@@ -574,8 +580,8 @@
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "アサカツ",
-        "あさかつ"
+        "あさかつ",
+        "アサカツ"
       ],
       "near_candidates": [
         {
@@ -618,10 +624,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "クマスケ",
+        "くますけ",
         "クマキ",
-        "くまき",
-        "くますけ"
+        "クマスケ",
+        "くまき"
       ],
       "near_candidates": [
         {
@@ -708,8 +714,8 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ろき",
-        "ロキ"
+        "ロキ",
+        "ろき"
       ],
       "near_candidates": [
         {
@@ -738,10 +744,10 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "コテツ",
-        "コテ",
         "こて",
-        "こてつ"
+        "こてつ",
+        "コテ",
+        "コテツ"
       ],
       "near_candidates": [
         {
@@ -756,9 +762,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "こすと",
+        "kos",
         "コスト",
-        "kos"
+        "こすと"
       ],
       "near_candidates": [
         {

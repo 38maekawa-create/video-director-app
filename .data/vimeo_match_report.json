@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-24T13:29:28.905400",
+  "generated_at": "2026-04-24T14:31:05.086868",
   "summary": {
     "total_members": 29,
     "matched": 21,
@@ -533,8 +533,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
@@ -561,16 +561,16 @@
         {
           "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         }
@@ -579,8 +579,8 @@
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "あさかつ",
-        "アサカツ"
+        "アサカツ",
+        "あさかつ"
       ],
       "near_candidates": [
         {
@@ -624,9 +624,9 @@
       "guest_name": "くますけさん",
       "search_keys": [
         "くますけ",
-        "クマキ",
+        "くまき",
         "クマスケ",
-        "くまき"
+        "クマキ"
       ],
       "near_candidates": [
         {
@@ -669,8 +669,8 @@
     {
       "guest_name": "アンディさん",
       "search_keys": [
-        "あんでぃ",
-        "アンディ"
+        "アンディ",
+        "あんでぃ"
       ],
       "near_candidates": [
         {
@@ -744,9 +744,9 @@
       "guest_name": "コテさん",
       "search_keys": [
         "コテツ",
+        "こてつ",
         "コテ",
-        "こて",
-        "こてつ"
+        "こて"
       ],
       "near_candidates": [
         {
@@ -761,8 +761,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "コスト",
         "こすと",
+        "コスト",
         "kos"
       ],
       "near_candidates": [

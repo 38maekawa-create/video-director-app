@@ -3842,3 +3842,11 @@ INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     240a:61:4160:82b9:99a7:190f:49f:b8be:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     240a:61:4160:82b9:99a7:190f:49f:b8be:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:4160:82b9:99a7:190f:49f:b8be:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:4160:82b9:99a7:190f:49f:b8be:0 - "GET /api/projects/p-20260328-%E3%82%AD%E3%83%AA%E3%83%9E%E3%83%AB/youtube-assets HTTP/1.1" 404 Not Found
+INFO:     240a:61:4160:82b9:99a7:190f:49f:b8be:0 - "GET /api/v1/projects/p-20260328-%E3%82%AD%E3%83%AA%E3%83%9E%E3%83%AB/source-videos HTTP/1.1" 200 OK
+INFO:     240a:61:4160:82b9:99a7:190f:49f:b8be:0 - "GET /api/projects/p-20260328-%E3%82%AD%E3%83%AA%E3%83%9E%E3%83%AB/youtube-assets HTTP/1.1" 404 Not Found
+INFO:     240a:61:4160:82b9:99a7:190f:49f:b8be:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:4160:82b9:99a7:190f:49f:b8be:0 - "GET /api/projects/p-20260328-%E3%83%8F%E3%83%A9/youtube-assets HTTP/1.1" 404 Not Found
+INFO:     240a:61:4160:82b9:99a7:190f:49f:b8be:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:4160:82b9:99a7:190f:49f:b8be:0 - "GET /healthz HTTP/1.1" 200 OK

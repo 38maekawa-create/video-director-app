@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-04-25T20:04:31.646154",
+  "generated_at": "2026-04-26T00:27:10.977018",
   "summary": {
-    "total_members": 29,
+    "total_members": 33,
     "matched": 21,
-    "unmatched": 8,
-    "total_vimeo_videos": 391,
+    "unmatched": 12,
+    "total_vimeo_videos": 392,
     "taidan_videos": 114
   },
   "matched": [
@@ -623,10 +623,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "クマスケ",
-        "くまき",
         "くますけ",
-        "クマキ"
+        "クマキ",
+        "クマスケ",
+        "くまき"
       ],
       "near_candidates": [
         {
@@ -669,8 +669,8 @@
     {
       "guest_name": "アンディさん",
       "search_keys": [
-        "アンディ",
-        "あんでぃ"
+        "あんでぃ",
+        "アンディ"
       ],
       "near_candidates": [
         {
@@ -743,10 +743,10 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
+        "こてつ",
         "こて",
         "コテ",
-        "コテツ",
-        "こてつ"
+        "コテツ"
       ],
       "near_candidates": [
         {
@@ -761,9 +761,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "kos",
+        "コスト",
         "こすと",
-        "コスト"
+        "kos"
       ],
       "near_candidates": [
         {
@@ -802,6 +802,109 @@
           "status": "available"
         }
       ]
+    },
+    {
+      "guest_name": "TMさん",
+      "search_keys": [
+        "TM"
+      ],
+      "near_candidates": []
+    },
+    {
+      "guest_name": "キリマルさん",
+      "search_keys": [
+        "キリマル",
+        "きりまる"
+      ],
+      "near_candidates": [
+        {
+          "title": "59_スリマンさん_FB修正2_坂野",
+          "matched_keys": [
+            "キリマル"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "ゆきもるさんボイチェン_対談_修正_大胡",
+          "matched_keys": [
+            "きりまる"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "59_スリマンさん_初稿_坂野",
+          "matched_keys": [
+            "キリマル"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "57_ゆきもるさん_初稿_坂野",
+          "matched_keys": [
+            "きりまる"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "57_ゆきもるさん_初稿_坂野",
+          "matched_keys": [
+            "きりまる"
+          ],
+          "status": "uploading_error"
+        }
+      ]
+    },
+    {
+      "guest_name": "バーボンさん",
+      "search_keys": [
+        "ばーぼん",
+        "バーボン"
+      ],
+      "near_candidates": [
+        {
+          "title": "プロパーさんフルテロ_対談_初稿_大胡",
+          "matched_keys": [
+            "ばーぼん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "プロパーさん_対談_初稿_大胡",
+          "matched_keys": [
+            "ばーぼん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "67_けーさん_対談_修正_大胡",
+          "matched_keys": [
+            "ばーぼん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
+          "matched_keys": [
+            "ばーぼん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
+          "matched_keys": [
+            "ばーぼん"
+          ],
+          "status": "available"
+        }
+      ]
+    },
+    {
+      "guest_name": "ハラさん",
+      "search_keys": [
+        "はら",
+        "ハラ"
+      ],
+      "near_candidates": []
     }
   ]
 }

@@ -3840,3 +3840,5 @@ INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:4160:82b9:99a7:190f:49f:b8be:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240a:61:4160:82b9:99a7:190f:49f:b8be:0 - "GET /healthz HTTP/1.1" 200 OK

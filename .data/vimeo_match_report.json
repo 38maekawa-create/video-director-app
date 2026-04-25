@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-26T00:27:10.977018",
+  "generated_at": "2026-04-26T01:28:41.007520",
   "summary": {
     "total_members": 33,
     "matched": 21,
@@ -579,8 +579,8 @@
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "アサカツ",
-        "あさかつ"
+        "あさかつ",
+        "アサカツ"
       ],
       "near_candidates": [
         {
@@ -623,10 +623,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "くますけ",
-        "クマキ",
         "クマスケ",
-        "くまき"
+        "クマキ",
+        "くまき",
+        "くますけ"
       ],
       "near_candidates": [
         {
@@ -669,8 +669,8 @@
     {
       "guest_name": "アンディさん",
       "search_keys": [
-        "あんでぃ",
-        "アンディ"
+        "アンディ",
+        "あんでぃ"
       ],
       "near_candidates": [
         {
@@ -743,10 +743,10 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "こてつ",
-        "こて",
         "コテ",
-        "コテツ"
+        "コテツ",
+        "こてつ",
+        "こて"
       ],
       "near_candidates": [
         {
@@ -811,54 +811,10 @@
       "near_candidates": []
     },
     {
-      "guest_name": "キリマルさん",
-      "search_keys": [
-        "キリマル",
-        "きりまる"
-      ],
-      "near_candidates": [
-        {
-          "title": "59_スリマンさん_FB修正2_坂野",
-          "matched_keys": [
-            "キリマル"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "ゆきもるさんボイチェン_対談_修正_大胡",
-          "matched_keys": [
-            "きりまる"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "59_スリマンさん_初稿_坂野",
-          "matched_keys": [
-            "キリマル"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "57_ゆきもるさん_初稿_坂野",
-          "matched_keys": [
-            "きりまる"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "57_ゆきもるさん_初稿_坂野",
-          "matched_keys": [
-            "きりまる"
-          ],
-          "status": "uploading_error"
-        }
-      ]
-    },
-    {
       "guest_name": "バーボンさん",
       "search_keys": [
-        "ばーぼん",
-        "バーボン"
+        "バーボン",
+        "ばーぼん"
       ],
       "near_candidates": [
         {
@@ -901,10 +857,54 @@
     {
       "guest_name": "ハラさん",
       "search_keys": [
-        "はら",
-        "ハラ"
+        "ハラ",
+        "はら"
       ],
       "near_candidates": []
+    },
+    {
+      "guest_name": "キリマルさん",
+      "search_keys": [
+        "きりまる",
+        "キリマル"
+      ],
+      "near_candidates": [
+        {
+          "title": "59_スリマンさん_FB修正2_坂野",
+          "matched_keys": [
+            "キリマル"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "ゆきもるさんボイチェン_対談_修正_大胡",
+          "matched_keys": [
+            "きりまる"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "59_スリマンさん_初稿_坂野",
+          "matched_keys": [
+            "キリマル"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "57_ゆきもるさん_初稿_坂野",
+          "matched_keys": [
+            "きりまる"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "57_ゆきもるさん_初稿_坂野",
+          "matched_keys": [
+            "きりまる"
+          ],
+          "status": "uploading_error"
+        }
+      ]
     }
   ]
 }

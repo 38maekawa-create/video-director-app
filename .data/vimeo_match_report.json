@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-04-25T10:36:50.634649",
+  "generated_at": "2026-04-25T11:38:18.648815",
   "summary": {
     "total_members": 29,
     "matched": 21,
     "unmatched": 8,
-    "total_vimeo_videos": 389,
+    "total_vimeo_videos": 390,
     "taidan_videos": 114
   },
   "matched": [
@@ -533,8 +533,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
@@ -561,16 +561,16 @@
         {
           "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
         {
           "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         }
@@ -579,8 +579,8 @@
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "アサカツ",
-        "あさかつ"
+        "あさかつ",
+        "アサカツ"
       ],
       "near_candidates": [
         {
@@ -623,10 +623,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "くまき",
         "クマスケ",
-        "クマキ",
-        "くますけ"
+        "くますけ",
+        "くまき",
+        "クマキ"
       ],
       "near_candidates": [
         {
@@ -743,10 +743,10 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "コテツ",
         "コテ",
-        "こて",
-        "こてつ"
+        "こてつ",
+        "コテツ",
+        "こて"
       ],
       "near_candidates": [
         {
@@ -761,9 +761,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
+        "kos",
         "こすと",
-        "コスト",
-        "kos"
+        "コスト"
       ],
       "near_candidates": [
         {

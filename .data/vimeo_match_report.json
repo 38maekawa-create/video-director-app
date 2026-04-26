@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-04-26T18:57:35.169043",
+  "generated_at": "2026-04-26T21:48:41.505199",
   "summary": {
     "total_members": 33,
-    "matched": 21,
-    "unmatched": 12,
-    "total_vimeo_videos": 393,
-    "taidan_videos": 114
+    "matched": 22,
+    "unmatched": 11,
+    "total_vimeo_videos": 394,
+    "taidan_videos": 115
   },
   "matched": [
     {
@@ -342,6 +342,17 @@
       ]
     },
     {
+      "guest_name": "あさかつさん",
+      "videos": [
+        {
+          "title": "74_あさかつさん_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1186663313/283c8e6d8a",
+          "status": "available",
+          "created": "2026-04-26"
+        }
+      ]
+    },
+    {
       "guest_name": "けーさん",
       "videos": [
         {
@@ -533,8 +544,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
@@ -561,60 +572,16 @@
         {
           "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
         {
           "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
-          ],
-          "status": "available"
-        }
-      ]
-    },
-    {
-      "guest_name": "あさかつさん",
-      "search_keys": [
-        "あさかつ",
-        "アサカツ"
-      ],
-      "near_candidates": [
-        {
-          "title": "63_ゆりかさん_対談_初稿_大胡",
-          "matched_keys": [
-            "あさかつ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "みんてぃあさん_対談_完成",
-          "matched_keys": [
-            "あさかつ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "みんてぃあさん_対談_初稿_大胡",
-          "matched_keys": [
-            "あさかつ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "りつさん　インタビュー修正",
-          "matched_keys": [
-            "あさかつ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "N1インタビューまどかさん",
-          "matched_keys": [
-            "あさかつ"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         }
@@ -623,10 +590,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "クマキ",
         "くますけ",
-        "くまき",
-        "クマスケ"
+        "クマスケ",
+        "クマキ",
+        "くまき"
       ],
       "near_candidates": [
         {
@@ -674,6 +641,13 @@
       ],
       "near_candidates": [
         {
+          "title": "74_あさかつさん_初稿_大胡",
+          "matched_keys": [
+            "あんでぃ"
+          ],
+          "status": "available"
+        },
+        {
           "title": "みんてぃあさん_対談_完成",
           "matched_keys": [
             "あんでぃ"
@@ -696,13 +670,6 @@
         },
         {
           "title": "ゆってぃさん　インタビュー 修正",
-          "matched_keys": [
-            "あんでぃ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "ゆってぃさんインタビュー",
           "matched_keys": [
             "あんでぃ"
           ],
@@ -743,10 +710,10 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "コテツ",
-        "こてつ",
         "コテ",
-        "こて"
+        "こて",
+        "コテツ",
+        "こてつ"
       ],
       "near_candidates": [
         {
@@ -762,8 +729,8 @@
       "guest_name": "kosさん",
       "search_keys": [
         "こすと",
-        "kos",
-        "コスト"
+        "コスト",
+        "kos"
       ],
       "near_candidates": [
         {
@@ -865,8 +832,8 @@
     {
       "guest_name": "キリマルさん",
       "search_keys": [
-        "きりまる",
-        "キリマル"
+        "キリマル",
+        "きりまる"
       ],
       "near_candidates": [
         {

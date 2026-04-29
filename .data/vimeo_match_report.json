@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-04-29T09:59:45.039181",
+  "generated_at": "2026-04-29T11:01:12.665378",
   "summary": {
     "total_members": 33,
     "matched": 22,
     "unmatched": 11,
-    "total_vimeo_videos": 394,
-    "taidan_videos": 115
+    "total_vimeo_videos": 395,
+    "taidan_videos": 116
   },
   "matched": [
     {
@@ -345,6 +345,12 @@
       "guest_name": "あさかつさん",
       "videos": [
         {
+          "title": "74_あさかつさん_修正_大胡",
+          "vimeo_url": "https://vimeo.com/1187544325/a47cee816c",
+          "status": "available",
+          "created": "2026-04-29"
+        },
+        {
           "title": "74_あさかつさん_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1186663313/283c8e6d8a",
           "status": "available",
@@ -590,10 +596,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "くますけ",
-        "クマキ",
         "くまき",
-        "クマスケ"
+        "クマキ",
+        "クマスケ",
+        "くますけ"
       ],
       "near_candidates": [
         {
@@ -641,6 +647,13 @@
       ],
       "near_candidates": [
         {
+          "title": "74_あさかつさん_修正_大胡",
+          "matched_keys": [
+            "あんでぃ"
+          ],
+          "status": "available"
+        },
+        {
           "title": "74_あさかつさん_初稿_大胡",
           "matched_keys": [
             "あんでぃ"
@@ -663,13 +676,6 @@
         },
         {
           "title": "てぃーひろさん_対談_初稿_大胡",
-          "matched_keys": [
-            "あんでぃ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "ゆってぃさん　インタビュー 修正",
           "matched_keys": [
             "あんでぃ"
           ],
@@ -710,10 +716,10 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "こてつ",
         "こて",
-        "コテツ",
-        "コテ"
+        "こてつ",
+        "コテ",
+        "コテツ"
       ],
       "near_candidates": [
         {
@@ -729,8 +735,8 @@
       "guest_name": "kosさん",
       "search_keys": [
         "kos",
-        "コスト",
-        "こすと"
+        "こすと",
+        "コスト"
       ],
       "near_candidates": [
         {
@@ -824,16 +830,16 @@
     {
       "guest_name": "ハラさん",
       "search_keys": [
-        "ハラ",
-        "はら"
+        "はら",
+        "ハラ"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "キリマルさん",
       "search_keys": [
-        "きりまる",
-        "キリマル"
+        "キリマル",
+        "きりまる"
       ],
       "near_candidates": [
         {

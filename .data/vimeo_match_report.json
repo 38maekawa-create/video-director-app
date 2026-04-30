@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-04-30T11:37:34.832351",
+  "generated_at": "2026-04-30T12:38:53.727478",
   "summary": {
     "total_members": 33,
-    "matched": 23,
-    "unmatched": 10,
-    "total_vimeo_videos": 396,
-    "taidan_videos": 117
+    "matched": 24,
+    "unmatched": 9,
+    "total_vimeo_videos": 397,
+    "taidan_videos": 118
   },
   "matched": [
     {
@@ -359,6 +359,17 @@
       ]
     },
     {
+      "guest_name": "アンディさん",
+      "videos": [
+        {
+          "title": "75_アンディさん_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1187939954/0510555304",
+          "status": "available",
+          "created": "2026-04-30"
+        }
+      ]
+    },
+    {
       "guest_name": "けーさん",
       "videos": [
         {
@@ -607,10 +618,10 @@
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "クマスケ",
-        "くまき",
+        "クマキ",
         "くますけ",
-        "クマキ"
+        "くまき",
+        "クマスケ"
       ],
       "near_candidates": [
         {
@@ -651,50 +662,6 @@
       ]
     },
     {
-      "guest_name": "アンディさん",
-      "search_keys": [
-        "あんでぃ",
-        "アンディ"
-      ],
-      "near_candidates": [
-        {
-          "title": "74_あさかつさん_修正_大胡",
-          "matched_keys": [
-            "あんでぃ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "74_あさかつさん_初稿_大胡",
-          "matched_keys": [
-            "あんでぃ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "みんてぃあさん_対談_完成",
-          "matched_keys": [
-            "あんでぃ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "みんてぃあさん_対談_初稿_大胡",
-          "matched_keys": [
-            "あんでぃ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "てぃーひろさん_対談_初稿_大胡",
-          "matched_keys": [
-            "あんでぃ"
-          ],
-          "status": "available"
-        }
-      ]
-    },
-    {
       "guest_name": "ロキさん",
       "search_keys": [
         "ろき",
@@ -727,8 +694,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "kos",
         "コスト",
+        "kos",
         "こすと"
       ],
       "near_candidates": [

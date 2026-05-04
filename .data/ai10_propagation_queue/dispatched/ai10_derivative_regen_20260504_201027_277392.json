@@ -1,0 +1,170 @@
+{
+  "generated_at": "2026-05-04T20:10:27+09:00",
+  "dry_run": false,
+  "status": "queued",
+  "runner": "ai10-propagation-runner.py",
+  "items": [
+    {
+      "project_id": "p-20260101-コテツ",
+      "job_id": "job_youtube_hybrid_20260228_0491f7a35c2f",
+      "stack_key": "20260228_コテ",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260228_コテさん対談.md",
+      "content_hash": "3bb7a9f1",
+      "hash_changed": true,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    },
+    {
+      "project_id": "p-20260215-クマキくますけ",
+      "job_id": "job_youtube_hybrid_20260215_5c8b19945205",
+      "stack_key": "20260215_くますけ",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260215_くますけさん対談.md",
+      "content_hash": "cb35498e",
+      "hash_changed": true,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    },
+    {
+      "project_id": "p-20260215-ロキ",
+      "job_id": "job_youtube_hybrid_20260215_ad5bddbde102",
+      "stack_key": "20260215_ロキ",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260215_ロキさん対談.md",
+      "content_hash": "804d96d3",
+      "hash_changed": true,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    },
+    {
+      "project_id": "p-20260215-アンディ",
+      "job_id": "job_youtube_hybrid_20260215_c1fa9f89ec90",
+      "stack_key": "20260215_アンディ",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260215_アンディさん対談.md",
+      "content_hash": "070da4c0",
+      "hash_changed": true,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    },
+    {
+      "project_id": "p-20260215-あさかつさん",
+      "job_id": "job_youtube_hybrid_20260215_2b5843410514",
+      "stack_key": "20260215_あさかつ",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260215_あさかつさん対談.md",
+      "content_hash": "1a0c5631",
+      "hash_changed": true,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    },
+    {
+      "project_id": "p-20260101-kos",
+      "job_id": "job_youtube_hybrid_20260228_kos_c52c3ec955a3",
+      "stack_key": "20260228_kos",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260228_kosさん対談.md",
+      "content_hash": "192ea0ef",
+      "hash_changed": true,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    },
+    {
+      "project_id": "p-20260328-キリマル",
+      "job_id": "job_youtube_hybrid_20260328_8ede85def53a",
+      "stack_key": "20260328_キリマル",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260328_キリマルさん対談.md",
+      "content_hash": "c06b762e",
+      "hash_changed": true,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    },
+    {
+      "project_id": "p-20260328-バーボン",
+      "job_id": "job_youtube_hybrid_20260328_0363eadae30b",
+      "stack_key": "20260328_バーボン",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260328_バーボンさん対談.md",
+      "content_hash": "7cdb6f2d",
+      "hash_changed": true,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    },
+    {
+      "project_id": "p-20260328-ハラ",
+      "job_id": "job_youtube_hybrid_20260328_70fa2c449b2a",
+      "stack_key": "20260328_ハラ",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260328_ハラさん対談.md",
+      "content_hash": "dd6892ab",
+      "hash_changed": true,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    }
+  ]
+}

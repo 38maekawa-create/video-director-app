@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-05T01:21:25.300685",
+  "generated_at": "2026-05-05T02:23:06.748532",
   "summary": {
     "total_members": 33,
     "matched": 25,
@@ -589,8 +589,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
@@ -624,8 +624,8 @@
         {
           "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         }
@@ -634,8 +634,8 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ろき",
-        "ロキ"
+        "ロキ",
+        "ろき"
       ],
       "near_candidates": [
         {
@@ -664,9 +664,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
+        "こすと",
         "コスト",
-        "kos",
-        "こすと"
+        "kos"
       ],
       "near_candidates": [
         {
@@ -768,8 +768,8 @@
     {
       "guest_name": "キリマルさん",
       "search_keys": [
-        "キリマル",
-        "きりまる"
+        "きりまる",
+        "キリマル"
       ],
       "near_candidates": [
         {

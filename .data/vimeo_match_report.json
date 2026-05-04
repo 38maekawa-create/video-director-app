@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-05-05T03:24:56.265842",
+  "generated_at": "2026-05-05T06:28:12.136274",
   "summary": {
-    "total_members": 33,
-    "matched": 25,
-    "unmatched": 8,
+    "total_members": 37,
+    "matched": 26,
+    "unmatched": 11,
     "total_vimeo_videos": 400,
     "taidan_videos": 120
   },
@@ -576,6 +576,23 @@
           "created": "2026-04-06"
         }
       ]
+    },
+    {
+      "guest_name": "ウメさん",
+      "videos": [
+        {
+          "title": "ウメさん　インタビュー 修正 音2　",
+          "vimeo_url": "https://vimeo.com/1118975914/72ea0fd35c",
+          "status": "available",
+          "created": "2025-09-16"
+        },
+        {
+          "title": "ウメさんインタビュー_1",
+          "vimeo_url": "https://vimeo.com/1114202986/0dc7f17991",
+          "status": "available",
+          "created": "2025-08-29"
+        }
+      ]
     }
   ],
   "unmatched": [
@@ -634,8 +651,8 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ロキ",
-        "ろき"
+        "ろき",
+        "ロキ"
       ],
       "near_candidates": [
         {
@@ -664,9 +681,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
+        "コスト",
         "kos",
-        "こすと",
-        "コスト"
+        "こすと"
       ],
       "near_candidates": [
         {
@@ -716,8 +733,8 @@
     {
       "guest_name": "バーボンさん",
       "search_keys": [
-        "バーボン",
-        "ばーぼん"
+        "ばーぼん",
+        "バーボン"
       ],
       "near_candidates": [
         {
@@ -760,16 +777,16 @@
     {
       "guest_name": "ハラさん",
       "search_keys": [
-        "ハラ",
-        "はら"
+        "はら",
+        "ハラ"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "キリマルさん",
       "search_keys": [
-        "きりまる",
-        "キリマル"
+        "キリマル",
+        "きりまる"
       ],
       "near_candidates": [
         {
@@ -808,6 +825,37 @@
           "status": "uploading_error"
         }
       ]
+    },
+    {
+      "guest_name": "えりっくさん",
+      "search_keys": [
+        "えりっく",
+        "エリック"
+      ],
+      "near_candidates": [
+        {
+          "title": "タクヤ＆ビリーの対談セミナー",
+          "matched_keys": [
+            "エリック"
+          ],
+          "status": "available"
+        }
+      ]
+    },
+    {
+      "guest_name": "しゃちぽこさん",
+      "search_keys": [
+        "シャチポコ",
+        "しゃちぽこ"
+      ],
+      "near_candidates": []
+    },
+    {
+      "guest_name": "GENさん",
+      "search_keys": [
+        "GEN"
+      ],
+      "near_candidates": []
     }
   ]
 }

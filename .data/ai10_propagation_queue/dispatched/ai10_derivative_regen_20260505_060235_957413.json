@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-05-05T06:02:35+09:00",
+  "dry_run": false,
+  "status": "queued",
+  "runner": "ai10-propagation-runner.py",
+  "items": [
+    {
+      "project_id": "p-20260418-えりっく",
+      "job_id": "job_drive_interview_20260418_erikku",
+      "stack_key": "20260418_えりっく",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260418_えりっくさん対談.md",
+      "content_hash": "3fcfb5b9",
+      "hash_changed": null,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    },
+    {
+      "project_id": "p-20260418-しゃちぽこ",
+      "job_id": "job_drive_interview_20260418_shachipoko",
+      "stack_key": "20260418_しゃちぽこ",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260418_しゃちぽこさん対談.md",
+      "content_hash": "f0afa986",
+      "hash_changed": null,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    },
+    {
+      "project_id": "p-20260418-ウメ",
+      "job_id": "job_drive_interview_20260418_ume",
+      "stack_key": "20260418_ウメ",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260418_ウメさん対談.md",
+      "content_hash": "5c05c172",
+      "hash_changed": null,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    },
+    {
+      "project_id": "p-20260418-GEN",
+      "job_id": "job_drive_interview_20260418_gen",
+      "stack_key": "20260418_GEN",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260418_GENさん対談.md",
+      "content_hash": "ab45242c",
+      "hash_changed": null,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    }
+  ]
+}

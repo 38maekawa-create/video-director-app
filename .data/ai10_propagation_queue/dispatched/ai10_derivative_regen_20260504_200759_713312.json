@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-05-04T20:07:59+09:00",
+  "dry_run": false,
+  "status": "queued",
+  "runner": "ai10-propagation-runner.py",
+  "items": [
+    {
+      "project_id": "p-20260101-メンイチ",
+      "job_id": "job_youtube_hybrid_20260228_d27c274b0350",
+      "stack_key": "20260228_メンイチ",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260228_メンイチさん対談.md",
+      "content_hash": "ae64c184",
+      "hash_changed": true,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    }
+  ]
+}

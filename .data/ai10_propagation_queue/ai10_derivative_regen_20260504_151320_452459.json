@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-05-04T15:13:20+09:00",
+  "dry_run": false,
+  "status": "queued",
+  "runner": "ai10-propagation-runner.py",
+  "items": [
+    {
+      "project_id": "p-20260101-ハオ",
+      "job_id": "job_youtube_hybrid_20260228_6d4a21db0e80",
+      "stack_key": "20260228_ハオ",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260228_ハオさん対談.md",
+      "content_hash": "8fa015b9",
+      "hash_changed": false,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction"
+      ],
+      "mode": "queue_only"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-05-04T15:13:27+09:00",
+  "dry_run": false,
+  "status": "queued",
+  "runner": "ai10-propagation-runner.py",
+  "items": [
+    {
+      "project_id": "p-20260328-TM",
+      "job_id": "job_youtube_hybrid_20260328_TM_4fd420d6a0ec",
+      "stack_key": "20260328_TM",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260328_TMさん対談.md",
+      "content_hash": "5db5f028",
+      "hash_changed": false,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction"
+      ],
+      "mode": "queue_only"
+    }
+  ]
+}

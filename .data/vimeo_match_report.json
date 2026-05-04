@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-05-04T10:59:00.488602",
+  "generated_at": "2026-05-04T12:00:43.379719",
   "summary": {
     "total_members": 33,
-    "matched": 24,
-    "unmatched": 9,
-    "total_vimeo_videos": 399,
-    "taidan_videos": 119
+    "matched": 25,
+    "unmatched": 8,
+    "total_vimeo_videos": 400,
+    "taidan_videos": 120
   },
   "matched": [
     {
@@ -359,6 +359,17 @@
       ]
     },
     {
+      "guest_name": "くますけさん",
+      "videos": [
+        {
+          "title": "77_くますけさん_初稿_坂野",
+          "vimeo_url": "https://vimeo.com/1188914320",
+          "status": "available",
+          "created": "2026-05-04"
+        }
+      ]
+    },
+    {
       "guest_name": "アンディさん",
       "videos": [
         {
@@ -583,6 +594,13 @@
       ],
       "near_candidates": [
         {
+          "title": "77_くますけさん_初稿_坂野",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
           "title": "プロパーさんフルテロ_対談_初稿_大胡",
           "matched_keys": [
             "やーまん"
@@ -610,68 +628,14 @@
             "ヤーマン"
           ],
           "status": "available"
-        },
-        {
-          "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
-          "matched_keys": [
-            "やーまん",
-            "ヤーマン"
-          ],
-          "status": "available"
-        }
-      ]
-    },
-    {
-      "guest_name": "くますけさん",
-      "search_keys": [
-        "くますけ",
-        "くまき",
-        "クマスケ",
-        "クマキ"
-      ],
-      "near_candidates": [
-        {
-          "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
-          "matched_keys": [
-            "クマスケ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
-          "matched_keys": [
-            "クマスケ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "70_さといも・トーマスさん1.1倍_対談_修正2_大胡",
-          "matched_keys": [
-            "クマスケ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "70_さといも・トーマスさん1.1倍_対談_修正_大胡",
-          "matched_keys": [
-            "クマスケ"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "70_さといも・トーマスさん_対談_初稿_大胡",
-          "matched_keys": [
-            "クマスケ"
-          ],
-          "status": "available"
         }
       ]
     },
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ろき",
-        "ロキ"
+        "ロキ",
+        "ろき"
       ],
       "near_candidates": [
         {
@@ -701,8 +665,8 @@
       "guest_name": "kosさん",
       "search_keys": [
         "こすと",
-        "コスト",
-        "kos"
+        "kos",
+        "コスト"
       ],
       "near_candidates": [
         {
@@ -804,8 +768,8 @@
     {
       "guest_name": "キリマルさん",
       "search_keys": [
-        "きりまる",
-        "キリマル"
+        "キリマル",
+        "きりまる"
       ],
       "near_candidates": [
         {

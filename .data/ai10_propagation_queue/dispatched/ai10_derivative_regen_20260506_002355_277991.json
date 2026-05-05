@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-05-06T00:23:55+09:00",
+  "dry_run": false,
+  "status": "queued",
+  "runner": "ai10-propagation-runner.py",
+  "items": [
+    {
+      "project_id": "p-20260328-ハラ",
+      "job_id": "job_youtube_hybrid_20260328_70fa2c449b2a",
+      "stack_key": "20260328_ハラ",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260328_ハラさん対談.md",
+      "content_hash": "0b1507c5",
+      "hash_changed": true,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    }
+  ]
+}

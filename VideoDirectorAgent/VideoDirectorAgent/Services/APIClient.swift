@@ -380,10 +380,10 @@ final class APIClient: ObservableObject {
         } else {
             consecutiveProbeFailures += 1
             print("⚠️ サイレント再probe失敗（\(consecutiveProbeFailures)回目）")
-            // サイレントreprobeでは5回連続失敗かつ最後のAPI成功から20秒以上経過した場合のみdisconnected
+            // サイレントreprobeでは5回連続失敗かつ最後のAPI成功から60秒以上経過した場合のみdisconnected
             if consecutiveProbeFailures >= 5 {
                 // 直近でAPIリクエストが成功している場合はdisconnected遷移しない
-                if let lastSuccess = lastSuccessfulRequestAt, Date().timeIntervalSince(lastSuccess) < 20 {
+                if hadRecentRequestSuccess(within: 60) {
                     print("⚠️ サイレント5連続失敗だが直近API成功あり。disconnected遷移を抑制")
                 } else if let lastDisc = lastDisconnectedAt, Date().timeIntervalSince(lastDisc) < 30 {
                     // 30秒以内は再遷移しない

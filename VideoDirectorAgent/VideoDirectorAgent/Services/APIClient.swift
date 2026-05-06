@@ -316,10 +316,10 @@ final class APIClient: ObservableObject {
             print("✅ 接続成功: \(route.url.absoluteString) (\(route.label))")
         } else {
             consecutiveProbeFailures += 1
-            // connected状態の場合、5回連続probe失敗まではconnected状態を維持
-            // モバイル通信の一時的な遅延・パケロスでバナーが出るのを防止
-            if wasConnected && consecutiveProbeFailures < 5 {
-                print("⚠️ probe失敗（\(consecutiveProbeFailures)/5回目）。connected状態を維持してリトライ")
+            // 過去に接続できている場合、5回連続probe失敗までは現在の表示状態を維持
+            // モバイル通信の一時的な遅延・パケロスやアプリ復帰時のprobe失敗でバナーが出るのを防止
+            if hasEverConnected && consecutiveProbeFailures < 5 {
+                print("⚠️ probe失敗（\(consecutiveProbeFailures)/5回目）。表示状態を維持してリトライ")
                 // 5秒後に再度probeを試行（バックグラウンドで静かに）
                 Task {
                     try? await Task.sleep(nanoseconds: 5_000_000_000)
@@ -333,9 +333,9 @@ final class APIClient: ObservableObject {
                 print("⚠️ 初回接続失敗（\(consecutiveProbeFailures)回）。プライマリURL(\(primaryURL))で待機")
             } else {
                 // 5回連続失敗の場合のみdisconnected遷移（ただし30秒以内の再遷移は防止）
-                // さらに、最後のAPIリクエスト成功から20秒以内ならdisconnected遷移しない
-                if let lastSuccess = lastSuccessfulRequestAt, Date().timeIntervalSince(lastSuccess) < 20 {
-                    print("⚠️ probe失敗だが直近20秒以内にAPI成功あり。connected状態を維持")
+                // さらに、最後のAPIリクエスト成功から60秒以内ならdisconnected遷移しない
+                if hadRecentRequestSuccess(within: 60) {
+                    print("⚠️ probe失敗だが直近60秒以内にAPI成功あり。connected状態を維持")
                     Task {
                         try? await Task.sleep(nanoseconds: 10_000_000_000)
                         guard !Task.isCancelled else { return }

@@ -13,8 +13,8 @@ struct RootTabView: View {
     @ObservedObject private var apiClient = APIClient.shared
 
     /// バナー表示用のデバウンスされた接続ステータス
-    /// connectionStatusの急速な変化による「出たり消えたり」を防止
-    @State private var displayedStatus: APIClient.ConnectionStatus = .connecting
+    /// 通常の再接続中は何も出さず、継続的な切断だけを表示する
+    @State private var displayedStatus: APIClient.ConnectionStatus = .connected("未確認")
     /// バナー表示デバウンス用タスク
     @State private var bannerDebounceTask: Task<Void, Never>?
 
@@ -87,7 +87,7 @@ struct RootTabView: View {
             await feedbackApprovalVM.fetchPending()
         }
         .onChange(of: apiClient.connectionStatus) { _, newStatus in
-            // バナー表示のデバウンス: disconnectedへの遷移は8秒遅延
+            // バナー表示のデバウンス: disconnectedへの遷移は12秒遅延
             // connectedへの復帰は即座に反映（バナーをすぐ消す）
             // モバイル通信での一時的なprobe失敗でバナーが出たり消えたりするのを根本的に防止
             bannerDebounceTask?.cancel()
@@ -96,10 +96,10 @@ struct RootTabView: View {
                 // connected復帰は即座にバナーを消す
                 displayedStatus = newStatus
             case .disconnected:
-                // 8秒間disconnectedが持続した場合のみバナー表示
-                // 8秒以内にconnectedに戻ればバナーは出ない
+                // 12秒間disconnectedが持続した場合のみバナー表示
+                // 12秒以内にconnectedに戻ればバナーは出ない
                 bannerDebounceTask = Task {
-                    try? await Task.sleep(nanoseconds: 8_000_000_000)
+                    try? await Task.sleep(nanoseconds: 12_000_000_000)
                     guard !Task.isCancelled else { return }
                     // 最終チェック: この時点でまだdisconnectedかどうか
                     if case .disconnected = apiClient.connectionStatus {
@@ -107,14 +107,8 @@ struct RootTabView: View {
                     }
                 }
             case .connecting:
-                // connectingも5秒遅延（すぐ解決する場合はバナーを出さない）
-                bannerDebounceTask = Task {
-                    try? await Task.sleep(nanoseconds: 5_000_000_000)
-                    guard !Task.isCancelled else { return }
-                    if case .connecting = apiClient.connectionStatus {
-                        displayedStatus = newStatus
-                    }
-                }
+                // 起動・復帰・サイレント再接続中は業務上の異常ではないので帯を出さない
+                displayedStatus = .connected("再接続確認中")
             }
         }
     }
@@ -265,20 +259,7 @@ struct RootTabView: View {
                 .background(Color.red.opacity(0.85))
                 .transition(.move(edge: .top).combined(with: .opacity))
             case .connecting:
-                HStack(spacing: 8) {
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(0.7)
-                        .tint(.white)
-                    Text("再接続中...")
-                        .font(.system(size: 13, weight: .medium))
-                    Spacer()
-                }
-                .foregroundStyle(.white)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
-                .background(Color.orange.opacity(0.75))
-                .transition(.move(edge: .top).combined(with: .opacity))
+                EmptyView()
             case .connected:
                 EmptyView()
             default:

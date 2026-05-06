@@ -264,6 +264,10 @@ final class APIClient: ObservableObject {
                     self.disconnectDebounceTask = Task {
                         try? await Task.sleep(nanoseconds: 15_000_000_000)
                         guard !Task.isCancelled else { return }
+                        if self.hadRecentRequestSuccess(within: 60) {
+                            print("📡 ネットワーク切断検知だが直近API成功あり。グローバルバナーは抑制")
+                            return
+                        }
                         self.connectionStatus = .disconnected
                         print("📡 ネットワーク切断検知（15秒持続）")
                     }
@@ -281,6 +285,11 @@ final class APIClient: ObservableObject {
     private var lastDisconnectedAt: Date?
     /// 最後にAPIリクエストが成功した時刻（APIが通っていればprobeを抑制）
     private var lastSuccessfulRequestAt: Date?
+
+    private func hadRecentRequestSuccess(within seconds: TimeInterval) -> Bool {
+        guard let lastSuccess = lastSuccessfulRequestAt else { return false }
+        return Date().timeIntervalSince(lastSuccess) < seconds
+    }
 
     /// アプリ起動時・ScenePhase復帰時に呼び出し（UIバナーに影響する公開メソッド）
     /// ConnectionOrchestrator actorにより多重probe抑止

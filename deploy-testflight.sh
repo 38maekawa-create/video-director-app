@@ -130,34 +130,42 @@ xcodebuild -exportArchive \
 
 IPA_PATH=$(find "$EXPORT_DIR" -name "*.ipa" | head -1)
 if [[ -z "$IPA_PATH" ]]; then
-    error "IPA が見つかりません。ログを確認してください: $WORKSPACE_ROOT/build/export.log"
-fi
-success "エクスポート成功: $IPA_PATH"
-
-# ── App Store Connect へアップロード ───────────────────────────────────────────
-info "App Store Connect へアップロードしています..."
-info "  Apple ID: $APPLE_ID"
-info "  Team ID:  $TEAM_ID"
-
-xcrun altool \
-    --upload-app \
-    --type ios \
-    --file "$IPA_PATH" \
-    --username "$APPLE_ID" \
-    --password "$ASC_PASSWORD" \
-    --output-format xml \
-    2>&1 | tee "$WORKSPACE_ROOT/build/upload.log"
-
-if grep -q "No errors uploading" "$WORKSPACE_ROOT/build/upload.log" || \
-   grep -q "success" "$WORKSPACE_ROOT/build/upload.log"; then
-    success "アップロード成功！"
+    if grep -q "Upload succeeded" "$WORKSPACE_ROOT/build/export.log" && \
+       grep -q "EXPORT SUCCEEDED" "$WORKSPACE_ROOT/build/export.log"; then
+        success "App Store Connect へのアップロード成功（xcodebuild exportArchive / destination=upload）"
+        echo "Upload succeeded via xcodebuild exportArchive at $(date '+%Y-%m-%d %H:%M:%S')" \
+            > "$WORKSPACE_ROOT/build/upload.log"
+    else
+        error "IPA が見つかりません。ログを確認してください: $WORKSPACE_ROOT/build/export.log"
+    fi
 else
-    # altool の代わりに xcrun notarytool / xcrun altool の終了コードで判定
-    UPLOAD_EXIT=${PIPESTATUS[0]}
-    if [[ $UPLOAD_EXIT -eq 0 ]]; then
+    success "エクスポート成功: $IPA_PATH"
+
+    # ── App Store Connect へアップロード ───────────────────────────────────────────
+    info "App Store Connect へアップロードしています..."
+    info "  Apple ID: $APPLE_ID"
+    info "  Team ID:  $TEAM_ID"
+
+    xcrun altool \
+        --upload-app \
+        --type ios \
+        --file "$IPA_PATH" \
+        --username "$APPLE_ID" \
+        --password "$ASC_PASSWORD" \
+        --output-format xml \
+        2>&1 | tee "$WORKSPACE_ROOT/build/upload.log"
+
+    if grep -q "No errors uploading" "$WORKSPACE_ROOT/build/upload.log" || \
+       grep -q "success" "$WORKSPACE_ROOT/build/upload.log"; then
         success "アップロード成功！"
     else
-        warn "アップロードの結果を確認してください: $WORKSPACE_ROOT/build/upload.log"
+        # altool の代わりに xcrun notarytool / xcrun altool の終了コードで判定
+        UPLOAD_EXIT=${PIPESTATUS[0]}
+        if [[ $UPLOAD_EXIT -eq 0 ]]; then
+            success "アップロード成功！"
+        else
+            warn "アップロードの結果を確認してください: $WORKSPACE_ROOT/build/upload.log"
+        fi
     fi
 fi
 

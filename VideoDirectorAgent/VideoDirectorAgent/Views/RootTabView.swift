@@ -262,8 +262,6 @@ struct RootTabView: View {
                 EmptyView()
             case .connected:
                 EmptyView()
-            default:
-                EmptyView()
             }
         }
     }

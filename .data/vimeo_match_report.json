@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-05-06T09:09:03.110706",
+  "generated_at": "2026-05-06T10:10:23.526497",
   "summary": {
     "total_members": 37,
-    "matched": 26,
-    "unmatched": 11,
+    "matched": 27,
+    "unmatched": 10,
     "total_vimeo_videos": 400,
-    "taidan_videos": 121
+    "taidan_videos": 122
   },
   "matched": [
     {
@@ -373,10 +373,10 @@
       "guest_name": "アンディさん",
       "videos": [
         {
-          "title": "75_アンディさん_修正2_大胡",
-          "vimeo_url": "https://vimeo.com/1189226786/1bbc89786e",
+          "title": "75_アンディさん_修正3_大胡",
+          "vimeo_url": "https://vimeo.com/1189578760/f37af205ca",
           "status": "available",
-          "created": "2026-05-05"
+          "created": "2026-05-06"
         },
         {
           "title": "75_アンディさん_修正1_大胡",
@@ -389,6 +389,17 @@
           "vimeo_url": "https://vimeo.com/1187939954/0510555304",
           "status": "available",
           "created": "2026-04-30"
+        }
+      ]
+    },
+    {
+      "guest_name": "ロキさん",
+      "videos": [
+        {
+          "title": "76_ロキさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1189583328/9682cce91e",
+          "status": "available",
+          "created": "2026-05-06"
         }
       ]
     },
@@ -612,8 +623,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
@@ -647,38 +658,8 @@
         {
           "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
-          ],
-          "status": "available"
-        }
-      ]
-    },
-    {
-      "guest_name": "ロキさん",
-      "search_keys": [
-        "ロキ",
-        "ろき"
-      ],
-      "near_candidates": [
-        {
-          "title": "68_ひろきょうさん_対談_修正2_大胡",
-          "matched_keys": [
-            "ろき"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "68_ひろきょうさん_対談_修正_大胡",
-          "matched_keys": [
-            "ろき"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "68_ひろきょうさん_対談_初稿_大胡",
-          "matched_keys": [
-            "ろき"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         }
@@ -687,9 +668,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "コスト",
         "kos",
-        "こすと"
+        "こすと",
+        "コスト"
       ],
       "near_candidates": [
         {
@@ -739,8 +720,8 @@
     {
       "guest_name": "バーボンさん",
       "search_keys": [
-        "バーボン",
-        "ばーぼん"
+        "ばーぼん",
+        "バーボン"
       ],
       "near_candidates": [
         {
@@ -783,16 +764,16 @@
     {
       "guest_name": "ハラさん",
       "search_keys": [
-        "はら",
-        "ハラ"
+        "ハラ",
+        "はら"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "キリマルさん",
       "search_keys": [
-        "キリマル",
-        "きりまる"
+        "きりまる",
+        "キリマル"
       ],
       "near_candidates": [
         {

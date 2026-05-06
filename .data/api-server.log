@@ -3965,3 +3965,8 @@ INFO:     60.143.202.199:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52081 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52092 - "GET /api/projects/p-20260328-%E3%83%8F%E3%83%A9/youtube-assets HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52103 - "GET /api/projects/p-20260328-%E3%82%AD%E3%83%AA%E3%83%9E%E3%83%AB/youtube-assets HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52900 - "GET /api/projects/p-20260328-%E3%82%AD%E3%83%AA%E3%83%9E%E3%83%AB/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52902 - "GET /api/projects/p-20260328-%E3%83%8F%E3%83%A9/youtube-assets HTTP/1.1" 200 OK

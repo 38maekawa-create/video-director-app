@@ -30,6 +30,7 @@ final class ProjectListViewModel: ObservableObject {
     @Published var errorMessage: String?
 
     private var hasLoaded = false
+    private var lastLoadedAt: Date?
 
     var filteredProjects: [VideoProject] {
         if searchText.isEmpty { return projects }
@@ -71,9 +72,23 @@ final class ProjectListViewModel: ObservableObject {
     }
 
     func loadProjectsIfNeeded() async {
-        guard !hasLoaded else { return }
+        guard !hasLoaded else {
+            await refreshIfStale(maxAge: 30)
+            return
+        }
         hasLoaded = true
         await loadProjects()
+    }
+
+    func refreshIfStale(maxAge: TimeInterval = 30) async {
+        guard !isLoading else { return }
+        guard let lastLoadedAt else {
+            await loadProjects()
+            return
+        }
+        if Date().timeIntervalSince(lastLoadedAt) >= maxAge {
+            await loadProjects()
+        }
     }
 
     func refresh() async {
@@ -103,6 +118,7 @@ final class ProjectListViewModel: ObservableObject {
 
                 return lhs.shootDate > rhs.shootDate
             }
+            lastLoadedAt = Date()
             errorMessage = nil
         } catch {
             if projects.isEmpty {

@@ -2,6 +2,7 @@ import SwiftUI
 
 // MARK: - カスタムタブバー付きルートビュー
 struct RootTabView: View {
+    (\.scenePhase) private var scenePhase
     @State private var selectedTab: Tab = .home
     @State private var showRecordingModal = false
     @State private var showKnowledgePages = false
@@ -83,8 +84,24 @@ struct RootTabView: View {
             }
         }
         .task {
-            // アプリ起動時に承認待ちFB件数を取得（バッジ表示用）
+            // アプリ起動時に承認待ちFB件数とプロジェクト一覧を取得
             await feedbackApprovalVM.fetchPending()
+            await projectListVM.refreshIfStale(maxAge: 0)
+        }
+        .onChange(of: selectedTab) { _, newTab in
+            if newTab == .home || newTab == .report {
+                Task {
+                    await projectListVM.refreshIfStale(maxAge: 30)
+                }
+            }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                Task {
+                    await projectListVM.refreshIfStale(maxAge: 30)
+                    await feedbackApprovalVM.fetchPending()
+                }
+            }
         }
         .onChange(of: apiClient.connectionStatus) { _, newStatus in
             // バナー表示のデバウンス: disconnectedへの遷移は12秒遅延

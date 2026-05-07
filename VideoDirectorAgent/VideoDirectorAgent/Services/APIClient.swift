@@ -835,6 +835,11 @@ final class APIClient: ObservableObject {
         let url = buildURL(base: baseURL, path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
+        if method == "GET" {
+            request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+            request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+            request.setValue("no-cache", forHTTPHeaderField: "Pragma")
+        }
         // モバイル通信（4G/5G + Cloudflareトンネル + TLSハンドシェイク）を考慮し25秒
         request.timeoutInterval = 25
 
@@ -891,6 +896,11 @@ final class APIClient: ObservableObject {
         let url = buildURL(base: baseURL, path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
+        if method == "GET" {
+            request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+            request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+            request.setValue("no-cache", forHTTPHeaderField: "Pragma")
+        }
         // モバイル通信（4G/5G + Cloudflareトンネル + TLSハンドシェイク）を考慮し25秒
         request.timeoutInterval = 25
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -985,6 +995,11 @@ final class APIClient: ObservableObject {
         let url = buildURL(base: baseURL, path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
+        if method == "GET" {
+            request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+            request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+            request.setValue("no-cache", forHTTPHeaderField: "Pragma")
+        }
         // モバイル通信（4G/5G + Cloudflareトンネル + TLSハンドシェイク）を考慮し25秒
         request.timeoutInterval = 25
         if let body = body {

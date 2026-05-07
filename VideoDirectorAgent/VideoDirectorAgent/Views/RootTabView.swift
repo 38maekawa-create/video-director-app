@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - カスタムタブバー付きルートビュー
 struct RootTabView: View {
-    (\.scenePhase) private var scenePhase
+    @Environment(\.scenePhase) private var scenePhase
     @State private var selectedTab: Tab = .home
     @State private var showRecordingModal = false
     @State private var showKnowledgePages = false

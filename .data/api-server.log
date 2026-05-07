@@ -4031,3 +4031,5 @@ INFO:     240a:61:5114:206a:9161:c5e8:8a:2f48:0 - "GET /api/projects/p-20260418-
 INFO:     240a:61:5114:206a:9161:c5e8:8a:2f48:0 - "GET /api/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/youtube-assets HTTP/1.1" 200 OK
 INFO:     240a:61:5114:206a:9161:c5e8:8a:2f48:0 - "GET /api/projects/p-20260418-%E3%82%A6%E3%83%A1/youtube-assets HTTP/1.1" 200 OK
 INFO:     240a:61:5114:206a:9161:c5e8:8a:2f48:0 - "GET /api/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/youtube-assets HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK

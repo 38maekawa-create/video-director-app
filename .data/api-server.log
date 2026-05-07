@@ -4003,3 +4003,8 @@ INFO:     240a:61:5114:206a:9161:c5e8:8a:2f48:0 - "GET /api/projects HTTP/1.1" 2
 INFO:     240a:61:5114:206a:9161:c5e8:8a:2f48:0 - "GET /api/v1/projects/p-20260418-GEN/source-videos HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/youtube-assets HTTP/1.1" 404 Not Found

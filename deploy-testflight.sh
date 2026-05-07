@@ -109,7 +109,7 @@ xcodebuild archive \
     CODE_SIGN_STYLE=Automatic \
     DEVELOPMENT_TEAM="$TEAM_ID" \
     | tee "$WORKSPACE_ROOT/build/archive.log" \
-    | grep -E "(error:|warning:|Archive Succeeded|BUILD)"
+    | grep -E "(error:|warning:|Archive Succeeded|BUILD)" || true
 
 if [[ ! -d "$ARCHIVE_DIR" ]]; then
     error "Archive 失敗。ログを確認してください: $WORKSPACE_ROOT/build/archive.log"
@@ -126,7 +126,7 @@ xcodebuild -exportArchive \
     -exportPath "$EXPORT_DIR" \
     -allowProvisioningUpdates \
     2>&1 | tee "$WORKSPACE_ROOT/build/export.log" \
-    | grep -E "(error:|warning:|Export Succeeded|INFO)"
+    | grep -E "(error:|warning:|Export Succeeded|INFO)" || true
 
 IPA_PATH=$(find "$EXPORT_DIR" -name "*.ipa" | head -1)
 if [[ -z "$IPA_PATH" ]]; then

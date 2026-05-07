@@ -3987,3 +3987,4 @@ INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/projects/p-20260418-%E3%82%A6%E3%83%A1/youtube-assets HTTP/1.1" 404 Not Found
 INFO:     113.149.186.41:0 - "GET /api/projects/p-20260418-GEN/youtube-assets HTTP/1.1" 404 Not Found
 INFO:     113.149.186.41:0 - "GET /api/projects/p-20260328-TM/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58900 - "GET /api/health HTTP/1.1" 200 OK

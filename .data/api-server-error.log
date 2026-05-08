@@ -12664,3 +12664,7 @@ INFO:     Started server process [1679]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 WARNING:  Invalid HTTP request received.
+INFO:     Started server process [1008]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8210 (Press CTRL+C to quit)

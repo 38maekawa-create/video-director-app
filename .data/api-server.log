@@ -4082,3 +4082,8 @@ INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /api/projects/p-202602
 INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
 INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /api/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /api/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /api/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /api/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /api/projects/p-20260124-%E3%82%8D%E3%81%8F/youtube-assets HTTP/1.1" 200 OK

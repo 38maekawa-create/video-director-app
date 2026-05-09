@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-05-09T11:05:07.252508",
+  "generated_at": "2026-05-09T12:06:21.143132",
   "summary": {
     "total_members": 37,
-    "matched": 27,
-    "unmatched": 10,
+    "matched": 28,
+    "unmatched": 9,
     "total_vimeo_videos": 400,
-    "taidan_videos": 123
+    "taidan_videos": 124
   },
   "matched": [
     {
@@ -601,6 +601,17 @@
       ]
     },
     {
+      "guest_name": "バーボンさん",
+      "videos": [
+        {
+          "title": "78_バーボンさん_初稿_坂野",
+          "vimeo_url": "https://vimeo.com/1190656188",
+          "status": "available",
+          "created": "2026-05-09"
+        }
+      ]
+    },
+    {
       "guest_name": "ウメさん",
       "videos": [
         {
@@ -634,6 +645,14 @@
       ],
       "near_candidates": [
         {
+          "title": "78_バーボンさん_初稿_坂野",
+          "matched_keys": [
+            "やーまん",
+            "ヤーマン"
+          ],
+          "status": "available"
+        },
+        {
           "title": "77_くますけさん_初稿_坂野",
           "matched_keys": [
             "やーまん"
@@ -658,14 +677,6 @@
           "title": "67_けーさん_対談_修正_大胡",
           "matched_keys": [
             "やーまん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
-          "matched_keys": [
-            "やーまん",
-            "ヤーマン"
           ],
           "status": "available"
         }
@@ -724,50 +735,6 @@
       "near_candidates": []
     },
     {
-      "guest_name": "バーボンさん",
-      "search_keys": [
-        "ばーぼん",
-        "バーボン"
-      ],
-      "near_candidates": [
-        {
-          "title": "プロパーさんフルテロ_対談_初稿_大胡",
-          "matched_keys": [
-            "ばーぼん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "プロパーさん_対談_初稿_大胡",
-          "matched_keys": [
-            "ばーぼん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "67_けーさん_対談_修正_大胡",
-          "matched_keys": [
-            "ばーぼん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
-          "matched_keys": [
-            "ばーぼん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
-          "matched_keys": [
-            "ばーぼん"
-          ],
-          "status": "available"
-        }
-      ]
-    },
-    {
       "guest_name": "ハラさん",
       "search_keys": [
         "ハラ",
@@ -822,8 +789,8 @@
     {
       "guest_name": "えりっくさん",
       "search_keys": [
-        "えりっく",
-        "エリック"
+        "エリック",
+        "えりっく"
       ],
       "near_candidates": [
         {
@@ -838,8 +805,8 @@
     {
       "guest_name": "しゃちぽこさん",
       "search_keys": [
-        "シャチポコ",
-        "しゃちぽこ"
+        "しゃちぽこ",
+        "シャチポコ"
       ],
       "near_candidates": []
     },

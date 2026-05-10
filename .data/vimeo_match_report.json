@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-05-10T17:50:19.252870",
+  "generated_at": "2026-05-10T19:03:33.619876",
   "summary": {
     "total_members": 37,
-    "matched": 28,
-    "unmatched": 9,
+    "matched": 29,
+    "unmatched": 8,
     "total_vimeo_videos": 400,
-    "taidan_videos": 124
+    "taidan_videos": 125
   },
   "matched": [
     {
@@ -612,6 +612,17 @@
       ]
     },
     {
+      "guest_name": "ハラさん",
+      "videos": [
+        {
+          "title": "ハラさん_対談_初稿_ささみ",
+          "vimeo_url": "https://vimeo.com/1190889073",
+          "status": "transcoding",
+          "created": "2026-05-10"
+        }
+      ]
+    },
+    {
       "guest_name": "ウメさん",
       "videos": [
         {
@@ -640,15 +651,15 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
           "title": "78_バーボンさん_初稿_坂野",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
@@ -735,14 +746,6 @@
       "near_candidates": []
     },
     {
-      "guest_name": "ハラさん",
-      "search_keys": [
-        "ハラ",
-        "はら"
-      ],
-      "near_candidates": []
-    },
-    {
       "guest_name": "キリマルさん",
       "search_keys": [
         "キリマル",
@@ -789,8 +792,8 @@
     {
       "guest_name": "えりっくさん",
       "search_keys": [
-        "エリック",
-        "えりっく"
+        "えりっく",
+        "エリック"
       ],
       "near_candidates": [
         {

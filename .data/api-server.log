@@ -4608,3 +4608,6 @@ INFO:     127.0.0.1:50223 - "GET /api/v1/projects/p-20260215-%E3%83%AD%E3%82%AD/
 INFO:     127.0.0.1:53149 - "GET /api/projects/p-20260328-%E3%83%8F%E3%83%A9/youtube-assets HTTP/1.1" 200 OK
 INFO:     127.0.0.1:53150 - "GET /api/v1/projects/p-20260328-%E3%83%8F%E3%83%A9/source-videos HTTP/1.1" 200 OK
 INFO:     127.0.0.1:53151 - "GET /api/v1/projects/p-20260328-%E3%83%8F%E3%83%A9/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53885 - "GET /api/projects/p-20260328-%E3%83%8F%E3%83%A9/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53886 - "GET /api/v1/projects/p-20260328-%E3%83%8F%E3%83%A9/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53887 - "GET /api/v1/projects/p-20260328-%E3%83%8F%E3%83%A9/direction-report/diff HTTP/1.1" 200 OK

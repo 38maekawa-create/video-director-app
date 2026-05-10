@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-10T10:39:41.933087",
+  "generated_at": "2026-05-10T11:41:06.344924",
   "summary": {
     "total_members": 37,
     "matched": 28,
@@ -640,15 +640,15 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
           "title": "78_バーボンさん_初稿_坂野",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
@@ -686,8 +686,8 @@
       "guest_name": "kosさん",
       "search_keys": [
         "コスト",
-        "こすと",
-        "kos"
+        "kos",
+        "こすと"
       ],
       "near_candidates": [
         {
@@ -805,8 +805,8 @@
     {
       "guest_name": "しゃちぽこさん",
       "search_keys": [
-        "シャチポコ",
-        "しゃちぽこ"
+        "しゃちぽこ",
+        "シャチポコ"
       ],
       "near_candidates": []
     },

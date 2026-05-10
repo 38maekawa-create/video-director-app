@@ -4247,3 +4247,12 @@ INFO:     127.0.0.1:53994 - "GET /api/v1/projects/p-20260418-%E3%81%97%E3%82%83%
 INFO:     127.0.0.1:53995 - "GET /api/projects/p-20260418-%E3%82%A6%E3%83%A1/youtube-assets HTTP/1.1" 200 OK
 INFO:     127.0.0.1:53996 - "GET /api/v1/projects/p-20260418-%E3%82%A6%E3%83%A1/source-videos HTTP/1.1" 200 OK
 INFO:     127.0.0.1:53997 - "GET /api/v1/projects/p-20260418-%E3%82%A6%E3%83%A1/direction-report/diff HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54755 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54756 - "GET /api/projects/p-20260328-TM/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54757 - "GET /api/projects/p-20260328-%E3%82%AD%E3%83%AA%E3%83%9E%E3%83%AB/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54758 - "GET /api/projects/p-20260328-%E3%83%8F%E3%83%A9/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54759 - "GET /api/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54760 - "GET /api/projects/p-20260418-GEN/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54761 - "GET /api/projects/p-20260418-%E3%81%88%E3%82%8A%E3%81%A3%E3%81%8F/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54762 - "GET /api/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54763 - "GET /api/projects/p-20260418-%E3%82%A6%E3%83%A1/youtube-assets HTTP/1.1" 200 OK

@@ -4188,3 +4188,4 @@ INFO:     2400:2651:9c0:6c00:86b:4c1:7092:1381:0 - "GET /api/v1/projects/p-20260
 INFO:     2400:2651:9c0:6c00:86b:4c1:7092:1381:0 - "GET /api/projects/p-20260418-GEN/youtube-assets HTTP/1.1" 200 OK
 INFO:     2400:2651:9c0:6c00:86b:4c1:7092:1381:0 - "GET /api/projects/p-20260418-%E3%81%88%E3%82%8A%E3%81%A3%E3%81%8F/youtube-assets HTTP/1.1" 200 OK
 INFO:     2400:2651:9c0:6c00:86b:4c1:7092:1381:0 - "GET /api/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:2651:9c0:6c00:86b:4c1:7092:1381:0 - "GET /api/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/youtube-assets HTTP/1.1" 200 OK

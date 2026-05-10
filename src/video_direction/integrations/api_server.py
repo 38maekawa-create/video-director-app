@@ -171,6 +171,66 @@ def _normalize_name(name: str) -> str:
     return name
 
 
+def _normalize_youtube_title_proposals_for_ui(
+    title_proposals: object,
+    *,
+    selected_title_index: Optional[int] = None,
+) -> object:
+    """iOSのYouTubeAssetsモデルが読める形へ後方互換変換する。
+
+    過去のAI10派生物や暫定ドラフトには `rank` / `source` だけの候補がある。
+    DBはそのまま残し、APIレスポンスだけSwift必須項目を補完する。
+    """
+    if not isinstance(title_proposals, dict):
+        return title_proposals
+
+    candidates = title_proposals.get("candidates")
+    if not isinstance(candidates, list):
+        return title_proposals
+
+    normalized = dict(title_proposals)
+    if not isinstance(normalized.get("recommended_index"), int):
+        if isinstance(normalized.get("recommendedIndex"), int):
+            normalized["recommended_index"] = normalized["recommendedIndex"]
+        elif isinstance(selected_title_index, int):
+            normalized["recommended_index"] = selected_title_index
+        else:
+            normalized["recommended_index"] = 0
+
+    normalized_candidates = []
+    for index, candidate in enumerate(candidates):
+        if not isinstance(candidate, dict):
+            normalized_candidates.append(candidate)
+            continue
+
+        normalized_candidate = dict(candidate)
+        title = str(normalized_candidate.get("title") or "")
+        source = str(normalized_candidate.get("source") or normalized.get("source") or "")
+
+        if not normalized_candidate.get("target_segment"):
+            normalized_candidate["target_segment"] = (
+                normalized_candidate.get("targetSegment")
+                or normalized_candidate.get("label")
+                or "TEKO対談視聴者"
+            )
+        if not normalized_candidate.get("appeal_type"):
+            normalized_candidate["appeal_type"] = (
+                normalized_candidate.get("appealType")
+                or ("暫定候補" if "draft" in source else "タイトル候補")
+            )
+        if not normalized_candidate.get("rationale"):
+            rank = normalized_candidate.get("rank") or index + 1
+            normalized_candidate["rationale"] = (
+                f"既存AI10素材の候補{rank}をUI表示用に補完。"
+                f"タイトル本文: {title}"
+            )
+
+        normalized_candidates.append(normalized_candidate)
+
+    normalized["candidates"] = normalized_candidates
+    return normalized
+
+
 def find_knowledge_page_url(guest_name: str, shoot_date: Optional[str] = None) -> Optional[str]:
     """プロジェクトのゲスト名(+撮影日)からナレッジページHTMLのURLを返す。
 
@@ -782,6 +842,10 @@ def get_youtube_assets(project_id: str):
                 d[json_field] = json.loads(d[json_field])
             except (json.JSONDecodeError, TypeError):
                 pass
+    d["title_proposals"] = _normalize_youtube_title_proposals_for_ui(
+        d.get("title_proposals"),
+        selected_title_index=d.get("selected_title_index"),
+    )
     return d
 
 

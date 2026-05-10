@@ -4416,3 +4416,76 @@ INFO:     127.0.0.1:57965 - "GET /api/v1/projects/p-20260418-%E3%81%97%E3%82%83%
 INFO:     127.0.0.1:57966 - "GET /api/projects/p-20260418-%E3%82%A6%E3%83%A1/youtube-assets HTTP/1.1" 200 OK
 INFO:     127.0.0.1:57967 - "GET /api/v1/projects/p-20260418-%E3%82%A6%E3%83%A1/source-videos HTTP/1.1" 200 OK
 INFO:     127.0.0.1:57968 - "GET /api/v1/projects/p-20260418-%E3%82%A6%E3%83%A1/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58067 - "GET /api/projects/p-20260328-TM/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58068 - "GET /api/v1/projects/p-20260328-TM/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58069 - "GET /api/v1/projects/p-20260328-TM/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58070 - "GET /api/projects/p-20260328-%E3%82%AD%E3%83%AA%E3%83%9E%E3%83%AB/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58071 - "GET /api/v1/projects/p-20260328-%E3%82%AD%E3%83%AA%E3%83%9E%E3%83%AB/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58072 - "GET /api/v1/projects/p-20260328-%E3%82%AD%E3%83%AA%E3%83%9E%E3%83%AB/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58073 - "GET /api/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58074 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58075 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58077 - "GET /api/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58078 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58079 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/direction-report/diff HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58080 - "GET /api/projects/p-20260101-%E3%81%95%E3%81%A8%E3%81%84%E3%82%82%E3%83%88%E3%83%BC%E3%83%9E%E3%82%B9/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58081 - "GET /api/v1/projects/p-20260101-%E3%81%95%E3%81%A8%E3%81%84%E3%82%82%E3%83%88%E3%83%BC%E3%83%9E%E3%82%B9/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58082 - "GET /api/v1/projects/p-20260101-%E3%81%95%E3%81%A8%E3%81%84%E3%82%82%E3%83%88%E3%83%BC%E3%83%9E%E3%82%B9/direction-report/diff HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58166 - "GET /api/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58167 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58168 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/direction-report/diff HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58169 - "GET /api/projects/p-20260101-%E3%81%95%E3%81%A8%E3%81%84%E3%82%82%E3%83%88%E3%83%BC%E3%83%9E%E3%82%B9/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58170 - "GET /api/v1/projects/p-20260101-%E3%81%95%E3%81%A8%E3%81%84%E3%82%82%E3%83%88%E3%83%BC%E3%83%9E%E3%82%B9/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58171 - "GET /api/v1/projects/p-20260101-%E3%81%95%E3%81%A8%E3%81%84%E3%82%82%E3%83%88%E3%83%BC%E3%83%9E%E3%82%B9/direction-report/diff HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58174 - "GET /api/projects/p-20260328-TM/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58175 - "GET /api/v1/projects/p-20260328-TM/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58176 - "GET /api/v1/projects/p-20260328-TM/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58177 - "GET /api/projects/p-20260328-%E3%82%AD%E3%83%AA%E3%83%9E%E3%83%AB/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58178 - "GET /api/v1/projects/p-20260328-%E3%82%AD%E3%83%AA%E3%83%9E%E3%83%AB/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58179 - "GET /api/v1/projects/p-20260328-%E3%82%AD%E3%83%AA%E3%83%9E%E3%83%AB/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58180 - "GET /api/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58181 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58182 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58194 - "GET /api/projects/p-20260418-GEN/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58195 - "GET /api/v1/projects/p-20260418-GEN/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58196 - "GET /api/v1/projects/p-20260418-GEN/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58197 - "GET /api/projects/p-20260418-%E3%81%88%E3%82%8A%E3%81%A3%E3%81%8F/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58198 - "GET /api/v1/projects/p-20260418-%E3%81%88%E3%82%8A%E3%81%A3%E3%81%8F/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58199 - "GET /api/v1/projects/p-20260418-%E3%81%88%E3%82%8A%E3%81%A3%E3%81%8F/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58200 - "GET /api/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58201 - "GET /api/v1/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58202 - "GET /api/v1/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58203 - "GET /api/projects/p-20260418-%E3%82%A6%E3%83%A1/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58204 - "GET /api/v1/projects/p-20260418-%E3%82%A6%E3%83%A1/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58205 - "GET /api/v1/projects/p-20260418-%E3%82%A6%E3%83%A1/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58219 - "GET /api/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58220 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58221 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/direction-report/diff HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58222 - "GET /api/projects/p-20260101-%E3%81%95%E3%81%A8%E3%81%84%E3%82%82%E3%83%88%E3%83%BC%E3%83%9E%E3%82%B9/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58223 - "GET /api/v1/projects/p-20260101-%E3%81%95%E3%81%A8%E3%81%84%E3%82%82%E3%83%88%E3%83%BC%E3%83%9E%E3%82%B9/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58224 - "GET /api/v1/projects/p-20260101-%E3%81%95%E3%81%A8%E3%81%84%E3%82%82%E3%83%88%E3%83%BC%E3%83%9E%E3%82%B9/direction-report/diff HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58237 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58238 - "GET /api/projects/p-20260418-GEN/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58239 - "GET /api/v1/projects/p-20260418-GEN/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58240 - "GET /api/v1/projects/p-20260418-GEN/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58241 - "GET /api/projects/p-20260418-%E3%81%88%E3%82%8A%E3%81%A3%E3%81%8F/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58242 - "GET /api/v1/projects/p-20260418-%E3%81%88%E3%82%8A%E3%81%A3%E3%81%8F/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58243 - "GET /api/v1/projects/p-20260418-%E3%81%88%E3%82%8A%E3%81%A3%E3%81%8F/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58244 - "GET /api/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58245 - "GET /api/v1/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58246 - "GET /api/v1/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58247 - "GET /api/projects/p-20260418-%E3%82%A6%E3%83%A1/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58248 - "GET /api/v1/projects/p-20260418-%E3%82%A6%E3%83%A1/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58249 - "GET /api/v1/projects/p-20260418-%E3%82%A6%E3%83%A1/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58250 - "GET /api/projects/p-20260418-GEN/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58251 - "GET /api/v1/projects/p-20260418-GEN/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58252 - "GET /api/v1/projects/p-20260418-GEN/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58253 - "GET /api/projects/p-20260418-%E3%81%88%E3%82%8A%E3%81%A3%E3%81%8F/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58254 - "GET /api/v1/projects/p-20260418-%E3%81%88%E3%82%8A%E3%81%A3%E3%81%8F/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58255 - "GET /api/v1/projects/p-20260418-%E3%81%88%E3%82%8A%E3%81%A3%E3%81%8F/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58256 - "GET /api/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58257 - "GET /api/v1/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58258 - "GET /api/v1/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/direction-report/diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58259 - "GET /api/projects/p-20260418-%E3%82%A6%E3%83%A1/youtube-assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58260 - "GET /api/v1/projects/p-20260418-%E3%82%A6%E3%83%A1/source-videos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58261 - "GET /api/v1/projects/p-20260418-%E3%82%A6%E3%83%A1/direction-report/diff HTTP/1.1" 200 OK

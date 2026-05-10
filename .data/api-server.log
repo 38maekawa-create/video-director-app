@@ -4171,3 +4171,6 @@ INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /api/projects/p-202603
 INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /api/projects/p-20260101-kos/youtube-assets HTTP/1.1" 200 OK
 INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /api/projects/p-20260101-%E3%83%8F%E3%82%AA/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:2200:9d9:6f0a:217b:4151:9c01:1a57:0 - "GET /api/v1/projects/p-20260101-%E3%83%8F%E3%82%AA/source-videos HTTP/1.1" 200 OK

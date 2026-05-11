@@ -51,7 +51,18 @@
 		A10000010000000000000101 /* FeedbackApprovalViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000101 /* FeedbackApprovalViewModel.swift */; };
 		A10000010000000000000102 /* FeedbackApprovalListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000102 /* FeedbackApprovalListView.swift */; };
 		A10000010000000000000103 /* FeedbackApprovalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000103 /* FeedbackApprovalDetailView.swift */; };
+		B10000010000000000000001 /* BeforeAfterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000010000000000000001 /* BeforeAfterUITests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B90000010000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A70000010000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A50000010000000000000001;
+			remoteInfo = VideoDirectorAgent;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		A20000010000000000000001 /* VideoDirectorAgentApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDirectorAgentApp.swift; sourceTree = "<group>"; };
@@ -100,10 +111,19 @@
 		A20000010000000000000101 /* FeedbackApprovalViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackApprovalViewModel.swift; sourceTree = "<group>"; };
 		A20000010000000000000102 /* FeedbackApprovalListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackApprovalListView.swift; sourceTree = "<group>"; };
 		A20000010000000000000103 /* FeedbackApprovalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackApprovalDetailView.swift; sourceTree = "<group>"; };
+		B20000010000000000000001 /* BeforeAfterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeforeAfterUITests.swift; sourceTree = "<group>"; };
+		B20000010000000000000002 /* VideoDirectorAgentUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VideoDirectorAgentUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A30000010000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B30000010000000000000001 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -117,6 +137,7 @@
 			isa = PBXGroup;
 			children = (
 				A40000010000000000000002 /* VideoDirectorAgent */,
+				B40000010000000000000001 /* VideoDirectorAgentUITests */,
 				A40000010000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -140,6 +161,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000010000000000000010 /* VideoDirectorAgent.app */,
+				B20000010000000000000002 /* VideoDirectorAgentUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -213,6 +235,14 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
+		B40000010000000000000001 /* VideoDirectorAgentUITests */ = {
+			isa = PBXGroup;
+			children = (
+				B20000010000000000000001 /* BeforeAfterUITests.swift */,
+			);
+			path = VideoDirectorAgentUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -233,6 +263,23 @@
 			productReference = A20000010000000000000010 /* VideoDirectorAgent.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B50000010000000000000001 /* VideoDirectorAgentUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B60000010000000000000001 /* Build configuration list for PBXNativeTarget "VideoDirectorAgentUITests" */;
+			buildPhases = (
+				B30000010000000000000002 /* Sources */,
+				B30000010000000000000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B90000010000000000000002 /* PBXTargetDependency */,
+			);
+			name = VideoDirectorAgentUITests;
+			productName = VideoDirectorAgentUITests;
+			productReference = B20000010000000000000002 /* VideoDirectorAgentUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -245,6 +292,10 @@
 				TargetAttributes = {
 					A50000010000000000000001 = {
 						CreatedOnToolsVersion = 16.0;
+					};
+					B50000010000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = A50000010000000000000001;
 					};
 				};
 			};
@@ -262,6 +313,7 @@
 			projectRoot = "";
 			targets = (
 				A50000010000000000000001 /* VideoDirectorAgent */,
+				B50000010000000000000001 /* VideoDirectorAgentUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -328,7 +380,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B30000010000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000010000000000000001 /* BeforeAfterUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B90000010000000000000002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A50000010000000000000001 /* VideoDirectorAgent */;
+			targetProxy = B90000010000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A80000010000000000000001 /* Debug */ = {
@@ -429,6 +497,44 @@
 			};
 			name = Release;
 		};
+		B80000010000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TT2DA7H5NJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.maekawa.VideoDirectorAgentUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = VideoDirectorAgent;
+			};
+			name = Debug;
+		};
+		B80000010000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TT2DA7H5NJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.maekawa.VideoDirectorAgentUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = VideoDirectorAgent;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -446,6 +552,15 @@
 			buildConfigurations = (
 				A80000010000000000000003 /* Debug */,
 				A80000010000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B60000010000000000000001 /* Build configuration list for PBXNativeTarget "VideoDirectorAgentUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B80000010000000000000001 /* Debug */,
+				B80000010000000000000002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

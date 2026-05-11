@@ -29,6 +29,28 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B50000010000000000000001"
+               BuildableName = "VideoDirectorAgentUITests.xctest"
+               BlueprintName = "VideoDirectorAgentUITests"
+               ReferencedContainer = "container:VideoDirectorAgent.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "A50000010000000000000001"
+            BuildableName = "VideoDirectorAgent.app"
+            BlueprintName = "VideoDirectorAgent"
+            ReferencedContainer = "container:VideoDirectorAgent.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"

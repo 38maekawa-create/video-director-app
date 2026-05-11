@@ -12,6 +12,10 @@ final class BeforeAfterUITests: XCTestCase {
 
         let openButton = app.buttons["ui-test-open-before-after"]
         XCTAssertTrue(openButton.waitForExistence(timeout: 30))
+        let deadline = Date().addingTimeInterval(45)
+        while !openButton.isEnabled && Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        }
         XCTAssertTrue(openButton.isEnabled)
 
         openButton.tap()

@@ -88,6 +88,7 @@
 - Build 21: E2E修正反映
 - Build 26: cloudflaredトンネル対応（4G接続問題解決）
 - Build 30: 通信修正反映（3者体制通信監査の修正含む）
+- Build 46: ビフォーアフター画面クラッシュ対策（動画WebViewをタップ時1枚ロード化）をTestFlightへアップロード
 
 ## アーカイブ
 - 詳細な作業ログ: `archive/PROGRESS_ARCHIVE_20260405.md`（935行）

@@ -132,7 +132,7 @@ xcodebuild -exportArchive \
     2>&1 | tee "$WORKSPACE_ROOT/build/export.log" \
     | grep -E "(error:|warning:|Export Succeeded|INFO)" || true
 
-IPA_PATH=$(find "$EXPORT_DIR" -name "*.ipa" | head -1)
+IPA_PATH=$(find "$EXPORT_DIR" -name "*.ipa" 2>/dev/null | head -1 || true)
 if [[ -z "$IPA_PATH" ]]; then
     if grep -q "Upload succeeded" "$WORKSPACE_ROOT/build/export.log" && \
        grep -q "EXPORT SUCCEEDED" "$WORKSPACE_ROOT/build/export.log"; then

@@ -5236,3 +5236,10 @@ INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260328-TM/vimeo-comments 
 INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/fb-tracker HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/transcript-diff HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/before-after HTTP/1.1" 200 OK

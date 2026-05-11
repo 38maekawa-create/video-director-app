@@ -701,6 +701,14 @@ struct BeforeAfterView: View {
 struct IframePlayerView: UIViewRepresentable {
     let embedURL: String
 
+    final class Coordinator {
+        var loadedEmbedURL: String?
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
     /// Vimeo embed URLかどうか判定
     private var isVimeo: Bool { embedURL.contains("player.vimeo.com") }
 
@@ -733,8 +741,8 @@ struct IframePlayerView: UIViewRepresentable {
     }
 
     func updateUIView(_ webView: WKWebView, context: Context) {
-        // 既にロード済みならスキップ
-        if webView.url != nil { return }
+        guard context.coordinator.loadedEmbedURL != embedURL else { return }
+        context.coordinator.loadedEmbedURL = embedURL
 
         if isVimeo, let videoId = vimeoVideoId {
             // Vimeo: Player SDK HTML方式（直接URLリクエストだと403になるため）

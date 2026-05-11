@@ -621,11 +621,13 @@ final class APIClient: ObservableObject {
     // MARK: - ビフォーアフター比較
 
     func fetchBeforeAfter(projectId: String) async throws -> BeforeAfterResponse {
-        try await request(BeforeAfterResponse.self, path: "/api/v1/projects/\(projectId)/before-after")
+        let encoded = projectId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? projectId
+        try await request(BeforeAfterResponse.self, path: "/api/v1/projects/\(encoded)/before-after")
     }
 
     func fetchTranscriptDiff(projectId: String, version: String? = nil) async throws -> TranscriptDiffResponse {
-        var path = "/api/v1/projects/\(projectId)/transcript-diff"
+        let encodedProject = projectId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? projectId
+        var path = "/api/v1/projects/\(encodedProject)/transcript-diff"
         if let ver = version, !ver.isEmpty {
             let encoded = ver.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ver
             path += "?version=\(encoded)"

@@ -23,13 +23,15 @@ struct BeforeAfterView: View {
     @State private var activePlayerKey: String?
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 0) {
                     if isLoading {
                         loadingView
                     } else if let error = errorMessage {
                         errorView(error)
+                    } else if isEmptyBeforeAfterData {
+                        emptyBeforeAfterView
                     } else {
                         compareModeSelector
                         videoComparisonSection
@@ -79,6 +81,16 @@ struct BeforeAfterView: View {
         }
     }
 
+    private var isEmptyBeforeAfterData: Bool {
+        let hasVideos = !(beforeAfterData?.sourceVideos.isEmpty ?? true)
+            || beforeAfterData?.editedVideo != nil
+            || beforeAfterData?.fbRevisedVideo != nil
+        let hasDiffs = !(beforeAfterData?.diffHighlights.isEmpty ?? true)
+            || !(transcriptData?.segments.isEmpty ?? true)
+            || !(fbTrackerData?.items.isEmpty ?? true)
+        return !hasVideos && !hasDiffs
+    }
+
     // MARK: - サブビュー
 
     private var loadingView: some View {
@@ -106,6 +118,24 @@ struct BeforeAfterView: View {
         .padding(32)
     }
 
+    private var emptyBeforeAfterView: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "rectangle.on.rectangle.slash")
+                .font(.system(size: 42))
+                .foregroundStyle(AppTheme.textMuted)
+            Text("ビフォーアフター素材が未連携です")
+                .font(AppTheme.sectionFont(17))
+                .foregroundStyle(.white)
+            Text("動画URL・FB差分・文字起こし差分がまだ登録されていないため、比較画面は表示できません。")
+                .font(AppTheme.bodyFont(13))
+                .foregroundStyle(AppTheme.textMuted)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+        }
+        .frame(maxWidth: .infinity, minHeight: 360)
+        .padding(.horizontal, 16)
+    }
+
     // セグメントピッカー: 比較モード切替
     private var compareModeSelector: some View {
         VStack(spacing: 12) {
@@ -126,32 +156,26 @@ struct BeforeAfterView: View {
 
     // 上下2段レイアウトで動画比較
     private var videoComparisonSection: some View {
-        GeometryReader { geo in
-            let containerWidth = max(geo.size.width, UIScreen.main.bounds.width)
-            let videoWidth = max(1, containerWidth - 32) // padding 16*2
-            let videoHeight = videoWidth * 9.0 / 16.0
-            VStack(spacing: 2) {
-                // 上段
-                VStack(spacing: 4) {
-                    upperVideoLabel
-                    upperVideoPlayer
-                        .frame(width: videoWidth, height: videoHeight)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                }
-                .padding(.horizontal, 16)
+        let videoWidth = max(1, UIScreen.main.bounds.width - 32)
+        let videoHeight = videoWidth * 9.0 / 16.0
 
-                // 下段
-                VStack(spacing: 4) {
-                    lowerVideoLabel
-                    lowerVideoPlayer
-                        .frame(width: videoWidth, height: videoHeight)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                }
-                .padding(.horizontal, 16)
+        return VStack(spacing: 2) {
+            VStack(spacing: 4) {
+                upperVideoLabel
+                upperVideoPlayer
+                    .frame(width: videoWidth, height: videoHeight)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
             }
+            .padding(.horizontal, 16)
+
+            VStack(spacing: 4) {
+                lowerVideoLabel
+                lowerVideoPlayer
+                    .frame(width: videoWidth, height: videoHeight)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            .padding(.horizontal, 16)
         }
-        // GeometryReaderの高さを明示（ラベル含む上下2段分）
-        .frame(height: max(1, UIScreen.main.bounds.width - 32) * 9.0 / 16.0 * 2 + 60)
         .padding(.vertical, 8)
     }
 
@@ -530,6 +554,7 @@ struct BeforeAfterView: View {
 
     // MARK: - データ読み込み
 
+    @MainActor
     private func loadData() async {
         isLoading = true
         defer { isLoading = false }

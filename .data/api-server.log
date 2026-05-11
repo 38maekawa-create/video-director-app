@@ -5079,3 +5079,6 @@ INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54328 - "GET /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/before-after HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54329 - "GET /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54330 - "GET /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/fb-tracker HTTP/1.1" 200 OK

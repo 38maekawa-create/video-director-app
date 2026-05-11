@@ -20,6 +20,7 @@ struct BeforeAfterView: View {
     @State private var isTranscriptLoading = false
     @State private var fbTrackerData: FBTrackerResponse?
     @State private var isFBTrackerLoading = false
+    @State private var activePlayerKey: String?
 
     var body: some View {
         NavigationView {
@@ -69,6 +70,12 @@ struct BeforeAfterView: View {
         }
         .task {
             await loadData()
+        }
+        .onChange(of: compareMode) { _, _ in
+            activePlayerKey = nil
+        }
+        .onChange(of: selectedSourceIndex) { _, _ in
+            activePlayerKey = nil
         }
     }
 
@@ -207,7 +214,7 @@ struct BeforeAfterView: View {
                 if let data = beforeAfterData,
                    selectedSourceIndex < data.sourceVideos.count {
                     let video = data.sourceVideos[selectedSourceIndex]
-                    IframePlayerView(embedURL: video.embedUrl)
+                    safePlayer(embedURL: video.embedUrl, key: "source-\(selectedSourceIndex)")
                 } else {
                     placeholderView("素材動画が未登録です")
                 }
@@ -215,7 +222,7 @@ struct BeforeAfterView: View {
                 // 編集後 v1 Vimeo
                 if let edited = beforeAfterData?.editedVideo,
                    let embedUrl = edited.embedUrl {
-                    IframePlayerView(embedURL: embedUrl)
+                    safePlayer(embedURL: embedUrl, key: "edited-upper")
                 } else {
                     placeholderView("編集後動画が未登録です")
                 }
@@ -230,7 +237,7 @@ struct BeforeAfterView: View {
                 // 編集後 Vimeo
                 if let edited = beforeAfterData?.editedVideo,
                    let embedUrl = edited.embedUrl {
-                    IframePlayerView(embedURL: embedUrl)
+                    safePlayer(embedURL: embedUrl, key: "edited-lower")
                 } else {
                     placeholderView("編集後動画が未登録です")
                 }
@@ -238,12 +245,24 @@ struct BeforeAfterView: View {
                 // FB後 v2
                 if let revised = beforeAfterData?.fbRevisedVideo,
                    let embedUrl = revised.embedUrl {
-                    IframePlayerView(embedURL: embedUrl)
+                    safePlayer(embedURL: embedUrl, key: "fb-revised")
                 } else {
                     placeholderView("FB後再編集版はまだありません")
                 }
             }
         }
+    }
+
+    private func safePlayer(embedURL: String, key: String) -> some View {
+        SafeIframePlayerView(
+            embedURL: embedURL,
+            isActive: Binding(
+                get: { activePlayerKey == key },
+                set: { isActive in
+                    activePlayerKey = isActive ? key : nil
+                }
+            )
+        )
     }
 
     private func placeholderView(_ message: String) -> some View {
@@ -693,6 +712,45 @@ struct BeforeAfterView: View {
             )
         } catch {
             // エラー時は前のデータを維持
+        }
+    }
+}
+
+struct SafeIframePlayerView: View {
+    let embedURL: String
+    @Binding var isActive: Bool
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            if isActive {
+                IframePlayerView(embedURL: embedURL)
+                Button {
+                    isActive = false
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title3)
+                        .foregroundStyle(.white, Color.black.opacity(0.55))
+                        .padding(8)
+                }
+                .buttonStyle(.plain)
+            } else {
+                Button {
+                    isActive = true
+                } label: {
+                    ZStack {
+                        AppTheme.cardBackground
+                        VStack(spacing: 8) {
+                            Image(systemName: "play.circle.fill")
+                                .font(.system(size: 44))
+                                .foregroundStyle(AppTheme.accent)
+                            Text("タップして再生")
+                                .font(AppTheme.labelFont(13))
+                                .foregroundStyle(AppTheme.textSecondary)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
 }

@@ -5183,3 +5183,6 @@ INFO:     127.0.0.1:58087 - "GET /api/v1/projects/p-20260418-%E3%81%97%E3%82%83%
 INFO:     127.0.0.1:58088 - "GET /api/projects/p-20260418-%E3%82%A6%E3%83%A1/youtube-assets HTTP/1.1" 200 OK
 INFO:     127.0.0.1:58089 - "GET /api/v1/projects/p-20260418-%E3%82%A6%E3%83%A1/source-videos HTTP/1.1" 200 OK
 INFO:     127.0.0.1:58090 - "GET /api/v1/projects/p-20260418-%E3%82%A6%E3%83%A1/direction-report/diff HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK

@@ -99,7 +99,9 @@ success "ビルド番号を $NEW_BUILD に更新しました"
 # ── Archive ────────────────────────────────────────────────────────────────────
 info "Archive を実行しています..."
 mkdir -p "$WORKSPACE_ROOT/build"
+rm -rf "$ARCHIVE_DIR"
 
+set +e
 xcodebuild archive \
     -project "$XCODE_PROJECT" \
     -scheme "$SCHEME" \
@@ -109,9 +111,11 @@ xcodebuild archive \
     CODE_SIGN_STYLE=Automatic \
     DEVELOPMENT_TEAM="$TEAM_ID" \
     | tee "$WORKSPACE_ROOT/build/archive.log" \
-    | grep -E "(error:|warning:|Archive Succeeded|BUILD)" || true
+    | grep -E "(error:|warning:|Archive Succeeded|BUILD)"
+ARCHIVE_STATUS=${PIPESTATUS[0]}
+set -e
 
-if [[ ! -d "$ARCHIVE_DIR" ]]; then
+if [[ $ARCHIVE_STATUS -ne 0 || ! -d "$ARCHIVE_DIR" ]]; then
     error "Archive 失敗。ログを確認してください: $WORKSPACE_ROOT/build/archive.log"
 fi
 success "Archive 成功: $ARCHIVE_DIR"

@@ -5340,3 +5340,8 @@ INFO:     127.0.0.1:52749 - "GET /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%
 INFO:     127.0.0.1:52750 - "GET /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52751 - "GET /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/fb-tracker HTTP/1.1" 200 OK
 INFO:     127.0.0.1:62970 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     240a:61:52c3:e25e:113b:4855:d08a:801a:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     240a:61:52c3:e25e:113b:4855:d08a:801a:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     240a:61:52c3:e25e:113b:4855:d08a:801a:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240a:61:52c3:e25e:113b:4855:d08a:801a:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:52c3:e25e:113b:4855:d08a:801a:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK

@@ -5383,3 +5383,6 @@ INFO:     100.110.206.6:64270 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     100.110.206.6:64364 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/transcript-diff HTTP/1.1" 200 OK
 INFO:     100.110.206.6:64365 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/before-after HTTP/1.1" 200 OK
 INFO:     100.110.206.6:64366 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/fb-tracker HTTP/1.1" 200 OK
+INFO:     100.110.206.6:64540 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.110.206.6:64652 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/transcript-diff HTTP/1.1" 200 OK
+INFO:     100.110.206.6:64651 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/before-after HTTP/1.1" 200 OK

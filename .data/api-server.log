@@ -5386,3 +5386,9 @@ INFO:     100.110.206.6:64366 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83
 INFO:     100.110.206.6:64540 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     100.110.206.6:64652 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/transcript-diff HTTP/1.1" 200 OK
 INFO:     100.110.206.6:64651 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/before-after HTTP/1.1" 200 OK
+INFO:     100.110.206.6:65109 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.110.206.6:65109 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.110.206.6:65109 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/before-after HTTP/1.1" 200 OK
+INFO:     100.110.206.6:65152 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/transcript-diff HTTP/1.1" 200 OK
+INFO:     100.110.206.6:65297 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.110.206.6:65320 - "GET /healthz HTTP/1.1" 200 OK

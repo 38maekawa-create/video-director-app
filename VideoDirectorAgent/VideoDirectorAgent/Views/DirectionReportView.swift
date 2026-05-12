@@ -183,27 +183,19 @@ struct DirectionReportView: View {
     @State private var editingText: String = ""
     @State private var showVoiceFeedback = false
     @State private var showKnowledgePage = false
-    @State private var showBeforeAfter = false
+    @State private var showBeforeAfterUnavailable = false
 
     private let tabTitles = ["概要", "ディレクション", "YouTube素材", "素材", "FB・評価", "ナレッジ", "レビュー"]
 
     var body: some View {
-        Group {
-            if showBeforeAfter {
-                BeforeAfterView(
-                    projectId: project.id,
-                    projectTitle: project.title,
-                    wrapsInNavigationStack: false,
-                    onClose: {
-                        showBeforeAfter = false
-                    }
-                )
-            } else {
-                reportContent
-            }
-        }
+        reportContent
         .background(AppTheme.background.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
+        .alert("ビフォーアフターを一時停止中", isPresented: $showBeforeAfterUnavailable) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("この画面は実機クラッシュ調査中のため、表示を一時停止しています。タイトル・概要欄・編集指示・YouTube素材は引き続き確認できます。")
+        }
         .fullScreenCover(isPresented: $showVoiceFeedback) {
             VoiceFeedbackView(projectId: project.id)
         }
@@ -278,7 +270,7 @@ struct DirectionReportView: View {
 
                 HStack(spacing: 12) {
                     Button {
-                        showBeforeAfter = true
+                        showBeforeAfterUnavailable = true
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: "rectangle.on.rectangle.angled")

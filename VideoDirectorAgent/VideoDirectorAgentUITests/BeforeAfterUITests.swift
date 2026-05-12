@@ -27,7 +27,7 @@ final class BeforeAfterUITests: XCTestCase {
         XCTAssertEqual(app.state, .runningForeground)
     }
 
-    func testDirectionReportBeforeAfterButtonOpensWithoutCrash() throws {
+    func testDirectionReportBeforeAfterButtonIsQuarantinedWithoutCrash() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-test-direction-before-after"]
         app.launch()
@@ -40,10 +40,8 @@ final class BeforeAfterUITests: XCTestCase {
         XCTAssertTrue(beforeAfterButton.waitForExistence(timeout: 30))
         beforeAfterButton.tap()
 
-        let title = app.staticTexts["ビフォーアフター"]
-        let emptyState = app.staticTexts["ビフォーアフター素材が未連携です"]
-        let screenOpened = title.waitForExistence(timeout: 20) || emptyState.waitForExistence(timeout: 20)
-        XCTAssertTrue(screenOpened)
+        let alert = app.alerts["ビフォーアフターを一時停止中"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 20))
         XCTAssertEqual(app.state, .runningForeground)
     }
 }

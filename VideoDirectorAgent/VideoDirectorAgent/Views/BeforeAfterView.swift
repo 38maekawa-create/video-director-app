@@ -6,6 +6,7 @@ import WebKit
 struct BeforeAfterView: View {
     let projectId: String
     let projectTitle: String
+    let wrapsInNavigationStack: Bool
 
     @Environment(\.dismiss) private var dismiss
 
@@ -22,8 +23,34 @@ struct BeforeAfterView: View {
     @State private var isFBTrackerLoading = false
     @State private var activePlayerKey: String?
 
+    init(projectId: String, projectTitle: String, wrapsInNavigationStack: Bool = true) {
+        self.projectId = projectId
+        self.projectTitle = projectTitle
+        self.wrapsInNavigationStack = wrapsInNavigationStack
+    }
+
     var body: some View {
-        NavigationStack {
+        Group {
+            if wrapsInNavigationStack {
+                NavigationStack {
+                    content
+                }
+            } else {
+                content
+            }
+        }
+        .task {
+            await loadData()
+        }
+        .onChange(of: compareMode) { _, _ in
+            activePlayerKey = nil
+        }
+        .onChange(of: selectedSourceIndex) { _, _ in
+            activePlayerKey = nil
+        }
+    }
+
+    private var content: some View {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 0) {
                     if isLoading {
@@ -69,16 +96,6 @@ struct BeforeAfterView: View {
             }
             .toolbarBackground(AppTheme.cardBackground, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-        }
-        .task {
-            await loadData()
-        }
-        .onChange(of: compareMode) { _, _ in
-            activePlayerKey = nil
-        }
-        .onChange(of: selectedSourceIndex) { _, _ in
-            activePlayerKey = nil
-        }
     }
 
     private var isEmptyBeforeAfterData: Bool {

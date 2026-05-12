@@ -204,8 +204,8 @@ struct DirectionReportView: View {
         .fullScreenCover(isPresented: $showVoiceFeedback) {
             VoiceFeedbackView(projectId: project.id)
         }
-        .fullScreenCover(isPresented: $showBeforeAfter) {
-            BeforeAfterView(projectId: project.id, projectTitle: project.title)
+        .navigationDestination(isPresented: $showBeforeAfter) {
+            BeforeAfterView(projectId: project.id, projectTitle: project.title, wrapsInNavigationStack: false)
         }
         .sheet(isPresented: $showKnowledgePage) {
             if let urlString = project.knowledgePageUrl,
@@ -281,6 +281,7 @@ struct DirectionReportView: View {
                                 .strokeBorder(Color(hex: 0xF5A623).opacity(0.5), lineWidth: 1)
                         )
                     }
+                    .accessibilityIdentifier("direction-before-after-button")
 
                     if project.knowledgePageUrl != nil {
                         Button {

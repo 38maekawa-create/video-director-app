@@ -7,6 +7,7 @@ struct BeforeAfterView: View {
     let projectId: String
     let projectTitle: String
     let wrapsInNavigationStack: Bool
+    let onClose: (() -> Void)?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -23,10 +24,16 @@ struct BeforeAfterView: View {
     @State private var isFBTrackerLoading = false
     @State private var activePlayerKey: String?
 
-    init(projectId: String, projectTitle: String, wrapsInNavigationStack: Bool = true) {
+    init(
+        projectId: String,
+        projectTitle: String,
+        wrapsInNavigationStack: Bool = true,
+        onClose: (() -> Void)? = nil
+    ) {
         self.projectId = projectId
         self.projectTitle = projectTitle
         self.wrapsInNavigationStack = wrapsInNavigationStack
+        self.onClose = onClose
     }
 
     var body: some View {
@@ -74,7 +81,11 @@ struct BeforeAfterView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
-                        dismiss()
+                        if let onClose {
+                            onClose()
+                        } else {
+                            dismiss()
+                        }
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: "xmark")

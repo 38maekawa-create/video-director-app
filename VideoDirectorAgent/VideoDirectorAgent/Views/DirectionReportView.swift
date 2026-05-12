@@ -188,6 +188,34 @@ struct DirectionReportView: View {
     private let tabTitles = ["概要", "ディレクション", "YouTube素材", "素材", "FB・評価", "ナレッジ", "レビュー"]
 
     var body: some View {
+        Group {
+            if showBeforeAfter {
+                BeforeAfterView(
+                    projectId: project.id,
+                    projectTitle: project.title,
+                    wrapsInNavigationStack: false,
+                    onClose: {
+                        showBeforeAfter = false
+                    }
+                )
+            } else {
+                reportContent
+            }
+        }
+        .background(AppTheme.background.ignoresSafeArea())
+        .navigationBarTitleDisplayMode(.inline)
+        .fullScreenCover(isPresented: $showVoiceFeedback) {
+            VoiceFeedbackView(projectId: project.id)
+        }
+        .sheet(isPresented: $showKnowledgePage) {
+            if let urlString = project.knowledgePageUrl,
+               let url = URL(string: urlString) {
+                KnowledgePageWebView(url: url, projectId: project.id)
+            }
+        }
+    }
+
+    private var reportContent: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 0) {
                 headerSection
@@ -199,19 +227,6 @@ struct DirectionReportView: View {
         .background(AppTheme.background.ignoresSafeArea())
         .overlay(alignment: .bottom) {
             bottomActionBar
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .fullScreenCover(isPresented: $showVoiceFeedback) {
-            VoiceFeedbackView(projectId: project.id)
-        }
-        .navigationDestination(isPresented: $showBeforeAfter) {
-            BeforeAfterView(projectId: project.id, projectTitle: project.title, wrapsInNavigationStack: false)
-        }
-        .sheet(isPresented: $showKnowledgePage) {
-            if let urlString = project.knowledgePageUrl,
-               let url = URL(string: urlString) {
-                KnowledgePageWebView(url: url, projectId: project.id)
-            }
         }
     }
 

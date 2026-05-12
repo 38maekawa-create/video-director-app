@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-12T16:24:26.226555",
+  "generated_at": "2026-05-12T17:25:51.940494",
   "summary": {
     "total_members": 37,
     "matched": 29,
@@ -651,15 +651,15 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
           "title": "78_バーボンさん_初稿_坂野",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },

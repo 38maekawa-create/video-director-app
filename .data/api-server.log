@@ -5345,3 +5345,8 @@ INFO:     240a:61:52c3:e25e:113b:4855:d08a:801a:0 - "GET /api/v1/feedbacks/pendi
 INFO:     240a:61:52c3:e25e:113b:4855:d08a:801a:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     240a:61:52c3:e25e:113b:4855:d08a:801a:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     240a:61:52c3:e25e:113b:4855:d08a:801a:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     100.110.206.6:62922 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.110.206.6:62922 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.110.206.6:62985 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/transcript-diff HTTP/1.1" 200 OK
+INFO:     100.110.206.6:62984 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/before-after HTTP/1.1" 200 OK
+INFO:     100.110.206.6:62986 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/fb-tracker HTTP/1.1" 200 OK

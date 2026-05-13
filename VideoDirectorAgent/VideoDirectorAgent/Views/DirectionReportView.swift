@@ -1225,6 +1225,7 @@ private struct InlinePreviewItem: Identifiable {
     let id: String
     let label: String
     let embedURL: String
+    let externalURL: String
 }
 
 private struct BeforeAfterSummaryView: View {
@@ -1407,7 +1408,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build62 3択プレビュー枠")
+                Text("Build63 選択表示つき3択")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1446,14 +1447,14 @@ private struct BeforeAfterSummaryView: View {
             safeInlinePreview(response)
             safeExternalLinks(response)
 
-            Text("この枠は常時表示し、素材/編集後/FB後のうち登録済み動画だけタップ再生できます。")
+            Text("この枠は常時表示し、選択中の動画だけタップ再生できます。")
                 .font(AppTheme.bodyFont(12))
                 .foregroundStyle(AppTheme.textMuted)
         }
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build62-three-option-preview")
+        .accessibilityIdentifier("before-after-build63-selected-preview")
     }
 
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {
@@ -1488,6 +1489,30 @@ private struct BeforeAfterSummaryView: View {
                         inlinePreviewOption(item, isSelected: item.id == selectedItem.id)
                     }
                 }
+
+                HStack(spacing: 8) {
+                    Label("選択中: \(selectedItem.label)", systemImage: "scope")
+                        .font(AppTheme.labelFont(11))
+                        .foregroundStyle(AppTheme.textSecondary)
+                    Spacer()
+                    if let url = URL(string: selectedItem.externalURL) {
+                        Link(destination: url) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "safari")
+                                Text("外で開く")
+                            }
+                            .font(AppTheme.labelFont(11))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 6)
+                            .background(AppTheme.accent.opacity(0.35))
+                            .clipShape(Capsule())
+                        }
+                        .accessibilityIdentifier("before-after-inline-open-selected")
+                    }
+                }
+                .padding(.horizontal, 2)
+                .accessibilityIdentifier("before-after-inline-selected-label")
 
                 SafeIframePlayerView(
                     embedURL: selectedItem.embedURL,
@@ -1538,7 +1563,8 @@ private struct BeforeAfterSummaryView: View {
                 InlinePreviewItem(
                     id: "source",
                     label: "素材",
-                    embedURL: source.embedUrl
+                    embedURL: source.embedUrl,
+                    externalURL: source.youtubeUrl
                 )
             )
         }
@@ -1549,7 +1575,8 @@ private struct BeforeAfterSummaryView: View {
                 InlinePreviewItem(
                     id: "edited",
                     label: edited.versionLabel?.isEmpty == false ? edited.versionLabel! : "編集後",
-                    embedURL: embedURL
+                    embedURL: embedURL,
+                    externalURL: edited.vimeoUrl
                 )
             )
         }
@@ -1560,7 +1587,8 @@ private struct BeforeAfterSummaryView: View {
                 InlinePreviewItem(
                     id: "fb-revised",
                     label: revised.versionLabel?.isEmpty == false ? revised.versionLabel! : "FB後",
-                    embedURL: embedURL
+                    embedURL: embedURL,
+                    externalURL: revised.vimeoUrl
                 )
             )
         }

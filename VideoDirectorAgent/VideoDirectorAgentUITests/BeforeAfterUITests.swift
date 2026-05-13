@@ -44,14 +44,17 @@ final class BeforeAfterUITests: XCTestCase {
 
         let summary = app.otherElements["before-after-summary-screen"]
         let title = app.staticTexts["ビフォーアフター概要"]
-        let previewBanner = app.staticTexts["Build62 3択プレビュー枠"]
+        let previewBanner = app.staticTexts["Build63 選択表示つき3択"]
         let externalLinksLabel = app.staticTexts["外部で開く"]
         let inlinePreviewLabel = app.staticTexts["アプリ内プレビュー"]
+        let selectedLabel = app.otherElements["before-after-inline-selected-label"]
         let opened = summary.waitForExistence(timeout: 20) || title.waitForExistence(timeout: 20)
         XCTAssertTrue(opened)
         XCTAssertTrue(previewBanner.waitForExistence(timeout: 20))
         XCTAssertTrue(externalLinksLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(inlinePreviewLabel.waitForExistence(timeout: 20))
+        XCTAssertTrue(selectedLabel.waitForExistence(timeout: 20))
+        XCTAssertTrue(app.descendants(matching: .any)["before-after-inline-open-selected"].waitForExistence(timeout: 20))
         if app.buttons["before-after-inline-option-source"].waitForExistence(timeout: 5) {
             app.buttons["before-after-inline-option-source"].tap()
             XCTAssertEqual(app.state, .runningForeground)

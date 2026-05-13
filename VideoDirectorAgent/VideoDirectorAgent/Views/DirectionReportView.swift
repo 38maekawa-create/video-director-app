@@ -1512,6 +1512,7 @@ private struct BeforeAfterSummaryView: View {
                     }
                 }
                 .padding(.horizontal, 2)
+                .accessibilityElement(children: .combine)
                 .accessibilityIdentifier("before-after-inline-selected-label")
 
                 SafeIframePlayerView(

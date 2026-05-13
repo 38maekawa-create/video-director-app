@@ -44,10 +44,11 @@ final class BeforeAfterUITests: XCTestCase {
 
         let summary = app.otherElements["before-after-summary-screen"]
         let title = app.staticTexts["ビフォーアフター概要"]
-        let previewBanner = app.staticTexts["Build64 比較ペア導線"]
+        let previewBanner = app.staticTexts["Build65 比較ペア状態表示"]
         let externalLinksLabel = app.staticTexts["外部で開く"]
         let inlinePreviewLabel = app.staticTexts["アプリ内プレビュー"]
         let comparisonPairLabel = app.staticTexts["比較ペア"]
+        let comparisonStatusLabel = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "比較中:")).firstMatch
         let selectedLabel = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "選択中:")).firstMatch
         let opened = summary.waitForExistence(timeout: 20) || title.waitForExistence(timeout: 20)
         XCTAssertTrue(opened)
@@ -55,6 +56,9 @@ final class BeforeAfterUITests: XCTestCase {
         XCTAssertTrue(externalLinksLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(inlinePreviewLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(comparisonPairLabel.waitForExistence(timeout: 20))
+        XCTAssertTrue(comparisonStatusLabel.waitForExistence(timeout: 20))
+        XCTAssertTrue(app.staticTexts["左:"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.staticTexts["右:"].waitForExistence(timeout: 20))
         XCTAssertTrue(selectedLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["外で開く"].waitForExistence(timeout: 20))
         let sourceEditedPair = app.buttons["before-after-compare-source-edited"]

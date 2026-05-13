@@ -6565,3 +6565,14 @@ INFO:     127.0.0.1:56025 - "GET /api/v1/projects/p-20260418-%E3%81%88%E3%82%8A%
 INFO:     127.0.0.1:56026 - "GET /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/before-after HTTP/1.1" 200 OK
 INFO:     127.0.0.1:56027 - "GET /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
 INFO:     127.0.0.1:56028 - "GET /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/fb-tracker HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260124-RYO/before-after HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260124-RYO/transcript-diff HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260124-RYO/fb-tracker HTTP/1.1" 200 OK

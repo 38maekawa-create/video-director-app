@@ -1240,6 +1240,7 @@ private struct BeforeAfterSummaryView: View {
     @State private var errorMessage: String?
     @State private var activeInlinePlayerKey: String?
     @State private var selectedInlinePlayerKey: String?
+    @State private var selectedComparisonPairId: String = "source-edited"
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -1408,7 +1409,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build64 比較ペア導線")
+                Text("Build65 比較ペア状態表示")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1447,14 +1448,14 @@ private struct BeforeAfterSummaryView: View {
             safeInlinePreview(response)
             safeExternalLinks(response)
 
-            Text("比較ペアは選択中動画の切替だけを行い、再生は1本ずつ行います。")
+            Text("比較ペアの状態を表示しながら、再生は選択中の1本だけに絞ります。")
                 .font(AppTheme.bodyFont(12))
                 .foregroundStyle(AppTheme.textMuted)
         }
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build64-comparison-pair")
+        .accessibilityIdentifier("before-after-build65-comparison-status")
     }
 
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {
@@ -1473,6 +1474,7 @@ private struct BeforeAfterSummaryView: View {
 
             inlineSelectionStatus(selectedItem)
             comparisonPairControls(items)
+            comparisonPairStatus(items)
 
             if items.isEmpty {
                 HStack(spacing: 8) {
@@ -1581,6 +1583,8 @@ private struct BeforeAfterSummaryView: View {
     private func comparisonPairControls(_ items: [InlinePreviewItem]) -> some View {
         let hasSourceEdited = hasAnyInlineItem(["source", "edited"], in: items)
         let hasEditedFB = hasAnyInlineItem(["edited", "fb-revised"], in: items)
+        let sourceEditedSelected = selectedComparisonPairId == "source-edited"
+        let editedFBSelected = selectedComparisonPairId == "edited-fb"
 
         return VStack(alignment: .leading, spacing: 6) {
             Text("比較ペア")
@@ -1592,28 +1596,71 @@ private struct BeforeAfterSummaryView: View {
                     label: "素材→編集後",
                     systemImage: "arrow.right.circle",
                     isEnabled: hasSourceEdited,
+                    isSelected: sourceEditedSelected,
                     accessibilityId: "before-after-compare-source-edited"
                 ) {
-                    selectComparisonPair(primary: "edited", fallback: "source", items: items)
+                    selectComparisonPair(pairId: "source-edited", primary: "edited", fallback: "source", items: items)
                 }
 
                 comparisonPairButton(
                     label: "編集後→FB後",
                     systemImage: "arrow.triangle.2.circlepath.circle",
                     isEnabled: hasEditedFB,
+                    isSelected: editedFBSelected,
                     accessibilityId: "before-after-compare-edited-fb"
                 ) {
-                    selectComparisonPair(primary: "fb-revised", fallback: "edited", items: items)
+                    selectComparisonPair(pairId: "edited-fb", primary: "fb-revised", fallback: "edited", items: items)
                 }
             }
         }
         .accessibilityIdentifier("before-after-comparison-pair-row")
     }
 
+    private func comparisonPairStatus(_ items: [InlinePreviewItem]) -> some View {
+        let isEditedFB = selectedComparisonPairId == "edited-fb"
+        let pairLabel = isEditedFB ? "編集後→FB後" : "素材→編集後"
+        let beforeItem = items.first(where: { $0.id == (isEditedFB ? "edited" : "source") })
+        let afterItem = items.first(where: { $0.id == (isEditedFB ? "fb-revised" : "edited") })
+
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 5) {
+                Image(systemName: "rectangle.split.2x1")
+                    .foregroundStyle(AppTheme.accent)
+                Text("比較中: \(pairLabel)")
+                    .font(AppTheme.labelFont(11))
+                    .foregroundStyle(AppTheme.textSecondary)
+            }
+            .accessibilityIdentifier("before-after-comparison-selected-label")
+
+            HStack(spacing: 8) {
+                comparisonPairEndpoint(prefix: "左", item: beforeItem)
+                comparisonPairEndpoint(prefix: "右", item: afterItem)
+            }
+        }
+        .padding(10)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityIdentifier("before-after-comparison-status")
+    }
+
+    private func comparisonPairEndpoint(prefix: String, item: InlinePreviewItem?) -> some View {
+        HStack(spacing: 4) {
+            Text("\(prefix):")
+                .font(AppTheme.labelFont(10))
+                .foregroundStyle(AppTheme.textMuted)
+            Text(item?.label ?? "未登録")
+                .font(AppTheme.labelFont(10))
+                .foregroundStyle(item == nil ? AppTheme.textMuted : .white)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private func comparisonPairButton(
         label: String,
         systemImage: String,
         isEnabled: Bool,
+        isSelected: Bool,
         accessibilityId: String,
         action: @escaping () -> Void
     ) -> some View {
@@ -1626,7 +1673,7 @@ private struct BeforeAfterSummaryView: View {
             .foregroundStyle(isEnabled ? .white : AppTheme.textMuted)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
-            .background(isEnabled ? AppTheme.accent.opacity(0.35) : AppTheme.cardBackground)
+            .background(isEnabled && isSelected ? AppTheme.accent.opacity(0.48) : (isEnabled ? AppTheme.accent.opacity(0.28) : AppTheme.cardBackground))
             .clipShape(Capsule())
         }
         .buttonStyle(.plain)
@@ -1634,7 +1681,8 @@ private struct BeforeAfterSummaryView: View {
         .accessibilityIdentifier(accessibilityId)
     }
 
-    private func selectComparisonPair(primary: String, fallback: String, items: [InlinePreviewItem]) {
+    private func selectComparisonPair(pairId: String, primary: String, fallback: String, items: [InlinePreviewItem]) {
+        selectedComparisonPairId = pairId
         if let target = items.first(where: { $0.id == primary }) ?? items.first(where: { $0.id == fallback }) {
             selectedInlinePlayerKey = target.id
             activeInlinePlayerKey = nil

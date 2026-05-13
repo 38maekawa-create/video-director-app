@@ -1221,6 +1221,12 @@ struct KnowledgePageWebView: View {
     }
 }
 
+private struct InlinePreviewItem: Identifiable {
+    let id: String
+    let label: String
+    let embedURL: String
+}
+
 private struct BeforeAfterSummaryView: View {
     let projectId: String
     let projectTitle: String
@@ -1232,6 +1238,7 @@ private struct BeforeAfterSummaryView: View {
     @State private var fbTrackerData: FBTrackerResponse?
     @State private var errorMessage: String?
     @State private var activeInlinePlayerKey: String?
+    @State private var selectedInlinePlayerKey: String?
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -1400,7 +1407,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build60 固定プレビュー枠")
+                Text("Build61 2択プレビュー枠")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1439,17 +1446,20 @@ private struct BeforeAfterSummaryView: View {
             safeInlinePreview(response)
             safeExternalLinks(response)
 
-            Text("この枠は常時表示し、編集後Vimeoがある案件だけタップ再生できます。")
+            Text("この枠は常時表示し、編集後/FB後Vimeoがある案件だけタップ再生できます。")
                 .font(AppTheme.bodyFont(12))
                 .foregroundStyle(AppTheme.textMuted)
         }
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build60-fixed-preview")
+        .accessibilityIdentifier("before-after-build61-two-option-preview")
     }
 
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {
+        let items = inlinePreviewItems(response)
+        let selectedItem = selectedInlineItem(from: items)
+
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Image(systemName: "rectangle.inset.filled.and.person.filled")
@@ -1460,24 +1470,11 @@ private struct BeforeAfterSummaryView: View {
                 Spacer()
             }
 
-            if let embedURL = response.editedVideo?.embedUrl, !embedURL.isEmpty {
-                SafeIframePlayerView(
-                    embedURL: embedURL,
-                    isActive: Binding(
-                        get: { activeInlinePlayerKey == "edited" },
-                        set: { isActive in
-                            activeInlinePlayerKey = isActive ? "edited" : nil
-                        }
-                    )
-                )
-                .frame(height: 180)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .accessibilityIdentifier("before-after-inline-edited-player")
-            } else {
+            if items.isEmpty {
                 HStack(spacing: 8) {
                     Image(systemName: "video.slash")
                         .foregroundStyle(AppTheme.textMuted)
-                    Text("編集後Vimeo未登録のため、ここでは再生できません。")
+                    Text("編集後/FB後Vimeo未登録のため、ここでは再生できません。")
                         .font(AppTheme.bodyFont(12))
                         .foregroundStyle(AppTheme.textMuted)
                 }
@@ -1485,12 +1482,87 @@ private struct BeforeAfterSummaryView: View {
                 .padding(12)
                 .background(AppTheme.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
+            } else if let selectedItem {
+                HStack(spacing: 8) {
+                    ForEach(items) { item in
+                        inlinePreviewOption(item, isSelected: item.id == selectedItem.id)
+                    }
+                }
+
+                SafeIframePlayerView(
+                    embedURL: selectedItem.embedURL,
+                    isActive: Binding(
+                        get: { activeInlinePlayerKey == selectedItem.id },
+                        set: { isActive in
+                            activeInlinePlayerKey = isActive ? selectedItem.id : nil
+                        }
+                    )
+                )
+                .id(selectedItem.id)
+                .frame(height: 180)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .accessibilityIdentifier("before-after-inline-selected-player")
             }
         }
         .padding(10)
         .background(AppTheme.cardBackground.opacity(0.65))
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .accessibilityIdentifier("before-after-inline-preview-section")
+    }
+
+    private func inlinePreviewOption(_ item: InlinePreviewItem, isSelected: Bool) -> some View {
+        Button {
+            selectedInlinePlayerKey = item.id
+            activeInlinePlayerKey = nil
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: isSelected ? "play.circle.fill" : "circle")
+                Text(item.label)
+            }
+            .font(AppTheme.labelFont(11))
+            .foregroundStyle(isSelected ? .white : AppTheme.textMuted)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(isSelected ? AppTheme.accent.opacity(0.35) : AppTheme.cardBackground)
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("before-after-inline-option-\(item.id)")
+    }
+
+    private func inlinePreviewItems(_ response: BeforeAfterResponse) -> [InlinePreviewItem] {
+        var items: [InlinePreviewItem] = []
+        if let edited = response.editedVideo,
+           let embedURL = edited.embedUrl,
+           !embedURL.isEmpty {
+            items.append(
+                InlinePreviewItem(
+                    id: "edited",
+                    label: edited.versionLabel?.isEmpty == false ? edited.versionLabel! : "編集後",
+                    embedURL: embedURL
+                )
+            )
+        }
+        if let revised = response.fbRevisedVideo,
+           let embedURL = revised.embedUrl,
+           !embedURL.isEmpty {
+            items.append(
+                InlinePreviewItem(
+                    id: "fb-revised",
+                    label: revised.versionLabel?.isEmpty == false ? revised.versionLabel! : "FB後",
+                    embedURL: embedURL
+                )
+            )
+        }
+        return items
+    }
+
+    private func selectedInlineItem(from items: [InlinePreviewItem]) -> InlinePreviewItem? {
+        if let selectedInlinePlayerKey,
+           let selected = items.first(where: { $0.id == selectedInlinePlayerKey }) {
+            return selected
+        }
+        return items.first
     }
 
     private func safeExternalLinks(_ response: BeforeAfterResponse) -> some View {

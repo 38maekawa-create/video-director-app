@@ -44,7 +44,7 @@ final class BeforeAfterUITests: XCTestCase {
 
         let summary = app.otherElements["before-after-summary-screen"]
         let title = app.staticTexts["ビフォーアフター概要"]
-        let previewBanner = app.staticTexts["Build60 固定プレビュー枠"]
+        let previewBanner = app.staticTexts["Build61 2択プレビュー枠"]
         let externalLinksLabel = app.staticTexts["外部で開く"]
         let inlinePreviewLabel = app.staticTexts["アプリ内プレビュー"]
         let opened = summary.waitForExistence(timeout: 20) || title.waitForExistence(timeout: 20)
@@ -52,6 +52,10 @@ final class BeforeAfterUITests: XCTestCase {
         XCTAssertTrue(previewBanner.waitForExistence(timeout: 20))
         XCTAssertTrue(externalLinksLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(inlinePreviewLabel.waitForExistence(timeout: 20))
+        if app.buttons["before-after-inline-option-fb-revised"].waitForExistence(timeout: 5) {
+            app.buttons["before-after-inline-option-fb-revised"].tap()
+            XCTAssertEqual(app.state, .runningForeground)
+        }
         if app.staticTexts["タップして再生"].waitForExistence(timeout: 10) {
             app.staticTexts["タップして再生"].tap()
             XCTAssertEqual(app.state, .runningForeground)

@@ -1407,7 +1407,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build61 2択プレビュー枠")
+                Text("Build62 3択プレビュー枠")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1446,14 +1446,14 @@ private struct BeforeAfterSummaryView: View {
             safeInlinePreview(response)
             safeExternalLinks(response)
 
-            Text("この枠は常時表示し、編集後/FB後Vimeoがある案件だけタップ再生できます。")
+            Text("この枠は常時表示し、素材/編集後/FB後のうち登録済み動画だけタップ再生できます。")
                 .font(AppTheme.bodyFont(12))
                 .foregroundStyle(AppTheme.textMuted)
         }
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build61-two-option-preview")
+        .accessibilityIdentifier("before-after-build62-three-option-preview")
     }
 
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {
@@ -1474,7 +1474,7 @@ private struct BeforeAfterSummaryView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "video.slash")
                         .foregroundStyle(AppTheme.textMuted)
-                    Text("編集後/FB後Vimeo未登録のため、ここでは再生できません。")
+                    Text("素材/編集後/FB後動画が未登録のため、ここでは再生できません。")
                         .font(AppTheme.bodyFont(12))
                         .foregroundStyle(AppTheme.textMuted)
                 }
@@ -1532,6 +1532,16 @@ private struct BeforeAfterSummaryView: View {
 
     private func inlinePreviewItems(_ response: BeforeAfterResponse) -> [InlinePreviewItem] {
         var items: [InlinePreviewItem] = []
+        if let source = response.sourceVideos.first,
+           !source.embedUrl.isEmpty {
+            items.append(
+                InlinePreviewItem(
+                    id: "source",
+                    label: "素材",
+                    embedURL: source.embedUrl
+                )
+            )
+        }
         if let edited = response.editedVideo,
            let embedURL = edited.embedUrl,
            !embedURL.isEmpty {

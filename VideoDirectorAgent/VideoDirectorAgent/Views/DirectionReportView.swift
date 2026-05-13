@@ -1231,6 +1231,7 @@ private struct BeforeAfterSummaryView: View {
     @State private var transcriptData: TranscriptDiffResponse?
     @State private var fbTrackerData: FBTrackerResponse?
     @State private var errorMessage: String?
+    @State private var activeInlinePlayerKey: String?
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -1399,7 +1400,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build58 外部リンク復旧")
+                Text("Build59 タップ再生復旧")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1436,15 +1437,39 @@ private struct BeforeAfterSummaryView: View {
             }
 
             safeExternalLinks(response)
+            safeInlinePreview(response)
 
-            Text("埋め込み動画プレイヤーはまだ戻さず、まず外部リンクで安全に動画確認を復旧しています。")
+            Text("埋め込み動画は初期表示では作らず、タップ時だけ編集後Vimeoを1枚だけ読み込みます。")
                 .font(AppTheme.bodyFont(12))
                 .foregroundStyle(AppTheme.textMuted)
         }
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build58-safe-links")
+        .accessibilityIdentifier("before-after-build59-tap-player")
+    }
+
+    @ViewBuilder
+    private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {
+        if let embedURL = response.editedVideo?.embedUrl, !embedURL.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("アプリ内プレビュー")
+                    .font(AppTheme.labelFont(11))
+                    .foregroundStyle(AppTheme.textMuted)
+                SafeIframePlayerView(
+                    embedURL: embedURL,
+                    isActive: Binding(
+                        get: { activeInlinePlayerKey == "edited" },
+                        set: { isActive in
+                            activeInlinePlayerKey = isActive ? "edited" : nil
+                        }
+                    )
+                )
+                .frame(height: 180)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .accessibilityIdentifier("before-after-inline-edited-player")
+            }
+        }
     }
 
     private func safeExternalLinks(_ response: BeforeAfterResponse) -> some View {

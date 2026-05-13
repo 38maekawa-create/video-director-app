@@ -1791,7 +1791,7 @@ struct KnowledgePageDetail: Codable {
 
 /// 素材動画（YouTube）の情報
 struct BeforeAfterSourceVideo: Codable, Identifiable {
-    var id: String { videoId }
+    var id: String { videoId.isEmpty ? youtubeUrl : videoId }
     let youtubeUrl: String
     let videoId: String
     let title: String?
@@ -1812,7 +1812,7 @@ struct BeforeAfterEditedVideo: Codable {
 
 /// FBハイライト（タイムスタンプ付き差分）
 struct DiffHighlight: Codable, Identifiable {
-    var id: String { "\(timestamp)_\(text.prefix(20))" }
+    var id: String { "\(timestamp)_\(category ?? "none")_\(text.prefix(40))" }
     let timestamp: String
     let category: String?
     let text: String
@@ -1923,7 +1923,12 @@ struct FBTrackerResponse: Codable {
 }
 
 struct FBTrackerItem: Codable, Identifiable {
-    var id: String { uri.isEmpty ? UUID().uuidString : uri }
+    var id: String {
+        if !uri.isEmpty {
+            return uri
+        }
+        return "\(vimeoId)_\(versionLabel)_\(timecode ?? "none")_\(createdTime)_\(text.prefix(40))"
+    }
     let uri: String
     let vimeoId: String
     let versionLabel: String

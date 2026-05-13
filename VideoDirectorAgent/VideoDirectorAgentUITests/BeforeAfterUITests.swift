@@ -44,8 +44,10 @@ final class BeforeAfterUITests: XCTestCase {
 
         let summary = app.otherElements["before-after-summary-screen"]
         let title = app.staticTexts["ビフォーアフター概要"]
+        let previewBanner = app.otherElements["before-after-build56-preview-banner"]
         let opened = summary.waitForExistence(timeout: 20) || title.waitForExistence(timeout: 20)
         XCTAssertTrue(opened)
+        XCTAssertTrue(previewBanner.waitForExistence(timeout: 20))
         XCTAssertEqual(app.state, .runningForeground)
     }
 }

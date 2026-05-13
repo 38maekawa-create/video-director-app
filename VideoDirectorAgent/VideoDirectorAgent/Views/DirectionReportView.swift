@@ -1324,6 +1324,8 @@ private struct BeforeAfterSummaryView: View {
 
     private func summary(_ response: BeforeAfterResponse) -> some View {
         VStack(alignment: .leading, spacing: 12) {
+            previewRecoveryBanner(response)
+
             metricRow("素材動画", "\(response.sourceVideos.count)件")
             metricRow("編集後動画", response.editedVideo == nil ? "未登録" : "登録済み")
             metricRow("FB後再編集", response.fbRevisedVideo == nil ? "未登録" : "登録済み")
@@ -1390,6 +1392,48 @@ private struct BeforeAfterSummaryView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .padding(.horizontal, 16)
         .accessibilityIdentifier("before-after-summary-screen")
+    }
+
+    private func previewRecoveryBanner(_ response: BeforeAfterResponse) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "sparkles")
+                    .foregroundStyle(AppTheme.accent)
+                Text("Build56 プレビュー復旧版")
+                    .font(AppTheme.sectionFont(16))
+                    .foregroundStyle(.white)
+                Spacer()
+            }
+
+            HStack(spacing: 8) {
+                previewPill("FB", "\(min(response.diffHighlights.count, 5))/\(response.diffHighlights.count)")
+                previewPill("文字", "\(min(transcriptData?.segments.count ?? 0, 5))/\(transcriptData?.segments.count ?? 0)")
+                previewPill("指示", "\(min(fbTrackerData?.items.count ?? 0, 5))/\(fbTrackerData?.items.count ?? 0)")
+            }
+
+            Text("下に各プレビューを最大5件ずつ表示します。")
+                .font(AppTheme.bodyFont(12))
+                .foregroundStyle(AppTheme.textMuted)
+        }
+        .padding(12)
+        .background(AppTheme.cardBackgroundLight)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityIdentifier("before-after-build56-preview-banner")
+    }
+
+    private func previewPill(_ label: String, _ value: String) -> some View {
+        HStack(spacing: 4) {
+            Text(label)
+                .font(AppTheme.labelFont(10))
+                .foregroundStyle(AppTheme.textMuted)
+            Text(value)
+                .font(AppTheme.labelFont(11))
+                .foregroundStyle(.white)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(AppTheme.cardBackground)
+        .clipShape(Capsule())
     }
 
     private func metricRow(_ label: String, _ value: String) -> some View {

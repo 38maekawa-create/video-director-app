@@ -1351,6 +1351,39 @@ private struct BeforeAfterSummaryView: View {
                     .padding(.vertical, 4)
                 }
             }
+
+            if !response.diffHighlights.isEmpty {
+                previewDivider("FBタイムスタンプ")
+                ForEach(Array(response.diffHighlights.prefix(5).enumerated()), id: \.offset) { _, highlight in
+                    previewRow(
+                        leading: highlight.timestamp,
+                        title: highlight.text,
+                        subtitle: highlight.category
+                    )
+                }
+            }
+
+            if let transcriptData, !transcriptData.segments.isEmpty {
+                previewDivider("文字起こし差分プレビュー")
+                ForEach(Array(transcriptData.segments.prefix(5).enumerated()), id: \.offset) { _, segment in
+                    previewRow(
+                        leading: "#\(segment.lineNumber)",
+                        title: segment.text,
+                        subtitle: segment.status
+                    )
+                }
+            }
+
+            if let fbTrackerData, !fbTrackerData.items.isEmpty {
+                previewDivider("FB指示プレビュー")
+                ForEach(Array(fbTrackerData.items.prefix(5).enumerated()), id: \.offset) { _, item in
+                    previewRow(
+                        leading: item.timecode ?? item.versionLabel,
+                        title: item.text,
+                        subtitle: item.statusLabel
+                    )
+                }
+            }
         }
         .padding(16)
         .background(AppTheme.cardBackground)
@@ -1369,6 +1402,38 @@ private struct BeforeAfterSummaryView: View {
                 .font(AppTheme.labelFont(13))
                 .foregroundStyle(.white)
         }
+    }
+
+    private func previewDivider(_ title: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Divider().background(AppTheme.textMuted.opacity(0.3))
+            Text(title)
+                .font(AppTheme.sectionFont(15))
+                .foregroundStyle(.white)
+        }
+        .padding(.top, 4)
+    }
+
+    private func previewRow(leading: String, title: String, subtitle: String?) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Text(leading)
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundStyle(AppTheme.accent)
+                .frame(width: 62, alignment: .leading)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(AppTheme.bodyFont(12))
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .lineLimit(2)
+                if let subtitle, !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(AppTheme.labelFont(10))
+                        .foregroundStyle(AppTheme.textMuted)
+                }
+            }
+        }
+        .padding(.vertical, 4)
     }
 
     private var transcriptSummaryText: String {

@@ -54,7 +54,7 @@ final class BeforeAfterUITests: XCTestCase {
         XCTAssertTrue(externalLinksLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(inlinePreviewLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(selectedLabel.waitForExistence(timeout: 20))
-        XCTAssertTrue(app.descendants(matching: .any)["before-after-inline-open-selected"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.staticTexts["外で開く"].waitForExistence(timeout: 20))
         if app.buttons["before-after-inline-option-source"].waitForExistence(timeout: 5) {
             app.buttons["before-after-inline-option-source"].tap()
             XCTAssertEqual(app.state, .runningForeground)

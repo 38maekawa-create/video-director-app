@@ -1908,11 +1908,6 @@ struct FBTrackerResponse: Codable {
     let summary: FBTrackerSummary
     let message: String?
 
-    enum CodingKeys: String, CodingKey {
-        case projectId = "project_id"
-        case items, summary, message
-    }
-
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         projectId = try container.decodeIfPresent(String.self, forKey: .projectId) ?? ""
@@ -1937,15 +1932,6 @@ struct FBTrackerItem: Codable, Identifiable {
     let createdTime: String
     let user: String
     let status: String  // "pending" | "resolved"
-
-    enum CodingKeys: String, CodingKey {
-        case uri
-        case vimeoId = "vimeo_id"
-        case versionLabel = "version_label"
-        case text, timecode
-        case createdTime = "created_time"
-        case user, status
-    }
 
     /// 対応ステータスの表示色
     var statusColor: Color {

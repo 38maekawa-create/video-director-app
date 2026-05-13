@@ -1395,30 +1395,101 @@ private struct BeforeAfterSummaryView: View {
     }
 
     private func previewRecoveryBanner(_ response: BeforeAfterResponse) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build56 プレビュー復旧版")
+                Text("Build57 内容プレビュー")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
             }
 
             HStack(spacing: 8) {
+                previewPill("素材", "\(min(response.sourceVideos.count, 3))/\(response.sourceVideos.count)")
                 previewPill("FB", "\(min(response.diffHighlights.count, 5))/\(response.diffHighlights.count)")
                 previewPill("文字", "\(min(transcriptData?.segments.count ?? 0, 5))/\(transcriptData?.segments.count ?? 0)")
                 previewPill("指示", "\(min(fbTrackerData?.items.count ?? 0, 5))/\(fbTrackerData?.items.count ?? 0)")
             }
 
-            Text("下に各プレビューを最大5件ずつ表示します。")
+            VStack(alignment: .leading, spacing: 8) {
+                compactPreviewLine(
+                    icon: "play.rectangle",
+                    label: "素材",
+                    value: response.sourceVideos.first?.title ?? response.sourceVideos.first?.youtubeUrl ?? "未連携"
+                )
+                compactPreviewLine(
+                    icon: "film",
+                    label: "編集後",
+                    value: editedVideoPreviewText(response)
+                )
+                compactPreviewLine(
+                    icon: "text.quote",
+                    label: "文字",
+                    value: transcriptPreviewText
+                )
+                compactPreviewLine(
+                    icon: "checklist",
+                    label: "指示",
+                    value: fbInstructionPreviewText
+                )
+            }
+
+            Text("動画プレイヤーはまだ戻さず、先に中身の参照だけを安全に復旧しています。")
                 .font(AppTheme.bodyFont(12))
                 .foregroundStyle(AppTheme.textMuted)
         }
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build56-preview-banner")
+        .accessibilityIdentifier("before-after-build57-content-preview")
+    }
+
+    private func compactPreviewLine(icon: String, label: String, value: String) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(AppTheme.accent)
+                .frame(width: 18)
+            Text(label)
+                .font(AppTheme.labelFont(11))
+                .foregroundStyle(AppTheme.textMuted)
+                .frame(width: 42, alignment: .leading)
+            Text(value.isEmpty ? "未連携" : value)
+                .font(AppTheme.bodyFont(12))
+                .foregroundStyle(AppTheme.textSecondary)
+                .lineLimit(2)
+        }
+    }
+
+    private func editedVideoPreviewText(_ response: BeforeAfterResponse) -> String {
+        if let revised = response.fbRevisedVideo {
+            return "\(revised.versionLabel ?? "FB修正版") \(revised.editorName ?? "")".trimmingCharacters(in: .whitespaces)
+        }
+        if let edited = response.editedVideo {
+            return "\(edited.versionLabel ?? "編集後") \(edited.editorName ?? "")".trimmingCharacters(in: .whitespaces)
+        }
+        return "未登録"
+    }
+
+    private var transcriptPreviewText: String {
+        if let first = transcriptData?.segments.first {
+            return first.text
+        }
+        if let message = transcriptData?.message, !message.isEmpty {
+            return message
+        }
+        return "未取得"
+    }
+
+    private var fbInstructionPreviewText: String {
+        if let first = fbTrackerData?.items.first {
+            return first.text
+        }
+        if let message = fbTrackerData?.message, !message.isEmpty {
+            return message
+        }
+        return "Vimeoコメント0件"
     }
 
     private func previewPill(_ label: String, _ value: String) -> some View {

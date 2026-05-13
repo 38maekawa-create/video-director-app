@@ -5958,3 +5958,5 @@ INFO:     127.0.0.1:50269 - "GET /api/v1/projects/p-20260418-%E3%82%A6%E3%83%A1/
 INFO:     127.0.0.1:50271 - "GET /api/v1/projects/p-20260418-GEN/before-after HTTP/1.1" 200 OK
 INFO:     127.0.0.1:50272 - "GET /api/v1/projects/p-20260418-GEN/transcript-diff HTTP/1.1" 200 OK
 INFO:     127.0.0.1:50273 - "GET /api/v1/projects/p-20260418-GEN/fb-tracker HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50299 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/before-after HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50300 - "GET /api/v1/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/source-videos HTTP/1.1" 200 OK

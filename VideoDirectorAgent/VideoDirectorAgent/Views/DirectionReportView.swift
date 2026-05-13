@@ -1471,6 +1471,8 @@ private struct BeforeAfterSummaryView: View {
                 Spacer()
             }
 
+            inlineSelectionStatus(selectedItem)
+
             if items.isEmpty {
                 HStack(spacing: 8) {
                     Image(systemName: "video.slash")
@@ -1489,31 +1491,6 @@ private struct BeforeAfterSummaryView: View {
                         inlinePreviewOption(item, isSelected: item.id == selectedItem.id)
                     }
                 }
-
-                HStack(spacing: 8) {
-                    Label("選択中: \(selectedItem.label)", systemImage: "scope")
-                        .font(AppTheme.labelFont(11))
-                        .foregroundStyle(AppTheme.textSecondary)
-                    Spacer()
-                    if let url = URL(string: selectedItem.externalURL) {
-                        Link(destination: url) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "safari")
-                                Text("外で開く")
-                            }
-                            .font(AppTheme.labelFont(11))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 9)
-                            .padding(.vertical, 6)
-                            .background(AppTheme.accent.opacity(0.35))
-                            .clipShape(Capsule())
-                        }
-                        .accessibilityIdentifier("before-after-inline-open-selected")
-                    }
-                }
-                .padding(.horizontal, 2)
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("before-after-inline-selected-label")
 
                 SafeIframePlayerView(
                     embedURL: selectedItem.embedURL,
@@ -1534,6 +1511,50 @@ private struct BeforeAfterSummaryView: View {
         .background(AppTheme.cardBackground.opacity(0.65))
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .accessibilityIdentifier("before-after-inline-preview-section")
+    }
+
+    private func inlineSelectionStatus(_ item: InlinePreviewItem?) -> some View {
+        HStack(spacing: 8) {
+            HStack(spacing: 5) {
+                Image(systemName: "scope")
+                Text("選択中: \(item?.label ?? "未登録")")
+            }
+            .font(AppTheme.labelFont(11))
+            .foregroundStyle(AppTheme.textSecondary)
+            .accessibilityIdentifier("before-after-inline-selected-label")
+
+            Spacer()
+
+            if let item,
+               let url = URL(string: item.externalURL) {
+                Link(destination: url) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "safari")
+                        Text("外で開く")
+                    }
+                    .font(AppTheme.labelFont(11))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 6)
+                    .background(AppTheme.accent.opacity(0.35))
+                    .clipShape(Capsule())
+                }
+                .accessibilityIdentifier("before-after-inline-open-selected")
+            } else {
+                HStack(spacing: 4) {
+                    Image(systemName: "safari")
+                    Text("外で開く")
+                }
+                .font(AppTheme.labelFont(11))
+                .foregroundStyle(AppTheme.textMuted)
+                .padding(.horizontal, 9)
+                .padding(.vertical, 6)
+                .background(AppTheme.cardBackground)
+                .clipShape(Capsule())
+                .accessibilityIdentifier("before-after-inline-open-selected")
+            }
+        }
+        .padding(.horizontal, 2)
     }
 
     private func inlinePreviewOption(_ item: InlinePreviewItem, isSelected: Bool) -> some View {

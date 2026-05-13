@@ -44,17 +44,29 @@ final class BeforeAfterUITests: XCTestCase {
 
         let summary = app.otherElements["before-after-summary-screen"]
         let title = app.staticTexts["ビフォーアフター概要"]
-        let previewBanner = app.staticTexts["Build63 選択表示つき3択"]
+        let previewBanner = app.staticTexts["Build64 比較ペア導線"]
         let externalLinksLabel = app.staticTexts["外部で開く"]
         let inlinePreviewLabel = app.staticTexts["アプリ内プレビュー"]
+        let comparisonPairLabel = app.staticTexts["比較ペア"]
         let selectedLabel = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "選択中:")).firstMatch
         let opened = summary.waitForExistence(timeout: 20) || title.waitForExistence(timeout: 20)
         XCTAssertTrue(opened)
         XCTAssertTrue(previewBanner.waitForExistence(timeout: 20))
         XCTAssertTrue(externalLinksLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(inlinePreviewLabel.waitForExistence(timeout: 20))
+        XCTAssertTrue(comparisonPairLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(selectedLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["外で開く"].waitForExistence(timeout: 20))
+        let sourceEditedPair = app.buttons["before-after-compare-source-edited"]
+        if sourceEditedPair.waitForExistence(timeout: 5) && sourceEditedPair.isEnabled {
+            sourceEditedPair.tap()
+            XCTAssertEqual(app.state, .runningForeground)
+        }
+        let editedFBPair = app.buttons["before-after-compare-edited-fb"]
+        if editedFBPair.waitForExistence(timeout: 5) && editedFBPair.isEnabled {
+            editedFBPair.tap()
+            XCTAssertEqual(app.state, .runningForeground)
+        }
         if app.buttons["before-after-inline-option-source"].waitForExistence(timeout: 5) {
             app.buttons["before-after-inline-option-source"].tap()
             XCTAssertEqual(app.state, .runningForeground)

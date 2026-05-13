@@ -1408,7 +1408,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build63 選択表示つき3択")
+                Text("Build64 比較ペア導線")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1447,14 +1447,14 @@ private struct BeforeAfterSummaryView: View {
             safeInlinePreview(response)
             safeExternalLinks(response)
 
-            Text("この枠は常時表示し、選択中の動画だけタップ再生できます。")
+            Text("比較ペアは選択中動画の切替だけを行い、再生は1本ずつ行います。")
                 .font(AppTheme.bodyFont(12))
                 .foregroundStyle(AppTheme.textMuted)
         }
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build63-selected-preview")
+        .accessibilityIdentifier("before-after-build64-comparison-pair")
     }
 
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {
@@ -1472,6 +1472,7 @@ private struct BeforeAfterSummaryView: View {
             }
 
             inlineSelectionStatus(selectedItem)
+            comparisonPairControls(items)
 
             if items.isEmpty {
                 HStack(spacing: 8) {
@@ -1575,6 +1576,73 @@ private struct BeforeAfterSummaryView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("before-after-inline-option-\(item.id)")
+    }
+
+    private func comparisonPairControls(_ items: [InlinePreviewItem]) -> some View {
+        let hasSourceEdited = hasAnyInlineItem(["source", "edited"], in: items)
+        let hasEditedFB = hasAnyInlineItem(["edited", "fb-revised"], in: items)
+
+        return VStack(alignment: .leading, spacing: 6) {
+            Text("比較ペア")
+                .font(AppTheme.labelFont(11))
+                .foregroundStyle(AppTheme.textMuted)
+
+            HStack(spacing: 8) {
+                comparisonPairButton(
+                    label: "素材→編集後",
+                    systemImage: "arrow.right.circle",
+                    isEnabled: hasSourceEdited,
+                    accessibilityId: "before-after-compare-source-edited"
+                ) {
+                    selectComparisonPair(primary: "edited", fallback: "source", items: items)
+                }
+
+                comparisonPairButton(
+                    label: "編集後→FB後",
+                    systemImage: "arrow.triangle.2.circlepath.circle",
+                    isEnabled: hasEditedFB,
+                    accessibilityId: "before-after-compare-edited-fb"
+                ) {
+                    selectComparisonPair(primary: "fb-revised", fallback: "edited", items: items)
+                }
+            }
+        }
+        .accessibilityIdentifier("before-after-comparison-pair-row")
+    }
+
+    private func comparisonPairButton(
+        label: String,
+        systemImage: String,
+        isEnabled: Bool,
+        accessibilityId: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: 5) {
+                Image(systemName: systemImage)
+                Text(label)
+            }
+            .font(AppTheme.labelFont(11))
+            .foregroundStyle(isEnabled ? .white : AppTheme.textMuted)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(isEnabled ? AppTheme.accent.opacity(0.35) : AppTheme.cardBackground)
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(!isEnabled)
+        .accessibilityIdentifier(accessibilityId)
+    }
+
+    private func selectComparisonPair(primary: String, fallback: String, items: [InlinePreviewItem]) {
+        if let target = items.first(where: { $0.id == primary }) ?? items.first(where: { $0.id == fallback }) {
+            selectedInlinePlayerKey = target.id
+            activeInlinePlayerKey = nil
+        }
+    }
+
+    private func hasAnyInlineItem(_ ids: [String], in items: [InlinePreviewItem]) -> Bool {
+        items.contains { ids.contains($0.id) }
     }
 
     private func inlinePreviewItems(_ response: BeforeAfterResponse) -> [InlinePreviewItem] {

@@ -183,19 +183,26 @@ struct DirectionReportView: View {
     @State private var editingText: String = ""
     @State private var showVoiceFeedback = false
     @State private var showKnowledgePage = false
-    @State private var showBeforeAfterUnavailable = false
+    @State private var showBeforeAfterSummary = false
 
     private let tabTitles = ["概要", "ディレクション", "YouTube素材", "素材", "FB・評価", "ナレッジ", "レビュー"]
 
     var body: some View {
-        reportContent
+        Group {
+            if showBeforeAfterSummary {
+                BeforeAfterSummaryView(
+                    projectId: project.id,
+                    projectTitle: project.title,
+                    onClose: {
+                        showBeforeAfterSummary = false
+                    }
+                )
+            } else {
+                reportContent
+            }
+        }
         .background(AppTheme.background.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
-        .alert("ビフォーアフターを一時停止中", isPresented: $showBeforeAfterUnavailable) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("この画面は実機クラッシュ調査中のため、表示を一時停止しています。タイトル・概要欄・編集指示・YouTube素材は引き続き確認できます。")
-        }
         .fullScreenCover(isPresented: $showVoiceFeedback) {
             VoiceFeedbackView(projectId: project.id)
         }
@@ -270,7 +277,7 @@ struct DirectionReportView: View {
 
                 HStack(spacing: 12) {
                     Button {
-                        showBeforeAfterUnavailable = true
+                        showBeforeAfterSummary = true
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: "rectangle.on.rectangle.angled")
@@ -1211,5 +1218,163 @@ struct KnowledgePageWebView: View {
 
     private var knowledgePulseScale: CGFloat {
         voiceVM.flowState == .recording ? 1.2 : 1.0
+    }
+}
+
+private struct BeforeAfterSummaryView: View {
+    let projectId: String
+    let projectTitle: String
+    let onClose: () -> Void
+
+    @State private var isLoading = true
+    @State private var response: BeforeAfterResponse?
+    @State private var errorMessage: String?
+
+    var body: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 18) {
+                header
+
+                if isLoading {
+                    loading
+                } else if let errorMessage {
+                    error(errorMessage)
+                } else if let response {
+                    summary(response)
+                }
+
+                Text("動画プレイヤーと文字起こし差分の詳細表示は、実機クラッシュ調査中のため段階復旧中です。")
+                    .font(AppTheme.bodyFont(13))
+                    .foregroundStyle(AppTheme.textMuted)
+                    .padding(.horizontal, 16)
+
+                Spacer(minLength: 40)
+            }
+            .padding(.bottom, 24)
+        }
+        .background(AppTheme.background.ignoresSafeArea())
+        .task {
+            await loadSummary()
+        }
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Button(action: onClose) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                        Text("戻る")
+                    }
+                    .font(AppTheme.labelFont(13))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(AppTheme.cardBackground)
+                    .clipShape(Capsule())
+                }
+                .accessibilityIdentifier("before-after-summary-close")
+
+                Spacer()
+            }
+
+            HStack(spacing: 8) {
+                Image(systemName: "rectangle.on.rectangle.angled")
+                    .foregroundStyle(AppTheme.accent)
+                Text("ビフォーアフター概要")
+                    .font(AppTheme.heroFont(24))
+                    .foregroundStyle(.white)
+            }
+
+            Text(projectTitle)
+                .font(AppTheme.bodyFont(14))
+                .foregroundStyle(AppTheme.textSecondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 18)
+    }
+
+    private var loading: some View {
+        VStack(spacing: 12) {
+            ProgressView()
+                .tint(AppTheme.accent)
+            Text("概要を読み込み中...")
+                .font(AppTheme.bodyFont(13))
+                .foregroundStyle(AppTheme.textMuted)
+        }
+        .frame(maxWidth: .infinity, minHeight: 220)
+    }
+
+    private func error(_ message: String) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("読み込みに失敗しました", systemImage: "exclamationmark.triangle")
+                .font(AppTheme.sectionFont(16))
+                .foregroundStyle(AppTheme.accent)
+            Text(message)
+                .font(AppTheme.bodyFont(13))
+                .foregroundStyle(AppTheme.textSecondary)
+        }
+        .padding(16)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 16)
+    }
+
+    private func summary(_ response: BeforeAfterResponse) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            metricRow("素材動画", "\(response.sourceVideos.count)件")
+            metricRow("編集後動画", response.editedVideo == nil ? "未登録" : "登録済み")
+            metricRow("FB後再編集", response.fbRevisedVideo == nil ? "未登録" : "登録済み")
+            metricRow("バージョン", "\(response.allVersions?.count ?? 0)件")
+            metricRow("FBタイムスタンプ", "\(response.diffHighlights.count)件")
+
+            if !response.sourceVideos.isEmpty {
+                Divider().background(AppTheme.textMuted.opacity(0.3))
+                Text("素材")
+                    .font(AppTheme.sectionFont(15))
+                    .foregroundStyle(.white)
+                ForEach(Array(response.sourceVideos.enumerated()), id: \.offset) { index, video in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(video.title?.isEmpty == false ? video.title! : "素材\(index + 1)")
+                            .font(AppTheme.bodyFont(13))
+                            .foregroundStyle(AppTheme.textSecondary)
+                            .lineLimit(2)
+                        Text(video.youtubeUrl)
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundStyle(AppTheme.textMuted)
+                            .lineLimit(1)
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+        }
+        .padding(16)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 16)
+        .accessibilityIdentifier("before-after-summary-screen")
+    }
+
+    private func metricRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(label)
+                .font(AppTheme.bodyFont(13))
+                .foregroundStyle(AppTheme.textMuted)
+            Spacer()
+            Text(value)
+                .font(AppTheme.labelFont(13))
+                .foregroundStyle(.white)
+        }
+    }
+
+    @MainActor
+    private func loadSummary() async {
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            response = try await APIClient.shared.fetchBeforeAfter(projectId: projectId)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }

@@ -1399,7 +1399,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build57 内容プレビュー")
+                Text("Build58 外部リンク復旧")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1435,14 +1435,74 @@ private struct BeforeAfterSummaryView: View {
                 )
             }
 
-            Text("動画プレイヤーはまだ戻さず、先に中身の参照だけを安全に復旧しています。")
+            safeExternalLinks(response)
+
+            Text("埋め込み動画プレイヤーはまだ戻さず、まず外部リンクで安全に動画確認を復旧しています。")
                 .font(AppTheme.bodyFont(12))
                 .foregroundStyle(AppTheme.textMuted)
         }
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build57-content-preview")
+        .accessibilityIdentifier("before-after-build58-safe-links")
+    }
+
+    private func safeExternalLinks(_ response: BeforeAfterResponse) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("外部で開く")
+                .font(AppTheme.labelFont(11))
+                .foregroundStyle(AppTheme.textMuted)
+            HStack(spacing: 8) {
+                if let source = response.sourceVideos.first,
+                   let url = URL(string: source.youtubeUrl) {
+                    safeExternalLink("素材", icon: "play.rectangle", url: url)
+                } else {
+                    disabledLinkPill("素材")
+                }
+
+                if let edited = response.editedVideo,
+                   let url = URL(string: edited.vimeoUrl) {
+                    safeExternalLink("編集後", icon: "film", url: url)
+                } else {
+                    disabledLinkPill("編集後")
+                }
+
+                if let revised = response.fbRevisedVideo,
+                   let url = URL(string: revised.vimeoUrl) {
+                    safeExternalLink("FB後", icon: "arrow.triangle.2.circlepath", url: url)
+                }
+            }
+        }
+        .accessibilityIdentifier("before-after-external-link-row")
+    }
+
+    private func safeExternalLink(_ label: String, icon: String, url: URL) -> some View {
+        Link(destination: url) {
+            HStack(spacing: 5) {
+                Image(systemName: icon)
+                Text(label)
+            }
+            .font(AppTheme.labelFont(11))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(AppTheme.accent.opacity(0.35))
+            .clipShape(Capsule())
+        }
+        .accessibilityIdentifier("before-after-open-\(label)")
+    }
+
+    private func disabledLinkPill(_ label: String) -> some View {
+        HStack(spacing: 5) {
+            Image(systemName: "minus.circle")
+            Text(label)
+        }
+        .font(AppTheme.labelFont(11))
+        .foregroundStyle(AppTheme.textMuted)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(AppTheme.cardBackground)
+        .clipShape(Capsule())
     }
 
     private func compactPreviewLine(icon: String, label: String, value: String) -> some View {

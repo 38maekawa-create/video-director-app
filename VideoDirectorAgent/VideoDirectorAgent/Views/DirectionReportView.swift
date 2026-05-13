@@ -1460,7 +1460,7 @@ private struct BeforeAfterSummaryView: View {
         let items = inlinePreviewItems(response)
         let selectedItem = selectedInlineItem(from: items)
 
-        VStack(alignment: .leading, spacing: 8) {
+        return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Image(systemName: "rectangle.inset.filled.and.person.filled")
                     .foregroundStyle(AppTheme.accent)

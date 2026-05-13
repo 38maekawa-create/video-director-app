@@ -47,7 +47,7 @@ final class BeforeAfterUITests: XCTestCase {
         let previewBanner = app.staticTexts["Build63 選択表示つき3択"]
         let externalLinksLabel = app.staticTexts["外部で開く"]
         let inlinePreviewLabel = app.staticTexts["アプリ内プレビュー"]
-        let selectedLabel = app.otherElements["before-after-inline-selected-label"]
+        let selectedLabel = app.descendants(matching: .any)["before-after-inline-selected-label"]
         let opened = summary.waitForExistence(timeout: 20) || title.waitForExistence(timeout: 20)
         XCTAssertTrue(opened)
         XCTAssertTrue(previewBanner.waitForExistence(timeout: 20))

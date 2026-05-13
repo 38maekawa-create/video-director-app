@@ -1228,6 +1228,8 @@ private struct BeforeAfterSummaryView: View {
 
     @State private var isLoading = true
     @State private var response: BeforeAfterResponse?
+    @State private var transcriptData: TranscriptDiffResponse?
+    @State private var fbTrackerData: FBTrackerResponse?
     @State private var errorMessage: String?
 
     var body: some View {
@@ -1327,6 +1329,8 @@ private struct BeforeAfterSummaryView: View {
             metricRow("FB後再編集", response.fbRevisedVideo == nil ? "未登録" : "登録済み")
             metricRow("バージョン", "\(response.allVersions?.count ?? 0)件")
             metricRow("FBタイムスタンプ", "\(response.diffHighlights.count)件")
+            metricRow("文字起こし差分", transcriptSummaryText)
+            metricRow("FB指示トラッカー", fbTrackerSummaryText)
 
             if !response.sourceVideos.isEmpty {
                 Divider().background(AppTheme.textMuted.opacity(0.3))
@@ -1367,12 +1371,27 @@ private struct BeforeAfterSummaryView: View {
         }
     }
 
+    private var transcriptSummaryText: String {
+        guard let transcriptData else { return "未取得" }
+        if transcriptData.status == "ok" {
+            return "\(transcriptData.segments.count)行"
+        }
+        return transcriptData.message ?? transcriptData.status
+    }
+
+    private var fbTrackerSummaryText: String {
+        guard let fbTrackerData else { return "未取得" }
+        return "\(fbTrackerData.summary.resolved)/\(fbTrackerData.summary.total)対応済み"
+    }
+
     @MainActor
     private func loadSummary() async {
         isLoading = true
         defer { isLoading = false }
         do {
             response = try await APIClient.shared.fetchBeforeAfter(projectId: projectId)
+            transcriptData = try? await APIClient.shared.fetchTranscriptDiff(projectId: projectId)
+            fbTrackerData = try? await APIClient.shared.fetchFBTracker(projectId: projectId)
         } catch {
             errorMessage = error.localizedDescription
         }

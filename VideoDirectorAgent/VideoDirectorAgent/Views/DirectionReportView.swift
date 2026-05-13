@@ -1400,7 +1400,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build59 タップ再生復旧")
+                Text("Build60 固定プレビュー枠")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1436,26 +1436,31 @@ private struct BeforeAfterSummaryView: View {
                 )
             }
 
-            safeExternalLinks(response)
             safeInlinePreview(response)
+            safeExternalLinks(response)
 
-            Text("埋め込み動画は初期表示では作らず、タップ時だけ編集後Vimeoを1枚だけ読み込みます。")
+            Text("この枠は常時表示し、編集後Vimeoがある案件だけタップ再生できます。")
                 .font(AppTheme.bodyFont(12))
                 .foregroundStyle(AppTheme.textMuted)
         }
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build59-tap-player")
+        .accessibilityIdentifier("before-after-build60-fixed-preview")
     }
 
-    @ViewBuilder
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {
-        if let embedURL = response.editedVideo?.embedUrl, !embedURL.isEmpty {
-            VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "rectangle.inset.filled.and.person.filled")
+                    .foregroundStyle(AppTheme.accent)
                 Text("アプリ内プレビュー")
-                    .font(AppTheme.labelFont(11))
-                    .foregroundStyle(AppTheme.textMuted)
+                    .font(AppTheme.sectionFont(14))
+                    .foregroundStyle(.white)
+                Spacer()
+            }
+
+            if let embedURL = response.editedVideo?.embedUrl, !embedURL.isEmpty {
                 SafeIframePlayerView(
                     embedURL: embedURL,
                     isActive: Binding(
@@ -1468,8 +1473,24 @@ private struct BeforeAfterSummaryView: View {
                 .frame(height: 180)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .accessibilityIdentifier("before-after-inline-edited-player")
+            } else {
+                HStack(spacing: 8) {
+                    Image(systemName: "video.slash")
+                        .foregroundStyle(AppTheme.textMuted)
+                    Text("編集後Vimeo未登録のため、ここでは再生できません。")
+                        .font(AppTheme.bodyFont(12))
+                        .foregroundStyle(AppTheme.textMuted)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+                .background(AppTheme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             }
         }
+        .padding(10)
+        .background(AppTheme.cardBackground.opacity(0.65))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityIdentifier("before-after-inline-preview-section")
     }
 
     private func safeExternalLinks(_ response: BeforeAfterResponse) -> some View {

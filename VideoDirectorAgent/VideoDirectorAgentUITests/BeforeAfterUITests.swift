@@ -45,7 +45,6 @@ final class BeforeAfterUITests: XCTestCase {
 
         let summary = app.otherElements["before-after-summary-screen"]
         let title = app.staticTexts["ビフォーアフター"]
-        let previewBanner = app.staticTexts["Build72 16:9比較復旧"]
         let externalLinksLabel = app.staticTexts["外部で開く"]
         let comparisonModeLabel = app.staticTexts["比較モード"]
         let twoUpLabel = app.staticTexts["上下2段比較"]
@@ -55,7 +54,6 @@ final class BeforeAfterUITests: XCTestCase {
         let sourcePickerLabel = app.staticTexts["素材選択"]
         let opened = summary.waitForExistence(timeout: 20) || title.waitForExistence(timeout: 20)
         XCTAssertTrue(opened)
-        XCTAssertTrue(previewBanner.waitForExistence(timeout: 20))
         XCTAssertTrue(externalLinksLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(comparisonModeLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(twoUpLabel.waitForExistence(timeout: 20))

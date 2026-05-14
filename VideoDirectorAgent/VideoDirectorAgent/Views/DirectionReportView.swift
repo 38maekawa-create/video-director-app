@@ -1244,7 +1244,7 @@ private struct BeforeAfterSummaryView: View {
     @State private var selectedComparisonMode = 0
     @State private var selectedComparisonPairId: String = "source-edited"
     @State private var selectedSourceIndex = 0
-    @State private var showTranscriptDetails = true
+    @State private var showTranscriptDetails = false
     @State private var selectedTranscriptVersion: String?
     @State private var isTranscriptReloading = false
     @State private var showFBTrackerDetails = true
@@ -1262,11 +1262,6 @@ private struct BeforeAfterSummaryView: View {
                 } else if let response {
                     summary(response)
                 }
-
-                Text("元のビフォーアフター画面へ復旧中です。動画は初期表示では読み込まず、タップしたスロットだけ再生します。")
-                    .font(AppTheme.bodyFont(13))
-                    .foregroundStyle(AppTheme.textMuted)
-                    .padding(.horizontal, 16)
 
                 Spacer(minLength: 40)
             }
@@ -1306,9 +1301,6 @@ private struct BeforeAfterSummaryView: View {
                     .foregroundStyle(.white)
             }
 
-            Text(projectTitle)
-                .font(AppTheme.bodyFont(14))
-                .foregroundStyle(AppTheme.textSecondary)
         }
         .padding(.horizontal, 16)
         .padding(.top, 18)
@@ -1342,7 +1334,6 @@ private struct BeforeAfterSummaryView: View {
 
     private func summary(_ response: BeforeAfterResponse) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            restoreStatusBanner(response)
             legacyBeforeAfterMainSection(response)
             diffHighlightsFullSection(response)
             transcriptDetailsSection(response)
@@ -1357,7 +1348,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build72 16:9比較復旧")
+                Text("Build73 旧画面密度復旧")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1389,7 +1380,7 @@ private struct BeforeAfterSummaryView: View {
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build72-fullwidth-restore")
+        .accessibilityIdentifier("before-after-build73-production-layout")
     }
 
     private func legacyBeforeAfterMainSection(_ response: BeforeAfterResponse) -> some View {
@@ -1415,7 +1406,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build72 16:9比較復旧")
+                Text("Build73 旧画面密度復旧")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1473,7 +1464,7 @@ private struct BeforeAfterSummaryView: View {
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build72-fullwidth-restore")
+        .accessibilityIdentifier("before-after-build73-production-layout")
     }
 
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {

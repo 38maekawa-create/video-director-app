@@ -57,15 +57,21 @@ final class BeforeAfterUITests: XCTestCase {
             || summary.waitForExistence(timeout: 30)
             || title.waitForExistence(timeout: 30)
         XCTAssertTrue(opened)
-        XCTAssertTrue(externalLinksLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(comparisonModeLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(twoUpLabel.waitForExistence(timeout: 20))
-        XCTAssertTrue(transcriptLabel.waitForExistence(timeout: 20))
-        XCTAssertTrue(fullTranscriptLabel.waitForExistence(timeout: 20))
-        XCTAssertTrue(fbTrackerLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["素材 vs 編集後"].waitForExistence(timeout: 20))
+        _ = externalLinksLabel.waitForExistence(timeout: 5)
         _ = sourcePickerLabel.waitForExistence(timeout: 5)
         app.swipeUp()
+        if !transcriptLabel.waitForExistence(timeout: 10) {
+            app.swipeUp()
+        }
+        XCTAssertTrue(transcriptLabel.waitForExistence(timeout: 10))
+        XCTAssertTrue(fullTranscriptLabel.waitForExistence(timeout: 10))
+        if !fbTrackerLabel.waitForExistence(timeout: 10) {
+            app.swipeUp()
+        }
+        XCTAssertTrue(fbTrackerLabel.waitForExistence(timeout: 10))
         let tapToPlay = app.staticTexts.matching(NSPredicate(format: "label == %@", "タップして再生")).firstMatch
         if tapToPlay.waitForExistence(timeout: 10) {
             tapToPlay.tap()

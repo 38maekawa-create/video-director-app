@@ -1838,7 +1838,7 @@ struct TranscriptSegment: Codable, Identifiable {
     var id: Int { lineNumber }
     let lineNumber: Int
     let text: String
-    let status: String        // "used" / "unused" / "unknown"
+    let status: String        // "used" / "unused" / "unknown" / "highlight" / "punchline"
     let matchedFeedback: String?
 
     /// ステータスに応じた色
@@ -1847,7 +1847,11 @@ struct TranscriptSegment: Codable, Identifiable {
         case "used":
             return Color.green.opacity(0.8)    // 採用=緑
         case "unused":
-            return AppTheme.accent              // カット=赤（Netflix赤）
+            return Color(hex: 0xFF6B35)         // カット=オレンジ
+        case "highlight":
+            return AppTheme.accent              // FB修正=アクセント
+        case "punchline":
+            return Color(hex: 0xFFD700)         // パンチライン=黄色
         case "unknown":
             return AppTheme.textMuted.opacity(0.4)
         default:
@@ -1860,6 +1864,8 @@ struct TranscriptSegment: Codable, Identifiable {
         switch status {
         case "used": return "採用"
         case "unused": return "CUT"
+        case "highlight": return "FB修正"
+        case "punchline": return "PL"
         case "unknown": return "不明"
         default: return "不明"
         }

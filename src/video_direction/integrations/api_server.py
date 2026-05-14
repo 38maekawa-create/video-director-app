@@ -4657,7 +4657,7 @@ def get_transcript_diff(project_id: str, version: Optional[str] = None):
     conn = _get_db()
     try:
         proj = conn.execute(
-            "SELECT id, guest_name, shoot_date, edited_video FROM projects WHERE id = ?",
+            "SELECT id, guest_name, shoot_date, edited_video, knowledge FROM projects WHERE id = ?",
             (project_id,),
         ).fetchone()
         if not proj:
@@ -4665,6 +4665,14 @@ def get_transcript_diff(project_id: str, version: Optional[str] = None):
 
         guest_name = proj["guest_name"]
         shoot_date = proj["shoot_date"]
+        knowledge_highlights = []
+        knowledge_json = proj["knowledge"]
+        if knowledge_json:
+            try:
+                knowledge = json.loads(knowledge_json) if isinstance(knowledge_json, str) else knowledge_json
+                knowledge_highlights = knowledge.get("highlights", []) if isinstance(knowledge, dict) else []
+            except (json.JSONDecodeError, TypeError):
+                knowledge_highlights = []
 
         # 素材の文字起こし全文を読み込み
         transcript_text = _load_transcript(guest_name, shoot_date)
@@ -4703,6 +4711,13 @@ def get_transcript_diff(project_id: str, version: Optional[str] = None):
             if m:
                 compare_vimeo_id = m.group(1)
                 compare_label = "最新"
+
+        feedback_rows = conn.execute(
+            "SELECT converted_text FROM feedbacks "
+            "WHERE project_id = ? AND converted_text IS NOT NULL AND converted_text != ''",
+            (project_id,),
+        ).fetchall()
+        feedback_texts = [row["converted_text"] for row in feedback_rows if row["converted_text"]]
     finally:
         conn.close()
 
@@ -4733,6 +4748,7 @@ def get_transcript_diff(project_id: str, version: Optional[str] = None):
         if _skip_re.match(stripped):
             continue
 
+        matched_feedback = None
         if caption_text and caption_status == "ok":
             # Vimeo字幕との照合
             if _match_caption_to_transcript(caption_clean, stripped):
@@ -4743,16 +4759,42 @@ def get_transcript_diff(project_id: str, version: Optional[str] = None):
             # 字幕取得できない場合は全部unknown
             status = "unknown"
 
-        segments.append({
+        if status != "unused":
+            for fb_text in feedback_texts:
+                if _fuzzy_match(fb_text, stripped):
+                    status = "highlight"
+                    matched_feedback = "FB修正"
+                    break
+
+        if status != "unused":
+            for highlight in knowledge_highlights:
+                highlight_text = str(highlight.get("text", "") if isinstance(highlight, dict) else "")
+                if not highlight_text or not _fuzzy_match(highlight_text, stripped):
+                    continue
+                category = str(highlight.get("category", "") if isinstance(highlight, dict) else "")
+                if category == "パンチライン":
+                    status = "punchline"
+                    matched_feedback = "パンチライン"
+                elif status == "used":
+                    status = "highlight"
+                    matched_feedback = category or "ハイライト"
+                break
+
+        segment = {
             "line_number": i + 1,
             "text": stripped,
             "status": status,
-        })
+        }
+        if matched_feedback:
+            segment["matched_feedback"] = matched_feedback
+        segments.append(segment)
 
     # 統計
     total = len(segments)
-    used_count = sum(1 for s in segments if s["status"] == "used")
+    used_count = sum(1 for s in segments if s["status"] in ("used", "highlight", "punchline"))
     unused_count = sum(1 for s in segments if s["status"] == "unused")
+    highlight_count = sum(1 for s in segments if s["status"] == "highlight")
+    punchline_count = sum(1 for s in segments if s["status"] == "punchline")
 
     return {
         "project_id": project_id,
@@ -4763,6 +4805,8 @@ def get_transcript_diff(project_id: str, version: Optional[str] = None):
         "total_segments": total,
         "used_count": used_count,
         "unused_count": unused_count,
+        "highlight_count": highlight_count,
+        "punchline_count": punchline_count,
         "used_ratio": f"{used_count/total*100:.1f}%" if total > 0 else "0%",
         "segments": segments,
     }

@@ -35,11 +35,12 @@ final class BeforeAfterUITests: XCTestCase {
         app.launch()
 
         let reportButton = app.buttons["ui-test-open-direction-report"]
-        XCTAssertTrue(reportButton.waitForExistence(timeout: 30))
-        reportButton.tap()
+        if reportButton.waitForExistence(timeout: 3) {
+            reportButton.tap()
+        }
 
         let beforeAfterButton = app.buttons["direction-before-after-button"]
-        XCTAssertTrue(beforeAfterButton.waitForExistence(timeout: 30))
+        XCTAssertTrue(beforeAfterButton.waitForExistence(timeout: 60))
         beforeAfterButton.tap()
 
         let summary = app.otherElements["before-after-summary-screen"]

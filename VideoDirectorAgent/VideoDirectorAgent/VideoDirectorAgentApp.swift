@@ -84,8 +84,6 @@ private struct BeforeAfterUITestHarness: View {
 }
 
 private struct DirectionBeforeAfterUITestHarness: View {
-    @State private var showProject = false
-
     private let project = VideoProject(
         id: "p-20260328-バーボン",
         guestName: "バーボン",
@@ -95,27 +93,13 @@ private struct DirectionBeforeAfterUITestHarness: View {
     )
 
     var body: some View {
-        Button {
-            showProject = true
-        } label: {
-            Text("Open Direction Report")
-                .font(AppTheme.labelFont(15))
-                .foregroundStyle(.white)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 12)
-                .background(AppTheme.accent)
-                .clipShape(Capsule())
+        NavigationStack {
+            DirectionReportView(project: project)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(AppTheme.background.ignoresSafeArea())
         .accessibilityIdentifier("ui-test-open-direction-report")
         .task {
             await APIClient.shared.probeAndConnect()
-        }
-        .fullScreenCover(isPresented: $showProject) {
-            NavigationStack {
-                DirectionReportView(project: project)
-            }
         }
     }
 }

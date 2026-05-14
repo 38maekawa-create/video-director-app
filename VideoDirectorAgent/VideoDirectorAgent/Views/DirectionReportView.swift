@@ -1262,7 +1262,7 @@ private struct BeforeAfterSummaryView: View {
                     summary(response)
                 }
 
-                Text("元のビフォーアフター画面へ段階復旧中です。動画は初期表示では読み込まず、タップしたスロットだけ再生します。")
+                Text("元のビフォーアフター画面へ復旧中です。動画は初期表示では読み込まず、タップしたスロットだけ再生します。")
                     .font(AppTheme.bodyFont(13))
                     .foregroundStyle(AppTheme.textMuted)
                     .padding(.horizontal, 16)
@@ -1300,7 +1300,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "rectangle.on.rectangle.angled")
                     .foregroundStyle(AppTheme.accent)
-                Text("ビフォーアフター概要")
+                Text("ビフォーアフター")
                     .font(AppTheme.heroFont(24))
                     .foregroundStyle(.white)
             }
@@ -1341,66 +1341,71 @@ private struct BeforeAfterSummaryView: View {
 
     private func summary(_ response: BeforeAfterResponse) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            previewRecoveryBanner(response)
-
-            metricRow("素材動画", "\(response.sourceVideos.count)件")
-            metricRow("編集後動画", response.editedVideo == nil ? "未登録" : "登録済み")
-            metricRow("FB後再編集", response.fbRevisedVideo == nil ? "未登録" : "登録済み")
-            metricRow("バージョン", "\(response.allVersions?.count ?? 0)件")
-            metricRow("FBタイムスタンプ", "\(response.diffHighlights.count)件")
-            metricRow("文字起こし差分", transcriptSummaryText)
-            metricRow("FB指示トラッカー", fbTrackerSummaryText)
-
-            if !response.sourceVideos.isEmpty {
-                Divider().background(AppTheme.textMuted.opacity(0.3))
-                Text("素材")
-                    .font(AppTheme.sectionFont(15))
-                    .foregroundStyle(.white)
-                ForEach(Array(response.sourceVideos.enumerated()), id: \.offset) { index, video in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(video.title?.isEmpty == false ? video.title! : "素材\(index + 1)")
-                            .font(AppTheme.bodyFont(13))
-                            .foregroundStyle(AppTheme.textSecondary)
-                            .lineLimit(2)
-                        Text(video.youtubeUrl)
-                            .font(.system(size: 11, design: .monospaced))
-                            .foregroundStyle(AppTheme.textMuted)
-                            .lineLimit(1)
-                    }
-                    .padding(.vertical, 4)
-                }
-            }
-
-            if !response.diffHighlights.isEmpty {
-                previewDivider("FBタイムスタンプ")
-                ForEach(Array(response.diffHighlights.prefix(5).enumerated()), id: \.offset) { _, highlight in
-                    previewRow(
-                        leading: highlight.timestamp,
-                        title: highlight.text,
-                        subtitle: highlight.category
-                    )
-                }
-            }
-
-            if let transcriptData, !transcriptData.segments.isEmpty {
-                previewDivider("文字起こし差分プレビュー")
-                ForEach(Array(transcriptData.segments.prefix(5).enumerated()), id: \.offset) { _, segment in
-                    previewRow(
-                        leading: "#\(segment.lineNumber)",
-                        title: segment.text,
-                        subtitle: segment.status
-                    )
-                }
-            }
-
-            fbTrackerDetailsSection
+            restoreStatusBanner(response)
+            legacyBeforeAfterMainSection(response)
+            diffHighlightsFullSection(response)
             transcriptDetailsSection(response)
+            fbTrackerDetailsSection
         }
-        .padding(16)
-        .background(AppTheme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
         .padding(.horizontal, 16)
         .accessibilityIdentifier("before-after-summary-screen")
+    }
+
+    private func restoreStatusBanner(_ response: BeforeAfterResponse) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "sparkles")
+                    .foregroundStyle(AppTheme.accent)
+                Text("Build71 元画面レイアウト復旧")
+                    .font(AppTheme.sectionFont(16))
+                    .foregroundStyle(.white)
+                Spacer()
+            }
+
+            Text("旧画面と同じ順番で、比較モード・上下2段比較・FBタイムスタンプ・文字起こし比較・FB指示トラッカーを表示します。")
+                .font(AppTheme.bodyFont(12))
+                .foregroundStyle(AppTheme.textMuted)
+
+            HStack(spacing: 8) {
+                previewPill("素材", "\(response.sourceVideos.count)")
+                previewPill("FB", "\(response.diffHighlights.count)")
+                previewPill("文字", "\(transcriptData?.segments.count ?? 0)")
+                previewPill("指示", "\(fbTrackerData?.items.count ?? 0)")
+            }
+
+            if isSupplementalLoading {
+                HStack(spacing: 6) {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                        .tint(AppTheme.accent)
+                    Text("詳細データ読込中")
+                        .font(AppTheme.labelFont(11))
+                        .foregroundStyle(AppTheme.textMuted)
+                }
+                .accessibilityIdentifier("before-after-supplemental-loading")
+            }
+        }
+        .padding(12)
+        .background(AppTheme.cardBackgroundLight)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityIdentifier("before-after-build71-legacy-layout-restore")
+    }
+
+    private func legacyBeforeAfterMainSection(_ response: BeforeAfterResponse) -> some View {
+        let items = inlinePreviewItems(response)
+
+        return VStack(alignment: .leading, spacing: 10) {
+            Text(projectTitle)
+                .font(AppTheme.heroFont(22))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            legacyComparisonModePicker(items)
+            legacyTwoUpComparison(items)
+            safeExternalLinks(response)
+        }
+        .padding(.vertical, 4)
+        .accessibilityIdentifier("before-after-legacy-main-layout")
     }
 
     private func previewRecoveryBanner(_ response: BeforeAfterResponse) -> some View {
@@ -2047,6 +2052,74 @@ private struct BeforeAfterSummaryView: View {
         .padding(.vertical, 4)
     }
 
+    private func diffHighlightsFullSection(_ response: BeforeAfterResponse) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if !response.diffHighlights.isEmpty {
+                HStack {
+                    Image(systemName: "clock.badge.exclamationmark")
+                        .foregroundStyle(AppTheme.accent)
+                    Text("FBタイムスタンプ")
+                        .font(AppTheme.sectionFont(16))
+                        .foregroundStyle(.white)
+                    Spacer()
+                    Text("\(response.diffHighlights.count)件")
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.textMuted)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 6)
+
+                ForEach(response.diffHighlights) { highlight in
+                    HStack(alignment: .top, spacing: 10) {
+                        Text(highlight.timestamp)
+                            .font(.system(.caption, design: .monospaced))
+                            .foregroundStyle(AppTheme.accent)
+                            .frame(width: 60, alignment: .leading)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(highlight.text)
+                                .font(.caption)
+                                .foregroundStyle(AppTheme.textSecondary)
+                                .lineLimit(2)
+                            if let category = highlight.category, !category.isEmpty {
+                                Text(category)
+                                    .font(.caption2)
+                                    .foregroundStyle(AppTheme.textMuted)
+                            }
+                        }
+
+                        Spacer()
+
+                        if let priority = highlight.priority {
+                            priorityBadge(priority)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                    .background(AppTheme.cardBackground)
+                }
+            }
+        }
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .accessibilityIdentifier("before-after-diff-highlights-section")
+    }
+
+    private func priorityBadge(_ priority: String) -> some View {
+        Text(priority)
+            .font(.system(size: 9, weight: .bold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(
+                priority == "high" ? AppTheme.accent :
+                priority == "medium" ? Color(hex: 0xF5A623) :
+                AppTheme.textMuted
+            )
+            .clipShape(Capsule())
+    }
+
     private var fbTrackerDetailsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Button {
@@ -2057,7 +2130,7 @@ private struct BeforeAfterSummaryView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "checklist")
                         .foregroundStyle(AppTheme.accent)
-                    Text("FB指示チェック")
+                    Text("FB指示トラッカー")
                         .font(AppTheme.sectionFont(15))
                         .foregroundStyle(.white)
                     Spacer()

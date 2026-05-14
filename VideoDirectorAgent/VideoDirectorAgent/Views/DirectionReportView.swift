@@ -1680,7 +1680,6 @@ private struct BeforeAfterSummaryView: View {
             .clipShape(Capsule())
         }
         .buttonStyle(.plain)
-        .disabled(item == nil)
         .accessibilityIdentifier(accessibilityId)
     }
 

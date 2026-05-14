@@ -6810,3 +6810,5 @@ INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260215-%E3%82%A2%E3%83%B3
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260215-%E3%82%A2%E3%83%B3%E3%83%87%E3%82%A3/transcript-diff HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260215-%E3%82%A2%E3%83%B3%E3%83%87%E3%82%A3/fb-tracker HTTP/1.1" 200 OK
+INFO:     240a:61:52c3:e25e:f041:834b:765d:35c1:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240a:61:52c3:e25e:f041:834b:765d:35c1:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK

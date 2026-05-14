@@ -44,7 +44,7 @@ final class BeforeAfterUITests: XCTestCase {
 
         let summary = app.otherElements["before-after-summary-screen"]
         let title = app.staticTexts["ビフォーアフター概要"]
-        let previewBanner = app.staticTexts["Build66 左右再生切替"]
+        let previewBanner = app.staticTexts["Build67 高速初期表示"]
         let externalLinksLabel = app.staticTexts["外部で開く"]
         let inlinePreviewLabel = app.staticTexts["アプリ内プレビュー"]
         let comparisonPairLabel = app.staticTexts["比較ペア"]

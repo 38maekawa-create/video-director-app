@@ -1238,6 +1238,7 @@ private struct BeforeAfterSummaryView: View {
     @State private var transcriptData: TranscriptDiffResponse?
     @State private var fbTrackerData: FBTrackerResponse?
     @State private var errorMessage: String?
+    @State private var isSupplementalLoading = false
     @State private var activeInlinePlayerKey: String?
     @State private var selectedInlinePlayerKey: String?
     @State private var selectedComparisonPairId: String = "source-edited"
@@ -1409,7 +1410,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build66 左右再生切替")
+                Text("Build67 高速初期表示")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1420,6 +1421,18 @@ private struct BeforeAfterSummaryView: View {
                 previewPill("FB", "\(min(response.diffHighlights.count, 5))/\(response.diffHighlights.count)")
                 previewPill("文字", "\(min(transcriptData?.segments.count ?? 0, 5))/\(transcriptData?.segments.count ?? 0)")
                 previewPill("指示", "\(min(fbTrackerData?.items.count ?? 0, 5))/\(fbTrackerData?.items.count ?? 0)")
+            }
+
+            if isSupplementalLoading {
+                HStack(spacing: 6) {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                        .tint(AppTheme.accent)
+                    Text("詳細データ読込中")
+                        .font(AppTheme.labelFont(11))
+                        .foregroundStyle(AppTheme.textMuted)
+                }
+                .accessibilityIdentifier("before-after-supplemental-loading")
             }
 
             VStack(alignment: .leading, spacing: 8) {
@@ -1448,14 +1461,14 @@ private struct BeforeAfterSummaryView: View {
             safeInlinePreview(response)
             safeExternalLinks(response)
 
-            Text("左/右のどちらを再生するか切り替えながら、再生は選択中の1本だけに絞ります。")
+            Text("概要を先に開き、文字起こし差分とFB指示は後から埋めます。再生は選択中の1本だけに絞ります。")
                 .font(AppTheme.bodyFont(12))
                 .foregroundStyle(AppTheme.textMuted)
         }
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build66-side-switch")
+        .accessibilityIdentifier("before-after-build67-fast-open")
     }
 
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {
@@ -1933,7 +1946,7 @@ private struct BeforeAfterSummaryView: View {
     }
 
     private var transcriptSummaryText: String {
-        guard let transcriptData else { return "未取得" }
+        guard let transcriptData else { return isSupplementalLoading ? "読込中" : "未取得" }
         if transcriptData.status == "ok" {
             return "\(transcriptData.segments.count)行"
         }
@@ -1941,20 +1954,33 @@ private struct BeforeAfterSummaryView: View {
     }
 
     private var fbTrackerSummaryText: String {
-        guard let fbTrackerData else { return "未取得" }
+        guard let fbTrackerData else { return isSupplementalLoading ? "読込中" : "未取得" }
         return "\(fbTrackerData.summary.resolved)/\(fbTrackerData.summary.total)対応済み"
     }
 
     @MainActor
     private func loadSummary() async {
         isLoading = true
-        defer { isLoading = false }
+        isSupplementalLoading = false
+        transcriptData = nil
+        fbTrackerData = nil
         do {
             response = try await APIClient.shared.fetchBeforeAfter(projectId: projectId)
-            transcriptData = try? await APIClient.shared.fetchTranscriptDiff(projectId: projectId)
-            fbTrackerData = try? await APIClient.shared.fetchFBTracker(projectId: projectId)
+            isLoading = false
+            await loadSupplementalData()
         } catch {
             errorMessage = error.localizedDescription
+            isLoading = false
         }
+    }
+
+    @MainActor
+    private func loadSupplementalData() async {
+        isSupplementalLoading = true
+        async let transcript: TranscriptDiffResponse? = try? APIClient.shared.fetchTranscriptDiff(projectId: projectId)
+        async let tracker: FBTrackerResponse? = try? APIClient.shared.fetchFBTracker(projectId: projectId)
+        transcriptData = await transcript
+        fbTrackerData = await tracker
+        isSupplementalLoading = false
     }
 }

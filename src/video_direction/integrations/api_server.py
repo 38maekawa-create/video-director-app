@@ -527,6 +527,215 @@ def _enrich_project_route_fields(d: dict) -> dict:
     return d
 
 
+def _get_virtual_longform_project(project_id: str) -> Optional[dict]:
+    for virtual_project in PROPER_YAESU_LONGFORM_PROJECTS:
+        if virtual_project["id"] == project_id:
+            d = dict(virtual_project)
+            _enrich_project_route_fields(d)
+            return d
+    return None
+
+
+def _longform_response(project_id: str, title: str, summary: str, items: list[dict]) -> dict:
+    project = _get_virtual_longform_project(project_id)
+    if not project:
+        raise HTTPException(404, "Personal longform project not found")
+    return {
+        "project_id": project_id,
+        "route_profile": "teko_personal_longform",
+        "title": title,
+        "summary": summary,
+        "items": items,
+    }
+
+
+def _longform_package_id(project_id: str) -> str:
+    project = _get_virtual_longform_project(project_id)
+    if not project:
+        raise HTTPException(404, "Personal longform project not found")
+    knowledge = project.get("knowledge") or {}
+    return str(knowledge.get("package_id") or "")
+
+
+def _longform_common_items(project_id: str) -> list[dict]:
+    package_id = _longform_package_id(project_id)
+    if package_id != "01_asset_100m_roadmap":
+        return [
+            {
+                "id": "handoff",
+                "title": "handoff intake完了",
+                "subtitle": package_id,
+                "detail": "6企画の受け入れ口は作成済み。正式WFの詳細展開は01の型を確定してから横展開する。",
+                "status": "ready",
+            }
+        ]
+    return []
+
+
+def _asset_100m_source_bundle(project_id: str) -> dict:
+    common = _longform_common_items(project_id)
+    if common:
+        return _longform_response(project_id, "Source Bundle", "正式WF横展開待ち", common)
+    return _longform_response(
+        project_id,
+        "Source Bundle",
+        "01_asset_100m_roadmap / block_1620 / sheet row 2",
+        [
+            {
+                "id": "formatted",
+                "title": "整形素材v2",
+                "subtitle": "292 paragraphs / 18 important candidates / 13 corrections",
+                "detail": "formatted_material_v2/01_資産1億までにやったこと全部公開.formatted_material_v2.md",
+                "status": "ready",
+            },
+            {
+                "id": "transcript",
+                "title": "文字起こし",
+                "subtitle": "block_1620_DJI_23_20260508_161926_plus_165030.transcript.raw.json",
+                "detail": "話者は自動分離ラベルをそのまま信用せず、八重洲さん/かくしくん/現場音候補として扱う。",
+                "status": "ready",
+            },
+            {
+                "id": "scene_preview",
+                "title": "シーンプレビュー",
+                "subtitle": "block_1620 contact sheet + 5 frames",
+                "detail": "review flag: video_pair_duration_mismatch。正式編集指示前に画角/音声同期を確認する。",
+                "status": "needs_review",
+            },
+            {
+                "id": "rag",
+                "title": "DB/RAG",
+                "subtitle": "Supabase knowledge + embeddings applied",
+                "detail": "公開前素材。public_quote_allowed=false。Notion/Sheets/Drive/HDD/YouTube/Vimeo writeは未実行。",
+                "status": "internal_only",
+            },
+        ],
+    )
+
+
+def _asset_100m_material_roles(project_id: str) -> dict:
+    common = _longform_common_items(project_id)
+    if common:
+        return _longform_response(project_id, "Material Roles", "正式WF横展開待ち", common)
+    return _longform_response(
+        project_id,
+        "Material Roles",
+        "main/sub camera + Yaesu/kakushi audio candidates",
+        [
+            {
+                "id": "main_camera",
+                "title": "main_camera",
+                "subtitle": "DJI_20260508162001_0141_D.MP4",
+                "detail": "primary video / 16:20 block / duration 1:30:12",
+                "status": "ready",
+            },
+            {
+                "id": "sub_camera",
+                "title": "sub_camera",
+                "subtitle": "IMG_6720.MOV",
+                "detail": "sub angle candidate。main cameraとの同期確認が必要。",
+                "status": "needs_sync_review",
+            },
+            {
+                "id": "yaesu_mic",
+                "title": "yaesu_mic candidates",
+                "subtitle": "DJI_23_20260508_161926.WAV / DJI_23_20260508_165030.WAV",
+                "detail": "文字起こし採用元。2ファイル結合由来のため後半接続点を確認する。",
+                "status": "ready",
+            },
+            {
+                "id": "kakushi_mic",
+                "title": "kakushi_mic candidates",
+                "subtitle": "DJI_04_20260508_161922.WAV / DJI_04_20260508_165012.WAV",
+                "detail": "進行役/相槌/現場確認の参照用。主音声に混ぜる前に話者識別が必要。",
+                "status": "reference",
+            },
+        ],
+    )
+
+
+def _asset_100m_formal_workflow(project_id: str) -> dict:
+    common = _longform_common_items(project_id)
+    if common:
+        return _longform_response(project_id, "Formal Workflow", "正式WF横展開待ち", common)
+    return _longform_response(
+        project_id,
+        "Formal Workflow v1",
+        "会社員が30歳までに資産1億を作る順番を、努力論ではなくロードマップとして見せる。",
+        [
+            {
+                "id": "opening",
+                "title": "冒頭30-60秒",
+                "subtitle": "7億は遠い。まず1億から聞きたい、へ落とす",
+                "detail": "視聴者の疑問を『才能ではなく順番』に固定し、本業×副業×不動産の方程式へ接続する。",
+                "status": "draft_ready",
+            },
+            {
+                "id": "structure",
+                "title": "章構成",
+                "subtitle": "既存価値観の破壊 → 本業 → 副業 → 不動産 → 資産化",
+                "detail": "10ステップ図解を主軸に、書籍名/資産形成式/スモールビジネス/不動産レバレッジを挿入候補にする。",
+                "status": "draft_ready",
+            },
+            {
+                "id": "telop",
+                "title": "テロップ/図解",
+                "subtitle": "本業×副業×不動産 / 資産形成=(収入-支出)+資産×利回り",
+                "detail": "抽象論で流さず、視聴者がスクショしたくなる式・順番・NG行動を大きく出す。",
+                "status": "draft_ready",
+            },
+            {
+                "id": "thumbnail_recovery",
+                "title": "サムネ本文回収",
+                "subtitle": "会社員が30歳までに資産1億 / 資産1億を作る順番",
+                "detail": "サムネで約束した『順番』は冒頭、3要素、10ステップ図解で必ず回収する。",
+                "status": "draft_ready",
+            },
+        ],
+    )
+
+
+def _asset_100m_human_checks(project_id: str) -> dict:
+    common = _longform_common_items(project_id)
+    if common:
+        return _longform_response(project_id, "Human Checks", "正式WF横展開待ち", common)
+    return _longform_response(
+        project_id,
+        "Human Checks",
+        "公開前に人間確認が必要な項目",
+        [
+            {
+                "id": "sync",
+                "title": "画角/音声同期",
+                "subtitle": "video_pair_duration_mismatch",
+                "detail": "main/sub camera 1:30:12に対してaudio candidates 2:01:07。編集指示化前に使用範囲と同期点を確認する。",
+                "status": "must_check",
+            },
+            {
+                "id": "numbers",
+                "title": "数字表現",
+                "subtitle": "30歳 / 1億 / 7億 / 13億",
+                "detail": "視聴者向けに出す数字は、実績・目標・例示の区別を崩さない。",
+                "status": "must_check",
+            },
+            {
+                "id": "investment",
+                "title": "投資/不動産表現",
+                "subtitle": "再現性・断定・リスク",
+                "detail": "投資助言ではなく本人の経験と順番として見せる。利回り/物件購入の断定は確認後に使用。",
+                "status": "must_check",
+            },
+            {
+                "id": "quote_policy",
+                "title": "公開引用制限",
+                "subtitle": "public_quote_allowed=false",
+                "detail": "未公開制作素材のため、外部転記/公開DB/YouTube/Vimeo/Sheets書き込みは別gateまで不可。",
+                "status": "blocked_until_approved",
+            },
+        ],
+    )
+
+
 # --- Pydantic モデル ---
 
 class ProjectCreate(BaseModel):
@@ -788,11 +997,9 @@ def list_projects(category: Optional[str] = None, route_profile: Optional[str] =
 
 @app.get("/api/projects/{project_id}")
 def get_project(project_id: str):
-    for virtual_project in PROPER_YAESU_LONGFORM_PROJECTS:
-        if virtual_project["id"] == project_id:
-            d = dict(virtual_project)
-            _enrich_project_route_fields(d)
-            return d
+    virtual_project = _get_virtual_longform_project(project_id)
+    if virtual_project:
+        return virtual_project
 
     conn = _get_db()
     try:
@@ -816,6 +1023,26 @@ def get_project(project_id: str):
     _enrich_project_with_knowledge_url(d)
     _enrich_project_route_fields(d)
     return d
+
+
+@app.get("/api/v1/projects/{project_id}/source-bundle")
+def get_project_source_bundle(project_id: str):
+    return _asset_100m_source_bundle(project_id)
+
+
+@app.get("/api/v1/projects/{project_id}/material-roles")
+def get_project_material_roles(project_id: str):
+    return _asset_100m_material_roles(project_id)
+
+
+@app.get("/api/v1/projects/{project_id}/formal-workflow")
+def get_project_formal_workflow(project_id: str):
+    return _asset_100m_formal_workflow(project_id)
+
+
+@app.get("/api/v1/projects/{project_id}/human-checks")
+def get_project_human_checks(project_id: str):
+    return _asset_100m_human_checks(project_id)
 
 
 @app.post("/api/projects")

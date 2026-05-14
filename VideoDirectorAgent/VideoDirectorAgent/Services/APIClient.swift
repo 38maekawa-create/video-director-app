@@ -635,6 +635,28 @@ final class APIClient: ObservableObject {
         return try await request(TranscriptDiffResponse.self, path: path)
     }
 
+    // MARK: - TEKO属人ch 長尺ルート
+
+    func fetchPersonalLongformSourceBundle(projectId: String) async throws -> PersonalLongformPanelResponse {
+        let encoded = projectId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? projectId
+        return try await request(PersonalLongformPanelResponse.self, path: "/api/v1/projects/\(encoded)/source-bundle")
+    }
+
+    func fetchPersonalLongformMaterialRoles(projectId: String) async throws -> PersonalLongformPanelResponse {
+        let encoded = projectId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? projectId
+        return try await request(PersonalLongformPanelResponse.self, path: "/api/v1/projects/\(encoded)/material-roles")
+    }
+
+    func fetchPersonalLongformWorkflow(projectId: String) async throws -> PersonalLongformPanelResponse {
+        let encoded = projectId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? projectId
+        return try await request(PersonalLongformPanelResponse.self, path: "/api/v1/projects/\(encoded)/formal-workflow")
+    }
+
+    func fetchPersonalLongformHumanChecks(projectId: String) async throws -> PersonalLongformPanelResponse {
+        let encoded = projectId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? projectId
+        return try await request(PersonalLongformPanelResponse.self, path: "/api/v1/projects/\(encoded)/human-checks")
+    }
+
     // MARK: - カテゴリ
 
     func fetchProjectsByCategory(_ category: String) async throws -> [VideoProject] {

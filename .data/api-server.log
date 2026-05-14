@@ -6690,3 +6690,5 @@ INFO:     127.0.0.1:55639 - "GET /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%
 INFO:     127.0.0.1:55640 - "GET /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/fb-tracker HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     100.110.206.6:56385 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.110.206.6:56385 - "GET /healthz HTTP/1.1" 200 OK

@@ -380,17 +380,49 @@ struct DirectionReportView: View {
             case 0:
                 overviewSection
             case 1:
-                directionReportSection
+                if isPersonalLongformRoute {
+                    PersonalLongformPanelView(
+                        projectId: project.id,
+                        icon: "list.bullet.rectangle.portrait.fill",
+                        loader: APIClient.shared.fetchPersonalLongformWorkflow
+                    )
+                } else {
+                    directionReportSection
+                }
             case 2:
                 YouTubeAssetsView(projectId: project.id)
             case 3:
-                sourceVideoSection
+                if isPersonalLongformRoute {
+                    PersonalLongformPanelView(
+                        projectId: project.id,
+                        icon: "video.badge.waveform.fill",
+                        loader: APIClient.shared.fetchPersonalLongformMaterialRoles
+                    )
+                } else {
+                    sourceVideoSection
+                }
             case 4:
                 feedbackListSection
             case 5:
-                knowledgeDetailSection
+                if isPersonalLongformRoute {
+                    PersonalLongformPanelView(
+                        projectId: project.id,
+                        icon: "books.vertical.fill",
+                        loader: APIClient.shared.fetchPersonalLongformSourceBundle
+                    )
+                } else {
+                    knowledgeDetailSection
+                }
             case 6:
-                VimeoReviewTabView(projectId: project.id, editedVideoURL: project.editedVideoURL)
+                if isPersonalLongformRoute {
+                    PersonalLongformPanelView(
+                        projectId: project.id,
+                        icon: "checklist.checked",
+                        loader: APIClient.shared.fetchPersonalLongformHumanChecks
+                    )
+                } else {
+                    VimeoReviewTabView(projectId: project.id, editedVideoURL: project.editedVideoURL)
+                }
             default:
                 EmptyView()
             }
@@ -848,6 +880,140 @@ struct DirectionReportView: View {
             feedbacks = try await APIClient.shared.fetchFeedbacks(projectId: project.id)
         } catch {
             feedbacks = []
+        }
+    }
+}
+
+private struct PersonalLongformPanelView: View {
+    let projectId: String
+    let icon: String
+    let loader: (String) async throws -> PersonalLongformPanelResponse
+
+    @State private var response: PersonalLongformPanelResponse?
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if isLoading && response == nil {
+                ProgressView()
+                    .tint(AppTheme.accent)
+                    .frame(maxWidth: .infinity, minHeight: 120)
+            } else if let response {
+                header(response)
+                ForEach(response.items) { item in
+                    itemCard(item)
+                }
+            } else {
+                fallbackCard
+            }
+        }
+        .task(id: projectId) {
+            await load()
+        }
+    }
+
+    private func header(_ response: PersonalLongformPanelResponse) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .foregroundStyle(Color(hex: 0x46D369))
+                Text(response.title)
+                    .font(AppTheme.sectionFont(18))
+                    .foregroundStyle(.white)
+                Spacer()
+                Text("属人ch")
+                    .font(.caption2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color(hex: 0x46D369))
+                    .clipShape(Capsule())
+            }
+            Text(response.summary)
+                .font(.subheadline)
+                .foregroundStyle(AppTheme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func itemCard(_ item: PersonalLongformPanelItem) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 10) {
+                Circle()
+                    .fill(statusColor(item.status))
+                    .frame(width: 8, height: 8)
+                    .padding(.top, 6)
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(item.title)
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    if let subtitle = item.subtitle, !subtitle.isEmpty {
+                        Text(subtitle)
+                            .font(.caption)
+                            .foregroundStyle(Color(hex: 0x46D369))
+                    }
+                    if let detail = item.detail, !detail.isEmpty {
+                        Text(detail)
+                            .font(.subheadline)
+                            .foregroundStyle(AppTheme.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                Spacer()
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var fallbackCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(Color(hex: 0xF5A623))
+                Text("読み込み待ち")
+                    .font(AppTheme.sectionFont(18))
+                    .foregroundStyle(.white)
+            }
+            Text(errorMessage ?? "属人chルート情報を取得しています")
+                .font(.subheadline)
+                .foregroundStyle(AppTheme.textSecondary)
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func load() async {
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            response = try await loader(projectId)
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func statusColor(_ status: String?) -> Color {
+        switch status {
+        case "ready", "draft_ready":
+            return Color(hex: 0x46D369)
+        case "needs_review", "needs_sync_review", "must_check":
+            return Color(hex: 0xF5A623)
+        case "blocked_until_approved", "internal_only":
+            return AppTheme.accent
+        default:
+            return AppTheme.textMuted
         }
     }
 }

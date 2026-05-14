@@ -1126,6 +1126,22 @@ struct SourceVideoCreateBody: Encodable {
     let qualityStatus: String
 }
 
+struct PersonalLongformPanelItem: Codable, Identifiable {
+    let id: String
+    let title: String
+    let subtitle: String?
+    let detail: String?
+    let status: String?
+}
+
+struct PersonalLongformPanelResponse: Codable {
+    let projectId: String
+    let routeProfile: String
+    let title: String
+    let summary: String
+    let items: [PersonalLongformPanelItem]
+}
+
 // MARK: - 手修正APIリクエストボディ
 
 private struct DirectionEditBody: Encodable {

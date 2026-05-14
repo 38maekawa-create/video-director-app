@@ -4467,7 +4467,10 @@ def update_fb_tracking(project_id: str, comment_uri: str, body: FBTrackingUpdate
 
 # --- 文字起こしdiff可視化 ---
 
-KNOWLEDGE_VIDEO_DIR = Path.home() / "TEKO" / "knowledge" / "01_teko" / "sources" / "video"
+KNOWLEDGE_SOURCE_DIRS = (
+    Path.home() / "TEKO" / "knowledge" / "01_teko" / "sources" / "interviews",
+    Path.home() / "TEKO" / "knowledge" / "01_teko" / "sources" / "video",
+)
 
 
 def _fuzzy_match(highlight_text: str, transcript_line: str) -> bool:
@@ -4502,45 +4505,135 @@ def _fuzzy_match(highlight_text: str, transcript_line: str) -> bool:
     return False
 
 
-def _load_transcript(guest_name: str, shoot_date: Optional[str] = None) -> Optional[str]:
-    """ナレッジファイルから文字起こし全文を読み込む。
-    「整形済みトランスクリプト（全文）」セクション以降のみ返す（メタデータ除外）。
+def _safe_json_loads(raw: Optional[str]) -> dict:
+    if not raw:
+        return {}
+    if isinstance(raw, dict):
+        return raw
+    try:
+        data = json.loads(raw)
+        return data if isinstance(data, dict) else {}
+    except (json.JSONDecodeError, TypeError):
+        return {}
+
+
+def _extract_transcript_body(full_text: str) -> str:
+    """ナレッジMDから本文トランスクリプト部分を取り出す。
+
+    旧ファイルは「（全文）」付き、新しいvideo-knowledge正本は見出しが短いので
+    どちらも受ける。
     """
-    if not KNOWLEDGE_VIDEO_DIR.exists():
+    markers = (
+        "## 整形済みトランスクリプト（全文）",
+        "## 整形済みトランスクリプト",
+    )
+    for marker in markers:
+        idx = full_text.find(marker)
+        if idx >= 0:
+            return full_text[idx + len(marker):]
+    return full_text
+
+
+def _read_transcript_file(path: Path) -> Optional[str]:
+    try:
+        if not path.exists() or not path.is_file():
+            return None
+        return _extract_transcript_body(path.read_text(encoding="utf-8"))
+    except Exception:
         return None
+
+
+def _source_candidate_paths(
+    guest_name: str,
+    shoot_date: Optional[str] = None,
+    source_video: Optional[dict] = None,
+    knowledge: Optional[dict] = None,
+    source_video_rows: Optional[list[sqlite3.Row]] = None,
+) -> list[Path]:
+    candidates: list[Path] = []
+
+    def add_path(value: Optional[str]):
+        if not value:
+            return
+        raw = str(value).strip()
+        if not raw:
+            return
+        path = Path(raw).expanduser()
+        if path.is_absolute():
+            candidates.append(path)
+            return
+        for base in KNOWLEDGE_SOURCE_DIRS:
+            candidates.append(base / raw)
+
+    add_path((source_video or {}).get("source_md_path"))
+    add_path((source_video or {}).get("knowledge_file"))
+    add_path((knowledge or {}).get("source_md_path"))
+    add_path((knowledge or {}).get("knowledge_file"))
+    for row in source_video_rows or []:
+        try:
+            add_path(row["knowledge_file"])
+        except Exception:
+            continue
 
     normalized = _normalize_name(guest_name)
-    if not normalized:
-        return None
+    if normalized:
+        shoot_compact = shoot_date.replace("-", "").replace("/", "") if shoot_date else None
+        for base in KNOWLEDGE_SOURCE_DIRS:
+            if not base.exists():
+                continue
+            best = None
+            best_with_date = None
+            for f in sorted(base.glob("*.md"), reverse=True):
+                fname_norm = unicodedata.normalize("NFKC", f.name.lower())
+                if normalized not in fname_norm:
+                    continue
+                if shoot_compact and shoot_compact in fname_norm:
+                    best_with_date = f
+                    break
+                if best is None:
+                    best = f
+            if best_with_date:
+                candidates.append(best_with_date)
+            if best:
+                candidates.append(best)
 
-    shoot_compact = shoot_date.replace("-", "").replace("/", "") if shoot_date else None
-
-    best = None
-    best_with_date = None
-
-    for f in sorted(KNOWLEDGE_VIDEO_DIR.glob("*.md"), reverse=True):
-        fname_norm = unicodedata.normalize("NFKC", f.name.lower())
-        if normalized not in fname_norm:
+    unique: list[Path] = []
+    seen: set[str] = set()
+    for path in candidates:
+        key = str(path)
+        if key in seen:
             continue
-        if shoot_compact and shoot_compact in fname_norm:
-            best_with_date = f
-            break
-        if best is None:
-            best = f
+        seen.add(key)
+        unique.append(path)
+    return unique
 
-    target = best_with_date or best
-    if target:
-        try:
-            full_text = target.read_text(encoding="utf-8")
-            # メタデータを除外し、トランスクリプト本文のみ抽出
-            marker = "## 整形済みトランスクリプト（全文）"
-            idx = full_text.find(marker)
-            if idx >= 0:
-                return full_text[idx + len(marker):]
-            return full_text
-        except Exception:
-            return None
-    return None
+
+def _load_transcript(
+    guest_name: str,
+    shoot_date: Optional[str] = None,
+    source_video: Optional[dict] = None,
+    knowledge: Optional[dict] = None,
+    source_video_rows: Optional[list[sqlite3.Row]] = None,
+) -> tuple[Optional[str], dict]:
+    """ナレッジ正本から素材文字起こし本文を読み込む。
+
+    AI10 projects/source_videosに保存済みの source_md_path を最優先し、
+    旧 `sources/video` と現行 `sources/interviews` の両方にフォールバックする。
+    """
+    checked = []
+    for path in _source_candidate_paths(guest_name, shoot_date, source_video, knowledge, source_video_rows):
+        checked.append(str(path))
+        transcript = _read_transcript_file(path)
+        if transcript:
+            return transcript, {
+                "status": "found",
+                "path": str(path),
+                "checked": checked,
+            }
+    return None, {
+        "status": "missing",
+        "checked": checked,
+    }
 
 
 def _fetch_vimeo_captions(vimeo_id: str) -> Optional[str]:
@@ -4657,7 +4750,7 @@ def get_transcript_diff(project_id: str, version: Optional[str] = None):
     conn = _get_db()
     try:
         proj = conn.execute(
-            "SELECT id, guest_name, shoot_date, edited_video, knowledge FROM projects WHERE id = ?",
+            "SELECT id, guest_name, shoot_date, source_video, edited_video, knowledge FROM projects WHERE id = ?",
             (project_id,),
         ).fetchone()
         if not proj:
@@ -4665,22 +4758,30 @@ def get_transcript_diff(project_id: str, version: Optional[str] = None):
 
         guest_name = proj["guest_name"]
         shoot_date = proj["shoot_date"]
+        source_video = _safe_json_loads(proj["source_video"])
         knowledge_highlights = []
-        knowledge_json = proj["knowledge"]
-        if knowledge_json:
-            try:
-                knowledge = json.loads(knowledge_json) if isinstance(knowledge_json, str) else knowledge_json
-                knowledge_highlights = knowledge.get("highlights", []) if isinstance(knowledge, dict) else []
-            except (json.JSONDecodeError, TypeError):
-                knowledge_highlights = []
+        knowledge = _safe_json_loads(proj["knowledge"])
+        knowledge_highlights = knowledge.get("highlights", []) if isinstance(knowledge, dict) else []
+
+        source_video_rows = conn.execute(
+            "SELECT knowledge_file FROM source_videos WHERE project_id = ? ORDER BY created_at DESC",
+            (project_id,),
+        ).fetchall()
 
         # 素材の文字起こし全文を読み込み
-        transcript_text = _load_transcript(guest_name, shoot_date)
+        transcript_text, transcript_source = _load_transcript(
+            guest_name,
+            shoot_date,
+            source_video=source_video,
+            knowledge=knowledge,
+            source_video_rows=source_video_rows,
+        )
         if not transcript_text:
             return {
                 "project_id": project_id,
                 "status": "no_transcript",
                 "message": f"ゲスト '{guest_name}' の文字起こしファイルが見つかりません",
+                "transcript_source": transcript_source,
                 "total_segments": 0,
                 "used_count": 0,
                 "unused_count": 0,
@@ -4808,6 +4909,7 @@ def get_transcript_diff(project_id: str, version: Optional[str] = None):
         "caption_status": caption_status,
         "compare_version": compare_label,
         "compare_vimeo_id": compare_vimeo_id,
+        "transcript_source": transcript_source,
         "total_segments": total,
         "used_count": used_count,
         "unused_count": unused_count,

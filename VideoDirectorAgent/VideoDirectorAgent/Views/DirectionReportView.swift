@@ -1246,6 +1246,8 @@ private struct BeforeAfterSummaryView: View {
     @State private var showTranscriptDetails = true
     @State private var selectedTranscriptVersion: String?
     @State private var isTranscriptReloading = false
+    @State private var showFBTrackerDetails = true
+    @State private var updatingFBTrackerItemId: String?
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -1391,17 +1393,7 @@ private struct BeforeAfterSummaryView: View {
                 }
             }
 
-            if let fbTrackerData, !fbTrackerData.items.isEmpty {
-                previewDivider("FB指示プレビュー")
-                ForEach(Array(fbTrackerData.items.prefix(5).enumerated()), id: \.offset) { _, item in
-                    previewRow(
-                        leading: item.timecode ?? item.versionLabel,
-                        title: item.text,
-                        subtitle: item.statusLabel
-                    )
-                }
-            }
-
+            fbTrackerDetailsSection
             transcriptDetailsSection(response)
         }
         .padding(16)
@@ -1416,7 +1408,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build69 文字起こし比較復旧")
+                Text("Build70 FB指示チェック復旧")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1467,14 +1459,14 @@ private struct BeforeAfterSummaryView: View {
             safeInlinePreview(response)
             safeExternalLinks(response)
 
-            Text("概要を先に開き、比較スロットと文字起こし比較を後から埋めます。再生はタップした1本だけに絞ります。")
+            Text("概要を先に開き、比較スロット・FB指示チェック・文字起こし比較を後から埋めます。再生はタップした1本だけに絞ります。")
                 .font(AppTheme.bodyFont(12))
                 .foregroundStyle(AppTheme.textMuted)
         }
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build69-transcript-restore")
+        .accessibilityIdentifier("before-after-build70-fb-check-restore")
     }
 
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {
@@ -2055,6 +2047,143 @@ private struct BeforeAfterSummaryView: View {
         .padding(.vertical, 4)
     }
 
+    private var fbTrackerDetailsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    showFBTrackerDetails.toggle()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "checklist")
+                        .foregroundStyle(AppTheme.accent)
+                    Text("FB指示チェック")
+                        .font(AppTheme.sectionFont(15))
+                        .foregroundStyle(.white)
+                    Spacer()
+                    Text(fbTrackerSummaryText)
+                        .font(AppTheme.labelFont(10))
+                        .foregroundStyle(AppTheme.textMuted)
+                    Image(systemName: showFBTrackerDetails ? "chevron.up" : "chevron.down")
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.textMuted)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("before-after-fb-tracker-toggle")
+
+            if showFBTrackerDetails {
+                if let tracker = fbTrackerData, !tracker.items.isEmpty {
+                    fbTrackerProgressRow(tracker)
+
+                    LazyVStack(alignment: .leading, spacing: 8) {
+                        ForEach(tracker.items) { item in
+                            fbTrackerCheckRow(item)
+                        }
+                    }
+                    .accessibilityIdentifier("before-after-fb-tracker-full-list")
+                } else if isSupplementalLoading {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .scaleEffect(0.75)
+                            .tint(AppTheme.accent)
+                        Text("FB指示を読み込み中")
+                            .font(AppTheme.bodyFont(12))
+                            .foregroundStyle(AppTheme.textMuted)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 8)
+                } else {
+                    Text(fbTrackerData?.message ?? "FB指示がまだありません")
+                        .font(AppTheme.bodyFont(12))
+                        .foregroundStyle(AppTheme.textMuted)
+                        .padding(.vertical, 8)
+                }
+            }
+        }
+        .padding(12)
+        .background(AppTheme.cardBackgroundLight)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityIdentifier("before-after-fb-tracker-section")
+    }
+
+    private func fbTrackerProgressRow(_ tracker: FBTrackerResponse) -> some View {
+        HStack(spacing: 8) {
+            transcriptStat("\(tracker.summary.resolved)/\(tracker.summary.total) 対応済み")
+            if tracker.summary.pending > 0 {
+                transcriptStat("未対応 \(tracker.summary.pending)")
+            }
+            GeometryReader { geo in
+                let ratio = tracker.summary.total > 0
+                    ? CGFloat(tracker.summary.resolved) / CGFloat(tracker.summary.total)
+                    : 0
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.gray.opacity(0.25))
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(tracker.summary.pending == 0 ? AppTheme.statusComplete : Color.orange)
+                        .frame(width: geo.size.width * ratio)
+                }
+            }
+            .frame(height: 6)
+        }
+        .accessibilityIdentifier("before-after-fb-tracker-progress")
+    }
+
+    private func fbTrackerCheckRow(_ item: FBTrackerItem) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Button {
+                Task { await toggleFBTrackerItem(item) }
+            } label: {
+                if updatingFBTrackerItemId == item.id {
+                    ProgressView()
+                        .scaleEffect(0.72)
+                        .tint(AppTheme.accent)
+                        .frame(width: 24, height: 24)
+                } else {
+                    Image(systemName: item.status == "resolved" ? "checkmark.circle.fill" : "circle")
+                        .font(.title3)
+                        .foregroundStyle(item.statusColor)
+                        .frame(width: 24, height: 24)
+                }
+            }
+            .buttonStyle(.plain)
+            .disabled(updatingFBTrackerItemId != nil || item.uri.isEmpty)
+            .accessibilityIdentifier("before-after-fb-tracker-check-\(item.id)")
+
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 6) {
+                    if let timecode = item.timecode, !timecode.isEmpty {
+                        Text(timecode)
+                            .font(AppTheme.labelFont(10))
+                            .foregroundStyle(AppTheme.accent)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(AppTheme.accent.opacity(0.14))
+                            .clipShape(Capsule())
+                    }
+                    Text(item.versionLabel)
+                        .font(AppTheme.labelFont(10))
+                        .foregroundStyle(AppTheme.textMuted)
+                    Spacer()
+                    Text(item.statusLabel)
+                        .font(AppTheme.labelFont(10))
+                        .foregroundStyle(item.statusColor)
+                }
+
+                Text(item.text)
+                    .font(AppTheme.bodyFont(12))
+                    .foregroundStyle(item.status == "resolved" ? AppTheme.textMuted : AppTheme.textSecondary)
+                    .strikethrough(item.status == "resolved", color: AppTheme.textMuted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.vertical, 6)
+        .padding(.horizontal, 8)
+        .background(AppTheme.cardBackground.opacity(0.7))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
     private func transcriptDetailsSection(_ response: BeforeAfterResponse) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Button {
@@ -2227,6 +2356,7 @@ private struct BeforeAfterSummaryView: View {
         isSupplementalLoading = false
         transcriptData = nil
         fbTrackerData = nil
+        updatingFBTrackerItemId = nil
         do {
             response = try await APIClient.shared.fetchBeforeAfter(projectId: projectId)
             if selectedTranscriptVersion == nil {
@@ -2260,5 +2390,24 @@ private struct BeforeAfterSummaryView: View {
         isTranscriptReloading = true
         defer { isTranscriptReloading = false }
         transcriptData = try? await APIClient.shared.fetchTranscriptDiff(projectId: projectId, version: version)
+    }
+
+    @MainActor
+    private func toggleFBTrackerItem(_ item: FBTrackerItem) async {
+        guard !item.uri.isEmpty else { return }
+        updatingFBTrackerItemId = item.id
+        defer { updatingFBTrackerItemId = nil }
+
+        let newStatus = item.status == "resolved" ? "pending" : "resolved"
+        do {
+            try await APIClient.shared.updateFBTrackingStatus(
+                projectId: projectId,
+                commentUri: item.uri,
+                status: newStatus
+            )
+            fbTrackerData = try await APIClient.shared.fetchFBTracker(projectId: projectId)
+        } catch {
+            fbTrackerData = try? await APIClient.shared.fetchFBTracker(projectId: projectId)
+        }
     }
 }

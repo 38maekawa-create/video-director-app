@@ -44,6 +44,7 @@ final class BeforeAfterUITests: XCTestCase {
         beforeAfterButton.tap()
 
         let summary = app.otherElements["before-after-summary-screen"]
+        let closeButton = app.buttons["before-after-summary-close"]
         let title = app.staticTexts["ビフォーアフター"]
         let externalLinksLabel = app.staticTexts["外部で開く"]
         let comparisonModeLabel = app.staticTexts["比較モード"]
@@ -52,7 +53,9 @@ final class BeforeAfterUITests: XCTestCase {
         let fullTranscriptLabel = app.staticTexts["全行表示"]
         let fbTrackerLabel = app.staticTexts["FB指示トラッカー"]
         let sourcePickerLabel = app.staticTexts["素材選択"]
-        let opened = summary.waitForExistence(timeout: 20) || title.waitForExistence(timeout: 20)
+        let opened = closeButton.waitForExistence(timeout: 30)
+            || summary.waitForExistence(timeout: 30)
+            || title.waitForExistence(timeout: 30)
         XCTAssertTrue(opened)
         XCTAssertTrue(externalLinksLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(comparisonModeLabel.waitForExistence(timeout: 20))

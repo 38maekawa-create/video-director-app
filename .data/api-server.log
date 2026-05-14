@@ -7492,3 +7492,4 @@ INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260125-%E6%9D%BE%E6%9C%AC/before-after HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260125-%E6%9D%BE%E6%9C%AC/fb-tracker HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260125-%E6%9D%BE%E6%9C%AC/transcript-diff HTTP/1.1" 200 OK
+INFO:     2a06:98c0:360b:2bfc:7478:77f:8102:eab8:0 - "HEAD / HTTP/1.1" 405 Method Not Allowed

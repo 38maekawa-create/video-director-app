@@ -96,8 +96,9 @@ final class BeforeAfterUITests: XCTestCase {
             app.buttons["before-after-inline-option-fb-revised"].tap()
             XCTAssertEqual(app.state, .runningForeground)
         }
-        if app.staticTexts["タップして再生"].waitForExistence(timeout: 10) {
-            app.staticTexts["タップして再生"].tap()
+        let tapToPlay = app.staticTexts.matching(NSPredicate(format: "label == %@", "タップして再生")).firstMatch
+        if tapToPlay.waitForExistence(timeout: 10) {
+            tapToPlay.tap()
             XCTAssertEqual(app.state, .runningForeground)
         }
         XCTAssertEqual(app.state, .runningForeground)

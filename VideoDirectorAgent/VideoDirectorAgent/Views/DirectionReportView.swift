@@ -186,6 +186,12 @@ struct DirectionReportView: View {
     @State private var showBeforeAfterSummary = false
 
     private let tabTitles = ["概要", "ディレクション", "YouTube素材", "素材", "FB・評価", "ナレッジ", "レビュー"]
+    private var displaySubjectName: String {
+        project.primarySubjectName?.isEmpty == false ? project.primarySubjectName! : project.guestName
+    }
+    private var isPersonalLongformRoute: Bool {
+        project.routeProfile == "teko_personal_longform"
+    }
 
     var body: some View {
         Group {
@@ -254,7 +260,7 @@ struct DirectionReportView: View {
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                Text(project.guestName)
+                Text(displaySubjectName)
                     .font(AppTheme.heroFont(30))
                     .foregroundStyle(.white)
 
@@ -276,26 +282,28 @@ struct DirectionReportView: View {
                 .foregroundStyle(AppTheme.textMuted)
 
                 HStack(spacing: 12) {
-                    Button {
-                        showBeforeAfterSummary = true
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "rectangle.on.rectangle.angled")
-                            Text("ビフォーアフター")
+                    if !isPersonalLongformRoute {
+                        Button {
+                            showBeforeAfterSummary = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "rectangle.on.rectangle.angled")
+                                Text("ビフォーアフター")
+                            }
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(AppTheme.cardBackground)
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule()
+                                    .strokeBorder(Color(hex: 0xF5A623).opacity(0.5), lineWidth: 1)
+                            )
                         }
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(AppTheme.cardBackground)
-                        .clipShape(Capsule())
-                        .overlay(
-                            Capsule()
-                                .strokeBorder(Color(hex: 0xF5A623).opacity(0.5), lineWidth: 1)
-                        )
+                        .accessibilityIdentifier("direction-before-after-button")
                     }
-                    .accessibilityIdentifier("direction-before-after-button")
 
                     if project.knowledgePageUrl != nil {
                         Button {
@@ -445,7 +453,8 @@ struct DirectionReportView: View {
                 title: "プロジェクト概要",
                 icon: "doc.text.magnifyingglass",
                 items: [
-                    "ゲスト: \(project.guestName)",
+                    "\(isPersonalLongformRoute ? "対象" : "ゲスト"): \(displaySubjectName)",
+                    "ルート: \(project.categoryDisplayName)",
                     project.guestAge.map { "年齢: \($0)歳" } ?? "年齢: 未設定",
                     project.guestOccupation.map { "職業: \($0)" } ?? "職業: 未設定",
                     "撮影日: \(project.shootDate)",

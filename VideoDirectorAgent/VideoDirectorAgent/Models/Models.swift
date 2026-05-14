@@ -103,10 +103,21 @@ struct VideoProject: Identifiable, Codable, Hashable {
     let knowledge: String?
     let category: String?
     let knowledgePageUrl: String?
+    let routeProfile: String?
+    let routeDisplayName: String?
+    let contentFamily: String?
+    let subjectType: String?
+    let primarySubjectName: String?
+    let workflowState: String?
 
     /// カテゴリの表示名
     var categoryDisplayName: String {
-        switch category {
+        if let routeDisplayName, !routeDisplayName.isEmpty {
+            return routeDisplayName
+        }
+        switch routeProfile ?? category {
+        case "teko_interview": return "TEKO対談"
+        case "teko_personal_longform": return "TEKO属人ch 長尺"
         case "teko_member": return "TEKOメンバー対談"
         case "teko_realestate": return "TEKO不動産対談"
         default: return "その他"
@@ -115,7 +126,9 @@ struct VideoProject: Identifiable, Codable, Hashable {
 
     /// カテゴリのアイコン（SF Symbols）
     var categoryIcon: String {
-        switch category {
+        switch routeProfile ?? category {
+        case "teko_interview": return "person.2.fill"
+        case "teko_personal_longform": return "play.rectangle.on.rectangle.fill"
         case "teko_member": return "person.2.fill"
         case "teko_realestate": return "building.2.fill"
         default: return "questionmark.folder.fill"
@@ -124,7 +137,9 @@ struct VideoProject: Identifiable, Codable, Hashable {
 
     /// カテゴリのアクセントカラー
     var categoryColor: Color {
-        switch category {
+        switch routeProfile ?? category {
+        case "teko_interview": return Color(hex: 0x4A90D9)
+        case "teko_personal_longform": return Color(hex: 0x46D369)
         case "teko_member": return Color(hex: 0x4A90D9)      // ブルー
         case "teko_realestate": return Color(hex: 0xE5A023)   // ゴールド
         default: return AppTheme.textMuted
@@ -148,7 +163,13 @@ struct VideoProject: Identifiable, Codable, Hashable {
         editedVideoURL: String? = nil,
         knowledge: String? = nil,
         category: String? = nil,
-        knowledgePageUrl: String? = nil
+        knowledgePageUrl: String? = nil,
+        routeProfile: String? = nil,
+        routeDisplayName: String? = nil,
+        contentFamily: String? = nil,
+        subjectType: String? = nil,
+        primarySubjectName: String? = nil,
+        workflowState: String? = nil
     ) {
         self.id = id
         self.guestName = guestName
@@ -167,6 +188,12 @@ struct VideoProject: Identifiable, Codable, Hashable {
         self.knowledge = knowledge
         self.category = category
         self.knowledgePageUrl = knowledgePageUrl
+        self.routeProfile = routeProfile
+        self.routeDisplayName = routeDisplayName
+        self.contentFamily = contentFamily
+        self.subjectType = subjectType
+        self.primarySubjectName = primarySubjectName
+        self.workflowState = workflowState
     }
 
     enum CodingKeys: String, CodingKey {
@@ -187,6 +214,12 @@ struct VideoProject: Identifiable, Codable, Hashable {
         case knowledge
         case category
         case knowledgePageUrl
+        case routeProfile
+        case routeDisplayName
+        case contentFamily
+        case subjectType
+        case primarySubjectName
+        case workflowState
         // デコード専用キー（APIレスポンスのネスト構造を展開するため）
         case sourceVideo
         case editedVideo
@@ -212,6 +245,12 @@ struct VideoProject: Identifiable, Codable, Hashable {
         try container.encodeIfPresent(knowledge, forKey: .knowledge)
         try container.encodeIfPresent(category, forKey: .category)
         try container.encodeIfPresent(knowledgePageUrl, forKey: .knowledgePageUrl)
+        try container.encodeIfPresent(routeProfile, forKey: .routeProfile)
+        try container.encodeIfPresent(routeDisplayName, forKey: .routeDisplayName)
+        try container.encodeIfPresent(contentFamily, forKey: .contentFamily)
+        try container.encodeIfPresent(subjectType, forKey: .subjectType)
+        try container.encodeIfPresent(primarySubjectName, forKey: .primarySubjectName)
+        try container.encodeIfPresent(workflowState, forKey: .workflowState)
     }
 
     init(from decoder: Decoder) throws {
@@ -247,6 +286,12 @@ struct VideoProject: Identifiable, Codable, Hashable {
         knowledge = VideoProject.decodeKnowledgeText(from: container)
         category = try container.decodeIfPresent(String.self, forKey: .category)
         knowledgePageUrl = try container.decodeIfPresent(String.self, forKey: .knowledgePageUrl)
+        routeProfile = try container.decodeIfPresent(String.self, forKey: .routeProfile)
+        routeDisplayName = try container.decodeIfPresent(String.self, forKey: .routeDisplayName)
+        contentFamily = try container.decodeIfPresent(String.self, forKey: .contentFamily)
+        subjectType = try container.decodeIfPresent(String.self, forKey: .subjectType)
+        primarySubjectName = try container.decodeIfPresent(String.self, forKey: .primarySubjectName)
+        workflowState = try container.decodeIfPresent(String.self, forKey: .workflowState)
 
         // APIはsnake_case（"review_pending"）を返すが、enumのrawValueはcamelCase（"reviewPending"）
         // decodeIfPresentは値が存在するがデコード失敗時にエラーを投げるため、

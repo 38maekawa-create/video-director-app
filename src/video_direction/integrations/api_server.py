@@ -130,6 +130,10 @@ def init_db():
         if "category" not in columns:
             conn.execute("ALTER TABLE projects ADD COLUMN category TEXT")
             conn.commit()
+        for column_name in ("route_profile", "content_family", "subject_type", "workflow_state"):
+            if column_name not in columns:
+                conn.execute(f"ALTER TABLE projects ADD COLUMN {column_name} TEXT")
+                conn.commit()
 
         # feedback_targetカラムのマイグレーション（AI生成物へのFB種別管理）
         fb_columns = [row[1] for row in conn.execute("PRAGMA table_info(feedbacks)").fetchall()]
@@ -319,6 +323,210 @@ def _enrich_project_with_knowledge_url(d: dict) -> dict:
     return d
 
 
+ROUTE_PROFILES = {
+    "teko_interview": {
+        "route_profile": "teko_interview",
+        "display_name": "TEKO対談",
+        "content_family": "interview",
+        "subject_type": "guest",
+        "icon": "person.2.fill",
+        "accent_color": "#4A90D9",
+    },
+    "teko_realestate": {
+        "route_profile": "teko_realestate",
+        "display_name": "TEKO不動産対談",
+        "content_family": "interview",
+        "subject_type": "guest",
+        "icon": "building.2.fill",
+        "accent_color": "#E5A023",
+    },
+    "teko_personal_longform": {
+        "route_profile": "teko_personal_longform",
+        "display_name": "TEKO属人ch 長尺",
+        "content_family": "personal_longform",
+        "subject_type": "channel_project",
+        "icon": "play.rectangle.on.rectangle.fill",
+        "accent_color": "#46D369",
+    },
+    "uncategorized": {
+        "route_profile": "uncategorized",
+        "display_name": "その他",
+        "content_family": "unknown",
+        "subject_type": "unknown",
+        "icon": "questionmark.folder.fill",
+        "accent_color": "#808080",
+    },
+}
+
+
+PROPER_YAESU_LONGFORM_PROJECTS = [
+    {
+        "id": "proper-yaesu-20260508-01-asset-100m-roadmap",
+        "guest_name": "八重洲ch",
+        "primary_subject_name": "八重洲ch",
+        "title": "会社員が、30歳までに資産1億作るためにやったことを全部公開",
+        "status": "directed",
+        "shoot_date": "2026/05/08",
+        "quality_score": None,
+        "has_unsent_feedback": False,
+        "unreviewed_count": 0,
+        "direction_report_url": None,
+        "source_video": None,
+        "edited_video": None,
+        "feedback_summary": None,
+        "knowledge": {"package_id": "01_asset_100m_roadmap", "block_id": "block_1620", "sheet_row": 2},
+        "category": "teko_personal_longform",
+        "route_profile": "teko_personal_longform",
+        "content_family": "personal_longform",
+        "subject_type": "channel_project",
+        "workflow_state": "handoff_intake",
+        "created_at": "2026-05-15T00:00:00+09:00",
+        "updated_at": "2026-05-15T00:00:00+09:00",
+    },
+    {
+        "id": "proper-yaesu-20260508-02-property-purchase-list",
+        "guest_name": "八重洲ch",
+        "primary_subject_name": "八重洲ch",
+        "title": "実際に買った投資用の不動産物件の売買の歴史とリスト",
+        "status": "directed",
+        "shoot_date": "2026/05/08",
+        "quality_score": None,
+        "has_unsent_feedback": False,
+        "unreviewed_count": 0,
+        "direction_report_url": None,
+        "source_video": None,
+        "edited_video": None,
+        "feedback_summary": None,
+        "knowledge": {"package_id": "02_property_purchase_list", "block_id": "block_1442", "sheet_row": 3},
+        "category": "teko_personal_longform",
+        "route_profile": "teko_personal_longform",
+        "content_family": "personal_longform",
+        "subject_type": "channel_project",
+        "workflow_state": "handoff_intake",
+        "created_at": "2026-05-15T00:00:00+09:00",
+        "updated_at": "2026-05-15T00:00:00+09:00",
+    },
+    {
+        "id": "proper-yaesu-20260508-03-seven-habits-deleted",
+        "guest_name": "八重洲ch",
+        "primary_subject_name": "八重洲ch",
+        "title": "会社員の僕が32歳でキャッシュ1.5億を得るために捨てた7つの習慣",
+        "status": "directed",
+        "shoot_date": "2026/05/08",
+        "quality_score": None,
+        "has_unsent_feedback": False,
+        "unreviewed_count": 0,
+        "direction_report_url": None,
+        "source_video": None,
+        "edited_video": None,
+        "feedback_summary": None,
+        "knowledge": {"package_id": "03_seven_habits_deleted", "block_id": "block_1534", "sheet_row": 4},
+        "category": "teko_personal_longform",
+        "route_profile": "teko_personal_longform",
+        "content_family": "personal_longform",
+        "subject_type": "channel_project",
+        "workflow_state": "handoff_intake",
+        "created_at": "2026-05-15T00:00:00+09:00",
+        "updated_at": "2026-05-15T00:00:00+09:00",
+    },
+    {
+        "id": "proper-yaesu-20260508-04-one-person-corporation-tax",
+        "guest_name": "八重洲ch",
+        "primary_subject_name": "八重洲ch",
+        "title": "ひとり法人は、税金払う方がクソ儲かる",
+        "status": "directed",
+        "shoot_date": "2026/05/08",
+        "quality_score": None,
+        "has_unsent_feedback": False,
+        "unreviewed_count": 0,
+        "direction_report_url": None,
+        "source_video": None,
+        "edited_video": None,
+        "feedback_summary": None,
+        "knowledge": {"package_id": "04_one_person_corporation_tax", "block_id": "block_1759", "sheet_row": 5},
+        "category": "teko_personal_longform",
+        "route_profile": "teko_personal_longform",
+        "content_family": "personal_longform",
+        "subject_type": "channel_project",
+        "workflow_state": "handoff_intake",
+        "created_at": "2026-05-15T00:00:00+09:00",
+        "updated_at": "2026-05-15T00:00:00+09:00",
+    },
+    {
+        "id": "proper-yaesu-20260508-05-weak-yen-export-side-business",
+        "guest_name": "八重洲ch",
+        "primary_subject_name": "八重洲ch",
+        "title": "会社員が今すぐやるべき、円安時代の最強の副業のやり方を解説",
+        "status": "directed",
+        "shoot_date": "2026/05/08",
+        "quality_score": None,
+        "has_unsent_feedback": False,
+        "unreviewed_count": 0,
+        "direction_report_url": None,
+        "source_video": None,
+        "edited_video": None,
+        "feedback_summary": None,
+        "knowledge": {"package_id": "05_weak_yen_export_side_business", "block_id": "block_1842", "sheet_row": 6},
+        "category": "teko_personal_longform",
+        "route_profile": "teko_personal_longform",
+        "content_family": "personal_longform",
+        "subject_type": "channel_project",
+        "workflow_state": "handoff_intake",
+        "created_at": "2026-05-15T00:00:00+09:00",
+        "updated_at": "2026-05-15T00:00:00+09:00",
+    },
+    {
+        "id": "proper-yaesu-20260508-06-nisa-asset-roadmap",
+        "guest_name": "八重洲ch",
+        "primary_subject_name": "八重洲ch",
+        "title": "NISAでは金持ちになれない / 金持ちになる会社員が資産状況別に行うべき真実のロードマップ",
+        "status": "directed",
+        "shoot_date": "2026/05/08",
+        "quality_score": None,
+        "has_unsent_feedback": False,
+        "unreviewed_count": 0,
+        "direction_report_url": None,
+        "source_video": None,
+        "edited_video": None,
+        "feedback_summary": None,
+        "knowledge": {"package_id": "06_nisa_asset_roadmap", "block_id": "block_1919", "sheet_row": 10},
+        "category": "teko_personal_longform",
+        "route_profile": "teko_personal_longform",
+        "content_family": "personal_longform",
+        "subject_type": "channel_project",
+        "workflow_state": "handoff_intake",
+        "created_at": "2026-05-15T00:00:00+09:00",
+        "updated_at": "2026-05-15T00:00:00+09:00",
+    },
+]
+
+
+def _derive_route_profile(d: dict) -> str:
+    route_profile = d.get("route_profile")
+    if route_profile:
+        return route_profile
+
+    category = d.get("category")
+    if category == "teko_member":
+        return "teko_interview"
+    if category == "teko_realestate":
+        return "teko_realestate"
+    return "uncategorized"
+
+
+def _enrich_project_route_fields(d: dict) -> dict:
+    """route_profile未導入DBでもiOSが汎用routeとして扱える形に補完する。"""
+    route_profile = _derive_route_profile(d)
+    profile = ROUTE_PROFILES.get(route_profile, ROUTE_PROFILES["uncategorized"])
+    d["route_profile"] = route_profile
+    d["route_display_name"] = profile["display_name"]
+    d["content_family"] = d.get("content_family") or profile["content_family"]
+    d["subject_type"] = d.get("subject_type") or profile["subject_type"]
+    d["primary_subject_name"] = d.get("primary_subject_name") or d.get("guest_name") or ""
+    d["workflow_state"] = d.get("workflow_state") or d.get("status") or "directed"
+    return d
+
+
 # --- Pydantic モデル ---
 
 class ProjectCreate(BaseModel):
@@ -494,12 +702,47 @@ def repair_known_shoot_dates():
 
 # --- プロジェクト ---
 
+@app.get("/api/v1/routes")
+def list_route_profiles():
+    """映像エージェントのroute profile一覧を返す。"""
+    return list(ROUTE_PROFILES.values())
+
+
 @app.get("/api/projects")
-def list_projects(category: Optional[str] = None):
-    """プロジェクト一覧を取得する。categoryパラメータでフィルタ可能。"""
+def list_projects(category: Optional[str] = None, route_profile: Optional[str] = None):
+    """プロジェクト一覧を取得する。category/route_profileパラメータでフィルタ可能。"""
     conn = _get_db()
     try:
-        if category:
+        if route_profile:
+            if route_profile == "uncategorized":
+                rows = conn.execute(
+                    """SELECT * FROM projects
+                       WHERE (route_profile IS NULL OR route_profile = '')
+                         AND (category IS NULL OR category = '')
+                       ORDER BY shoot_date DESC"""
+                ).fetchall()
+            elif route_profile == "teko_interview":
+                rows = conn.execute(
+                    """SELECT * FROM projects
+                       WHERE route_profile = ?
+                          OR ((route_profile IS NULL OR route_profile = '') AND category = 'teko_member')
+                       ORDER BY shoot_date DESC""",
+                    (route_profile,),
+                ).fetchall()
+            elif route_profile == "teko_realestate":
+                rows = conn.execute(
+                    """SELECT * FROM projects
+                       WHERE route_profile = ?
+                          OR ((route_profile IS NULL OR route_profile = '') AND category = 'teko_realestate')
+                       ORDER BY shoot_date DESC""",
+                    (route_profile,),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM projects WHERE route_profile = ? ORDER BY shoot_date DESC",
+                    (route_profile,),
+                ).fetchall()
+        elif category:
             if category == "uncategorized":
                 rows = conn.execute(
                     "SELECT * FROM projects WHERE category IS NULL ORDER BY shoot_date DESC"
@@ -533,12 +776,24 @@ def list_projects(category: Optional[str] = None):
         # iOS側の decodeNestedURL が primary key で直接マッチできるようにする
         _extract_video_urls(d)
         _enrich_project_with_knowledge_url(d)
+        _enrich_project_route_fields(d)
         result.append(d)
+    if route_profile in (None, "teko_personal_longform") and category in (None, "teko_personal_longform"):
+        for virtual_project in PROPER_YAESU_LONGFORM_PROJECTS:
+            d = dict(virtual_project)
+            _enrich_project_route_fields(d)
+            result.append(d)
     return result
 
 
 @app.get("/api/projects/{project_id}")
 def get_project(project_id: str):
+    for virtual_project in PROPER_YAESU_LONGFORM_PROJECTS:
+        if virtual_project["id"] == project_id:
+            d = dict(virtual_project)
+            _enrich_project_route_fields(d)
+            return d
+
     conn = _get_db()
     try:
         row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
@@ -559,6 +814,7 @@ def get_project(project_id: str):
                 d[json_field] = None
     _extract_video_urls(d)
     _enrich_project_with_knowledge_url(d)
+    _enrich_project_route_fields(d)
     return d
 
 
@@ -686,6 +942,7 @@ def get_projects_by_category(category: str):
                 except (json.JSONDecodeError, TypeError):
                     pass
         _enrich_project_with_knowledge_url(d)
+        _enrich_project_route_fields(d)
         result.append(d)
     return result
 

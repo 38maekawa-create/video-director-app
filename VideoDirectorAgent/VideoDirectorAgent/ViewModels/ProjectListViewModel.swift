@@ -52,19 +52,31 @@ final class ProjectListViewModel: ObservableObject {
     /// TEKOメンバー対談カテゴリのプロジェクト
     var tekoMemberProjects: [VideoProject] {
         let base = searchText.isEmpty ? projects : filteredProjects
-        return base.filter { $0.category == "teko_member" }
+        return base.filter {
+            let route = $0.routeProfile ?? $0.category
+            return route == "teko_interview" || route == "teko_member"
+        }
     }
 
     /// TEKO不動産対談カテゴリのプロジェクト
     var tekoRealestateProjects: [VideoProject] {
         let base = searchText.isEmpty ? projects : filteredProjects
-        return base.filter { $0.category == "teko_realestate" }
+        return base.filter { ($0.routeProfile ?? $0.category) == "teko_realestate" }
+    }
+
+    /// TEKO属人ch 長尺YouTubeカテゴリのプロジェクト
+    var tekoPersonalLongformProjects: [VideoProject] {
+        let base = searchText.isEmpty ? projects : filteredProjects
+        return base.filter { $0.routeProfile == "teko_personal_longform" }
     }
 
     /// 未分類プロジェクト
     var uncategorizedProjects: [VideoProject] {
         let base = searchText.isEmpty ? projects : filteredProjects
-        return base.filter { $0.category == nil || $0.category?.isEmpty == true }
+        return base.filter {
+            let route = $0.routeProfile ?? $0.category
+            return route == nil || route?.isEmpty == true || route == "uncategorized"
+        }
     }
 
     var heroProject: VideoProject? {

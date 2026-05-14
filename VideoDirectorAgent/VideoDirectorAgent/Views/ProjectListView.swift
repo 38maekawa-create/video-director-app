@@ -66,6 +66,15 @@ struct ProjectListView: View {
                             )
                         }
 
+                        if !viewModel.tekoPersonalLongformProjects.isEmpty {
+                            categorySection(
+                                title: "TEKO属人ch 長尺",
+                                icon: "play.rectangle.on.rectangle.fill",
+                                accentColor: Color(hex: 0x46D369),
+                                projects: viewModel.tekoPersonalLongformProjects
+                            )
+                        }
+
                         if !viewModel.uncategorizedProjects.isEmpty {
                             categorySection(
                                 title: "その他",

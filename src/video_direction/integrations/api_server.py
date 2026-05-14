@@ -4206,10 +4206,15 @@ def get_before_after(project_id: str):
                 pass
 
         # --- video_versionsテーブルからバージョン情報を取得 ---
-        versions = conn.execute(
-            "SELECT * FROM video_versions WHERE project_id = ? ORDER BY version_order ASC",
+        version_rows = conn.execute(
+            "SELECT * FROM video_versions WHERE project_id = ? ORDER BY version_order ASC, datetime(created_at) ASC, id ASC",
             (project_id,),
         ).fetchall()
+
+        latest_by_label_order: dict[tuple[str, int], sqlite3.Row] = {}
+        for row in version_rows:
+            latest_by_label_order[(row["version_label"], row["version_order"])] = row
+        versions = list(latest_by_label_order.values())
 
         def _build_vimeo_entry(row):
             """video_versionsの行からVimeo情報を構築"""
@@ -4240,15 +4245,15 @@ def get_before_after(project_id: str):
             for v in versions:
                 all_versions.append(_build_vimeo_entry(v))
 
-            # 初稿を探す（version_order=0）
+            # 初稿を探す（version_order=0）。同一orderがあればcreated_at/idの新しい行を使う。
             shoko_versions = [v for v in versions if v["version_order"] == 0]
             if shoko_versions:
-                edited_video = _build_vimeo_entry(shoko_versions[0])
+                edited_video = _build_vimeo_entry(max(shoko_versions, key=lambda v: (v["version_order"], v["created_at"] or "", v["id"])))
 
-            # FB修正版を探す（version_order > 0 かつ 完成(100)以外、最新=最大order）
+            # FB修正版を探す（version_order > 0 かつ 完成(100)以外、最新=最大order、同一orderは新しい行）
             fb_versions = [v for v in versions if 0 < v["version_order"] < 100]
             if fb_versions:
-                latest_fb = max(fb_versions, key=lambda v: v["version_order"])
+                latest_fb = max(fb_versions, key=lambda v: (v["version_order"], v["created_at"] or "", v["id"]))
                 fb_revised_video = _build_vimeo_entry(latest_fb)
         else:
             # video_versionsにデータがない場合、レガシーのprojects.edited_videoから取得
@@ -4331,7 +4336,7 @@ def get_fb_tracker(project_id: str):
         # 全バージョンのvimeo_idを取得
         versions = conn.execute(
             "SELECT vimeo_id, version_label, version_order FROM video_versions "
-            "WHERE project_id = ? ORDER BY version_order ASC",
+            "WHERE project_id = ? ORDER BY version_order ASC, datetime(created_at) ASC, id ASC",
             (project_id,),
         ).fetchall()
 
@@ -4795,14 +4800,15 @@ def get_transcript_diff(project_id: str, version: Optional[str] = None):
         if version:
             ver_row = conn.execute(
                 "SELECT vimeo_id, version_label FROM video_versions "
-                "WHERE project_id = ? AND version_label = ?",
+                "WHERE project_id = ? AND version_label = ? "
+                "ORDER BY version_order DESC, datetime(created_at) DESC, id DESC LIMIT 1",
                 (project_id, version),
             ).fetchone()
         else:
             # 最新版を取得
             ver_row = conn.execute(
                 "SELECT vimeo_id, version_label FROM video_versions "
-                "WHERE project_id = ? ORDER BY version_order DESC LIMIT 1",
+                "WHERE project_id = ? ORDER BY version_order DESC, datetime(created_at) DESC, id DESC LIMIT 1",
                 (project_id,),
             ).fetchone()
 
@@ -4937,7 +4943,7 @@ def get_feedbacks_with_timecodes(project_id: str):
         vimeo_id = ""
         latest_ver = conn.execute(
             "SELECT vimeo_id FROM video_versions WHERE project_id = ? "
-            "ORDER BY version_order DESC LIMIT 1",
+            "ORDER BY version_order DESC, datetime(created_at) DESC, id DESC LIMIT 1",
             (project_id,),
         ).fetchone()
         if latest_ver and latest_ver["vimeo_id"]:

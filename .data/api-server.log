@@ -7493,3 +7493,13 @@ INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260125-%E6%9D%BE%E6%9C%AC
 INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260125-%E6%9D%BE%E6%9C%AC/fb-tracker HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260125-%E6%9D%BE%E6%9C%AC/transcript-diff HTTP/1.1" 200 OK
 INFO:     2a06:98c0:360b:2bfc:7478:77f:8102:eab8:0 - "HEAD / HTTP/1.1" 405 Method Not Allowed
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/before-after HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/transcript-diff HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/fb-tracker HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/transcript-diff?version=%E4%BF%AE%E6%AD%A3 HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/v1/projects/p-20260101-%E3%83%A1%E3%83%B3%E3%82%A4%E3%83%81/transcript-diff?version=%E4%BF%AE%E6%AD%A32 HTTP/1.1" 200 OK

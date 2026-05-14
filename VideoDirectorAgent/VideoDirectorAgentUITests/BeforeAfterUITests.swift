@@ -45,13 +45,14 @@ final class BeforeAfterUITests: XCTestCase {
 
         let summary = app.otherElements["before-after-summary-screen"]
         let title = app.staticTexts["ビフォーアフター"]
-        let previewBanner = app.staticTexts["Build71 元画面レイアウト復旧"]
+        let previewBanner = app.staticTexts["Build72 16:9比較復旧"]
         let externalLinksLabel = app.staticTexts["外部で開く"]
         let comparisonModeLabel = app.staticTexts["比較モード"]
         let twoUpLabel = app.staticTexts["上下2段比較"]
         let transcriptLabel = app.staticTexts["文字起こし比較"]
         let fullTranscriptLabel = app.staticTexts["全行表示"]
         let fbTrackerLabel = app.staticTexts["FB指示トラッカー"]
+        let sourcePickerLabel = app.staticTexts["素材選択"]
         let opened = summary.waitForExistence(timeout: 20) || title.waitForExistence(timeout: 20)
         XCTAssertTrue(opened)
         XCTAssertTrue(previewBanner.waitForExistence(timeout: 20))
@@ -62,6 +63,7 @@ final class BeforeAfterUITests: XCTestCase {
         XCTAssertTrue(fullTranscriptLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(fbTrackerLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["素材 vs 編集後"].waitForExistence(timeout: 20))
+        _ = sourcePickerLabel.waitForExistence(timeout: 5)
         app.swipeUp()
         let tapToPlay = app.staticTexts.matching(NSPredicate(format: "label == %@", "タップして再生")).firstMatch
         if tapToPlay.waitForExistence(timeout: 10) {

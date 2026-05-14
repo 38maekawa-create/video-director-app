@@ -1243,6 +1243,7 @@ private struct BeforeAfterSummaryView: View {
     @State private var selectedInlinePlayerKey: String?
     @State private var selectedComparisonMode = 0
     @State private var selectedComparisonPairId: String = "source-edited"
+    @State private var selectedSourceIndex = 0
     @State private var showTranscriptDetails = true
     @State private var selectedTranscriptVersion: String?
     @State private var isTranscriptReloading = false
@@ -1356,7 +1357,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build71 元画面レイアウト復旧")
+                Text("Build72 16:9比較復旧")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1388,7 +1389,7 @@ private struct BeforeAfterSummaryView: View {
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build71-legacy-layout-restore")
+        .accessibilityIdentifier("before-after-build72-fullwidth-restore")
     }
 
     private func legacyBeforeAfterMainSection(_ response: BeforeAfterResponse) -> some View {
@@ -1401,6 +1402,7 @@ private struct BeforeAfterSummaryView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             legacyComparisonModePicker(items)
+            sourceMaterialPicker(response)
             legacyTwoUpComparison(items)
             safeExternalLinks(response)
         }
@@ -1413,7 +1415,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build71 元画面レイアウト復旧")
+                Text("Build72 16:9比較復旧")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1471,7 +1473,7 @@ private struct BeforeAfterSummaryView: View {
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build71-legacy-layout-restore")
+        .accessibilityIdentifier("before-after-build72-fullwidth-restore")
     }
 
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {
@@ -1617,6 +1619,34 @@ private struct BeforeAfterSummaryView: View {
         }
     }
 
+    private func sourceMaterialPicker(_ response: BeforeAfterResponse) -> some View {
+        Group {
+            if selectedComparisonMode == 0, response.sourceVideos.count > 1 {
+                HStack(spacing: 8) {
+                    Text("素材選択")
+                        .font(AppTheme.labelFont(11))
+                        .foregroundStyle(AppTheme.textMuted)
+
+                    Picker("素材", selection: $selectedSourceIndex) {
+                        ForEach(0..<response.sourceVideos.count, id: \.self) { index in
+                            Text("素材\(index + 1)").tag(index)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .tint(AppTheme.accent)
+
+                    Spacer()
+                }
+                .padding(.horizontal, 2)
+                .accessibilityIdentifier("before-after-source-picker")
+            }
+        }
+        .onChange(of: selectedSourceIndex) { _, _ in
+            selectedInlinePlayerKey = "source"
+            activeInlinePlayerKey = nil
+        }
+    }
+
     private func legacyTwoUpComparison(_ items: [InlinePreviewItem]) -> some View {
         let pair = legacyComparisonPair(items)
 
@@ -1666,8 +1696,10 @@ private struct BeforeAfterSummaryView: View {
                     )
                 )
                 .id("slot-\(item.id)")
-                .frame(height: 170)
+                .aspectRatio(16.0 / 9.0, contentMode: .fit)
+                .frame(maxWidth: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
+                .accessibilityIdentifier("before-after-legacy-16x9-player")
             } else {
                 HStack(spacing: 8) {
                     Image(systemName: "video.slash")
@@ -1676,7 +1708,8 @@ private struct BeforeAfterSummaryView: View {
                         .font(AppTheme.bodyFont(12))
                         .foregroundStyle(AppTheme.textMuted)
                 }
-                .frame(maxWidth: .infinity, minHeight: 120, alignment: .center)
+                .aspectRatio(16.0 / 9.0, contentMode: .fit)
+                .frame(maxWidth: .infinity, alignment: .center)
                 .background(AppTheme.cardBackgroundLight)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             }
@@ -1842,16 +1875,19 @@ private struct BeforeAfterSummaryView: View {
 
     private func inlinePreviewItems(_ response: BeforeAfterResponse) -> [InlinePreviewItem] {
         var items: [InlinePreviewItem] = []
-        if let source = response.sourceVideos.first,
-           !source.embedUrl.isEmpty {
-            items.append(
-                InlinePreviewItem(
-                    id: "source",
-                    label: "素材",
-                    embedURL: source.embedUrl,
-                    externalURL: source.youtubeUrl
+        if !response.sourceVideos.isEmpty {
+            let safeIndex = min(max(selectedSourceIndex, 0), response.sourceVideos.count - 1)
+            let source = response.sourceVideos[safeIndex]
+            if !source.embedUrl.isEmpty {
+                items.append(
+                    InlinePreviewItem(
+                        id: "source",
+                        label: response.sourceVideos.count > 1 ? "素材\(safeIndex + 1)" : "素材",
+                        embedURL: source.embedUrl,
+                        externalURL: source.youtubeUrl
+                    )
                 )
-            )
+            }
         }
         if let edited = response.editedVideo,
            let embedURL = edited.embedUrl,

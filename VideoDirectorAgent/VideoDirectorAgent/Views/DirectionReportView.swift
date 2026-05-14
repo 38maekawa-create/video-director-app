@@ -1638,8 +1638,8 @@ private struct BeforeAfterSummaryView: View {
             }
 
             HStack(spacing: 8) {
-                comparisonSideButton(prefix: "左", item: beforeItem, accessibilityId: "before-after-play-left")
-                comparisonSideButton(prefix: "右", item: afterItem, accessibilityId: "before-after-play-right")
+                comparisonSideButton(label: "左を再生", item: beforeItem, accessibilityId: "before-after-play-left")
+                comparisonSideButton(label: "右を再生", item: afterItem, accessibilityId: "before-after-play-right")
             }
         }
         .padding(10)
@@ -1661,7 +1661,7 @@ private struct BeforeAfterSummaryView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func comparisonSideButton(prefix: String, item: InlinePreviewItem?, accessibilityId: String) -> some View {
+    private func comparisonSideButton(label: String, item: InlinePreviewItem?, accessibilityId: String) -> some View {
         Button {
             if let item {
                 selectedInlinePlayerKey = item.id
@@ -1670,7 +1670,7 @@ private struct BeforeAfterSummaryView: View {
         } label: {
             HStack(spacing: 5) {
                 Image(systemName: item == nil ? "minus.circle" : "play.circle")
-                Text("\(prefix)を再生")
+                Text(label)
             }
             .font(AppTheme.labelFont(11))
             .foregroundStyle(item == nil ? AppTheme.textMuted : .white)

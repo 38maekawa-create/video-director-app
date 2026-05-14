@@ -7287,3 +7287,5 @@ INFO:     113.149.186.41:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/v1/projects/p-20260125-%E3%81%B2%E6%A8%B9%E4%BA%AC%E3%81%B2%E3%82%8D%E3%81%8D%E3%82%87%E3%81%86/transcript-diff?version=%E4%BF%AE%E6%AD%A3 HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.110.206.6:51760 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.110.206.6:51774 - "GET /healthz HTTP/1.1" 200 OK

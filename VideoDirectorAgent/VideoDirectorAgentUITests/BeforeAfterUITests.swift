@@ -44,64 +44,25 @@ final class BeforeAfterUITests: XCTestCase {
         beforeAfterButton.tap()
 
         let summary = app.otherElements["before-after-summary-screen"]
-        let title = app.staticTexts["ビフォーアフター概要"]
-        let previewBanner = app.staticTexts["Build70 FB指示チェック復旧"]
+        let title = app.staticTexts["ビフォーアフター"]
+        let previewBanner = app.staticTexts["Build71 元画面レイアウト復旧"]
         let externalLinksLabel = app.staticTexts["外部で開く"]
-        let inlinePreviewLabel = app.staticTexts["アプリ内プレビュー"]
         let comparisonModeLabel = app.staticTexts["比較モード"]
         let twoUpLabel = app.staticTexts["上下2段比較"]
         let transcriptLabel = app.staticTexts["文字起こし比較"]
         let fullTranscriptLabel = app.staticTexts["全行表示"]
-        let fbCheckLabel = app.staticTexts["FB指示チェック"]
-        let comparisonPairLabel = app.staticTexts["比較ペア"]
-        let comparisonStatusLabel = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "比較中:")).firstMatch
-        let selectedLabel = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "選択中:")).firstMatch
+        let fbTrackerLabel = app.staticTexts["FB指示トラッカー"]
         let opened = summary.waitForExistence(timeout: 20) || title.waitForExistence(timeout: 20)
         XCTAssertTrue(opened)
         XCTAssertTrue(previewBanner.waitForExistence(timeout: 20))
         XCTAssertTrue(externalLinksLabel.waitForExistence(timeout: 20))
-        XCTAssertTrue(inlinePreviewLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(comparisonModeLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(twoUpLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(transcriptLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(fullTranscriptLabel.waitForExistence(timeout: 20))
-        XCTAssertTrue(fbCheckLabel.waitForExistence(timeout: 20))
+        XCTAssertTrue(fbTrackerLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["素材 vs 編集後"].waitForExistence(timeout: 20))
-        XCTAssertTrue(comparisonPairLabel.waitForExistence(timeout: 20))
-        XCTAssertTrue(comparisonStatusLabel.waitForExistence(timeout: 20))
-        XCTAssertTrue(app.staticTexts["左:"].waitForExistence(timeout: 20))
-        XCTAssertTrue(app.staticTexts["右:"].waitForExistence(timeout: 20))
-        XCTAssertTrue(selectedLabel.waitForExistence(timeout: 20))
-        XCTAssertTrue(app.staticTexts["外で開く"].waitForExistence(timeout: 20))
-        let sourceEditedPair = app.buttons["before-after-compare-source-edited"]
-        if sourceEditedPair.waitForExistence(timeout: 5) && sourceEditedPair.isEnabled {
-            sourceEditedPair.tap()
-            XCTAssertEqual(app.state, .runningForeground)
-        }
-        let editedFBPair = app.buttons["before-after-compare-edited-fb"]
-        if editedFBPair.waitForExistence(timeout: 5) && editedFBPair.isEnabled {
-            editedFBPair.tap()
-            XCTAssertEqual(app.state, .runningForeground)
-        }
         app.swipeUp()
-        let playLeft = app.buttons["before-after-play-left"]
-        if playLeft.waitForExistence(timeout: 5) && playLeft.isEnabled {
-            playLeft.tap()
-            XCTAssertEqual(app.state, .runningForeground)
-        }
-        let playRight = app.buttons["before-after-play-right"]
-        if playRight.waitForExistence(timeout: 5) && playRight.isEnabled {
-            playRight.tap()
-            XCTAssertEqual(app.state, .runningForeground)
-        }
-        if app.buttons["before-after-inline-option-source"].waitForExistence(timeout: 5) {
-            app.buttons["before-after-inline-option-source"].tap()
-            XCTAssertEqual(app.state, .runningForeground)
-        }
-        if app.buttons["before-after-inline-option-fb-revised"].waitForExistence(timeout: 5) {
-            app.buttons["before-after-inline-option-fb-revised"].tap()
-            XCTAssertEqual(app.state, .runningForeground)
-        }
         let tapToPlay = app.staticTexts.matching(NSPredicate(format: "label == %@", "タップして再生")).firstMatch
         if tapToPlay.waitForExistence(timeout: 10) {
             tapToPlay.tap()

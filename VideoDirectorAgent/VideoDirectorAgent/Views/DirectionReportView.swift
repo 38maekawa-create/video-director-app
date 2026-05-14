@@ -1409,7 +1409,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build65 比較ペア状態表示")
+                Text("Build66 左右再生切替")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1448,14 +1448,14 @@ private struct BeforeAfterSummaryView: View {
             safeInlinePreview(response)
             safeExternalLinks(response)
 
-            Text("比較ペアの状態を表示しながら、再生は選択中の1本だけに絞ります。")
+            Text("左/右のどちらを再生するか切り替えながら、再生は選択中の1本だけに絞ります。")
                 .font(AppTheme.bodyFont(12))
                 .foregroundStyle(AppTheme.textMuted)
         }
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build65-comparison-status")
+        .accessibilityIdentifier("before-after-build66-side-switch")
     }
 
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {
@@ -1636,6 +1636,11 @@ private struct BeforeAfterSummaryView: View {
                 comparisonPairEndpoint(prefix: "左", item: beforeItem)
                 comparisonPairEndpoint(prefix: "右", item: afterItem)
             }
+
+            HStack(spacing: 8) {
+                comparisonSideButton(prefix: "左", item: beforeItem, accessibilityId: "before-after-play-left")
+                comparisonSideButton(prefix: "右", item: afterItem, accessibilityId: "before-after-play-right")
+            }
         }
         .padding(10)
         .background(AppTheme.cardBackground)
@@ -1654,6 +1659,29 @@ private struct BeforeAfterSummaryView: View {
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func comparisonSideButton(prefix: String, item: InlinePreviewItem?, accessibilityId: String) -> some View {
+        Button {
+            if let item {
+                selectedInlinePlayerKey = item.id
+                activeInlinePlayerKey = nil
+            }
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: item == nil ? "minus.circle" : "play.circle")
+                Text("\(prefix)を再生")
+            }
+            .font(AppTheme.labelFont(11))
+            .foregroundStyle(item == nil ? AppTheme.textMuted : .white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 7)
+            .background(item == nil ? AppTheme.cardBackgroundLight : AppTheme.accent.opacity(0.28))
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(item == nil)
+        .accessibilityIdentifier(accessibilityId)
     }
 
     private func comparisonPairButton(

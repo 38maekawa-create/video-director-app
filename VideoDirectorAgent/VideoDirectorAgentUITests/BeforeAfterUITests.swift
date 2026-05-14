@@ -44,7 +44,7 @@ final class BeforeAfterUITests: XCTestCase {
 
         let summary = app.otherElements["before-after-summary-screen"]
         let title = app.staticTexts["ビフォーアフター概要"]
-        let previewBanner = app.staticTexts["Build65 比較ペア状態表示"]
+        let previewBanner = app.staticTexts["Build66 左右再生切替"]
         let externalLinksLabel = app.staticTexts["外部で開く"]
         let inlinePreviewLabel = app.staticTexts["アプリ内プレビュー"]
         let comparisonPairLabel = app.staticTexts["比較ペア"]
@@ -59,6 +59,8 @@ final class BeforeAfterUITests: XCTestCase {
         XCTAssertTrue(comparisonStatusLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["左:"].waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["右:"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.staticTexts["左を再生"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.staticTexts["右を再生"].waitForExistence(timeout: 20))
         XCTAssertTrue(selectedLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["外で開く"].waitForExistence(timeout: 20))
         let sourceEditedPair = app.buttons["before-after-compare-source-edited"]
@@ -69,6 +71,16 @@ final class BeforeAfterUITests: XCTestCase {
         let editedFBPair = app.buttons["before-after-compare-edited-fb"]
         if editedFBPair.waitForExistence(timeout: 5) && editedFBPair.isEnabled {
             editedFBPair.tap()
+            XCTAssertEqual(app.state, .runningForeground)
+        }
+        let playLeft = app.buttons["before-after-play-left"]
+        if playLeft.waitForExistence(timeout: 5) && playLeft.isEnabled {
+            playLeft.tap()
+            XCTAssertEqual(app.state, .runningForeground)
+        }
+        let playRight = app.buttons["before-after-play-right"]
+        if playRight.waitForExistence(timeout: 5) && playRight.isEnabled {
+            playRight.tap()
             XCTAssertEqual(app.state, .runningForeground)
         }
         if app.buttons["before-after-inline-option-source"].waitForExistence(timeout: 5) {

@@ -4681,6 +4681,12 @@ def get_transcript_diff(project_id: str, version: Optional[str] = None):
                 "project_id": project_id,
                 "status": "no_transcript",
                 "message": f"ゲスト '{guest_name}' の文字起こしファイルが見つかりません",
+                "total_segments": 0,
+                "used_count": 0,
+                "unused_count": 0,
+                "highlight_count": 0,
+                "punchline_count": 0,
+                "used_ratio": "0%",
                 "segments": [],
             }
 

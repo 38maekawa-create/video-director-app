@@ -1348,7 +1348,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build73 旧画面密度復旧")
+                Text("Build74 文字色復旧")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1380,7 +1380,7 @@ private struct BeforeAfterSummaryView: View {
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build73-production-layout")
+        .accessibilityIdentifier("before-after-build74-transcript-colors")
     }
 
     private func legacyBeforeAfterMainSection(_ response: BeforeAfterResponse) -> some View {
@@ -1406,7 +1406,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build73 旧画面密度復旧")
+                Text("Build74 文字色復旧")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1464,7 +1464,7 @@ private struct BeforeAfterSummaryView: View {
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build73-production-layout")
+        .accessibilityIdentifier("before-after-build74-transcript-colors")
     }
 
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {

@@ -59,8 +59,10 @@ final class BeforeAfterUITests: XCTestCase {
         XCTAssertTrue(comparisonStatusLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["左:"].waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["右:"].waitForExistence(timeout: 20))
-        XCTAssertTrue(app.staticTexts["左を再生"].waitForExistence(timeout: 20))
-        XCTAssertTrue(app.staticTexts["右を再生"].waitForExistence(timeout: 20))
+        let playLeft = app.buttons["before-after-play-left"]
+        XCTAssertTrue(playLeft.waitForExistence(timeout: 20))
+        let playRight = app.buttons["before-after-play-right"]
+        XCTAssertTrue(playRight.waitForExistence(timeout: 20))
         XCTAssertTrue(selectedLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["外で開く"].waitForExistence(timeout: 20))
         let sourceEditedPair = app.buttons["before-after-compare-source-edited"]
@@ -73,13 +75,11 @@ final class BeforeAfterUITests: XCTestCase {
             editedFBPair.tap()
             XCTAssertEqual(app.state, .runningForeground)
         }
-        let playLeft = app.buttons["before-after-play-left"]
-        if playLeft.waitForExistence(timeout: 5) && playLeft.isEnabled {
+        if playLeft.isEnabled {
             playLeft.tap()
             XCTAssertEqual(app.state, .runningForeground)
         }
-        let playRight = app.buttons["before-after-play-right"]
-        if playRight.waitForExistence(timeout: 5) && playRight.isEnabled {
+        if playRight.isEnabled {
             playRight.tap()
             XCTAssertEqual(app.state, .runningForeground)
         }

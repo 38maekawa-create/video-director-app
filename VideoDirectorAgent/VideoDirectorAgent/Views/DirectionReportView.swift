@@ -1243,6 +1243,9 @@ private struct BeforeAfterSummaryView: View {
     @State private var selectedInlinePlayerKey: String?
     @State private var selectedComparisonMode = 0
     @State private var selectedComparisonPairId: String = "source-edited"
+    @State private var showTranscriptDetails = true
+    @State private var selectedTranscriptVersion: String?
+    @State private var isTranscriptReloading = false
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -1398,6 +1401,8 @@ private struct BeforeAfterSummaryView: View {
                     )
                 }
             }
+
+            transcriptDetailsSection(response)
         }
         .padding(16)
         .background(AppTheme.cardBackground)
@@ -1411,7 +1416,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build68 比較画面復旧")
+                Text("Build69 文字起こし比較復旧")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1462,14 +1467,14 @@ private struct BeforeAfterSummaryView: View {
             safeInlinePreview(response)
             safeExternalLinks(response)
 
-            Text("概要を先に開き、比較スロットは常時表示します。再生はタップした1本だけに絞ります。")
+            Text("概要を先に開き、比較スロットと文字起こし比較を後から埋めます。再生はタップした1本だけに絞ります。")
                 .font(AppTheme.bodyFont(12))
                 .foregroundStyle(AppTheme.textMuted)
         }
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build68-comparison-restore")
+        .accessibilityIdentifier("before-after-build69-transcript-restore")
     }
 
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {
@@ -2050,6 +2055,159 @@ private struct BeforeAfterSummaryView: View {
         .padding(.vertical, 4)
     }
 
+    private func transcriptDetailsSection(_ response: BeforeAfterResponse) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    showTranscriptDetails.toggle()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "doc.text")
+                        .foregroundStyle(AppTheme.accent)
+                    Text("文字起こし比較")
+                        .font(AppTheme.sectionFont(15))
+                        .foregroundStyle(.white)
+                    Spacer()
+                    Text("全行表示")
+                        .font(AppTheme.labelFont(10))
+                        .foregroundStyle(AppTheme.textMuted)
+                    Image(systemName: showTranscriptDetails ? "chevron.up" : "chevron.down")
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.textMuted)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("before-after-transcript-toggle")
+
+            if showTranscriptDetails {
+                transcriptVersionPicker(response)
+                transcriptStatsRow
+
+                if isTranscriptReloading || isSupplementalLoading {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .scaleEffect(0.75)
+                            .tint(AppTheme.accent)
+                        Text("文字起こし差分を読み込み中")
+                            .font(AppTheme.bodyFont(12))
+                            .foregroundStyle(AppTheme.textMuted)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 8)
+                } else if let transcriptData, transcriptData.status == "ok", !transcriptData.segments.isEmpty {
+                    LazyVStack(alignment: .leading, spacing: 6) {
+                        ForEach(transcriptData.segments) { segment in
+                            transcriptSegmentRow(segment)
+                        }
+                    }
+                    .accessibilityIdentifier("before-after-transcript-full-list")
+                } else {
+                    Text(transcriptData?.message ?? "文字起こしデータがありません")
+                        .font(AppTheme.bodyFont(12))
+                        .foregroundStyle(AppTheme.textMuted)
+                        .padding(.vertical, 8)
+                }
+            }
+        }
+        .padding(12)
+        .background(AppTheme.cardBackgroundLight)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityIdentifier("before-after-transcript-section")
+    }
+
+    private func transcriptVersionPicker(_ response: BeforeAfterResponse) -> some View {
+        let versions = response.allVersions ?? []
+        return ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                if versions.isEmpty {
+                    transcriptVersionPill("現行版", isSelected: true) {}
+                } else {
+                    ForEach(Array(versions.enumerated()), id: \.offset) { _, version in
+                        let label = version.versionLabel?.isEmpty == false ? version.versionLabel! : (version.version ?? "現行版")
+                        transcriptVersionPill(label, isSelected: selectedTranscriptVersion == label) {
+                            selectedTranscriptVersion = label
+                            Task { await reloadTranscriptDiff(version: label) }
+                        }
+                    }
+                }
+            }
+        }
+        .accessibilityIdentifier("before-after-transcript-version-picker")
+    }
+
+    private func transcriptVersionPill(_ label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(label)
+                .font(AppTheme.labelFont(11))
+                .foregroundStyle(isSelected ? .white : AppTheme.textMuted)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(isSelected ? AppTheme.accent.opacity(0.38) : AppTheme.cardBackground)
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var transcriptStatsRow: some View {
+        HStack(spacing: 8) {
+            if let total = transcriptData?.totalSegments {
+                transcriptStat("全\(total)行")
+            }
+            if let used = transcriptData?.usedCount {
+                transcriptStat("採用 \(used)")
+            }
+            if let unused = transcriptData?.unusedCount {
+                transcriptStat("CUT \(unused)")
+            }
+            if let ratio = transcriptData?.usedRatio {
+                transcriptStat("採用率 \(ratio)")
+            }
+        }
+        .accessibilityIdentifier("before-after-transcript-stats")
+    }
+
+    private func transcriptStat(_ text: String) -> some View {
+        Text(text)
+            .font(AppTheme.labelFont(10))
+            .foregroundStyle(AppTheme.textSecondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(AppTheme.cardBackground)
+            .clipShape(Capsule())
+    }
+
+    private func transcriptSegmentRow(_ segment: TranscriptSegment) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Text("\(segment.lineNumber)")
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundStyle(AppTheme.textMuted.opacity(0.75))
+                .frame(width: 36, alignment: .trailing)
+
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 6) {
+                    Text(segment.statusLabel)
+                        .font(AppTheme.labelFont(9))
+                        .foregroundStyle(segment.status == "unused" ? AppTheme.accent : segment.statusColor)
+                    if let matched = segment.matchedFeedback, !matched.isEmpty {
+                        Text(matched)
+                            .font(AppTheme.labelFont(9))
+                            .foregroundStyle(AppTheme.textMuted)
+                            .lineLimit(1)
+                    }
+                }
+                Text(segment.text)
+                    .font(AppTheme.bodyFont(12))
+                    .foregroundStyle(segment.status == "unused" ? AppTheme.accent : AppTheme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.vertical, 5)
+        .padding(.horizontal, 8)
+        .background(segment.status == "unused" ? AppTheme.accent.opacity(0.08) : Color.clear)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
     private var transcriptSummaryText: String {
         guard let transcriptData else { return isSupplementalLoading ? "読込中" : "未取得" }
         if transcriptData.status == "ok" {
@@ -2071,6 +2229,10 @@ private struct BeforeAfterSummaryView: View {
         fbTrackerData = nil
         do {
             response = try await APIClient.shared.fetchBeforeAfter(projectId: projectId)
+            if selectedTranscriptVersion == nil {
+                selectedTranscriptVersion = response?.allVersions?.first?.versionLabel
+                    ?? response?.allVersions?.first?.version
+            }
             isLoading = false
             await loadSupplementalData()
         } catch {
@@ -2084,8 +2246,19 @@ private struct BeforeAfterSummaryView: View {
         isSupplementalLoading = true
         async let transcript: TranscriptDiffResponse? = try? APIClient.shared.fetchTranscriptDiff(projectId: projectId)
         async let tracker: FBTrackerResponse? = try? APIClient.shared.fetchFBTracker(projectId: projectId)
-        transcriptData = await transcript
+        let transcriptResult = await transcript
+        transcriptData = transcriptResult
+        if selectedTranscriptVersion == nil {
+            selectedTranscriptVersion = transcriptResult?.compareVersion
+        }
         fbTrackerData = await tracker
         isSupplementalLoading = false
+    }
+
+    @MainActor
+    private func reloadTranscriptDiff(version: String) async {
+        isTranscriptReloading = true
+        defer { isTranscriptReloading = false }
+        transcriptData = try? await APIClient.shared.fetchTranscriptDiff(projectId: projectId, version: version)
     }
 }

@@ -44,9 +44,11 @@ final class BeforeAfterUITests: XCTestCase {
 
         let summary = app.otherElements["before-after-summary-screen"]
         let title = app.staticTexts["ビフォーアフター概要"]
-        let previewBanner = app.staticTexts["Build67 高速初期表示"]
+        let previewBanner = app.staticTexts["Build68 比較画面復旧"]
         let externalLinksLabel = app.staticTexts["外部で開く"]
         let inlinePreviewLabel = app.staticTexts["アプリ内プレビュー"]
+        let comparisonModeLabel = app.staticTexts["比較モード"]
+        let twoUpLabel = app.staticTexts["上下2段比較"]
         let comparisonPairLabel = app.staticTexts["比較ペア"]
         let comparisonStatusLabel = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "比較中:")).firstMatch
         let selectedLabel = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "選択中:")).firstMatch
@@ -55,6 +57,12 @@ final class BeforeAfterUITests: XCTestCase {
         XCTAssertTrue(previewBanner.waitForExistence(timeout: 20))
         XCTAssertTrue(externalLinksLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(inlinePreviewLabel.waitForExistence(timeout: 20))
+        XCTAssertTrue(comparisonModeLabel.waitForExistence(timeout: 20))
+        XCTAssertTrue(twoUpLabel.waitForExistence(timeout: 20))
+        XCTAssertTrue(app.otherElements["before-after-two-up-comparison"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.otherElements["before-after-two-up-top"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.otherElements["before-after-two-up-bottom"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.staticTexts["素材 vs 編集後"].waitForExistence(timeout: 20))
         XCTAssertTrue(comparisonPairLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(comparisonStatusLabel.waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["左:"].waitForExistence(timeout: 20))

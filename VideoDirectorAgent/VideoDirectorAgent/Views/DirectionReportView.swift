@@ -1241,6 +1241,7 @@ private struct BeforeAfterSummaryView: View {
     @State private var isSupplementalLoading = false
     @State private var activeInlinePlayerKey: String?
     @State private var selectedInlinePlayerKey: String?
+    @State private var selectedComparisonMode = 0
     @State private var selectedComparisonPairId: String = "source-edited"
 
     var body: some View {
@@ -1256,7 +1257,7 @@ private struct BeforeAfterSummaryView: View {
                     summary(response)
                 }
 
-                Text("動画プレイヤーと文字起こし差分の詳細表示は、実機クラッシュ調査中のため段階復旧中です。")
+                Text("元のビフォーアフター画面へ段階復旧中です。動画は初期表示では読み込まず、タップしたスロットだけ再生します。")
                     .font(AppTheme.bodyFont(13))
                     .foregroundStyle(AppTheme.textMuted)
                     .padding(.horizontal, 16)
@@ -1410,7 +1411,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build67 高速初期表示")
+                Text("Build68 比較画面復旧")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1461,14 +1462,14 @@ private struct BeforeAfterSummaryView: View {
             safeInlinePreview(response)
             safeExternalLinks(response)
 
-            Text("概要を先に開き、文字起こし差分とFB指示は後から埋めます。再生は選択中の1本だけに絞ります。")
+            Text("概要を先に開き、比較スロットは常時表示します。再生はタップした1本だけに絞ります。")
                 .font(AppTheme.bodyFont(12))
                 .foregroundStyle(AppTheme.textMuted)
         }
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build67-fast-open")
+        .accessibilityIdentifier("before-after-build68-comparison-restore")
     }
 
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {
@@ -1485,6 +1486,8 @@ private struct BeforeAfterSummaryView: View {
                 Spacer()
             }
 
+            legacyComparisonModePicker(items)
+            legacyTwoUpComparison(items)
             inlineSelectionStatus(selectedItem)
             comparisonPairControls(items)
             comparisonPairStatus(items)
@@ -1591,6 +1594,107 @@ private struct BeforeAfterSummaryView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("before-after-inline-option-\(item.id)")
+    }
+
+    private func legacyComparisonModePicker(_ items: [InlinePreviewItem]) -> some View {
+        VStack(alignment: .leading, spacing: 7) {
+            Text("比較モード")
+                .font(AppTheme.labelFont(11))
+                .foregroundStyle(AppTheme.textMuted)
+
+            Picker("比較モード", selection: $selectedComparisonMode) {
+                Text("素材 vs 編集後").tag(0)
+                Text("編集後 vs FB後").tag(1)
+            }
+            .pickerStyle(.segmented)
+            .accessibilityIdentifier("before-after-comparison-mode-picker")
+        }
+        .onChange(of: selectedComparisonMode) { _, mode in
+            selectedComparisonPairId = mode == 0 ? "source-edited" : "edited-fb"
+            activeInlinePlayerKey = nil
+        }
+    }
+
+    private func legacyTwoUpComparison(_ items: [InlinePreviewItem]) -> some View {
+        let pair = legacyComparisonPair(items)
+
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "rectangle.split.2x1")
+                    .foregroundStyle(AppTheme.accent)
+                Text("上下2段比較")
+                    .font(AppTheme.sectionFont(14))
+                    .foregroundStyle(.white)
+                Spacer()
+                Text(pair.label)
+                    .font(AppTheme.labelFont(10))
+                    .foregroundStyle(AppTheme.textMuted)
+            }
+
+            legacyComparisonSlot(position: "上段", item: pair.before)
+            legacyComparisonSlot(position: "下段", item: pair.after)
+        }
+        .padding(10)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityIdentifier("before-after-two-up-comparison")
+    }
+
+    private func legacyComparisonSlot(position: String, item: InlinePreviewItem?) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(position == "上段" ? Color(hex: 0x4A90D9) : AppTheme.accent)
+                    .frame(width: 8, height: 8)
+                Text("\(position): \(item?.label ?? "未登録")")
+                    .font(AppTheme.labelFont(12))
+                    .foregroundStyle(item == nil ? AppTheme.textMuted : AppTheme.textSecondary)
+                Spacer()
+            }
+
+            if let item {
+                SafeIframePlayerView(
+                    embedURL: item.embedURL,
+                    isActive: Binding(
+                        get: { activeInlinePlayerKey == "slot-\(item.id)" },
+                        set: { isActive in
+                            selectedInlinePlayerKey = item.id
+                            activeInlinePlayerKey = isActive ? "slot-\(item.id)" : nil
+                        }
+                    )
+                )
+                .id("slot-\(item.id)")
+                .frame(height: 170)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+            } else {
+                HStack(spacing: 8) {
+                    Image(systemName: "video.slash")
+                        .foregroundStyle(AppTheme.textMuted)
+                    Text("この比較対象は未登録です")
+                        .font(AppTheme.bodyFont(12))
+                        .foregroundStyle(AppTheme.textMuted)
+                }
+                .frame(maxWidth: .infinity, minHeight: 120, alignment: .center)
+                .background(AppTheme.cardBackgroundLight)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+        }
+        .accessibilityIdentifier(position == "上段" ? "before-after-two-up-top" : "before-after-two-up-bottom")
+    }
+
+    private func legacyComparisonPair(_ items: [InlinePreviewItem]) -> (label: String, before: InlinePreviewItem?, after: InlinePreviewItem?) {
+        if selectedComparisonMode == 1 {
+            return (
+                "編集後 vs FB後",
+                items.first(where: { $0.id == "edited" }),
+                items.first(where: { $0.id == "fb-revised" })
+            )
+        }
+        return (
+            "素材 vs 編集後",
+            items.first(where: { $0.id == "source" }),
+            items.first(where: { $0.id == "edited" })
+        )
     }
 
     private func comparisonPairControls(_ items: [InlinePreviewItem]) -> some View {
@@ -1723,6 +1827,7 @@ private struct BeforeAfterSummaryView: View {
 
     private func selectComparisonPair(pairId: String, primary: String, fallback: String, items: [InlinePreviewItem]) {
         selectedComparisonPairId = pairId
+        selectedComparisonMode = pairId == "edited-fb" ? 1 : 0
         if let target = items.first(where: { $0.id == primary }) ?? items.first(where: { $0.id == fallback }) {
             selectedInlinePlayerKey = target.id
             activeInlinePlayerKey = nil

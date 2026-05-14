@@ -1413,7 +1413,7 @@ private struct BeforeAfterSummaryView: View {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .foregroundStyle(AppTheme.accent)
-                Text("Build70 FB指示チェック復旧")
+                Text("Build71 元画面レイアウト復旧")
                     .font(AppTheme.sectionFont(16))
                     .foregroundStyle(.white)
                 Spacer()
@@ -1471,7 +1471,7 @@ private struct BeforeAfterSummaryView: View {
         .padding(12)
         .background(AppTheme.cardBackgroundLight)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityIdentifier("before-after-build70-fb-check-restore")
+        .accessibilityIdentifier("before-after-build71-legacy-layout-restore")
     }
 
     private func safeInlinePreview(_ response: BeforeAfterResponse) -> some View {

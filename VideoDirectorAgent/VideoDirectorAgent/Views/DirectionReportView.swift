@@ -2325,6 +2325,7 @@ private struct BeforeAfterSummaryView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 8)
                 } else if let transcriptData, transcriptData.status == "ok", !transcriptData.segments.isEmpty {
+                    transcriptLegend
                     LazyVStack(alignment: .leading, spacing: 6) {
                         ForEach(transcriptData.segments) { segment in
                             transcriptSegmentRow(segment)
@@ -2389,11 +2390,39 @@ private struct BeforeAfterSummaryView: View {
             if let unused = transcriptData?.unusedCount {
                 transcriptStat("CUT \(unused)")
             }
+            if let highlights = transcriptData?.highlightCount, highlights > 0 {
+                transcriptStat("FB \(highlights)")
+            }
+            if let punchlines = transcriptData?.punchlineCount, punchlines > 0 {
+                transcriptStat("PL \(punchlines)")
+            }
             if let ratio = transcriptData?.usedRatio {
                 transcriptStat("採用率 \(ratio)")
             }
         }
         .accessibilityIdentifier("before-after-transcript-stats")
+    }
+
+    private var transcriptLegend: some View {
+        HStack(spacing: 10) {
+            transcriptLegendItem(color: Color.green.opacity(0.8), label: "採用")
+            transcriptLegendItem(color: Color(hex: 0xFF6B35), label: "カット")
+            transcriptLegendItem(color: AppTheme.accent, label: "FB修正")
+            transcriptLegendItem(color: Color(hex: 0xFFD700), label: "パンチライン")
+        }
+        .padding(.vertical, 2)
+        .accessibilityIdentifier("before-after-transcript-legend")
+    }
+
+    private func transcriptLegendItem(color: Color, label: String) -> some View {
+        HStack(spacing: 4) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(color)
+                .frame(width: 10, height: 10)
+            Text(label)
+                .font(AppTheme.labelFont(9))
+                .foregroundStyle(AppTheme.textMuted)
+        }
     }
 
     private func transcriptStat(_ text: String) -> some View {
@@ -2417,7 +2446,7 @@ private struct BeforeAfterSummaryView: View {
                 HStack(spacing: 6) {
                     Text(segment.statusLabel)
                         .font(AppTheme.labelFont(9))
-                        .foregroundStyle(segment.status == "unused" ? AppTheme.accent : segment.statusColor)
+                        .foregroundStyle(segment.statusColor)
                     if let matched = segment.matchedFeedback, !matched.isEmpty {
                         Text(matched)
                             .font(AppTheme.labelFont(9))
@@ -2427,14 +2456,36 @@ private struct BeforeAfterSummaryView: View {
                 }
                 Text(segment.text)
                     .font(AppTheme.bodyFont(12))
-                    .foregroundStyle(segment.status == "unused" ? AppTheme.accent : AppTheme.textSecondary)
+                    .foregroundStyle(transcriptTextColor(for: segment))
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(.vertical, 5)
         .padding(.horizontal, 8)
-        .background(segment.status == "unused" ? AppTheme.accent.opacity(0.08) : Color.clear)
+        .background(transcriptBackgroundColor(for: segment))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func transcriptTextColor(for segment: TranscriptSegment) -> Color {
+        switch segment.status {
+        case "used":
+            return .white
+        case "unused", "highlight", "punchline":
+            return segment.statusColor
+        default:
+            return AppTheme.textMuted
+        }
+    }
+
+    private func transcriptBackgroundColor(for segment: TranscriptSegment) -> Color {
+        switch segment.status {
+        case "used":
+            return Color.green.opacity(0.06)
+        case "unused", "highlight", "punchline":
+            return segment.statusColor.opacity(0.12)
+        default:
+            return Color.clear
+        }
     }
 
     private var transcriptSummaryText: String {

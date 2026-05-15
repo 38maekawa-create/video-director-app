@@ -557,50 +557,223 @@ def _longform_package_id(project_id: str) -> str:
     return str(knowledge.get("package_id") or "")
 
 
-def _longform_common_items(project_id: str) -> list[dict]:
+LONGFORM_PACKAGE_DETAILS = {
+    "01_asset_100m_roadmap": {
+        "source_summary": "01_asset_100m_roadmap / block_1620 / sheet row 2",
+        "formatted": "292 paragraphs / 18 important candidates / 13 corrections",
+        "formatted_path": "formatted_material_v2/01_資産1億までにやったこと全部公開.formatted_material_v2.md",
+        "transcript": "block_1620_DJI_23_20260508_161926_plus_165030.transcript.raw.json",
+        "scene": "block_1620 contact sheet + 5 frames",
+        "video_pair": ["DJI_20260508162001_0141_D.MP4", "IMG_6720.MOV"],
+        "audio_candidates": [
+            "DJI_04_20260508_161922.WAV",
+            "DJI_04_20260508_165012.WAV",
+            "DJI_23_20260508_161926.WAV",
+            "DJI_23_20260508_165030.WAV",
+        ],
+        "video_duration": "1:30:12",
+        "audio_duration": "2:01:07",
+        "review_flags": ["video_pair_duration_mismatch"],
+        "workflow_summary": "会社員が30歳までに資産1億を作る順番を、努力論ではなくロードマップとして見せる。",
+        "workflow": [
+            ("opening", "冒頭30-60秒", "7億は遠い。まず1億から聞きたい、へ落とす", "視聴者の疑問を『才能ではなく順番』に固定し、本業×副業×不動産の方程式へ接続する。"),
+            ("structure", "章構成", "既存価値観の破壊 → 本業 → 副業 → 不動産 → 資産化", "10ステップ図解を主軸に、書籍名/資産形成式/スモールビジネス/不動産レバレッジを挿入候補にする。"),
+            ("telop", "テロップ/図解", "本業×副業×不動産 / 資産形成=(収入-支出)+資産×利回り", "抽象論で流さず、視聴者がスクショしたくなる式・順番・NG行動を大きく出す。"),
+            ("thumbnail_recovery", "サムネ本文回収", "会社員が30歳までに資産1億 / 資産1億を作る順番", "サムネで約束した『順番』は冒頭、3要素、10ステップ図解で必ず回収する。"),
+        ],
+        "checks": [
+            ("sync", "画角/音声同期", "video_pair_duration_mismatch", "main/sub camera 1:30:12に対してaudio candidates 2:01:07。編集指示化前に使用範囲と同期点を確認する。"),
+            ("numbers", "数字表現", "30歳 / 1億 / 7億 / 13億", "視聴者向けに出す数字は、実績・目標・例示の区別を崩さない。"),
+            ("investment", "投資/不動産表現", "再現性・断定・リスク", "投資助言ではなく本人の経験と順番として見せる。利回り/物件購入の断定は確認後に使用。"),
+        ],
+    },
+    "02_property_purchase_list": {
+        "source_summary": "02_property_purchase_list / block_1442 / sheet row 3",
+        "formatted": "186 paragraphs / 18 important candidates / 1 correction",
+        "formatted_path": "formatted_material_v2/02_不動産購入チェックリスト.formatted_material_v2.md",
+        "transcript": "block_1442_DJI_21_20260508_143318.transcript.raw.json",
+        "scene": "block_1442 contact sheet + production package",
+        "video_pair": ["DJI_20260508144249_0138_D.MP4", "IMG_6718.mov"],
+        "audio_candidates": [
+            "DJI_02_20260508_144255.WAV",
+            "DJI_02_20260508_151343.WAV",
+            "DJI_21_20260508_143318.WAV",
+            "DJI_21_20260508_150421.WAV",
+        ],
+        "video_duration": "1:30:05",
+        "audio_duration": "1:39:09",
+        "review_flags": [],
+        "workflow_summary": "買った不動産物件の売買歴を、実績証明と物件リストの具体性で見せる。",
+        "workflow": [
+            ("opening", "冒頭30-60秒", "実際に買った物件を全部公開する企画だと即提示", "物件名・部屋数・家賃年収の数字を隠さず、視聴者に『一覧を見たい』と思わせる。"),
+            ("structure", "章構成", "購入順 → 目的 → 家賃/利回り → 売却/保有判断", "区分6部屋・アパート4棟など、発話上の物件単位を表/カードで整理する。"),
+            ("insert", "インサート", "物件写真 / 一覧表 / 家賃年収", "サムネと本文の具体性を担保するため、物件写真・数字表・地名は確認後に差し込む。"),
+            ("thumbnail_recovery", "サムネ本文回収", "僕が買った物件を全て公開 / 家賃年収3800万円", "サムネの実績訴求は、発話上の数字根拠と物件リストで必ず回収する。"),
+        ],
+        "checks": [
+            ("numbers", "数字表現", "家賃年収 / 物件数 / 購入価格", "家賃年収・部屋数・物件価格は発話と資料の二重確認後に使う。"),
+            ("privacy", "物件情報の公開範囲", "住所/物件名/写真", "所在地や物件特定につながる情報は、公開可能範囲を確認してから出す。"),
+            ("investment", "不動産表現", "再現性・ローン・利回り", "投資助言に見えないよう、本人の購入歴・判断基準・失敗回避として扱う。"),
+        ],
+    },
+    "03_seven_habits_deleted": {
+        "source_summary": "03_seven_habits_deleted / block_1534 / sheet row 4",
+        "formatted": "366 paragraphs / 18 important candidates / 0 corrections",
+        "formatted_path": "formatted_material_v2/03_捨てた7つの習慣.formatted_material_v2.md",
+        "transcript": "block_1534_DJI_03_20260508_153434.transcript.raw.json",
+        "scene": "block_1534 contact sheet + production package",
+        "video_pair": ["DJI_20260508153428_0139_D.MP4", "IMG_6719.MOV"],
+        "audio_candidates": [
+            "DJI_03_20260508_153434.WAV",
+            "DJI_03_20260508_160524.WAV",
+            "DJI_22_20260508_153333.WAV",
+            "DJI_22_20260508_160436.WAV",
+        ],
+        "video_duration": "1:13:49",
+        "audio_duration": "1:14:24",
+        "review_flags": [],
+        "workflow_summary": "やったことではなく、捨てた習慣で32歳キャッシュ1.5億のBefore-Afterを見せる。",
+        "workflow": [
+            ("opening", "冒頭30-60秒", "32歳でキャッシュ1.5億。そのために捨てたもの", "成功ノウハウではなく『やめたら人生が好転した』逆張りとして視聴理由を作る。"),
+            ("structure", "章構成", "捨てた習慣1-7を番号テロップで展開", "各習慣はBeforeの損失とAfterの変化をセットにして、単なる箇条書きにしない。"),
+            ("telop", "番号テロップ", "習慣1 / 習慣2 / Before→After", "視聴者が途中参加しても現在地がわかるよう、番号と結論を固定表示する。"),
+            ("thumbnail_recovery", "サムネ本文回収", "32歳でキャッシュ1.5億 / 捨てた7つの習慣", "サムネの『捨てた』を本文の章立てで最後まで回収する。"),
+        ],
+        "checks": [
+            ("numbers", "数字表現", "32歳 / キャッシュ1.5億", "年齢・キャッシュ額は実績として出すため、表記ゆれと文脈を確認する。"),
+            ("count", "7つの習慣", "7項目が欠けないか", "章立て後に7項目が重複・不足していないか確認する。"),
+            ("tone", "煽りすぎ防止", "捨てた=人格否定にしない", "習慣の否定は行動に限定し、視聴者人格を下げる表現にしない。"),
+        ],
+    },
+    "04_one_person_corporation_tax": {
+        "source_summary": "04_one_person_corporation_tax / block_1759 / sheet row 5",
+        "formatted": "171 paragraphs / 18 important candidates / 1 correction",
+        "formatted_path": "formatted_material_v2/04_ひとり法人と税金.formatted_material_v2.md",
+        "transcript": "block_1759_DJI_24_20260508_175030.transcript.raw.json",
+        "scene": "block_1759 contact sheet + production package",
+        "video_pair": ["DJI_20260508175957_0144_D.MP4", "IMG_6730.MOV"],
+        "audio_candidates": [
+            "DJI_05_20260508_175155.WAV",
+            "DJI_05_20260508_182245.WAV",
+            "DJI_24_20260508_175030.WAV",
+            "DJI_24_20260508_182132.WAV",
+        ],
+        "video_duration": "55:23",
+        "audio_duration": "1:13:33",
+        "review_flags": [],
+        "workflow_summary": "節税目的ひとり法人への反論を、税金を払う方が儲かる逆張りとして見せる。",
+        "workflow": [
+            ("opening", "冒頭30-60秒", "ひとり法人は節税のためではない、という逆張り", "強い言葉は冒頭フックに使い、本文では費用・役員報酬・法人住民税で回収する。"),
+            ("structure", "章構成", "節税幻想 → 法人維持コスト → 儲かる法人の考え方", "個人事業主から法人化する判断を、節税ではなく利益拡大・信用・投資余力で整理する。"),
+            ("telop", "テロップ/図解", "法人住民税 / 役員報酬 / 決算コスト", "専門用語は画面上で短く補足し、税務助言ではなく考え方として表示する。"),
+            ("thumbnail_recovery", "サムネ本文回収", "税金払う方が儲かる", "サムネの強い逆張りは、数字・費用・具体例で本文中に回収する。"),
+        ],
+        "checks": [
+            ("tax", "税務表現", "税金/節税/法人化", "税理士助言に見えないよう、一般論ではなく本人の経験・考え方として扱う。"),
+            ("numbers", "費用/税額", "法人住民税 / 決算コスト / 役員報酬", "金額が出る場合は発話と資料で確認し、断定表現を避ける。"),
+            ("tone", "強い言葉の扱い", "クソ儲かる", "サムネ・冒頭では使えても、本文では品位と根拠を崩さない。"),
+        ],
+    },
+    "05_weak_yen_export_side_business": {
+        "source_summary": "05_weak_yen_export_side_business / block_1842 / sheet row 6",
+        "formatted": "153 paragraphs / 18 important candidates / 8 corrections",
+        "formatted_path": "formatted_material_v2/05_円安時代の輸出副業.formatted_material_v2.md",
+        "transcript": "block_1842_DJI_26_20260508_184327.transcript.raw.json",
+        "scene": "block_1842 contact sheet + production package",
+        "video_pair": ["DJI_20260508184254_0145_D.MP4", "IMG_6731.MOV"],
+        "audio_candidates": ["DJI_06_20260508_184330.WAV", "DJI_26_20260508_184327.WAV"],
+        "video_duration": "49:30",
+        "audio_duration": "48:03",
+        "review_flags": [],
+        "workflow_summary": "円安×海外輸出×副業月収の時流性を、具体実績と手順で見せる。",
+        "workflow": [
+            ("opening", "冒頭30-60秒", "円安時代に強い副業として海外輸出を提示", "副業一般論ではなく、円安・海外輸出・月利益の具体性で一気に入る。"),
+            ("structure", "章構成", "なぜ円安で強いか → 始め方 → 利益化 → 注意点", "海外輸出の仕組みを、会社員が理解できる順番に分解する。"),
+            ("insert", "インサート", "管理画面/利益スクショ/サイト画面", "実績訴求はスクショのモザイク方針と公開可否を確認してから差し込む。"),
+            ("thumbnail_recovery", "サムネ本文回収", "円安でくそ儲かる / 副業月収320万円", "サムネの時流と金額を、本文の実績・手順・リスク説明で回収する。"),
+        ],
+        "checks": [
+            ("numbers", "副業月収/利益", "月利益300万-320万円", "利益額は最高月・平均・売上との差を崩さず確認する。"),
+            ("evidence", "証拠素材", "スクショ差し込み", "管理画面やサイト画面の個人情報・取引先情報をマスクする。"),
+            ("claims", "再現性表現", "誰でも稼げる禁止", "円安の追い風は示しつつ、利益保証に見える断定は避ける。"),
+        ],
+    },
+    "06_nisa_asset_roadmap": {
+        "source_summary": "06_nisa_asset_roadmap / block_1919 / sheet row 10",
+        "formatted": "224 paragraphs / 18 important candidates / 33 corrections",
+        "formatted_path": "formatted_material_v2/06_NISAと資産ロードマップ.formatted_material_v2.md",
+        "transcript": "block_1919_DJI_27_20260508_191858.transcript.raw.json",
+        "scene": "block_1919 contact sheet + production package",
+        "video_pair": ["DJI_20260508191940_0147_D.MP4", "IMG_6734.MOV"],
+        "audio_candidates": ["DJI_07_20260508_191940.WAV", "DJI_27_20260508_191858.WAV"],
+        "video_duration": "53:05",
+        "audio_duration": "53:11",
+        "review_flags": [],
+        "workflow_summary": "NISA否定の逆張りから、資産状況別に事業投資・不動産・NISAの順番を見せる。",
+        "workflow": [
+            ("opening", "冒頭30-60秒", "NISAでは金持ちになれない、で価値観を揺らす", "否定だけで終わらせず、何を先にやるべきかのロードマップへ即接続する。"),
+            ("structure", "章構成", "資産状況別ロードマップ / 自己投資・事業投資・不動産・NISA", "1000万をNISAに入れる場合と不動産レバレッジの比較など、順番の理由を図解する。"),
+            ("telop", "テロップ/図解", "5-7%利回り vs 事業/不動産レバレッジ", "利回り・元本・レバレッジの比較は、誤解が出ないよう前提を画面で示す。"),
+            ("thumbnail_recovery", "サムネ本文回収", "NISAでは金持ちになれない / 資産別ロードマップ", "NISAの出番を否定ではなく順番として回収し、炎上だけの見え方を避ける。"),
+        ],
+        "checks": [
+            ("investment", "投資表現", "NISA/不動産/事業投資", "投資助言ではなく、本人の資産形成順序と考え方として扱う。"),
+            ("numbers", "利回り表現", "5-7% / 1000万 / 1億", "利回り・元本・レバレッジの前提を崩さず、断定を避ける。"),
+            ("tone", "逆張りの扱い", "NISA否定", "NISAを全否定する動画にせず、資産状況別の使い分けとして着地させる。"),
+        ],
+    },
+}
+
+
+def _longform_detail(project_id: str) -> dict:
     package_id = _longform_package_id(project_id)
-    if package_id != "01_asset_100m_roadmap":
-        return [
-            {
-                "id": "handoff",
-                "title": "handoff intake完了",
-                "subtitle": package_id,
-                "detail": "6企画の受け入れ口は作成済み。正式WFの詳細展開は01の型を確定してから横展開する。",
-                "status": "ready",
-            }
-        ]
-    return []
+    detail = LONGFORM_PACKAGE_DETAILS.get(package_id)
+    if not detail:
+        raise HTTPException(404, "Personal longform package details not found")
+    return detail
+
+
+def _tuple_items(rows: list[tuple], status: str = "draft_ready") -> list[dict]:
+    return [
+        {"id": row[0], "title": row[1], "subtitle": row[2], "detail": row[3], "status": status}
+        for row in rows
+    ]
 
 
 def _asset_100m_source_bundle(project_id: str) -> dict:
-    common = _longform_common_items(project_id)
-    if common:
-        return _longform_response(project_id, "Source Bundle", "正式WF横展開待ち", common)
+    detail = _longform_detail(project_id)
+    review_flags = detail.get("review_flags") or []
+    scene_status = "needs_review" if review_flags else "ready"
+    scene_detail = (
+        f"review flag: {', '.join(review_flags)}。正式編集指示前に画角/音声同期を確認する。"
+        if review_flags
+        else "review flagなし。正式編集指示前に画角/音声同期と使用範囲のみ確認する。"
+    )
     return _longform_response(
         project_id,
         "Source Bundle",
-        "01_asset_100m_roadmap / block_1620 / sheet row 2",
+        detail["source_summary"],
         [
             {
                 "id": "formatted",
                 "title": "整形素材v2",
-                "subtitle": "292 paragraphs / 18 important candidates / 13 corrections",
-                "detail": "formatted_material_v2/01_資産1億までにやったこと全部公開.formatted_material_v2.md",
+                "subtitle": detail["formatted"],
+                "detail": detail["formatted_path"],
                 "status": "ready",
             },
             {
                 "id": "transcript",
                 "title": "文字起こし",
-                "subtitle": "block_1620_DJI_23_20260508_161926_plus_165030.transcript.raw.json",
+                "subtitle": detail["transcript"],
                 "detail": "話者は自動分離ラベルをそのまま信用せず、八重洲さん/かくしくん/現場音候補として扱う。",
                 "status": "ready",
             },
             {
                 "id": "scene_preview",
                 "title": "シーンプレビュー",
-                "subtitle": "block_1620 contact sheet + 5 frames",
-                "detail": "review flag: video_pair_duration_mismatch。正式編集指示前に画角/音声同期を確認する。",
-                "status": "needs_review",
+                "subtitle": detail["scene"],
+                "detail": scene_detail,
+                "status": scene_status,
             },
             {
                 "id": "rag",
@@ -614,9 +787,10 @@ def _asset_100m_source_bundle(project_id: str) -> dict:
 
 
 def _asset_100m_material_roles(project_id: str) -> dict:
-    common = _longform_common_items(project_id)
-    if common:
-        return _longform_response(project_id, "Material Roles", "正式WF横展開待ち", common)
+    detail = _longform_detail(project_id)
+    video_pair = detail["video_pair"]
+    audio_candidates = detail["audio_candidates"]
+    sync_status = "needs_sync_review" if detail.get("review_flags") else "ready"
     return _longform_response(
         project_id,
         "Material Roles",
@@ -625,29 +799,29 @@ def _asset_100m_material_roles(project_id: str) -> dict:
             {
                 "id": "main_camera",
                 "title": "main_camera",
-                "subtitle": "DJI_20260508162001_0141_D.MP4",
-                "detail": "primary video / 16:20 block / duration 1:30:12",
+                "subtitle": video_pair[0],
+                "detail": f"primary video / duration {detail['video_duration']}",
                 "status": "ready",
             },
             {
                 "id": "sub_camera",
                 "title": "sub_camera",
-                "subtitle": "IMG_6720.MOV",
+                "subtitle": video_pair[1],
                 "detail": "sub angle candidate。main cameraとの同期確認が必要。",
-                "status": "needs_sync_review",
+                "status": sync_status,
             },
             {
-                "id": "yaesu_mic",
-                "title": "yaesu_mic candidates",
-                "subtitle": "DJI_23_20260508_161926.WAV / DJI_23_20260508_165030.WAV",
-                "detail": "文字起こし採用元。2ファイル結合由来のため後半接続点を確認する。",
+                "id": "transcript_audio",
+                "title": "transcript audio candidates",
+                "subtitle": " / ".join(audio_candidates),
+                "detail": f"文字起こし採用元候補。audio duration {detail['audio_duration']}。必要に応じて前後半の接続点を確認する。",
                 "status": "ready",
             },
             {
-                "id": "kakushi_mic",
-                "title": "kakushi_mic candidates",
-                "subtitle": "DJI_04_20260508_161922.WAV / DJI_04_20260508_165012.WAV",
-                "detail": "進行役/相槌/現場確認の参照用。主音声に混ぜる前に話者識別が必要。",
+                "id": "role_policy",
+                "title": "role policy",
+                "subtitle": "main/sub/audioを編集前に固定",
+                "detail": "素材名だけで役割を決め切らず、画角・音声品質・話者位置を確認してからeditor handoffへ進める。",
                 "status": "reference",
             },
         ],
@@ -655,84 +829,32 @@ def _asset_100m_material_roles(project_id: str) -> dict:
 
 
 def _asset_100m_formal_workflow(project_id: str) -> dict:
-    common = _longform_common_items(project_id)
-    if common:
-        return _longform_response(project_id, "Formal Workflow", "正式WF横展開待ち", common)
+    detail = _longform_detail(project_id)
     return _longform_response(
         project_id,
         "Formal Workflow v1",
-        "会社員が30歳までに資産1億を作る順番を、努力論ではなくロードマップとして見せる。",
-        [
-            {
-                "id": "opening",
-                "title": "冒頭30-60秒",
-                "subtitle": "7億は遠い。まず1億から聞きたい、へ落とす",
-                "detail": "視聴者の疑問を『才能ではなく順番』に固定し、本業×副業×不動産の方程式へ接続する。",
-                "status": "draft_ready",
-            },
-            {
-                "id": "structure",
-                "title": "章構成",
-                "subtitle": "既存価値観の破壊 → 本業 → 副業 → 不動産 → 資産化",
-                "detail": "10ステップ図解を主軸に、書籍名/資産形成式/スモールビジネス/不動産レバレッジを挿入候補にする。",
-                "status": "draft_ready",
-            },
-            {
-                "id": "telop",
-                "title": "テロップ/図解",
-                "subtitle": "本業×副業×不動産 / 資産形成=(収入-支出)+資産×利回り",
-                "detail": "抽象論で流さず、視聴者がスクショしたくなる式・順番・NG行動を大きく出す。",
-                "status": "draft_ready",
-            },
-            {
-                "id": "thumbnail_recovery",
-                "title": "サムネ本文回収",
-                "subtitle": "会社員が30歳までに資産1億 / 資産1億を作る順番",
-                "detail": "サムネで約束した『順番』は冒頭、3要素、10ステップ図解で必ず回収する。",
-                "status": "draft_ready",
-            },
-        ],
+        detail["workflow_summary"],
+        _tuple_items(detail["workflow"]),
     )
 
 
 def _asset_100m_human_checks(project_id: str) -> dict:
-    common = _longform_common_items(project_id)
-    if common:
-        return _longform_response(project_id, "Human Checks", "正式WF横展開待ち", common)
+    detail = _longform_detail(project_id)
+    items = _tuple_items(detail["checks"], status="must_check")
+    items.append(
+        {
+            "id": "quote_policy",
+            "title": "公開引用制限",
+            "subtitle": "public_quote_allowed=false",
+            "detail": "未公開制作素材のため、外部転記/公開DB/YouTube/Vimeo/Sheets書き込みは別gateまで不可。",
+            "status": "blocked_until_approved",
+        }
+    )
     return _longform_response(
         project_id,
         "Human Checks",
         "公開前に人間確認が必要な項目",
-        [
-            {
-                "id": "sync",
-                "title": "画角/音声同期",
-                "subtitle": "video_pair_duration_mismatch",
-                "detail": "main/sub camera 1:30:12に対してaudio candidates 2:01:07。編集指示化前に使用範囲と同期点を確認する。",
-                "status": "must_check",
-            },
-            {
-                "id": "numbers",
-                "title": "数字表現",
-                "subtitle": "30歳 / 1億 / 7億 / 13億",
-                "detail": "視聴者向けに出す数字は、実績・目標・例示の区別を崩さない。",
-                "status": "must_check",
-            },
-            {
-                "id": "investment",
-                "title": "投資/不動産表現",
-                "subtitle": "再現性・断定・リスク",
-                "detail": "投資助言ではなく本人の経験と順番として見せる。利回り/物件購入の断定は確認後に使用。",
-                "status": "must_check",
-            },
-            {
-                "id": "quote_policy",
-                "title": "公開引用制限",
-                "subtitle": "public_quote_allowed=false",
-                "detail": "未公開制作素材のため、外部転記/公開DB/YouTube/Vimeo/Sheets書き込みは別gateまで不可。",
-                "status": "blocked_until_approved",
-            },
-        ],
+        items,
     )
 
 

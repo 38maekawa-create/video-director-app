@@ -7634,3 +7634,7 @@ INFO:     127.0.0.1:52387 - "GET /api/v1/projects/p-20260418-%E3%81%88%E3%82%8A%
 INFO:     127.0.0.1:52388 - "GET /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/before-after HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52389 - "GET /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/transcript-diff HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52395 - "GET /api/v1/projects/p-20260215-%E3%81%82%E3%81%95%E3%81%8B%E3%81%A4%E3%81%95%E3%82%93/fb-tracker HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55160 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/human-checks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55164 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/source-bundle HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55167 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/formal-workflow HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55170 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/material-roles HTTP/1.1" 200 OK

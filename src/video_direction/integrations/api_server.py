@@ -794,7 +794,7 @@ def _asset_100m_material_roles(project_id: str) -> dict:
     return _longform_response(
         project_id,
         "Material Roles",
-        "main/sub camera + Yaesu/kakushi audio candidates",
+        "main/sub camera + transcript audio candidates",
         [
             {
                 "id": "main_camera",

@@ -7704,3 +7704,14 @@ INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /healthz HTTP/1.1" 200 
 INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
 INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/formal-workflow HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/projects/proper-yaesu-20260508-01-asset-100m-roadmap/youtube-assets HTTP/1.1" 404 Not Found
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/material-roles HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/projects/proper-yaesu-20260508-01-asset-100m-roadmap/feedbacks HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/material-roles HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/formal-workflow HTTP/1.1" 200 OK
+INFO:     240a:61:727c:5bc1:817a:dce9:f268:18e8:0 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/formal-workflow HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57046 - "GET /api/projects?route_profile=teko_personal_longform HTTP/1.1" 200 OK

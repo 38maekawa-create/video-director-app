@@ -68,7 +68,7 @@ struct ProjectListView: View {
 
                         if !viewModel.tekoPersonalLongformProjects.isEmpty {
                             categorySection(
-                                title: "TEKO属人ch 長尺",
+                                title: "プロパー八重洲ch",
                                 icon: "play.rectangle.on.rectangle.fill",
                                 accentColor: Color(hex: 0x46D369),
                                 projects: viewModel.tekoPersonalLongformProjects

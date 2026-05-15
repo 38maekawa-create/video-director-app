@@ -64,7 +64,7 @@ final class ProjectListViewModel: ObservableObject {
         return base.filter { ($0.routeProfile ?? $0.category) == "teko_realestate" }
     }
 
-    /// TEKO属人ch 長尺YouTubeカテゴリのプロジェクト
+    /// プロパー八重洲chの長尺YouTubeカテゴリのプロジェクト
     var tekoPersonalLongformProjects: [VideoProject] {
         let base = searchText.isEmpty ? projects : filteredProjects
         return base.filter { $0.routeProfile == "teko_personal_longform" }

@@ -342,7 +342,7 @@ ROUTE_PROFILES = {
     },
     "teko_personal_longform": {
         "route_profile": "teko_personal_longform",
-        "display_name": "TEKO属人ch 長尺",
+        "display_name": "プロパー八重洲ch",
         "content_family": "personal_longform",
         "subject_type": "channel_project",
         "icon": "play.rectangle.on.rectangle.fill",
@@ -362,8 +362,8 @@ ROUTE_PROFILES = {
 PROPER_YAESU_LONGFORM_PROJECTS = [
     {
         "id": "proper-yaesu-20260508-01-asset-100m-roadmap",
-        "guest_name": "八重洲ch",
-        "primary_subject_name": "八重洲ch",
+        "guest_name": "30歳までに資産1億を作る方法",
+        "primary_subject_name": "30歳までに資産1億を作る方法",
         "title": "会社員が、30歳までに資産1億作るためにやったことを全部公開",
         "status": "directed",
         "shoot_date": "2026/05/08",
@@ -385,8 +385,8 @@ PROPER_YAESU_LONGFORM_PROJECTS = [
     },
     {
         "id": "proper-yaesu-20260508-02-property-purchase-list",
-        "guest_name": "八重洲ch",
-        "primary_subject_name": "八重洲ch",
+        "guest_name": "買った不動産物件リスト",
+        "primary_subject_name": "買った不動産物件リスト",
         "title": "実際に買った投資用の不動産物件の売買の歴史とリスト",
         "status": "directed",
         "shoot_date": "2026/05/08",
@@ -408,8 +408,8 @@ PROPER_YAESU_LONGFORM_PROJECTS = [
     },
     {
         "id": "proper-yaesu-20260508-03-seven-habits-deleted",
-        "guest_name": "八重洲ch",
-        "primary_subject_name": "八重洲ch",
+        "guest_name": "キャッシュ1.5億のために捨てた7つの習慣",
+        "primary_subject_name": "キャッシュ1.5億のために捨てた7つの習慣",
         "title": "会社員の僕が32歳でキャッシュ1.5億を得るために捨てた7つの習慣",
         "status": "directed",
         "shoot_date": "2026/05/08",
@@ -431,8 +431,8 @@ PROPER_YAESU_LONGFORM_PROJECTS = [
     },
     {
         "id": "proper-yaesu-20260508-04-one-person-corporation-tax",
-        "guest_name": "八重洲ch",
-        "primary_subject_name": "八重洲ch",
+        "guest_name": "ひとり法人は税金払う方が儲かる",
+        "primary_subject_name": "ひとり法人は税金払う方が儲かる",
         "title": "ひとり法人は、税金払う方がクソ儲かる",
         "status": "directed",
         "shoot_date": "2026/05/08",
@@ -454,8 +454,8 @@ PROPER_YAESU_LONGFORM_PROJECTS = [
     },
     {
         "id": "proper-yaesu-20260508-05-weak-yen-export-side-business",
-        "guest_name": "八重洲ch",
-        "primary_subject_name": "八重洲ch",
+        "guest_name": "円安時代の最強副業",
+        "primary_subject_name": "円安時代の最強副業",
         "title": "会社員が今すぐやるべき、円安時代の最強の副業のやり方を解説",
         "status": "directed",
         "shoot_date": "2026/05/08",
@@ -477,8 +477,8 @@ PROPER_YAESU_LONGFORM_PROJECTS = [
     },
     {
         "id": "proper-yaesu-20260508-06-nisa-asset-roadmap",
-        "guest_name": "八重洲ch",
-        "primary_subject_name": "八重洲ch",
+        "guest_name": "NISAでは金持ちになれない資産別ロードマップ",
+        "primary_subject_name": "NISAでは金持ちになれない資産別ロードマップ",
         "title": "NISAでは金持ちになれない / 金持ちになる会社員が資産状況別に行うべき真実のロードマップ",
         "status": "directed",
         "shoot_date": "2026/05/08",

@@ -117,7 +117,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         }
         switch routeProfile ?? category {
         case "teko_interview": return "TEKO対談"
-        case "teko_personal_longform": return "TEKO属人ch 長尺"
+        case "teko_personal_longform": return "プロパー八重洲ch"
         case "teko_member": return "TEKOメンバー対談"
         case "teko_realestate": return "TEKO不動産対談"
         default: return "その他"

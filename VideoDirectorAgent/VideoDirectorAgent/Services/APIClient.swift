@@ -635,7 +635,7 @@ final class APIClient: ObservableObject {
         return try await request(TranscriptDiffResponse.self, path: path)
     }
 
-    // MARK: - TEKO属人ch 長尺ルート
+    // MARK: - プロパー八重洲ch 長尺ルート
 
     func fetchPersonalLongformSourceBundle(projectId: String) async throws -> PersonalLongformPanelResponse {
         let encoded = projectId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? projectId

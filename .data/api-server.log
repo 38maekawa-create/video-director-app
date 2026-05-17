@@ -7767,3 +7767,19 @@ INFO:     127.0.0.1:54414 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     139.178.129.24:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     139.178.129.24:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     139.178.129.24:0 - "GET /api/feedbacks?limit=50 HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/dashboard/summary HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/dashboard/quality-trend HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/audit/latest HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/audit/history HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/learning/summary HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/v1/dashboard/quality HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-04-one-person-corporation-tax/transcript-diff HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-04-one-person-corporation-tax/before-after HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-04-one-person-corporation-tax/fb-tracker HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-04-one-person-corporation-tax/fb-tracker HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-04-one-person-corporation-tax/before-after HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-04-one-person-corporation-tax/transcript-diff HTTP/1.1" 404 Not Found

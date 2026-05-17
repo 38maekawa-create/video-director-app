@@ -7783,3 +7783,17 @@ INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-04-one-
 INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-04-one-person-corporation-tax/fb-tracker HTTP/1.1" 404 Not Found
 INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-04-one-person-corporation-tax/before-after HTTP/1.1" 404 Not Found
 INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-04-one-person-corporation-tax/transcript-diff HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-05-weak-yen-export-side-business/transcript-diff HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-05-weak-yen-export-side-business/before-after HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-05-weak-yen-export-side-business/fb-tracker HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-05-weak-yen-export-side-business/before-after HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-05-weak-yen-export-side-business/transcript-diff HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-05-weak-yen-export-side-business/fb-tracker HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-05-weak-yen-export-side-business/transcript-diff HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-05-weak-yen-export-side-business/fb-tracker HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/v1/projects/proper-yaesu-20260508-05-weak-yen-export-side-business/before-after HTTP/1.1" 404 Not Found
+INFO:     139.178.129.24:0 - "GET /api/editors HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/tracking/videos HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/tracking/insights HTTP/1.1" 200 OK
+INFO:     139.178.129.24:0 - "GET /api/learning/summary HTTP/1.1" 200 OK

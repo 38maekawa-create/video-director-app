@@ -7802,3 +7802,5 @@ INFO:     127.0.0.1:58056 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     1.112.148.149:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
 INFO:     1.112.148.149:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     1.112.148.149:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     1.112.148.149:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     1.112.148.149:0 - "GET /api/projects/p-20260215-%E3%83%AD%E3%82%AD/youtube-assets HTTP/1.1" 200 OK

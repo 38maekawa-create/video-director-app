@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-19T17:31:03.475743",
+  "generated_at": "2026-05-19T18:32:18.194536",
   "summary": {
     "total_members": 37,
     "matched": 29,
@@ -792,8 +792,8 @@
     {
       "guest_name": "えりっくさん",
       "search_keys": [
-        "えりっく",
-        "エリック"
+        "エリック",
+        "えりっく"
       ],
       "near_candidates": [
         {
@@ -808,8 +808,8 @@
     {
       "guest_name": "しゃちぽこさん",
       "search_keys": [
-        "シャチポコ",
-        "しゃちぽこ"
+        "しゃちぽこ",
+        "シャチポコ"
       ],
       "near_candidates": []
     },

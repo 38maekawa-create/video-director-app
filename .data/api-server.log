@@ -7835,3 +7835,4 @@ INFO:     2400:2200:9f9:db44:187d:76b6:831d:870b:0 - "GET /api/projects HTTP/1.1
 INFO:     2400:2200:9f9:db44:187d:76b6:831d:870b:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
 INFO:     2400:2200:9f9:db44:187d:76b6:831d:870b:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     2400:2200:9f9:db44:187d:76b6:831d:870b:0 - "GET /api/projects/p-20260215-%E3%82%A2%E3%83%B3%E3%83%87%E3%82%A3/youtube-assets HTTP/1.1" 200 OK
+INFO:     2a06:98c0:360b:86ec:325c:f2ca:fc75:4908:0 - "HEAD / HTTP/1.1" 405 Method Not Allowed

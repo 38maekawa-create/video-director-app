@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-05-21T11:27:49.302384",
+  "generated_at": "2026-05-21T12:29:15.066387",
   "summary": {
     "total_members": 37,
     "matched": 29,
     "unmatched": 8,
     "total_vimeo_videos": 400,
-    "taidan_videos": 125
+    "taidan_videos": 126
   },
   "matched": [
     {
@@ -604,6 +604,12 @@
       "guest_name": "バーボンさん",
       "videos": [
         {
+          "title": "78_バーボンさん_FB修正1_坂野",
+          "vimeo_url": "https://vimeo.com/1194238110",
+          "status": "uploading",
+          "created": "2026-05-21"
+        },
+        {
           "title": "78_バーボンさん_初稿_坂野",
           "vimeo_url": "https://vimeo.com/1190656188",
           "status": "available",
@@ -656,6 +662,14 @@
       ],
       "near_candidates": [
         {
+          "title": "78_バーボンさん_FB修正1_坂野",
+          "matched_keys": [
+            "ヤーマン",
+            "やーまん"
+          ],
+          "status": "uploading"
+        },
+        {
           "title": "78_バーボンさん_初稿_坂野",
           "matched_keys": [
             "ヤーマン",
@@ -683,21 +697,14 @@
             "やーまん"
           ],
           "status": "available"
-        },
-        {
-          "title": "67_けーさん_対談_修正_大胡",
-          "matched_keys": [
-            "やーまん"
-          ],
-          "status": "available"
         }
       ]
     },
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "こすと",
         "kos",
+        "こすと",
         "コスト"
       ],
       "near_candidates": [

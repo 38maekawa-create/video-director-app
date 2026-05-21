@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-21T18:36:26.933607",
+  "generated_at": "2026-05-21T19:37:33.715410",
   "summary": {
     "total_members": 37,
     "matched": 29,
@@ -657,23 +657,23 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
           "title": "78_バーボンさん_FB修正1_坂野",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
         {
           "title": "78_バーボンさん_初稿_坂野",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
@@ -755,8 +755,8 @@
     {
       "guest_name": "キリマルさん",
       "search_keys": [
-        "きりまる",
-        "キリマル"
+        "キリマル",
+        "きりまる"
       ],
       "near_candidates": [
         {
@@ -815,8 +815,8 @@
     {
       "guest_name": "しゃちぽこさん",
       "search_keys": [
-        "しゃちぽこ",
-        "シャチポコ"
+        "シャチポコ",
+        "しゃちぽこ"
       ],
       "near_candidates": []
     },

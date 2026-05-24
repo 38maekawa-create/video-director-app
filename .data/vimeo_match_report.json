@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-05-24T19:22:04.180064",
+  "generated_at": "2026-05-24T20:23:09.552248",
   "summary": {
-    "total_members": 37,
+    "total_members": 38,
     "matched": 29,
-    "unmatched": 8,
+    "unmatched": 9,
     "total_vimeo_videos": 400,
     "taidan_videos": 126
   },
@@ -703,9 +703,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "コスト",
         "kos",
-        "こすと"
+        "こすと",
+        "コスト"
       ],
       "near_candidates": [
         {
@@ -799,8 +799,8 @@
     {
       "guest_name": "えりっくさん",
       "search_keys": [
-        "えりっく",
-        "エリック"
+        "エリック",
+        "えりっく"
       ],
       "near_candidates": [
         {
@@ -815,8 +815,8 @@
     {
       "guest_name": "しゃちぽこさん",
       "search_keys": [
-        "シャチポコ",
-        "しゃちぽこ"
+        "しゃちぽこ",
+        "シャチポコ"
       ],
       "near_candidates": []
     },
@@ -826,6 +826,50 @@
         "GEN"
       ],
       "near_candidates": []
+    },
+    {
+      "guest_name": "ゼットンさん",
+      "search_keys": [
+        "ゼットン",
+        "ぜっとん"
+      ],
+      "near_candidates": [
+        {
+          "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
+          "matched_keys": [
+            "ぜっとん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
+          "matched_keys": [
+            "ぜっとん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "70_さといも・トーマスさん1.1倍_対談_修正2_大胡",
+          "matched_keys": [
+            "ぜっとん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "70_さといも・トーマスさん1.1倍_対談_修正_大胡",
+          "matched_keys": [
+            "ぜっとん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "70_さといも・トーマスさん_対談_初稿_大胡",
+          "matched_keys": [
+            "ぜっとん"
+          ],
+          "status": "available"
+        }
+      ]
     }
   ]
 }

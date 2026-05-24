@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-05-24T22:52:01+09:00",
+  "dry_run": true,
+  "status": "dry_run",
+  "runner": "ai10-propagation-runner.py",
+  "items": [
+    {
+      "project_id": "p-20260516-ゼットン",
+      "job_id": "job_drive_interview_20260516_tokyo_camera_group_9d458faba0_session04_dbbbd528eb",
+      "stack_key": "20260516_ゼットン",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260516_ゼットンさん対談.md",
+      "content_hash": "6f271a15",
+      "hash_changed": false,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    }
+  ]
+}

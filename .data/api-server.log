@@ -7874,3 +7874,5 @@ INFO:     100.69.69.63:49995 - "GET /api/projects/p-20260516-%E3%82%BC%E3%83%83%
 INFO:     100.69.69.63:49997 - "GET /api/v1/projects/p-20260516-%E3%82%BC%E3%83%83%E3%83%88%E3%83%B3/source-videos HTTP/1.1" 200 OK
 INFO:     100.69.69.63:54844 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     100.69.69.63:54844 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     240a:61:3220:e966:e4f2:16bc:4ffb:72f1:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:3220:e966:e4f2:16bc:4ffb:72f1:0 - "GET /healthz HTTP/1.1" 200 OK

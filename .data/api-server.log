@@ -7909,3 +7909,4 @@ INFO:     2400:2200:9f9:db44:c39:23c9:4d99:3753:0 - "GET /api/v1/feedbacks/pendi
 INFO:     2400:2200:9f9:db44:c39:23c9:4d99:3753:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     160.86.107.94:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     160.86.107.94:0 - "GET /api/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/youtube-assets HTTP/1.1" 200 OK
+INFO:     160.86.107.94:0 - "GET /api/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/youtube-assets HTTP/1.1" 200 OK

@@ -7924,3 +7924,13 @@ INFO:     160.86.107.94:0 - "GET /api/projects/p-20260328-%E3%83%90%E3%83%BC%E3%
 INFO:     160.86.107.94:0 - "GET /api/projects/p-20260328-%E3%83%90%E3%83%BC%E3%83%9C%E3%83%B3/youtube-assets HTTP/1.1" 200 OK
 INFO:     160.86.107.94:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     160.86.107.94:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     100.69.69.63:59047 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     113.149.186.41:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.69.69.63:59047 - "GET /api/projects/p-20260516-%E3%82%BC%E3%83%83%E3%83%88%E3%83%B3/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.69.69.63:59048 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:63373 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:63374 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.69.69.63:63373 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     100.69.69.63:63373 - "GET /api/projects/p-20260516-%E3%82%BC%E3%83%83%E3%83%88%E3%83%B3/youtube-assets HTTP/1.1" 200 OK

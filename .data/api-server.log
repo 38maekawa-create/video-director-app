@@ -7998,3 +7998,11 @@ INFO:     100.69.69.63:53630 - "GET /api/v1/projects/p-20260516-%E3%81%A1%E3%83%
 INFO:     100.69.69.63:62445 - "GET /api/v1/projects/p-20260516-%E3%81%A1%E3%83%BC/before-after HTTP/1.1" 200 OK
 INFO:     100.69.69.63:62446 - "GET /api/v1/projects/p-20260516-%E3%81%A1%E3%83%BC/fb-tracker HTTP/1.1" 200 OK
 INFO:     100.69.69.63:62445 - "GET /api/v1/projects/p-20260516-%E3%81%A1%E3%83%BC/transcript-diff HTTP/1.1" 200 OK
+INFO:     100.69.69.63:52853 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:52854 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.69.69.63:52853 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     100.69.69.63:52853 - "GET /api/v1/projects/p-20260516-%E3%81%A1%E3%83%BC/source-videos HTTP/1.1" 200 OK
+INFO:     100.69.69.63:52853 - "GET /api/projects/p-20260516-%E3%81%A1%E3%83%BC/feedbacks HTTP/1.1" 200 OK
+INFO:     100.69.69.63:50748 - "GET /api/v1/projects/p-20260516-%E3%81%A1%E3%83%BC/before-after HTTP/1.1" 200 OK
+INFO:     100.69.69.63:50749 - "GET /api/v1/projects/p-20260516-%E3%81%A1%E3%83%BC/fb-tracker HTTP/1.1" 200 OK
+INFO:     100.69.69.63:50748 - "GET /api/v1/projects/p-20260516-%E3%81%A1%E3%83%BC/transcript-diff HTTP/1.1" 200 OK

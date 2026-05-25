@@ -7970,3 +7970,12 @@ INFO:     100.69.69.63:64829 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     100.69.69.63:64829 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.69.69.63:64830 - "GET /api/projects/p-20260516-%E3%81%B5%E3%81%BF/youtube-assets HTTP/1.1" 200 OK
 INFO:     100.69.69.63:64829 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     100.69.69.63:49821 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:49822 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.69.69.63:49821 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     100.69.69.63:49823 - "GET /api/projects/p-20260516-%E3%83%96%E3%83%B3/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.69.69.63:53839 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:53840 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.69.69.63:53839 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     100.69.69.63:55402 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:55403 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK

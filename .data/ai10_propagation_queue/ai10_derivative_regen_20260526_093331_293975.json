@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-05-26T09:33:31+09:00",
+  "dry_run": false,
+  "status": "queued",
+  "runner": "ai10-propagation-runner.py",
+  "items": [
+    {
+      "project_id": "p-20260516-ブン",
+      "job_id": "job_drive_interview_20260516_tokyo_camera_group_9d458faba0_session01_98adbf547b",
+      "stack_key": "20260516_ブン",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260516_ブンさん対談.md",
+      "content_hash": "9dd37bbb",
+      "hash_changed": false,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    },
+    {
+      "project_id": "p-20260516-ちー",
+      "job_id": "job_drive_interview_20260516_tokyo_camera_group_9d458faba0_session02_17bc2b3877",
+      "stack_key": "20260516_ちー",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260516_ちーさん対談.md",
+      "content_hash": "1d993407",
+      "hash_changed": false,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    },
+    {
+      "project_id": "p-20260516-ふみ",
+      "job_id": "job_drive_interview_20260516_tokyo_camera_group_9d458faba0_session03_60860e0ff8",
+      "stack_key": "20260516_ふみ",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260516_ふみさん対談.md",
+      "content_hash": "c86042f4",
+      "hash_changed": false,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    },
+    {
+      "project_id": "p-20260516-ゼットン",
+      "job_id": "job_drive_interview_20260516_tokyo_camera_group_9d458faba0_session04_dbbbd528eb",
+      "stack_key": "20260516_ゼットン",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260516_ゼットンさん対談.md",
+      "content_hash": "6f271a15",
+      "hash_changed": false,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    }
+  ]
+}

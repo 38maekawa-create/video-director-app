@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-05-27T00:15:21+09:00",
+  "dry_run": false,
+  "status": "queued",
+  "runner": "ai10-propagation-runner.py",
+  "items": [
+    {
+      "project_id": "p-20260516-ちー",
+      "job_id": "job_drive_interview_20260516_tokyo_camera_group_9d458faba0_session02_17bc2b3877",
+      "stack_key": "20260516_ちー",
+      "source_md_path": "/Users/maekawanaoto/TEKO/knowledge/01_teko/sources/interviews/20260516_ちーさん対談.md",
+      "content_hash": "1d993407",
+      "hash_changed": false,
+      "reason": "video_knowledge_final_md_updated",
+      "requested_derivatives": [
+        "title_candidates",
+        "description",
+        "thumbnail_design",
+        "punchline_selection",
+        "video_direction",
+        "source_check"
+      ],
+      "mode": "queue_only"
+    }
+  ]
+}

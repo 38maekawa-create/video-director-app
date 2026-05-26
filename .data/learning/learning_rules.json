@@ -20,7 +20,7 @@
         "pat_20260319195723_3"
       ],
       "priority": "medium",
-      "applied_count": 213,
+      "applied_count": 214,
       "is_active": true,
       "created_at": "2026-03-20T01:50:31.036704"
     },
@@ -56,10 +56,10 @@
         "pat_20260320014907_4"
       ],
       "priority": "medium",
-      "applied_count": 86,
+      "applied_count": 87,
       "is_active": true,
       "created_at": "2026-03-21T06:26:05.745234"
     }
   ],
-  "updated_at": "2026-05-26T22:09:46.770442"
+  "updated_at": "2026-05-26T22:14:10.456386"
 }

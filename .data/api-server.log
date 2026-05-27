@@ -8007,3 +8007,4 @@ INFO:     100.69.69.63:50748 - "GET /api/v1/projects/p-20260516-%E3%81%A1%E3%83%
 INFO:     100.69.69.63:50749 - "GET /api/v1/projects/p-20260516-%E3%81%A1%E3%83%BC/fb-tracker HTTP/1.1" 200 OK
 INFO:     100.69.69.63:50748 - "GET /api/v1/projects/p-20260516-%E3%81%A1%E3%83%BC/transcript-diff HTTP/1.1" 200 OK
 INFO:     127.0.0.1:50285 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65357 - "GET /api/health HTTP/1.1" 200 OK

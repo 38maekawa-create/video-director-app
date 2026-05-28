@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-05-28T12:49:12.276212",
+  "generated_at": "2026-05-28T13:50:18.631972",
   "summary": {
     "total_members": 41,
-    "matched": 30,
-    "unmatched": 11,
+    "matched": 31,
+    "unmatched": 10,
     "total_vimeo_videos": 400,
-    "taidan_videos": 126
+    "taidan_videos": 127
   },
   "matched": [
     {
@@ -629,6 +629,17 @@
       ]
     },
     {
+      "guest_name": "えりっくさん",
+      "videos": [
+        {
+          "title": "83_えりっくさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1196193641/9fad2454d5",
+          "status": "available",
+          "created": "2026-05-28"
+        }
+      ]
+    },
+    {
       "guest_name": "ウメさん",
       "videos": [
         {
@@ -668,23 +679,23 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
           "title": "78_バーボンさん_FB修正1_坂野",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "78_バーボンさん_初稿_坂野",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
@@ -714,8 +725,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "こすと",
         "コスト",
+        "こすと",
         "kos"
       ],
       "near_candidates": [
@@ -808,26 +819,10 @@
       ]
     },
     {
-      "guest_name": "えりっくさん",
-      "search_keys": [
-        "えりっく",
-        "エリック"
-      ],
-      "near_candidates": [
-        {
-          "title": "タクヤ＆ビリーの対談セミナー",
-          "matched_keys": [
-            "エリック"
-          ],
-          "status": "available"
-        }
-      ]
-    },
-    {
       "guest_name": "しゃちぽこさん",
       "search_keys": [
-        "シャチポコ",
-        "しゃちぽこ"
+        "しゃちぽこ",
+        "シャチポコ"
       ],
       "near_candidates": []
     },
@@ -841,10 +836,17 @@
     {
       "guest_name": "ゼットンさん",
       "search_keys": [
-        "ぜっとん",
-        "ゼットン"
+        "ゼットン",
+        "ぜっとん"
       ],
       "near_candidates": [
+        {
+          "title": "83_えりっくさん_対談_初稿_大胡",
+          "matched_keys": [
+            "ぜっとん"
+          ],
+          "status": "available"
+        },
         {
           "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "matched_keys": [
@@ -872,29 +874,22 @@
             "ぜっとん"
           ],
           "status": "available"
-        },
-        {
-          "title": "70_さといも・トーマスさん_対談_初稿_大胡",
-          "matched_keys": [
-            "ぜっとん"
-          ],
-          "status": "available"
         }
       ]
     },
     {
       "guest_name": "ブンさん",
       "search_keys": [
-        "ぶん",
-        "ブン"
+        "ブン",
+        "ぶん"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "フミ",
-        "ふみ"
+        "ふみ",
+        "フミ"
       ],
       "near_candidates": []
     }

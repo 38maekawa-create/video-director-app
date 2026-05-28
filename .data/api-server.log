@@ -8009,3 +8009,7 @@ INFO:     100.69.69.63:50748 - "GET /api/v1/projects/p-20260516-%E3%81%A1%E3%83%
 INFO:     127.0.0.1:50285 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:65357 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:61260 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     2400:2200:9f9:ee47:5477:dcff:9347:7f8b:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     2400:2200:9f9:ee47:5477:dcff:9347:7f8b:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     2400:2200:9f9:ee47:5477:dcff:9347:7f8b:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:9f9:ee47:5477:dcff:9347:7f8b:0 - "GET /healthz HTTP/1.1" 200 OK

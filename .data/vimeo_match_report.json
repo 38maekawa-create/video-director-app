@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-05-29T14:20:58.778106",
+  "generated_at": "2026-05-29T16:12:32.192279",
   "summary": {
     "total_members": 41,
     "matched": 31,
     "unmatched": 10,
     "total_vimeo_videos": 400,
-    "taidan_videos": 128
+    "taidan_videos": 130
   },
   "matched": [
     {
@@ -621,6 +621,12 @@
       "guest_name": "ハラさん",
       "videos": [
         {
+          "title": "ハラさん_対談_修正１_ささみ",
+          "vimeo_url": "https://vimeo.com/1196557968",
+          "status": "available",
+          "created": "2026-05-29"
+        },
+        {
           "title": "ハラさん_対談_初稿_ささみ",
           "vimeo_url": "https://vimeo.com/1190889073",
           "status": "available",
@@ -821,8 +827,8 @@
     {
       "guest_name": "しゃちぽこさん",
       "search_keys": [
-        "シャチポコ",
-        "しゃちぽこ"
+        "しゃちぽこ",
+        "シャチポコ"
       ],
       "near_candidates": []
     },
@@ -836,8 +842,8 @@
     {
       "guest_name": "ゼットンさん",
       "search_keys": [
-        "ゼットン",
-        "ぜっとん"
+        "ぜっとん",
+        "ゼットン"
       ],
       "near_candidates": [
         {
@@ -880,8 +886,8 @@
     {
       "guest_name": "ブンさん",
       "search_keys": [
-        "ぶん",
-        "ブン"
+        "ブン",
+        "ぶん"
       ],
       "near_candidates": []
     },

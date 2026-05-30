@@ -8034,3 +8034,11 @@ INFO:     100.69.69.63:64725 - "GET /api/projects/proper-yaesu-20260508-04-one-p
 INFO:     100.69.69.63:64725 - "GET /api/projects/proper-yaesu-20260508-04-one-person-corporation-tax/youtube-assets HTTP/1.1" 404 Not Found
 INFO:     100.69.69.63:64725 - "GET /api/v1/projects/proper-yaesu-20260508-04-one-person-corporation-tax/formal-workflow HTTP/1.1" 200 OK
 INFO:     100.69.69.63:52005 - "GET /api/v1/projects/proper-yaesu-20260508-04-one-person-corporation-tax/source-bundle HTTP/1.1" 200 OK
+INFO:     49.109.4.68:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:56364 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:56365 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     100.69.69.63:56364 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.69.69.63:56364 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     100.69.69.63:56364 - "GET /api/v1/projects/proper-yaesu-20260508-04-one-person-corporation-tax/human-checks HTTP/1.1" 200 OK
+INFO:     100.69.69.63:56364 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:56375 - "GET /api/projects/proper-yaesu-20260508-04-one-person-corporation-tax/youtube-assets HTTP/1.1" 404 Not Found

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-05-31T13:25:43.248865",
+  "generated_at": "2026-05-31T14:26:46.018042",
   "summary": {
     "total_members": 41,
     "matched": 31,
     "unmatched": 10,
     "total_vimeo_videos": 400,
-    "taidan_videos": 130
+    "taidan_videos": 131
   },
   "matched": [
     {
@@ -638,6 +638,12 @@
       "guest_name": "えりっくさん",
       "videos": [
         {
+          "title": "83_えりっくさん_対談_修正1_大胡",
+          "vimeo_url": "https://vimeo.com/1197053749/20096cde4b",
+          "status": "available",
+          "created": "2026-05-31"
+        },
+        {
           "title": "83_えりっくさん_対談_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1196193641/9fad2454d5",
           "status": "available",
@@ -732,8 +738,8 @@
       "guest_name": "kosさん",
       "search_keys": [
         "kos",
-        "こすと",
-        "コスト"
+        "コスト",
+        "こすと"
       ],
       "near_candidates": [
         {
@@ -827,8 +833,8 @@
     {
       "guest_name": "しゃちぽこさん",
       "search_keys": [
-        "シャチポコ",
-        "しゃちぽこ"
+        "しゃちぽこ",
+        "シャチポコ"
       ],
       "near_candidates": []
     },
@@ -842,10 +848,17 @@
     {
       "guest_name": "ゼットンさん",
       "search_keys": [
-        "ゼットン",
-        "ぜっとん"
+        "ぜっとん",
+        "ゼットン"
       ],
       "near_candidates": [
+        {
+          "title": "83_えりっくさん_対談_修正1_大胡",
+          "matched_keys": [
+            "ぜっとん"
+          ],
+          "status": "available"
+        },
         {
           "title": "83_えりっくさん_対談_初稿_大胡",
           "matched_keys": [
@@ -873,13 +886,6 @@
             "ぜっとん"
           ],
           "status": "available"
-        },
-        {
-          "title": "70_さといも・トーマスさん1.1倍_対談_修正_大胡",
-          "matched_keys": [
-            "ぜっとん"
-          ],
-          "status": "available"
         }
       ]
     },
@@ -894,8 +900,8 @@
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "フミ",
-        "ふみ"
+        "ふみ",
+        "フミ"
       ],
       "near_candidates": []
     }

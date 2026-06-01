@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-01T09:49:37.495480",
+  "generated_at": "2026-06-01T10:50:47.374297",
   "summary": {
     "total_members": 41,
     "matched": 31,
@@ -691,23 +691,23 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
           "title": "78_バーボンさん_FB修正1_坂野",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "78_バーボンさん_初稿_坂野",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
@@ -738,8 +738,8 @@
       "guest_name": "kosさん",
       "search_keys": [
         "kos",
-        "こすと",
-        "コスト"
+        "コスト",
+        "こすと"
       ],
       "near_candidates": [
         {
@@ -848,8 +848,8 @@
     {
       "guest_name": "ゼットンさん",
       "search_keys": [
-        "ぜっとん",
-        "ゼットン"
+        "ゼットン",
+        "ぜっとん"
       ],
       "near_candidates": [
         {

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-01T22:04:21.839562",
+  "generated_at": "2026-06-01T23:05:38.209416",
   "summary": {
     "total_members": 41,
     "matched": 31,
     "unmatched": 10,
     "total_vimeo_videos": 400,
-    "taidan_videos": 131
+    "taidan_videos": 132
   },
   "matched": [
     {
@@ -691,23 +691,31 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
+          "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
+          "matched_keys": [
+            "やーまん",
+            "ヤーマン"
+          ],
+          "status": "available"
+        },
+        {
           "title": "78_バーボンさん_FB修正1_坂野",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "78_バーボンさん_初稿_坂野",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
@@ -724,21 +732,14 @@
             "やーまん"
           ],
           "status": "available"
-        },
-        {
-          "title": "プロパーさん_対談_初稿_大胡",
-          "matched_keys": [
-            "やーまん"
-          ],
-          "status": "available"
         }
       ]
     },
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "コスト",
         "kos",
+        "コスト",
         "こすと"
       ],
       "near_candidates": [
@@ -789,8 +790,8 @@
     {
       "guest_name": "キリマルさん",
       "search_keys": [
-        "キリマル",
-        "きりまる"
+        "きりまる",
+        "キリマル"
       ],
       "near_candidates": [
         {
@@ -833,8 +834,8 @@
     {
       "guest_name": "しゃちぽこさん",
       "search_keys": [
-        "しゃちぽこ",
-        "シャチポコ"
+        "シャチポコ",
+        "しゃちぽこ"
       ],
       "near_candidates": []
     },
@@ -852,6 +853,13 @@
         "ゼットン"
       ],
       "near_candidates": [
+        {
+          "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
+          "matched_keys": [
+            "ゼットン"
+          ],
+          "status": "available"
+        },
         {
           "title": "83_えりっくさん_対談_修正1_大胡",
           "matched_keys": [
@@ -879,21 +887,14 @@
             "ぜっとん"
           ],
           "status": "available"
-        },
-        {
-          "title": "70_さといも・トーマスさん1.1倍_対談_修正2_大胡",
-          "matched_keys": [
-            "ぜっとん"
-          ],
-          "status": "available"
         }
       ]
     },
     {
       "guest_name": "ブンさん",
       "search_keys": [
-        "ぶん",
-        "ブン"
+        "ブン",
+        "ぶん"
       ],
       "near_candidates": []
     },

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-03T12:54:57.296876",
+  "generated_at": "2026-06-03T13:56:06.110163",
   "summary": {
     "total_members": 41,
     "matched": 32,
     "unmatched": 9,
     "total_vimeo_videos": 400,
-    "taidan_videos": 133
+    "taidan_videos": 134
   },
   "matched": [
     {
@@ -702,31 +702,31 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
           "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
         {
           "title": "78_バーボンさん_FB修正1_坂野",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
         {
           "title": "78_バーボンさん_初稿_坂野",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
@@ -749,9 +749,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "kos",
+        "コスト",
         "こすと",
-        "コスト"
+        "kos"
       ],
       "near_candidates": [
         {
@@ -801,10 +801,17 @@
     {
       "guest_name": "キリマルさん",
       "search_keys": [
-        "キリマル",
-        "きりまる"
+        "きりまる",
+        "キリマル"
       ],
       "near_candidates": [
+        {
+          "title": "リール_025_初稿_ささみ",
+          "matched_keys": [
+            "キリマル"
+          ],
+          "status": "available"
+        },
         {
           "title": "59_スリマンさん_FB修正2_坂野",
           "matched_keys": [
@@ -832,13 +839,6 @@
             "きりまる"
           ],
           "status": "available"
-        },
-        {
-          "title": "57_ゆきもるさん_初稿_坂野",
-          "matched_keys": [
-            "きりまる"
-          ],
-          "status": "uploading_error"
         }
       ]
     },
@@ -896,16 +896,16 @@
     {
       "guest_name": "ブンさん",
       "search_keys": [
-        "ぶん",
-        "ブン"
+        "ブン",
+        "ぶん"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "フミ",
-        "ふみ"
+        "ふみ",
+        "フミ"
       ],
       "near_candidates": []
     }

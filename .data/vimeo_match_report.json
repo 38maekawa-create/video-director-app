@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-04T19:32:30.972960",
+  "generated_at": "2026-06-04T20:33:41.371361",
   "summary": {
     "total_members": 41,
     "matched": 33,
@@ -713,31 +713,31 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
           "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
         {
           "title": "78_バーボンさん_FB修正1_坂野",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
         {
           "title": "78_バーボンさん_初稿_坂野",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
@@ -761,8 +761,8 @@
       "guest_name": "kosさん",
       "search_keys": [
         "コスト",
-        "kos",
-        "こすと"
+        "こすと",
+        "kos"
       ],
       "near_candidates": [
         {
@@ -863,16 +863,16 @@
     {
       "guest_name": "ブンさん",
       "search_keys": [
-        "ぶん",
-        "ブン"
+        "ブン",
+        "ぶん"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "ふみ",
-        "フミ"
+        "フミ",
+        "ふみ"
       ],
       "near_candidates": []
     }

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-05T12:57:11.461268",
+  "generated_at": "2026-06-05T13:58:18.568391",
   "summary": {
     "total_members": 41,
     "matched": 34,
@@ -708,7 +708,7 @@
         {
           "title": "86.ゼットンさん_初稿_坂野",
           "vimeo_url": "https://vimeo.com/1198622685",
-          "status": "transcoding",
+          "status": "available",
           "created": "2026-06-05"
         },
         {
@@ -742,8 +742,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
@@ -763,24 +763,24 @@
         {
           "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "78_バーボンさん_FB修正1_坂野",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "78_バーボンさん_初稿_坂野",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         }
@@ -789,8 +789,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "こすと",
         "kos",
+        "こすと",
         "コスト"
       ],
       "near_candidates": [
@@ -856,8 +856,8 @@
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "フミ",
-        "ふみ"
+        "ふみ",
+        "フミ"
       ],
       "near_candidates": []
     }

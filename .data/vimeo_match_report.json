@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-05T11:54:35.483913",
+  "generated_at": "2026-06-05T12:57:11.461268",
   "summary": {
     "total_members": 41,
-    "matched": 33,
-    "unmatched": 8,
+    "matched": 34,
+    "unmatched": 7,
     "total_vimeo_videos": 400,
-    "taidan_videos": 135
+    "taidan_videos": 139
   },
   "matched": [
     {
@@ -362,6 +362,18 @@
       "guest_name": "くますけさん",
       "videos": [
         {
+          "title": "77_くますけさん_FB修正1_坂野",
+          "vimeo_url": "https://vimeo.com/1198622694",
+          "status": "available",
+          "created": "2026-06-05"
+        },
+        {
+          "title": "77_くますけさん_FB修正1_坂野",
+          "vimeo_url": "https://vimeo.com/1198618279",
+          "status": "uploading",
+          "created": "2026-06-05"
+        },
+        {
           "title": "77_くますけさん_初稿_坂野",
           "vimeo_url": "https://vimeo.com/1188914320",
           "status": "available",
@@ -691,6 +703,23 @@
       ]
     },
     {
+      "guest_name": "ゼットンさん",
+      "videos": [
+        {
+          "title": "86.ゼットンさん_初稿_坂野",
+          "vimeo_url": "https://vimeo.com/1198622685",
+          "status": "transcoding",
+          "created": "2026-06-05"
+        },
+        {
+          "title": "86.ゼットンさん_初稿_坂野 (1)",
+          "vimeo_url": "https://vimeo.com/1198618259",
+          "status": "uploading",
+          "created": "2026-06-05"
+        }
+      ]
+    },
+    {
       "guest_name": "ちーさん",
       "videos": [
         {
@@ -718,6 +747,20 @@
       ],
       "near_candidates": [
         {
+          "title": "77_くますけさん_FB修正1_坂野",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "77_くますけさん_FB修正1_坂野",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "uploading"
+        },
+        {
           "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
           "matched_keys": [
             "ヤーマン",
@@ -740,29 +783,15 @@
             "やーまん"
           ],
           "status": "available"
-        },
-        {
-          "title": "77_くますけさん_初稿_坂野",
-          "matched_keys": [
-            "やーまん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "プロパーさんフルテロ_対談_初稿_大胡",
-          "matched_keys": [
-            "やーまん"
-          ],
-          "status": "available"
         }
       ]
     },
     {
       "guest_name": "kosさん",
       "search_keys": [
+        "こすと",
         "kos",
-        "コスト",
-        "こすと"
+        "コスト"
       ],
       "near_candidates": [
         {
@@ -817,54 +846,10 @@
       "near_candidates": []
     },
     {
-      "guest_name": "ゼットンさん",
-      "search_keys": [
-        "ゼットン",
-        "ぜっとん"
-      ],
-      "near_candidates": [
-        {
-          "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
-          "matched_keys": [
-            "ゼットン"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "83_えりっくさん_対談_修正1_大胡",
-          "matched_keys": [
-            "ぜっとん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "83_えりっくさん_対談_初稿_大胡",
-          "matched_keys": [
-            "ぜっとん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
-          "matched_keys": [
-            "ぜっとん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "70_（ミュート）さといも・トーマスさん1.1倍_対談_修正2_大胡",
-          "matched_keys": [
-            "ぜっとん"
-          ],
-          "status": "available"
-        }
-      ]
-    },
-    {
       "guest_name": "ブンさん",
       "search_keys": [
-        "ぶん",
-        "ブン"
+        "ブン",
+        "ぶん"
       ],
       "near_candidates": []
     },

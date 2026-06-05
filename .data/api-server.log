@@ -8062,3 +8062,4 @@ INFO:     2400:2200:9e9:e467:9c50:a968:91fd:6567:0 - "GET /api/projects HTTP/1.1
 INFO:     2400:2200:9e9:e467:9c50:a968:91fd:6567:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     2400:2200:9e9:e467:9c50:a968:91fd:6567:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     2a06:98c0:360b:94b6:c646:b230:416d:944e:0 - "HEAD / HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:58491 - "GET /api/health HTTP/1.1" 200 OK

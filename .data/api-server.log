@@ -8067,3 +8067,5 @@ INFO:     127.0.0.1:52526 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     2400:2200:964:9d2:99d4:48dd:df7f:9d6f:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
 INFO:     2400:2200:964:9d2:99d4:48dd:df7f:9d6f:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
 INFO:     2400:2200:964:9d2:99d4:48dd:df7f:9d6f:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     2400:2200:964:9d2:99d4:48dd:df7f:9d6f:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     2400:2200:964:9d2:99d4:48dd:df7f:9d6f:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK

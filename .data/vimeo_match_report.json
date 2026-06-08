@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-08T20:37:38.611049",
+  "generated_at": "2026-06-08T21:38:58.051538",
   "summary": {
     "total_members": 41,
     "matched": 34,
     "unmatched": 7,
     "total_vimeo_videos": 400,
-    "taidan_videos": 139
+    "taidan_videos": 140
   },
   "matched": [
     {
@@ -633,6 +633,12 @@
       "guest_name": "ハラさん",
       "videos": [
         {
+          "title": "ハラさん_対談_修正３_ささみ",
+          "vimeo_url": "https://vimeo.com/1199401199/5857e77989",
+          "status": "transcoding",
+          "created": "2026-06-08"
+        },
+        {
           "title": "ハラさん_対談_修正１_ささみ",
           "vimeo_url": "https://vimeo.com/1196557968",
           "status": "available",
@@ -742,8 +748,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
@@ -763,24 +769,24 @@
         {
           "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "78_バーボンさん_FB修正1_坂野",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "78_バーボンさん_初稿_坂野",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         }
@@ -789,8 +795,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "こすと",
         "コスト",
+        "こすと",
         "kos"
       ],
       "near_candidates": [
@@ -856,8 +862,8 @@
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "フミ",
-        "ふみ"
+        "ふみ",
+        "フミ"
       ],
       "near_candidates": []
     }

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-08T19:36:18.990278",
+  "generated_at": "2026-06-08T20:37:38.611049",
   "summary": {
     "total_members": 41,
     "matched": 34,
@@ -651,7 +651,7 @@
       "videos": [
         {
           "title": "キリマルさん_対談_初稿_久村",
-          "vimeo_url": "https://vimeo.com/1198282554",
+          "vimeo_url": "https://vimeo.com/1198282554/ecf1e65e38",
           "status": "available",
           "created": "2026-06-04"
         }
@@ -789,9 +789,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "kos",
         "こすと",
-        "コスト"
+        "コスト",
+        "kos"
       ],
       "near_candidates": [
         {
@@ -856,8 +856,8 @@
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "ふみ",
-        "フミ"
+        "フミ",
+        "ふみ"
       ],
       "near_candidates": []
     }

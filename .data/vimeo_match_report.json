@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-08T21:38:58.051538",
+  "generated_at": "2026-06-08T22:40:24.122178",
   "summary": {
     "total_members": 41,
     "matched": 34,
     "unmatched": 7,
     "total_vimeo_videos": 400,
-    "taidan_videos": 140
+    "taidan_videos": 141
   },
   "matched": [
     {
@@ -635,7 +635,7 @@
         {
           "title": "ハラさん_対談_修正３_ささみ",
           "vimeo_url": "https://vimeo.com/1199401199/5857e77989",
-          "status": "transcoding",
+          "status": "available",
           "created": "2026-06-08"
         },
         {
@@ -683,6 +683,12 @@
     {
       "guest_name": "しゃちぽこさん",
       "videos": [
+        {
+          "title": "84_しゃちぽこさん_対談_修正_大胡",
+          "vimeo_url": "https://vimeo.com/1199411008/2689f804aa",
+          "status": "available",
+          "created": "2026-06-08"
+        },
         {
           "title": "84_しゃちぽこさん_対談_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1197577324/adb983eec9",

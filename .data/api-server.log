@@ -8073,3 +8073,7 @@ INFO:     127.0.0.1:64002 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:58050 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     2400:2200:975:ec43:39f1:2702:9661:f16c:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
 INFO:     2400:2200:975:ec43:39f1:2702:9661:f16c:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     2400:2200:975:ec43:39f1:2702:9661:f16c:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:975:ec43:39f1:2702:9661:f16c:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:975:ec43:39f1:2702:9661:f16c:0 - "GET /api/projects/p-20260328-%E3%83%8F%E3%83%A9/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:2200:975:ec43:39f1:2702:9661:f16c:0 - "GET /api/projects/p-20260328-%E3%83%8F%E3%83%A9/youtube-assets HTTP/1.1" 200 OK

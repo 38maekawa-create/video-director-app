@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T03:29:26.603685",
+  "generated_at": "2026-06-10T04:30:49.336082",
   "summary": {
     "total_members": 41,
     "matched": 35,
@@ -789,8 +789,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
@@ -817,16 +817,16 @@
         {
           "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         },
         {
           "title": "78_バーボンさん_FB修正1_坂野",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         }
@@ -895,8 +895,8 @@
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "ふみ",
-        "フミ"
+        "フミ",
+        "ふみ"
       ],
       "near_candidates": []
     }

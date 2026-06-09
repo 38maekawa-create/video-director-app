@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-10T02:28:11.376475",
+  "generated_at": "2026-06-10T03:29:26.603685",
   "summary": {
     "total_members": 41,
     "matched": 35,
     "unmatched": 6,
     "total_vimeo_videos": 400,
-    "taidan_videos": 145
+    "taidan_videos": 146
   },
   "matched": [
     {
@@ -662,6 +662,12 @@
       "guest_name": "キリマルさん",
       "videos": [
         {
+          "title": "80_キリマルさん_対談_完納版_久村",
+          "vimeo_url": "https://vimeo.com/1199846449/5fa4437054",
+          "status": "available",
+          "created": "2026-06-09"
+        },
+        {
           "title": "80_キリマルさん_対談_修正版_久村",
           "vimeo_url": "https://vimeo.com/1199663167/380024c2bd",
           "status": "uploading",
@@ -783,8 +789,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
@@ -811,16 +817,16 @@
         {
           "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
           "title": "78_バーボンさん_FB修正1_坂野",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         }
@@ -829,8 +835,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "コスト",
         "こすと",
+        "コスト",
         "kos"
       ],
       "near_candidates": [
@@ -881,8 +887,8 @@
     {
       "guest_name": "ブンさん",
       "search_keys": [
-        "ブン",
-        "ぶん"
+        "ぶん",
+        "ブン"
       ],
       "near_candidates": []
     },

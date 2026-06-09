@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-09T16:14:45.557009",
+  "generated_at": "2026-06-09T17:16:00.528420",
   "summary": {
     "total_members": 41,
     "matched": 34,
     "unmatched": 7,
     "total_vimeo_videos": 400,
-    "taidan_videos": 141
+    "taidan_videos": 143
   },
   "matched": [
     {
@@ -656,6 +656,18 @@
       "guest_name": "キリマルさん",
       "videos": [
         {
+          "title": "80_キリマルさん_対談_修正版_久村",
+          "vimeo_url": "https://vimeo.com/1199663167/380024c2bd",
+          "status": "uploading",
+          "created": "2026-06-09"
+        },
+        {
+          "title": "80_キリマルさん_対談_修正版_久村",
+          "vimeo_url": "https://vimeo.com/1199662952/c11bed3636",
+          "status": "available",
+          "created": "2026-06-09"
+        },
+        {
           "title": "キリマルさん_対談_初稿_久村",
           "vimeo_url": "https://vimeo.com/1198282554/ecf1e65e38",
           "status": "available",
@@ -801,9 +813,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "こすと",
+        "kos",
         "コスト",
-        "kos"
+        "こすと"
       ],
       "near_candidates": [
         {
@@ -860,8 +872,8 @@
     {
       "guest_name": "ブンさん",
       "search_keys": [
-        "ブン",
-        "ぶん"
+        "ぶん",
+        "ブン"
       ],
       "near_candidates": []
     },

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-09T17:16:00.528420",
+  "generated_at": "2026-06-09T18:17:11.444265",
   "summary": {
     "total_members": 41,
     "matched": 34,
     "unmatched": 7,
     "total_vimeo_videos": 400,
-    "taidan_videos": 143
+    "taidan_videos": 144
   },
   "matched": [
     {
@@ -361,6 +361,12 @@
     {
       "guest_name": "くますけさん",
       "videos": [
+        {
+          "title": "77_くますけさん_対談_FB修正2_坂野",
+          "vimeo_url": "https://vimeo.com/1199689035/2dcccfcf18",
+          "status": "uploading",
+          "created": "2026-06-09"
+        },
         {
           "title": "77_くますけさん_FB修正1_坂野",
           "vimeo_url": "https://vimeo.com/1198622694",
@@ -771,6 +777,13 @@
       ],
       "near_candidates": [
         {
+          "title": "77_くますけさん_対談_FB修正2_坂野",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "uploading"
+        },
+        {
           "title": "77_くますけさん_FB修正1_坂野",
           "matched_keys": [
             "やーまん"
@@ -794,14 +807,6 @@
         },
         {
           "title": "78_バーボンさん_FB修正1_坂野",
-          "matched_keys": [
-            "ヤーマン",
-            "やーまん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "78_バーボンさん_初稿_坂野",
           "matched_keys": [
             "ヤーマン",
             "やーまん"
@@ -880,8 +885,8 @@
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "ふみ",
-        "フミ"
+        "フミ",
+        "ふみ"
       ],
       "near_candidates": []
     }

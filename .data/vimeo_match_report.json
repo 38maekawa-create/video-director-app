@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T17:17:52.623313",
+  "generated_at": "2026-06-12T18:18:54.632777",
   "summary": {
     "total_members": 41,
     "matched": 35,
@@ -362,7 +362,7 @@
       "guest_name": "くますけさん",
       "videos": [
         {
-          "title": "77_くますけさん_対談_修正_坂野",
+          "title": "77_くますけさん_対談_FB修正3_坂野",
           "vimeo_url": "https://vimeo.com/1200670921/04ac831222",
           "status": "available",
           "created": "2026-06-12"
@@ -806,7 +806,7 @@
       ],
       "near_candidates": [
         {
-          "title": "77_くますけさん_対談_修正_坂野",
+          "title": "77_くますけさん_対談_FB修正3_坂野",
           "matched_keys": [
             "やーまん"
           ],
@@ -846,8 +846,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "コスト",
         "こすと",
+        "コスト",
         "kos"
       ],
       "near_candidates": [
@@ -906,8 +906,8 @@
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "ふみ",
-        "フミ"
+        "フミ",
+        "ふみ"
       ],
       "near_candidates": []
     }

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-13T13:40:52.733620",
+  "generated_at": "2026-06-13T14:41:49.376538",
   "summary": {
     "total_members": 41,
     "matched": 35,
@@ -748,7 +748,7 @@
       "guest_name": "GENさん",
       "videos": [
         {
-          "title": "GENさん　不動産修正",
+          "title": "82_GENさん_対談_修正1_大胡",
           "vimeo_url": "https://vimeo.com/1200947184/5cbb9f344b",
           "status": "available",
           "created": "2026-06-13"
@@ -807,8 +807,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
@@ -842,8 +842,8 @@
         {
           "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         }
@@ -852,8 +852,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "コスト",
         "こすと",
+        "コスト",
         "kos"
       ],
       "near_candidates": [
@@ -904,16 +904,16 @@
     {
       "guest_name": "ブンさん",
       "search_keys": [
-        "ブン",
-        "ぶん"
+        "ぶん",
+        "ブン"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "フミ",
-        "ふみ"
+        "ふみ",
+        "フミ"
       ],
       "near_candidates": []
     }

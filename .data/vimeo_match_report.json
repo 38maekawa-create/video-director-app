@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-13T22:55:36.310010",
+  "generated_at": "2026-06-14T00:02:40.236485",
   "summary": {
     "total_members": 41,
     "matched": 35,
     "unmatched": 6,
     "total_vimeo_videos": 400,
-    "taidan_videos": 149
+    "taidan_videos": 150
   },
   "matched": [
     {
@@ -714,9 +714,9 @@
       "guest_name": "しゃちぽこさん",
       "videos": [
         {
-          "title": "しゃちぽこさん修正",
+          "title": "84_しゃちぽこさん_対談_修正2_大胡",
           "vimeo_url": "https://vimeo.com/1201014717/c564ff8f94",
-          "status": "transcode_starting",
+          "status": "available",
           "created": "2026-06-13"
         },
         {
@@ -736,6 +736,12 @@
     {
       "guest_name": "ウメさん",
       "videos": [
+        {
+          "title": "85_ウメさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1201018865/af19918fa0",
+          "status": "available",
+          "created": "2026-06-13"
+        },
         {
           "title": "ウメさん　インタビュー 修正 音2　",
           "vimeo_url": "https://vimeo.com/1118975914/72ea0fd35c",
@@ -813,8 +819,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
@@ -848,8 +854,8 @@
         {
           "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         }
@@ -858,9 +864,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
+        "kos",
         "こすと",
-        "コスト",
-        "kos"
+        "コスト"
       ],
       "near_candidates": [
         {
@@ -918,8 +924,8 @@
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "フミ",
-        "ふみ"
+        "ふみ",
+        "フミ"
       ],
       "near_candidates": []
     }

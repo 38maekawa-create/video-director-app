@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-13T21:54:34.957871",
+  "generated_at": "2026-06-13T22:55:36.310010",
   "summary": {
     "total_members": 41,
     "matched": 35,
     "unmatched": 6,
     "total_vimeo_videos": 400,
-    "taidan_videos": 148
+    "taidan_videos": 149
   },
   "matched": [
     {
@@ -714,6 +714,12 @@
       "guest_name": "しゃちぽこさん",
       "videos": [
         {
+          "title": "しゃちぽこさん修正",
+          "vimeo_url": "https://vimeo.com/1201014717/c564ff8f94",
+          "status": "transcode_starting",
+          "created": "2026-06-13"
+        },
+        {
           "title": "84_しゃちぽこさん_対談_修正_大胡",
           "vimeo_url": "https://vimeo.com/1199411008/2689f804aa",
           "status": "available",
@@ -749,7 +755,7 @@
       "videos": [
         {
           "title": "82_GENさん_対談_修正1_大胡",
-          "vimeo_url": "https://vimeo.com/1200947184/5cbb9f344b",
+          "vimeo_url": "https://vimeo.com/1201011858/e3b1af40f1",
           "status": "available",
           "created": "2026-06-13"
         },
@@ -852,9 +858,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "kos",
         "こすと",
-        "コスト"
+        "コスト",
+        "kos"
       ],
       "near_candidates": [
         {
@@ -912,8 +918,8 @@
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "ふみ",
-        "フミ"
+        "フミ",
+        "ふみ"
       ],
       "near_candidates": []
     }

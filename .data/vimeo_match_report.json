@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-13T12:39:48.990427",
+  "generated_at": "2026-06-13T13:40:52.733620",
   "summary": {
     "total_members": 41,
     "matched": 35,
     "unmatched": 6,
     "total_vimeo_videos": 400,
-    "taidan_videos": 147
+    "taidan_videos": 148
   },
   "matched": [
     {
@@ -748,6 +748,12 @@
       "guest_name": "GENさん",
       "videos": [
         {
+          "title": "GENさん　不動産修正",
+          "vimeo_url": "https://vimeo.com/1200947184/5cbb9f344b",
+          "status": "available",
+          "created": "2026-06-13"
+        },
+        {
           "title": "82_GENさん_対談_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1199762915/4bf89d545c",
           "status": "available",
@@ -846,8 +852,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "こすと",
         "コスト",
+        "こすと",
         "kos"
       ],
       "near_candidates": [
@@ -906,8 +912,8 @@
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "ふみ",
-        "フミ"
+        "フミ",
+        "ふみ"
       ],
       "near_candidates": []
     }

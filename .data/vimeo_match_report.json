@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-14T23:58:43.670643",
+  "generated_at": "2026-06-15T00:59:50.245177",
   "summary": {
     "total_members": 41,
     "matched": 35,
     "unmatched": 6,
     "total_vimeo_videos": 400,
-    "taidan_videos": 152
+    "taidan_videos": 153
   },
   "matched": [
     {
@@ -936,8 +936,8 @@
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "ふみ",
-        "フミ"
+        "フミ",
+        "ふみ"
       ],
       "near_candidates": []
     }

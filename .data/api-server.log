@@ -8100,3 +8100,4 @@ INFO:     2400:4151:202:e100:388b:e10c:c07a:9a17:0 - "GET /api/projects/p-202604
 INFO:     2400:4151:202:e100:388b:e10c:c07a:9a17:0 - "GET /api/projects/p-20260418-GEN/youtube-assets HTTP/1.1" 200 OK
 INFO:     2400:4151:202:e100:388b:e10c:c07a:9a17:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     2400:4151:202:e100:388b:e10c:c07a:9a17:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     2400:4151:202:e100:388b:e10c:c07a:9a17:0 - "GET /healthz HTTP/1.1" 200 OK

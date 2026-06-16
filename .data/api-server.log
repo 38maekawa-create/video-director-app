@@ -8102,3 +8102,4 @@ INFO:     2400:4151:202:e100:388b:e10c:c07a:9a17:0 - "GET /api/projects HTTP/1.1
 INFO:     2400:4151:202:e100:388b:e10c:c07a:9a17:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
 INFO:     2400:4151:202:e100:388b:e10c:c07a:9a17:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     127.0.0.1:59309 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58955 - "GET /api/health HTTP/1.1" 200 OK

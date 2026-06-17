@@ -8112,3 +8112,4 @@ INFO:     2400:2200:841:43e4:d8bd:963b:9741:d0a4:0 - "GET /api/projects/p-202604
 INFO:     2400:2200:841:43e4:d8bd:963b:9741:d0a4:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     2400:2200:841:43e4:d8bd:963b:9741:d0a4:0 - "GET /api/projects/p-20260418-%E3%81%97%E3%82%83%E3%81%A1%E3%81%BD%E3%81%93/youtube-assets HTTP/1.1" 200 OK
 INFO:     2400:2200:841:43e4:d8bd:963b:9741:d0a4:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60842 - "GET /api/health HTTP/1.1" 200 OK

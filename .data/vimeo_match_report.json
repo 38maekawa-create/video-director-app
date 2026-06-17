@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-18T03:19:44.865588",
+  "generated_at": "2026-06-18T04:21:10.192938",
   "summary": {
     "total_members": 41,
     "matched": 35,
@@ -791,7 +791,7 @@
         {
           "title": "86_ゼットンさん_対談_修正_坂野",
           "vimeo_url": "https://vimeo.com/1202236172/0c3181cacf",
-          "status": "uploading",
+          "status": "available",
           "created": "2026-06-17"
         },
         {
@@ -837,8 +837,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
@@ -872,8 +872,8 @@
         {
           "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         }
@@ -882,9 +882,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "kos",
         "こすと",
-        "コスト"
+        "コスト",
+        "kos"
       ],
       "near_candidates": [
         {

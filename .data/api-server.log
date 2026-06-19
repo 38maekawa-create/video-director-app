@@ -8118,3 +8118,7 @@ INFO:     2a06:98c0:3624:f368:9add:e086:bf8a:fc2d:0 - "HEAD / HTTP/1.1" 405 Meth
 INFO:     127.0.0.1:54365 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     2400:4151:202:e100:cd89:8431:ff81:42f0:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     2400:4151:202:e100:cd89:8431:ff81:42f0:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     2400:2200:960:b020:d487:dfb:8fee:283:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     2400:2200:960:b020:d487:dfb:8fee:283:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     2400:2200:960:b020:d487:dfb:8fee:283:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     2400:2200:960:b020:d487:dfb:8fee:283:0 - "GET /api/projects/p-20260418-GEN/youtube-assets HTTP/1.1" 200 OK

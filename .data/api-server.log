@@ -8150,3 +8150,6 @@ INFO:     2400:2200:960:b020:d487:dfb:8fee:283:0 - "GET /api/projects/p-20260418
 INFO:     2400:2200:960:b020:d487:dfb:8fee:283:0 - "GET /api/projects/p-20260418-%E3%82%A6%E3%83%A1/youtube-assets HTTP/1.1" 200 OK
 INFO:     2400:2200:960:b020:d487:dfb:8fee:283:0 - "GET /api/projects/p-20260418-%E3%82%A6%E3%83%A1/youtube-assets HTTP/1.1" 200 OK
 INFO:     2400:2200:960:b020:d487:dfb:8fee:283:0 - "GET /api/projects/p-20260418-%E3%82%A6%E3%83%A1/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:2200:960:b020:d487:dfb:8fee:283:0 - "GET /api/projects/p-20260418-%E3%82%A6%E3%83%A1/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:2200:960:b020:d487:dfb:8fee:283:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     2400:2200:960:b020:d487:dfb:8fee:283:0 - "GET /healthz HTTP/1.1" 200 OK

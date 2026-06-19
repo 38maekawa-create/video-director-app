@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-19T14:38:11.000485",
+  "generated_at": "2026-06-19T15:01:08.600893",
   "summary": {
     "total_members": 41,
     "matched": 35,
@@ -837,8 +837,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
@@ -872,8 +872,8 @@
         {
           "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
           "matched_keys": [
-            "やーまん",
-            "ヤーマン"
+            "ヤーマン",
+            "やーまん"
           ],
           "status": "available"
         }
@@ -882,8 +882,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "kos",
         "こすと",
+        "kos",
         "コスト"
       ],
       "near_candidates": [

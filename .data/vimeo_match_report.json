@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-20T12:33:11.054564",
+  "generated_at": "2026-06-20T13:34:22.754770",
   "summary": {
     "total_members": 41,
     "matched": 35,
     "unmatched": 6,
     "total_vimeo_videos": 400,
-    "taidan_videos": 154
+    "taidan_videos": 155
   },
   "matched": [
     {
@@ -818,6 +818,12 @@
       "guest_name": "ちーさん",
       "videos": [
         {
+          "title": "89_ちーさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1202982860/d0ae0c8e9b",
+          "status": "available",
+          "created": "2026-06-20"
+        },
+        {
           "title": "ちーさんインタビュー1",
           "vimeo_url": "https://vimeo.com/1114203373/b73f51d6c6",
           "status": "available",
@@ -841,6 +847,13 @@
         "ヤーマン"
       ],
       "near_candidates": [
+        {
+          "title": "89_ちーさん_対談_初稿_大胡",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "available"
+        },
         {
           "title": "77_くますけさん_対談_FB修正3_坂野",
           "matched_keys": [
@@ -868,14 +881,6 @@
             "やーまん"
           ],
           "status": "uploading"
-        },
-        {
-          "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
-          "matched_keys": [
-            "やーまん",
-            "ヤーマン"
-          ],
-          "status": "available"
         }
       ]
     },

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-20T11:32:01.341293",
+  "generated_at": "2026-06-20T12:33:11.054564",
   "summary": {
     "total_members": 41,
-    "matched": 34,
-    "unmatched": 7,
-    "total_vimeo_videos": 200,
-    "taidan_videos": 114
+    "matched": 35,
+    "unmatched": 6,
+    "total_vimeo_videos": 400,
+    "taidan_videos": 154
   },
   "matched": [
     {
@@ -252,6 +252,12 @@
           "vimeo_url": "https://vimeo.com/1153868700/72e0744de0",
           "status": "available",
           "created": "2026-01-13"
+        },
+        {
+          "title": "_さるビールさん_インタビュー修正 (1)",
+          "vimeo_url": "https://vimeo.com/1117071304/b97a9ebd32",
+          "status": "available",
+          "created": "2025-09-09"
         }
       ]
     },
@@ -435,6 +441,12 @@
           "vimeo_url": "https://vimeo.com/1179560769/2b54cb01f9",
           "status": "available",
           "created": "2026-04-02"
+        },
+        {
+          "title": "けーさん_修正",
+          "vimeo_url": "https://vimeo.com/1124561861/8174886c74",
+          "status": "available",
+          "created": "2025-10-05"
         }
       ]
     },
@@ -527,6 +539,18 @@
           "vimeo_url": "https://vimeo.com/1175136437/de9a947723",
           "status": "available",
           "created": "2026-03-19"
+        },
+        {
+          "title": "メンイチ夫妻　インタビュー",
+          "vimeo_url": "https://vimeo.com/1118716330/b900b42c21",
+          "status": "available",
+          "created": "2025-09-15"
+        },
+        {
+          "title": "メンイチさんインタビュー1",
+          "vimeo_url": "https://vimeo.com/1114204802/a5051808ac",
+          "status": "available",
+          "created": "2025-08-29"
         }
       ]
     },
@@ -723,6 +747,18 @@
           "vimeo_url": "https://vimeo.com/1201018865/af19918fa0",
           "status": "available",
           "created": "2026-06-13"
+        },
+        {
+          "title": "ウメさん　インタビュー 修正 音2　",
+          "vimeo_url": "https://vimeo.com/1118975914/72ea0fd35c",
+          "status": "available",
+          "created": "2025-09-16"
+        },
+        {
+          "title": "ウメさんインタビュー_1",
+          "vimeo_url": "https://vimeo.com/1114202986/0dc7f17991",
+          "status": "available",
+          "created": "2025-08-29"
         }
       ]
     },
@@ -777,6 +813,17 @@
           "created": "2026-06-05"
         }
       ]
+    },
+    {
+      "guest_name": "ちーさん",
+      "videos": [
+        {
+          "title": "ちーさんインタビュー1",
+          "vimeo_url": "https://vimeo.com/1114203373/b73f51d6c6",
+          "status": "available",
+          "created": "2025-08-29"
+        }
+      ]
     }
   ],
   "unmatched": [
@@ -790,8 +837,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
@@ -825,8 +872,8 @@
         {
           "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
           "matched_keys": [
-            "ヤーマン",
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         }
@@ -835,9 +882,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
+        "こすと",
         "kos",
-        "コスト",
-        "こすと"
+        "コスト"
       ],
       "near_candidates": [
         {
@@ -881,14 +928,6 @@
       "guest_name": "TMさん",
       "search_keys": [
         "TM"
-      ],
-      "near_candidates": []
-    },
-    {
-      "guest_name": "ちーさん",
-      "search_keys": [
-        "チー",
-        "ちー"
       ],
       "near_candidates": []
     },

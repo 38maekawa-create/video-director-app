@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-20T14:35:27.720650",
+  "generated_at": "2026-06-20T15:36:38.248823",
   "summary": {
     "total_members": 41,
     "matched": 35,
     "unmatched": 6,
     "total_vimeo_videos": 400,
-    "taidan_videos": 155
+    "taidan_videos": 156
   },
   "matched": [
     {
@@ -818,6 +818,12 @@
       "guest_name": "ちーさん",
       "videos": [
         {
+          "title": "89_ちーさん_対談_修正1_大胡",
+          "vimeo_url": "https://vimeo.com/1202995991/c58aac2c3e",
+          "status": "available",
+          "created": "2026-06-20"
+        },
+        {
           "title": "89_ちーさん_対談_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1202982860/d0ae0c8e9b",
           "status": "available",
@@ -848,6 +854,13 @@
       ],
       "near_candidates": [
         {
+          "title": "89_ちーさん_対談_修正1_大胡",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
           "title": "89_ちーさん_対談_初稿_大胡",
           "matched_keys": [
             "やーまん"
@@ -874,22 +887,15 @@
             "やーまん"
           ],
           "status": "available"
-        },
-        {
-          "title": "77_くますけさん_FB修正1_坂野",
-          "matched_keys": [
-            "やーまん"
-          ],
-          "status": "uploading"
         }
       ]
     },
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "コスト",
+        "こすと",
         "kos",
-        "こすと"
+        "コスト"
       ],
       "near_candidates": [
         {
@@ -947,8 +953,8 @@
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "ふみ",
-        "フミ"
+        "フミ",
+        "ふみ"
       ],
       "near_candidates": []
     }

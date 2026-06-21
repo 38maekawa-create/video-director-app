@@ -8159,3 +8159,4 @@ INFO:     2400:2200:960:b020:713e:6f7e:d9bc:6665:0 - "GET /api/projects HTTP/1.1
 INFO:     2400:2200:960:b020:713e:6f7e:d9bc:6665:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
 INFO:     2400:2200:960:b020:713e:6f7e:d9bc:6665:0 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     2400:2200:960:b020:713e:6f7e:d9bc:6665:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55970 - "GET /api/health HTTP/1.1" 200 OK

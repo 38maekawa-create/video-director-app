@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-22T23:49:56.123198",
+  "generated_at": "2026-06-23T01:52:48.035675",
   "summary": {
     "total_members": 41,
     "matched": 35,
@@ -899,8 +899,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "コスト",
         "こすと",
+        "コスト",
         "kos"
       ],
       "near_candidates": [
@@ -951,16 +951,16 @@
     {
       "guest_name": "ブンさん",
       "search_keys": [
-        "ブン",
-        "ぶん"
+        "ぶん",
+        "ブン"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "ふみ",
-        "フミ"
+        "フミ",
+        "ふみ"
       ],
       "near_candidates": []
     }

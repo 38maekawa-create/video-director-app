@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-06-24T01:25:13.698407",
+  "generated_at": "2026-06-24T02:26:45.087175",
   "summary": {
     "total_members": 41,
-    "matched": 35,
-    "unmatched": 6,
+    "matched": 36,
+    "unmatched": 5,
     "total_vimeo_videos": 400,
     "taidan_videos": 157
   },
@@ -842,6 +842,17 @@
           "created": "2025-08-29"
         }
       ]
+    },
+    {
+      "guest_name": "ブンさん",
+      "videos": [
+        {
+          "title": "88_ブンさん_対談_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1203907087/228ba571b5",
+          "status": "available",
+          "created": "2026-06-23"
+        }
+      ]
     }
   ],
   "unmatched": [
@@ -855,8 +866,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
@@ -899,9 +910,9 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
+        "コスト",
         "こすと",
-        "kos",
-        "コスト"
+        "kos"
       ],
       "near_candidates": [
         {
@@ -945,14 +956,6 @@
       "guest_name": "TMさん",
       "search_keys": [
         "TM"
-      ],
-      "near_candidates": []
-    },
-    {
-      "guest_name": "ブンさん",
-      "search_keys": [
-        "ブン",
-        "ぶん"
       ],
       "near_candidates": []
     },

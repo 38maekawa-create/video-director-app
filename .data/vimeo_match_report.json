@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-24T21:44:33.132387",
+  "generated_at": "2026-06-24T22:46:09.252263",
   "summary": {
     "total_members": 41,
     "matched": 36,
     "unmatched": 5,
     "total_vimeo_videos": 400,
-    "taidan_videos": 157
+    "taidan_videos": 158
   },
   "matched": [
     {
@@ -789,6 +789,12 @@
       "guest_name": "ゼットンさん",
       "videos": [
         {
+          "title": "86_ゼットンさん_対談_FB修正2_テロップ修正_坂野",
+          "vimeo_url": "https://vimeo.com/1204188088/42f91d960e",
+          "status": "uploading",
+          "created": "2026-06-24"
+        },
+        {
           "title": "86_ゼットンさん_対談_FB修正2_坂野",
           "vimeo_url": "https://vimeo.com/1202236172/0c3181cacf",
           "status": "available",
@@ -866,8 +872,8 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "ヤーマン",
-        "やーまん"
+        "やーまん",
+        "ヤーマン"
       ],
       "near_candidates": [
         {
@@ -911,8 +917,8 @@
       "guest_name": "kosさん",
       "search_keys": [
         "kos",
-        "コスト",
-        "こすと"
+        "こすと",
+        "コスト"
       ],
       "near_candidates": [
         {
@@ -962,8 +968,8 @@
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "フミ",
-        "ふみ"
+        "ふみ",
+        "フミ"
       ],
       "near_candidates": []
     }

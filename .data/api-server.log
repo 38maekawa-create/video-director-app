@@ -8268,3 +8268,9 @@ INFO:     100.69.69.63:51857 - "GET /api/v1/projects/proper-yaesu-20260508-01-as
 INFO:     100.69.69.63:51857 - "GET /api/projects/proper-yaesu-20260508-01-asset-100m-roadmap/feedbacks HTTP/1.1" 200 OK
 INFO:     100.69.69.63:51857 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/human-checks HTTP/1.1" 200 OK
 INFO:     100.69.69.63:51857 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/source-bundle HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55028 - "GET /api/projects/proper-yaesu-20260508-01-asset-100m-roadmap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55029 - "GET /api/projects/proper-yaesu-20260508-02-property-purchase-list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55030 - "GET /api/projects/proper-yaesu-20260508-03-seven-habits-deleted HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55031 - "GET /api/projects/proper-yaesu-20260508-04-one-person-corporation-tax HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55032 - "GET /api/projects/proper-yaesu-20260508-05-weak-yen-export-side-business HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55033 - "GET /api/projects/proper-yaesu-20260508-06-nisa-asset-roadmap HTTP/1.1" 200 OK

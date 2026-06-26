@@ -8226,3 +8226,7 @@ INFO:     2400:4151:202:e100:313d:fbaf:3deb:423f:0 - "GET /api/projects/p-202603
 INFO:     2400:4151:202:e100:313d:fbaf:3deb:423f:0 - "GET /api/projects/p-20260328-TM/youtube-assets HTTP/1.1" 200 OK
 INFO:     2400:4151:202:e100:313d:fbaf:3deb:423f:0 - "GET /api/projects/p-20260328-TM/youtube-assets HTTP/1.1" 200 OK
 INFO:     2400:4151:202:e100:313d:fbaf:3deb:423f:0 - "GET /api/projects/p-20260328-TM/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:4151:202:e100:313d:fbaf:3deb:423f:0 - "GET /api/projects/p-20260328-TM/youtube-assets HTTP/1.1" 200 OK
+INFO:     2400:4151:202:e100:313d:fbaf:3deb:423f:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     2400:4151:202:e100:313d:fbaf:3deb:423f:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     2400:4151:202:e100:313d:fbaf:3deb:423f:0 - "GET /healthz HTTP/1.1" 200 OK

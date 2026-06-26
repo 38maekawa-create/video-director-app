@@ -8230,3 +8230,8 @@ INFO:     2400:4151:202:e100:313d:fbaf:3deb:423f:0 - "GET /api/projects/p-202603
 INFO:     2400:4151:202:e100:313d:fbaf:3deb:423f:0 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     2400:4151:202:e100:313d:fbaf:3deb:423f:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
 INFO:     2400:4151:202:e100:313d:fbaf:3deb:423f:0 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:57542 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     240a:61:5206:6fa:f5bb:ba28:7968:bb8d:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     240a:61:5206:6fa:f5bb:ba28:7968:bb8d:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.69.69.63:57542 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:57543 - "GET /api/projects HTTP/1.1" 200 OK

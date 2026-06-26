@@ -8247,3 +8247,13 @@ INFO:     127.0.0.1:52133 - "GET /api/projects/proper-yaesu-20260619-05-annual-i
 INFO:     127.0.0.1:52134 - "GET /api/projects/proper-yaesu-20260619-05-annual-income-10m/youtube-assets HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52135 - "GET /api/projects/proper-yaesu-20260619-06-side-job-exposure HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52136 - "GET /api/projects/proper-yaesu-20260619-06-side-job-exposure/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.69.69.63:63103 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:63104 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.69.69.63:63103 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     100.69.69.63:63105 - "GET /api/v1/projects/proper-yaesu-20260619-01-one-room-mansion/formal-workflow HTTP/1.1" 404 Not Found
+INFO:     100.69.69.63:63105 - "GET /api/projects/proper-yaesu-20260619-01-one-room-mansion/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.69.69.63:59186 - "GET /api/v1/projects/proper-yaesu-20260619-01-one-room-mansion/source-bundle HTTP/1.1" 404 Not Found
+INFO:     100.69.69.63:59186 - "GET /api/v1/projects/proper-yaesu-20260619-01-one-room-mansion/human-checks HTTP/1.1" 404 Not Found
+INFO:     100.69.69.63:59186 - "GET /api/projects/proper-yaesu-20260619-01-one-room-mansion/feedbacks HTTP/1.1" 200 OK
+INFO:     100.69.69.63:50022 - "GET /api/v1/projects/proper-yaesu-20260508-02-property-purchase-list/formal-workflow HTTP/1.1" 200 OK
+INFO:     100.69.69.63:59118 - "GET /api/projects/proper-yaesu-20260508-02-property-purchase-list/youtube-assets HTTP/1.1" 404 Not Found

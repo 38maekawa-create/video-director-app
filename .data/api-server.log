@@ -8257,3 +8257,14 @@ INFO:     100.69.69.63:59186 - "GET /api/v1/projects/proper-yaesu-20260619-01-on
 INFO:     100.69.69.63:59186 - "GET /api/projects/proper-yaesu-20260619-01-one-room-mansion/feedbacks HTTP/1.1" 200 OK
 INFO:     100.69.69.63:50022 - "GET /api/v1/projects/proper-yaesu-20260508-02-property-purchase-list/formal-workflow HTTP/1.1" 200 OK
 INFO:     100.69.69.63:59118 - "GET /api/projects/proper-yaesu-20260508-02-property-purchase-list/youtube-assets HTTP/1.1" 404 Not Found
+INFO:     100.69.69.63:59118 - "GET /api/v1/projects/proper-yaesu-20260508-02-property-purchase-list/material-roles HTTP/1.1" 200 OK
+INFO:     100.69.69.63:59768 - "GET /api/projects/proper-yaesu-20260508-02-property-purchase-list/feedbacks HTTP/1.1" 200 OK
+INFO:     100.69.69.63:59768 - "GET /api/v1/projects/proper-yaesu-20260508-02-property-purchase-list/source-bundle HTTP/1.1" 200 OK
+INFO:     100.69.69.63:59768 - "GET /api/v1/projects/proper-yaesu-20260508-02-property-purchase-list/human-checks HTTP/1.1" 200 OK
+INFO:     100.69.69.63:59768 - "GET /api/v1/projects/proper-yaesu-20260508-02-property-purchase-list/source-bundle HTTP/1.1" 200 OK
+INFO:     100.69.69.63:51857 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/formal-workflow HTTP/1.1" 200 OK
+INFO:     100.69.69.63:51857 - "GET /api/projects/proper-yaesu-20260508-01-asset-100m-roadmap/youtube-assets HTTP/1.1" 404 Not Found
+INFO:     100.69.69.63:51857 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/material-roles HTTP/1.1" 200 OK
+INFO:     100.69.69.63:51857 - "GET /api/projects/proper-yaesu-20260508-01-asset-100m-roadmap/feedbacks HTTP/1.1" 200 OK
+INFO:     100.69.69.63:51857 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/human-checks HTTP/1.1" 200 OK
+INFO:     100.69.69.63:51857 - "GET /api/v1/projects/proper-yaesu-20260508-01-asset-100m-roadmap/source-bundle HTTP/1.1" 200 OK

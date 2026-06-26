@@ -8274,3 +8274,11 @@ INFO:     127.0.0.1:55030 - "GET /api/projects/proper-yaesu-20260508-03-seven-ha
 INFO:     127.0.0.1:55031 - "GET /api/projects/proper-yaesu-20260508-04-one-person-corporation-tax HTTP/1.1" 200 OK
 INFO:     127.0.0.1:55032 - "GET /api/projects/proper-yaesu-20260508-05-weak-yen-export-side-business HTTP/1.1" 200 OK
 INFO:     127.0.0.1:55033 - "GET /api/projects/proper-yaesu-20260508-06-nisa-asset-roadmap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55092 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55093 - "GET /api/projects/proper-yaesu-20260508-01-asset-100m-roadmap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55094 - "GET /api/projects/proper-yaesu-20260508-02-property-purchase-list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55095 - "GET /api/projects/proper-yaesu-20260508-03-seven-habits-deleted HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55096 - "GET /api/projects/proper-yaesu-20260508-04-one-person-corporation-tax HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55097 - "GET /api/projects/proper-yaesu-20260508-05-weak-yen-export-side-business HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55098 - "GET /api/projects/proper-yaesu-20260508-06-nisa-asset-roadmap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55125 - "GET /api/projects?route_profile=teko_personal_longform HTTP/1.1" 200 OK

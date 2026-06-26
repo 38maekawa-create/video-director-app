@@ -164,6 +164,15 @@ def init_db():
 KNOWLEDGE_PAGES_DIR = Path.home() / "video-knowledge-pages"
 KNOWLEDGE_PAGES_BASE_URL = "https://38maekawa-create.github.io/video-knowledge-pages/"
 
+PROPER_YAESU_KNOWLEDGE_PAGE_FILENAMES = {
+    "01_asset_100m_roadmap": "20260515_プロパー八重洲YouTube素材_02_資産1億までにやったこと全部公開.html",
+    "02_property_purchase_list": "20260515_プロパー八重洲YouTube素材_03_不動産購入チェックリスト.html",
+    "03_seven_habits_deleted": "20260515_プロパー八重洲YouTube素材_04_捨てた7つの習慣.html",
+    "04_one_person_corporation_tax": "20260515_プロパー八重洲YouTube素材_05_ひとり法人と税金.html",
+    "05_weak_yen_export_side_business": "20260515_プロパー八重洲YouTube素材_06_円安時代の輸出副業.html",
+    "06_nisa_asset_roadmap": "20260515_プロパー八重洲YouTube素材_10_NISAと資産ロードマップ.html",
+}
+
 
 def _normalize_name(name: str) -> str:
     """ゲスト名を正規化して比較可能にする（敬称除去・小文字化・全角半角統一）"""
@@ -173,6 +182,47 @@ def _normalize_name(name: str) -> str:
         if name.endswith(suffix):
             name = name[: -len(suffix)]
     return name
+
+
+def _json_object(raw: object) -> dict:
+    """DB JSON文字列/辞書を安全にdictへ正規化する。"""
+    if isinstance(raw, dict):
+        return raw
+    if not raw or not isinstance(raw, str):
+        return {}
+    try:
+        parsed = json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def _knowledge_page_url_from_filename(filename: object) -> Optional[str]:
+    """video-knowledge-pages内のHTMLファイル名から公開URLを返す。"""
+    if not filename:
+        return None
+    name = Path(str(filename)).name
+    if not name.endswith(".html"):
+        name = f"{name}.html"
+    if not KNOWLEDGE_PAGES_DIR.exists():
+        return None
+    if not (KNOWLEDGE_PAGES_DIR / name).exists():
+        return None
+    return KNOWLEDGE_PAGES_BASE_URL + name
+
+
+def _explicit_knowledge_page_url(*payloads: dict) -> Optional[str]:
+    """knowledge/source_video JSON内の明示URLまたはHTMLファイル名を優先する。"""
+    for payload in payloads:
+        for key in ("knowledge_page_url", "page_url", "html_url", "github_pages_url"):
+            value = payload.get(key)
+            if value:
+                return str(value)
+        for key in ("knowledge_page_filename", "html_filename", "github_pages_filename"):
+            url = _knowledge_page_url_from_filename(payload.get(key))
+            if url:
+                return url
+    return None
 
 
 def _normalize_youtube_title_proposals_for_ui(
@@ -235,26 +285,54 @@ def _normalize_youtube_title_proposals_for_ui(
     return normalized
 
 
-def find_knowledge_page_url(guest_name: str, shoot_date: Optional[str] = None) -> Optional[str]:
+def find_knowledge_page_url(
+    guest_name: str,
+    shoot_date: Optional[str] = None,
+    *,
+    title: Optional[str] = None,
+    primary_subject_name: Optional[str] = None,
+    knowledge: object = None,
+    source_video: object = None,
+    route_profile: Optional[str] = None,
+    category: Optional[str] = None,
+) -> Optional[str]:
     """プロジェクトのゲスト名(+撮影日)からナレッジページHTMLのURLを返す。
 
     マッチング戦略:
+    0. knowledge/source_video JSONの明示URLまたはHTMLファイル名を最優先
+    0b. プロパー八重洲ch長尺素材は package_id から旧GitHub Pages URLを復元
     1. ファイル名に撮影日とゲスト名の両方が含まれる → 最優先マッチ
     2. ファイル名にゲスト名が含まれる → 日付の新しいものを優先
     """
+    knowledge_obj = _json_object(knowledge)
+    source_video_obj = _json_object(source_video)
+
+    explicit = _explicit_knowledge_page_url(knowledge_obj, source_video_obj)
+    if explicit:
+        return explicit
+
+    route = route_profile or category
+    if route == "teko_personal_longform" or knowledge_obj.get("source") == "proper_yaesu_youtube_material":
+        package_id = str(knowledge_obj.get("package_id") or "")
+        url = _knowledge_page_url_from_filename(PROPER_YAESU_KNOWLEDGE_PAGE_FILENAMES.get(package_id))
+        if url:
+            return url
+
     if not KNOWLEDGE_PAGES_DIR.exists():
         return None
 
-    normalized_guest = _normalize_name(guest_name)
-    if not normalized_guest:
+    candidate_names = [guest_name, title, primary_subject_name]
+    normalized_candidates = [_normalize_name(str(name)) for name in candidate_names if name]
+    normalized_candidates = [name for name in normalized_candidates if name]
+    if not normalized_candidates:
         return None
 
     html_files = sorted(KNOWLEDGE_PAGES_DIR.glob("*.html"), reverse=True)
 
-    # 撮影日を正規化（YYYY-MM-DD → YYYYMMDD）
+    # 撮影日を正規化（YYYY-MM-DD / YYYY/MM/DD → YYYYMMDD）
     shoot_date_compact = None
     if shoot_date:
-        shoot_date_compact = shoot_date.replace("-", "")
+        shoot_date_compact = shoot_date.replace("-", "").replace("/", "")
 
     best_match = None
     best_with_date = None
@@ -263,8 +341,8 @@ def find_knowledge_page_url(guest_name: str, shoot_date: Optional[str] = None) -
         fname_lower = f.name.lower()
         fname_normalized = unicodedata.normalize("NFKC", fname_lower)
 
-        # ゲスト名がファイル名に含まれるか確認
-        if normalized_guest not in fname_normalized:
+        # ゲスト名/タイトル/主題名がファイル名に含まれるか確認
+        if not any(candidate in fname_normalized for candidate in normalized_candidates):
             continue
 
         # 撮影日がファイル名に含まれるか確認
@@ -319,7 +397,16 @@ def _enrich_project_with_knowledge_url(d: dict) -> dict:
     """プロジェクト辞書にknowledge_page_urlフィールドを追加する"""
     guest_name = d.get("guest_name", "")
     shoot_date = d.get("shoot_date", "")
-    d["knowledge_page_url"] = find_knowledge_page_url(guest_name, shoot_date)
+    d["knowledge_page_url"] = find_knowledge_page_url(
+        guest_name,
+        shoot_date,
+        title=d.get("title"),
+        primary_subject_name=d.get("primary_subject_name"),
+        knowledge=d.get("knowledge"),
+        source_video=d.get("source_video"),
+        route_profile=d.get("route_profile"),
+        category=d.get("category"),
+    )
     return d
 
 
@@ -374,7 +461,12 @@ PROPER_YAESU_LONGFORM_PROJECTS = [
         "source_video": None,
         "edited_video": None,
         "feedback_summary": None,
-        "knowledge": {"package_id": "01_asset_100m_roadmap", "block_id": "block_1620", "sheet_row": 2},
+        "knowledge": {
+            "package_id": "01_asset_100m_roadmap",
+            "block_id": "block_1620",
+            "sheet_row": 2,
+            "knowledge_page_filename": PROPER_YAESU_KNOWLEDGE_PAGE_FILENAMES["01_asset_100m_roadmap"],
+        },
         "category": "teko_personal_longform",
         "route_profile": "teko_personal_longform",
         "content_family": "personal_longform",
@@ -397,7 +489,12 @@ PROPER_YAESU_LONGFORM_PROJECTS = [
         "source_video": None,
         "edited_video": None,
         "feedback_summary": None,
-        "knowledge": {"package_id": "02_property_purchase_list", "block_id": "block_1442", "sheet_row": 3},
+        "knowledge": {
+            "package_id": "02_property_purchase_list",
+            "block_id": "block_1442",
+            "sheet_row": 3,
+            "knowledge_page_filename": PROPER_YAESU_KNOWLEDGE_PAGE_FILENAMES["02_property_purchase_list"],
+        },
         "category": "teko_personal_longform",
         "route_profile": "teko_personal_longform",
         "content_family": "personal_longform",
@@ -420,7 +517,12 @@ PROPER_YAESU_LONGFORM_PROJECTS = [
         "source_video": None,
         "edited_video": None,
         "feedback_summary": None,
-        "knowledge": {"package_id": "03_seven_habits_deleted", "block_id": "block_1534", "sheet_row": 4},
+        "knowledge": {
+            "package_id": "03_seven_habits_deleted",
+            "block_id": "block_1534",
+            "sheet_row": 4,
+            "knowledge_page_filename": PROPER_YAESU_KNOWLEDGE_PAGE_FILENAMES["03_seven_habits_deleted"],
+        },
         "category": "teko_personal_longform",
         "route_profile": "teko_personal_longform",
         "content_family": "personal_longform",
@@ -443,7 +545,12 @@ PROPER_YAESU_LONGFORM_PROJECTS = [
         "source_video": None,
         "edited_video": None,
         "feedback_summary": None,
-        "knowledge": {"package_id": "04_one_person_corporation_tax", "block_id": "block_1759", "sheet_row": 5},
+        "knowledge": {
+            "package_id": "04_one_person_corporation_tax",
+            "block_id": "block_1759",
+            "sheet_row": 5,
+            "knowledge_page_filename": PROPER_YAESU_KNOWLEDGE_PAGE_FILENAMES["04_one_person_corporation_tax"],
+        },
         "category": "teko_personal_longform",
         "route_profile": "teko_personal_longform",
         "content_family": "personal_longform",
@@ -466,7 +573,12 @@ PROPER_YAESU_LONGFORM_PROJECTS = [
         "source_video": None,
         "edited_video": None,
         "feedback_summary": None,
-        "knowledge": {"package_id": "05_weak_yen_export_side_business", "block_id": "block_1842", "sheet_row": 6},
+        "knowledge": {
+            "package_id": "05_weak_yen_export_side_business",
+            "block_id": "block_1842",
+            "sheet_row": 6,
+            "knowledge_page_filename": PROPER_YAESU_KNOWLEDGE_PAGE_FILENAMES["05_weak_yen_export_side_business"],
+        },
         "category": "teko_personal_longform",
         "route_profile": "teko_personal_longform",
         "content_family": "personal_longform",
@@ -489,7 +601,12 @@ PROPER_YAESU_LONGFORM_PROJECTS = [
         "source_video": None,
         "edited_video": None,
         "feedback_summary": None,
-        "knowledge": {"package_id": "06_nisa_asset_roadmap", "block_id": "block_1919", "sheet_row": 10},
+        "knowledge": {
+            "package_id": "06_nisa_asset_roadmap",
+            "block_id": "block_1919",
+            "sheet_row": 10,
+            "knowledge_page_filename": PROPER_YAESU_KNOWLEDGE_PAGE_FILENAMES["06_nisa_asset_roadmap"],
+        },
         "category": "teko_personal_longform",
         "route_profile": "teko_personal_longform",
         "content_family": "personal_longform",
@@ -511,6 +628,8 @@ def _derive_route_profile(d: dict) -> str:
         return "teko_interview"
     if category == "teko_realestate":
         return "teko_realestate"
+    if category == "teko_personal_longform":
+        return "teko_personal_longform"
     return "uncategorized"
 
 
@@ -531,6 +650,7 @@ def _get_virtual_longform_project(project_id: str) -> Optional[dict]:
     for virtual_project in PROPER_YAESU_LONGFORM_PROJECTS:
         if virtual_project["id"] == project_id:
             d = dict(virtual_project)
+            _enrich_project_with_knowledge_url(d)
             _enrich_project_route_fields(d)
             return d
     return None
@@ -1112,6 +1232,7 @@ def list_projects(category: Optional[str] = None, route_profile: Optional[str] =
     if route_profile in (None, "teko_personal_longform") and category in (None, "teko_personal_longform"):
         for virtual_project in PROPER_YAESU_LONGFORM_PROJECTS:
             d = dict(virtual_project)
+            _enrich_project_with_knowledge_url(d)
             _enrich_project_route_fields(d)
             result.append(d)
     return result
@@ -1260,7 +1381,7 @@ def update_project_category(project_id: str, body: CategoryUpdate):
 @app.get("/api/v1/projects/by-category/{category}")
 def get_projects_by_category(category: str):
     """カテゴリ別プロジェクト一覧を取得する"""
-    valid_categories = ("teko_member", "teko_realestate", "uncategorized")
+    valid_categories = ("teko_member", "teko_realestate", "teko_personal_longform", "uncategorized")
     if category not in valid_categories:
         raise HTTPException(400, f"Invalid category. Must be one of: {valid_categories}")
 
@@ -1293,6 +1414,15 @@ def get_projects_by_category(category: str):
         _enrich_project_with_knowledge_url(d)
         _enrich_project_route_fields(d)
         result.append(d)
+    if category == "teko_personal_longform":
+        existing_ids = {project.get("id") for project in result}
+        for virtual_project in PROPER_YAESU_LONGFORM_PROJECTS:
+            if virtual_project["id"] in existing_ids:
+                continue
+            d = dict(virtual_project)
+            _enrich_project_with_knowledge_url(d)
+            _enrich_project_route_fields(d)
+            result.append(d)
     return result
 
 

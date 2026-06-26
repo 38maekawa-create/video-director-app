@@ -136,6 +136,38 @@ class TestFindKnowledgePageUrl:
             assert url is not None
             assert "20251213" in url
 
+    def test_match_proper_yaesu_by_package_id(self, tmp_path):
+        """プロパー八重洲ch長尺素材はpackage_idから旧HTMLへ復元できること"""
+        from src.video_direction.integrations import api_server
+
+        filename = api_server.PROPER_YAESU_KNOWLEDGE_PAGE_FILENAMES["06_nisa_asset_roadmap"]
+        _make_html_files(tmp_path, [filename])
+
+        with mock.patch.object(api_server, "KNOWLEDGE_PAGES_DIR", tmp_path):
+            url = api_server.find_knowledge_page_url(
+                "NISAでは金持ちになれない資産別ロードマップ",
+                "2026/05/08",
+                knowledge={"package_id": "06_nisa_asset_roadmap"},
+                route_profile="teko_personal_longform",
+            )
+            assert url is not None
+            assert filename in url
+
+    def test_match_explicit_knowledge_page_filename(self, tmp_path):
+        """knowledge JSONの明示HTMLファイル名を最優先できること"""
+        from src.video_direction.integrations import api_server
+
+        filename = "20260515_プロパー八重洲YouTube素材_04_捨てた7つの習慣.html"
+        _make_html_files(tmp_path, [filename])
+
+        with mock.patch.object(api_server, "KNOWLEDGE_PAGES_DIR", tmp_path):
+            url = api_server.find_knowledge_page_url(
+                "キャッシュ1.5億のために捨てた7つの習慣",
+                knowledge={"knowledge_page_filename": filename},
+            )
+            assert url is not None
+            assert filename in url
+
 
 class TestEnrichProjectWithKnowledgeUrl:
     """_enrich_project_with_knowledge_url関数のテスト"""
@@ -173,3 +205,22 @@ class TestEnrichProjectWithKnowledgeUrl:
         with mock.patch.object(api_server, "KNOWLEDGE_PAGES_DIR", tmp_path):
             result = api_server._enrich_project_with_knowledge_url(project)
             assert result["knowledge_page_url"] is None
+
+    def test_adds_proper_yaesu_url_from_knowledge(self, tmp_path):
+        """プロパー八重洲ch projectへknowledge_page_urlを補完できること"""
+        from src.video_direction.integrations import api_server
+
+        filename = api_server.PROPER_YAESU_KNOWLEDGE_PAGE_FILENAMES["03_seven_habits_deleted"]
+        _make_html_files(tmp_path, [filename])
+
+        project = {
+            "guest_name": "キャッシュ1.5億のために捨てた7つの習慣",
+            "shoot_date": "2026/05/08",
+            "route_profile": "teko_personal_longform",
+            "knowledge": {"package_id": "03_seven_habits_deleted"},
+        }
+
+        with mock.patch.object(api_server, "KNOWLEDGE_PAGES_DIR", tmp_path):
+            result = api_server._enrich_project_with_knowledge_url(project)
+            assert result["knowledge_page_url"] is not None
+            assert filename in result["knowledge_page_url"]

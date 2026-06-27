@@ -12878,3 +12878,11 @@ INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8210 (Press CTRL+C to quit)
 JSON decode failed for field edited_video: Expecting value: line 1 column 1 (char 0)
 JSON decode failed for field edited_video: Expecting value: line 1 column 1 (char 0)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [9389]
+INFO:     Started server process [860]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8210 (Press CTRL+C to quit)

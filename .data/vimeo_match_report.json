@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-27T15:10:37.233127",
+  "generated_at": "2026-06-27T15:45:30.159729",
   "summary": {
     "total_members": 47,
     "matched": 0,
@@ -26,8 +26,8 @@
     {
       "guest_name": "PAYさん",
       "search_keys": [
-        "pay",
         "PAY",
+        "pay",
         "Pay"
       ],
       "near_candidates": []
@@ -42,24 +42,24 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ろくさん",
       "search_keys": [
-        "ロク",
-        "ろく"
+        "ろく",
+        "ロク"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ひろきょうさん",
       "search_keys": [
-        "ひろきょう",
-        "ヒロキョウ"
+        "ヒロキョウ",
+        "ひろきょう"
       ],
       "near_candidates": []
     },
@@ -73,8 +73,8 @@
     {
       "guest_name": "Izuさん",
       "search_keys": [
-        "luz",
         "Lzu",
+        "luz",
         "Izu",
         "lzu"
       ],
@@ -83,8 +83,8 @@
     {
       "guest_name": "こもさん",
       "search_keys": [
-        "コモ",
-        "こも"
+        "こも",
+        "コモ"
       ],
       "near_candidates": []
     },
@@ -99,16 +99,16 @@
     {
       "guest_name": "りょうすけさん",
       "search_keys": [
-        "りょうすけ",
-        "リョウスケ"
+        "リョウスケ",
+        "りょうすけ"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "さるビールさん",
       "search_keys": [
-        "さるビール",
         "さるびーる",
+        "さるビール",
         "サルビール"
       ],
       "near_candidates": []
@@ -132,37 +132,37 @@
     {
       "guest_name": "ゆきもるさん",
       "search_keys": [
-        "ユキモリ",
         "雪森",
-        "ゆきもる",
         "ユキモル",
-        "ゆきもり"
+        "ゆきもり",
+        "ユキモリ",
+        "ゆきもる"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "スリマンさん",
       "search_keys": [
-        "スリマン",
-        "すりまん"
+        "すりまん",
+        "スリマン"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "あさかつさん",
       "search_keys": [
-        "あさかつ",
-        "アサカツ"
+        "アサカツ",
+        "あさかつ"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "くますけさん",
       "search_keys": [
-        "クマスケ",
-        "くますけ",
+        "くまき",
         "クマキ",
-        "くまき"
+        "クマスケ",
+        "くますけ"
       ],
       "near_candidates": []
     },
@@ -177,24 +177,24 @@
     {
       "guest_name": "ロキさん",
       "search_keys": [
-        "ロキ",
-        "ろき"
+        "ろき",
+        "ロキ"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "けーさん",
       "search_keys": [
-        "けー",
-        "ケー"
+        "ケー",
+        "けー"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "さくらさん",
       "search_keys": [
-        "サクラ",
-        "さくら"
+        "さくら",
+        "サクラ"
       ],
       "near_candidates": []
     },
@@ -209,10 +209,10 @@
     {
       "guest_name": "コテさん",
       "search_keys": [
-        "こて",
-        "コテツ",
+        "こてつ",
         "コテ",
-        "こてつ"
+        "コテツ",
+        "こて"
       ],
       "near_candidates": []
     },
@@ -220,30 +220,30 @@
       "guest_name": "kosさん",
       "search_keys": [
         "コスト",
-        "kos",
-        "こすと"
+        "こすと",
+        "kos"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "メンイチさん",
       "search_keys": [
-        "めいじ",
         "メンイチ",
-        "メイジ",
-        "めんいち"
+        "めいじ",
+        "めんいち",
+        "メイジ"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "さといも・トーマスさん",
       "search_keys": [
-        "トーマス",
-        "さといも・トーマス",
-        "サトイモ",
-        "とーます",
         "さといも",
+        "とーます",
+        "さといも・トーマス",
         "さといも・とーます",
+        "サトイモ",
+        "トーマス",
         "サトイモ・トーマス"
       ],
       "near_candidates": []
@@ -251,8 +251,8 @@
     {
       "guest_name": "ハオさん",
       "search_keys": [
-        "羽生",
         "はお",
+        "羽生",
         "ハオ"
       ],
       "near_candidates": []
@@ -275,8 +275,8 @@
     {
       "guest_name": "ハラさん",
       "search_keys": [
-        "はら",
-        "ハラ"
+        "ハラ",
+        "はら"
       ],
       "near_candidates": []
     },
@@ -322,8 +322,8 @@
     {
       "guest_name": "ゼットンさん",
       "search_keys": [
-        "ゼットン",
-        "ぜっとん"
+        "ぜっとん",
+        "ゼットン"
       ],
       "near_candidates": []
     },
@@ -338,16 +338,16 @@
     {
       "guest_name": "ブンさん",
       "search_keys": [
-        "ブン",
-        "ぶん"
+        "ぶん",
+        "ブン"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "ふみ",
-        "フミ"
+        "フミ",
+        "ふみ"
       ],
       "near_candidates": []
     },
@@ -370,12 +370,12 @@
     {
       "guest_name": "金持ちがやらないこと / 会社員が取らない方がいい選択",
       "search_keys": [
-        "金持チガヤラナイコト / 会社員ガ取ラナイ方ガイイ選択",
+        "会社員が取らない方がいい選択",
         "会社員ガ取ラナイ方ガイイ選択",
-        "金持ちがやらないこと",
+        "金持チガヤラナイコト / 会社員ガ取ラナイ方ガイイ選択",
         "金持ちがやらないこと / 会社員が取らない方がいい選択",
-        "金持チガヤラナイコト",
-        "会社員が取らない方がいい選択"
+        "金持ちがやらないこと",
+        "金持チガヤラナイコト"
       ],
       "near_candidates": []
     },
@@ -396,8 +396,8 @@
     {
       "guest_name": "副業がバレる理由",
       "search_keys": [
-        "副業がバレる理由",
         "副業がばれる理由",
+        "副業がバレる理由",
         "副業ガバレル理由"
       ],
       "near_candidates": []

@@ -8297,3 +8297,10 @@ INFO:     100.69.69.63:51978 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     100.69.69.63:51978 - "GET /api/v1/projects/proper-yaesu-20260619-01-one-room-mansion/formal-workflow HTTP/1.1" 404 Not Found
 INFO:     100.69.69.63:51978 - "GET /api/projects/proper-yaesu-20260619-01-one-room-mansion/youtube-assets HTTP/1.1" 200 OK
 INFO:     100.69.69.63:51979 - "GET /api/projects/proper-yaesu-20260619-01-one-room-mansion/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.69.69.63:51980 - "GET /api/projects/proper-yaesu-20260619-01-one-room-mansion/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.69.69.63:51981 - "GET /api/v1/projects/proper-yaesu-20260619-01-one-room-mansion/material-roles HTTP/1.1" 404 Not Found
+INFO:     100.69.69.63:51982 - "GET /api/projects/proper-yaesu-20260619-01-one-room-mansion/feedbacks HTTP/1.1" 200 OK
+INFO:     100.69.69.63:51983 - "GET /api/v1/projects/proper-yaesu-20260619-01-one-room-mansion/source-bundle HTTP/1.1" 404 Not Found
+INFO:     100.69.69.63:51984 - "GET /api/v1/projects/proper-yaesu-20260619-01-one-room-mansion/material-roles HTTP/1.1" 404 Not Found
+INFO:     100.69.69.63:51984 - "GET /api/projects/proper-yaesu-20260619-01-one-room-mansion/youtube-assets HTTP/1.1" 200 OK
+INFO:     100.69.69.63:51985 - "GET /api/v1/projects/proper-yaesu-20260619-01-one-room-mansion/formal-workflow HTTP/1.1" 404 Not Found

@@ -8316,3 +8316,5 @@ INFO:     127.0.0.1:59275 - "GET /api/projects/proper-yaesu-20260619-03-rich-do-
 INFO:     127.0.0.1:59276 - "GET /api/projects/proper-yaesu-20260619-04-job-hunting HTTP/1.1" 200 OK
 INFO:     127.0.0.1:59277 - "GET /api/projects/proper-yaesu-20260619-05-annual-income-10m HTTP/1.1" 200 OK
 INFO:     127.0.0.1:59278 - "GET /api/projects/proper-yaesu-20260619-06-side-job-exposure HTTP/1.1" 200 OK
+INFO:     100.69.69.63:62107 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:62108 - "GET /api/projects HTTP/1.1" 200 OK

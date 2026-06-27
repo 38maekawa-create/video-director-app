@@ -8318,3 +8318,10 @@ INFO:     127.0.0.1:59277 - "GET /api/projects/proper-yaesu-20260619-05-annual-i
 INFO:     127.0.0.1:59278 - "GET /api/projects/proper-yaesu-20260619-06-side-job-exposure HTTP/1.1" 200 OK
 INFO:     100.69.69.63:62107 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     100.69.69.63:62108 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     240a:61:3160:f7ec:31b6:cc01:7fd:20f5:0 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
+INFO:     240a:61:3160:f7ec:31b6:cc01:7fd:20f5:0 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.69.69.63:54293 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:54294 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:53880 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     100.69.69.63:53881 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     100.69.69.63:53880 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK

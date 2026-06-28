@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-28T16:33:56.935670",
+  "generated_at": "2026-06-28T17:35:05.632866",
   "summary": {
     "total_members": 47,
     "matched": 38,
     "unmatched": 9,
     "total_vimeo_videos": 400,
-    "taidan_videos": 159
+    "taidan_videos": 168
   },
   "matched": [
     {
@@ -488,6 +488,18 @@
       "guest_name": "コテさん",
       "videos": [
         {
+          "title": "コテさん_リール_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205195695/c80f2c8830",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
+          "title": "コテさん_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205195495/86f25928f9",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
           "title": "コテさん_対談_修正1_久村",
           "vimeo_url": "https://vimeo.com/1190007266/4189bac4f3",
           "status": "available",
@@ -639,6 +651,18 @@
       "guest_name": "バーボンさん",
       "videos": [
         {
+          "title": "バーボンさん_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205197547/d94b93327f",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
+          "title": "バーボンさん_リール_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205196749/42c37b9f54",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
           "title": "78_バーボンさん_FB修正1_坂野",
           "vimeo_url": "https://vimeo.com/1194238110",
           "status": "available",
@@ -655,6 +679,12 @@
     {
       "guest_name": "ハラさん",
       "videos": [
+        {
+          "title": "ハラさん_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205197613/a4469e2a99",
+          "status": "available",
+          "created": "2026-06-28"
+        },
         {
           "title": "ハラさん_対談_修正３_ささみ",
           "vimeo_url": "https://vimeo.com/1199401199/5857e77989",
@@ -708,6 +738,18 @@
       "guest_name": "えりっくさん",
       "videos": [
         {
+          "title": "えりっくさん_リール_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205198026/9732d3bbf1",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
+          "title": "えりっくさん_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205197679/60cfbbb213",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
           "title": "83_えりっくさん_対談_修正1_大胡",
           "vimeo_url": "https://vimeo.com/1197053749/20096cde4b",
           "status": "available",
@@ -724,6 +766,24 @@
     {
       "guest_name": "しゃちぽこさん",
       "videos": [
+        {
+          "title": "しゃちぽこさん_リール_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205199391/f28477f995",
+          "status": "uploading",
+          "created": "2026-06-28"
+        },
+        {
+          "title": "しゃちぽこさん2_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205199014/3e75b2e8e9",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
+          "title": "しゃちぽこさん1_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205198945/207141c92b",
+          "status": "available",
+          "created": "2026-06-28"
+        },
         {
           "title": "84_しゃちぽこさん_対談_修正2_大胡",
           "vimeo_url": "https://vimeo.com/1201014717/c564ff8f94",
@@ -899,35 +959,37 @@
       ],
       "near_candidates": [
         {
-          "title": "89_ちーさん_対談_修正2_大胡",
+          "title": "しゃちぽこさん_リール_初稿_大胡",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "uploading"
+        },
+        {
+          "title": "えりっくさん_リール_初稿_大胡",
           "matched_keys": [
             "やーまん"
           ],
           "status": "available"
         },
         {
-          "title": "89_ちーさん_対談_修正1_大胡",
+          "title": "バーボンさん_切り抜き_初稿_大胡",
           "matched_keys": [
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
-          "title": "89_ちーさん_対談_初稿_大胡",
+          "title": "バーボンさん_リール_初稿_大胡",
           "matched_keys": [
-            "やーまん"
+            "やーまん",
+            "ヤーマン"
           ],
           "status": "available"
         },
         {
-          "title": "77_くますけさん_対談_FB修正3_坂野",
-          "matched_keys": [
-            "やーまん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "77_くますけさん_対談_FB修正2_坂野",
+          "title": "コテさん_リール_初稿_大胡",
           "matched_keys": [
             "やーまん"
           ],
@@ -996,6 +1058,20 @@
       ],
       "near_candidates": [
         {
+          "title": "しゃちぽこさん_リール_初稿_大胡",
+          "matched_keys": [
+            "わんるーむまんしょん"
+          ],
+          "status": "uploading"
+        },
+        {
+          "title": "バーボンさん_リール_初稿_大胡",
+          "matched_keys": [
+            "ワンルームマンション"
+          ],
+          "status": "available"
+        },
+        {
           "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
           "matched_keys": [
             "ワンルームマンション"
@@ -1011,20 +1087,6 @@
         },
         {
           "title": "55_さるビールさん_対談_FB修正2_坂野",
-          "matched_keys": [
-            "わんるーむまんしょん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "55_さるビールさん_対談_FB修正1_坂野",
-          "matched_keys": [
-            "わんるーむまんしょん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "55_さるビールさん_対談_初稿_坂野",
           "matched_keys": [
             "わんるーむまんしょん"
           ],
@@ -1051,12 +1113,12 @@
     {
       "guest_name": "金持ちがやらないこと / 会社員が取らない方がいい選択",
       "search_keys": [
-        "金持ちがやらないこと",
-        "金持ちがやらないこと / 会社員が取らない方がいい選択",
-        "会社員が取らない方がいい選択",
-        "金持チガヤラナイコト / 会社員ガ取ラナイ方ガイイ選択",
         "金持チガヤラナイコト",
-        "会社員ガ取ラナイ方ガイイ選択"
+        "金持ちがやらないこと",
+        "金持チガヤラナイコト / 会社員ガ取ラナイ方ガイイ選択",
+        "会社員ガ取ラナイ方ガイイ選択",
+        "金持ちがやらないこと / 会社員が取らない方がいい選択",
+        "会社員が取らない方がいい選択"
       ],
       "near_candidates": [
         {
@@ -1078,9 +1140,9 @@
     {
       "guest_name": "副業がバレる理由",
       "search_keys": [
+        "副業がバレる理由",
         "副業がばれる理由",
-        "副業ガバレル理由",
-        "副業がバレる理由"
+        "副業ガバレル理由"
       ],
       "near_candidates": []
     }

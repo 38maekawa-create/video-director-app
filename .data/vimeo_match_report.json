@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-29T02:46:21.157123",
+  "generated_at": "2026-06-29T03:47:41.789880",
   "summary": {
     "total_members": 47,
     "matched": 38,
     "unmatched": 9,
     "total_vimeo_videos": 400,
-    "taidan_videos": 198
+    "taidan_videos": 219
   },
   "matched": [
     {
@@ -81,6 +81,12 @@
       "guest_name": "ろくさん",
       "videos": [
         {
+          "title": "ろくさん_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205275752/a9898c2c3b",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
           "title": "ろくさん_リール_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1205262515/32e77cb5b4",
           "status": "available",
@@ -103,6 +109,12 @@
     {
       "guest_name": "ひろきょうさん",
       "videos": [
+        {
+          "title": "ひろきょうさん_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205275124/3ae859e576",
+          "status": "available",
+          "created": "2026-06-28"
+        },
         {
           "title": "ひろきょうさん_リール_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1205251666/e0c46dd983",
@@ -132,6 +144,18 @@
     {
       "guest_name": "松本さん",
       "videos": [
+        {
+          "title": "松本さん_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205276045/bda1a09ada",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
+          "title": "松本さん_リール_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205273303/acfbfd7cf8",
+          "status": "available",
+          "created": "2026-06-28"
+        },
         {
           "title": "66_松本さん_FB修正1_坂野",
           "vimeo_url": "https://vimeo.com/1182126445/b5acbfc730",
@@ -236,6 +260,12 @@
     {
       "guest_name": "りょうすけさん",
       "videos": [
+        {
+          "title": "りょうすけさん　切り抜き修正",
+          "vimeo_url": "https://vimeo.com/1205275680/1a68b9c691",
+          "status": "available",
+          "created": "2026-06-28"
+        },
         {
           "title": "りょうすけ_リール_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1205260486/724ff8b259",
@@ -365,6 +395,12 @@
       "guest_name": "ゆきもるさん",
       "videos": [
         {
+          "title": "ゆきもるさん_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205275427/a873a71b9c",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
           "title": "ゆきもるさん_リール_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1205257357/464806aaf4",
           "status": "available",
@@ -396,7 +432,7 @@
         {
           "title": "スリマンさん_リール_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1205266685/1e42ccdff0",
-          "status": "transcode_starting",
+          "status": "available",
           "created": "2026-06-28"
         },
         {
@@ -416,6 +452,12 @@
     {
       "guest_name": "あさかつさん",
       "videos": [
+        {
+          "title": "あさかつさん_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205274563/2ede467d8c",
+          "status": "available",
+          "created": "2026-06-28"
+        },
         {
           "title": "あさかつさん_リール_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1205237520/1bd7f324de",
@@ -475,6 +517,12 @@
       "guest_name": "アンディさん",
       "videos": [
         {
+          "title": "アンディさん_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205275788/f919115973",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
           "title": "アンディさん_リール_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1205263685/cddf7fe808",
           "status": "available",
@@ -514,6 +562,12 @@
     {
       "guest_name": "けーさん",
       "videos": [
+        {
+          "title": "けーさん_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205274705/3576beec9e",
+          "status": "available",
+          "created": "2026-06-28"
+        },
         {
           "title": "けーさん_リール_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1205238994/d502d970b5",
@@ -573,6 +627,12 @@
       "guest_name": "ゆりかさん",
       "videos": [
         {
+          "title": "ゆりかさん_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205275550/aeb3c8b1f4",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
           "title": "ゆりかさん_リール_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1205258780/8d0170e045",
           "status": "available",
@@ -618,6 +678,12 @@
     {
       "guest_name": "メンイチさん",
       "videos": [
+        {
+          "title": "メンイチさん_リール_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205271372/311ca2092a",
+          "status": "available",
+          "created": "2026-06-28"
+        },
         {
           "title": "69_メンイチさん1.1倍_対談_修正7_大胡",
           "vimeo_url": "https://vimeo.com/1177863128/8acb0b31bb",
@@ -672,6 +738,12 @@
       "guest_name": "さといも・トーマスさん",
       "videos": [
         {
+          "title": "さといもさん_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205274950/a30f53a240",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
           "title": "さといもさん_リール_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1205242454/d0c1f5d771",
           "status": "available",
@@ -713,9 +785,15 @@
       "guest_name": "ハオさん",
       "videos": [
         {
+          "title": "ハオさん_切り抜き_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205275874/8aa236f7db",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
           "title": "ハオさん_リール_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1205269442/422996a31f",
-          "status": "uploading",
+          "status": "available",
           "created": "2026-06-28"
         },
         {
@@ -1122,42 +1200,41 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
+          "title": "まなおさん_切り抜き_初稿_大胡",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "けーさん_切り抜き_初稿_大胡",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "松本さん_リール_初稿_大胡",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "メンイチさん_リール_初稿_大胡",
+          "matched_keys": [
+            "ヤーマン",
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
           "title": "ハオさん_リール_初稿_大胡",
-          "matched_keys": [
-            "やーまん"
-          ],
-          "status": "uploading"
-        },
-        {
-          "title": "スリマンさん_リール_初稿_大胡",
-          "matched_keys": [
-            "やーまん",
-            "ヤーマン"
-          ],
-          "status": "transcode_starting"
-        },
-        {
-          "title": "サクラさん_リール_初稿_大胡",
-          "matched_keys": [
-            "やーまん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "アンディさん_リール_初稿_大胡",
-          "matched_keys": [
-            "やーまん",
-            "ヤーマン"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "ろくさん_リール_初稿_大胡",
           "matched_keys": [
             "やーまん"
           ],
@@ -1168,11 +1245,18 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "kos",
         "こすと",
-        "コスト"
+        "コスト",
+        "kos"
       ],
       "near_candidates": [
+        {
+          "title": "rokiさん_切り抜き_初稿_大胡",
+          "matched_keys": [
+            "kos"
+          ],
+          "status": "available"
+        },
         {
           "title": "rokiさん_リール_初稿_大胡",
           "matched_keys": [
@@ -1200,13 +1284,6 @@
             "コスト"
           ],
           "status": "available"
-        },
-        {
-          "title": "70_さといも・トーマスさん1.1倍_対談_修正_大胡",
-          "matched_keys": [
-            "コスト"
-          ],
-          "status": "available"
         }
       ]
     },
@@ -1221,16 +1298,23 @@
     {
       "guest_name": "ワンルームマンション",
       "search_keys": [
-        "ワンルームマンション",
-        "わんるーむまんしょん"
+        "わんるーむまんしょん",
+        "ワンルームマンション"
       ],
       "near_candidates": [
+        {
+          "title": "メンイチさん_リール_初稿_大胡",
+          "matched_keys": [
+            "ワンルームマンション"
+          ],
+          "status": "available"
+        },
         {
           "title": "スリマンさん_リール_初稿_大胡",
           "matched_keys": [
             "ワンルームマンション"
           ],
-          "status": "transcode_starting"
+          "status": "available"
         },
         {
           "title": "アンディさん_リール_初稿_大胡",
@@ -1248,13 +1332,6 @@
         },
         {
           "title": "まきさん_リール_初稿_大胡",
-          "matched_keys": [
-            "わんるーむまんしょん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "ひろきょうさん_リール_初稿_大胡",
           "matched_keys": [
             "わんるーむまんしょん"
           ],
@@ -1281,12 +1358,12 @@
     {
       "guest_name": "金持ちがやらないこと / 会社員が取らない方がいい選択",
       "search_keys": [
-        "会社員ガ取ラナイ方ガイイ選択",
-        "金持チガヤラナイコト / 会社員ガ取ラナイ方ガイイ選択",
-        "金持チガヤラナイコト",
-        "金持ちがやらないこと",
         "会社員が取らない方がいい選択",
-        "金持ちがやらないこと / 会社員が取らない方がいい選択"
+        "金持ちがやらないこと",
+        "金持チガヤラナイコト",
+        "金持ちがやらないこと / 会社員が取らない方がいい選択",
+        "会社員ガ取ラナイ方ガイイ選択",
+        "金持チガヤラナイコト / 会社員ガ取ラナイ方ガイイ選択"
       ],
       "near_candidates": [
         {

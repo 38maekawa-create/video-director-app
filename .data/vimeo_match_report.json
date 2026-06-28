@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-28T22:41:07.851309",
+  "generated_at": "2026-06-28T23:42:30.213326",
   "summary": {
     "total_members": 47,
     "matched": 38,
     "unmatched": 9,
     "total_vimeo_videos": 400,
-    "taidan_videos": 179
+    "taidan_videos": 184
   },
   "matched": [
     {
@@ -60,7 +60,7 @@
         {
           "title": "payさん_リール_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1205232350/cfe54d2b79",
-          "status": "transcoding",
+          "status": "available",
           "created": "2026-06-28"
         },
         {
@@ -172,6 +172,12 @@
     {
       "guest_name": "こもさん",
       "videos": [
+        {
+          "title": "こもさん_リール_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205240718/44abca016e",
+          "status": "available",
+          "created": "2026-06-28"
+        },
         {
           "title": "こもさん_対談_完成_大胡",
           "vimeo_url": "https://vimeo.com/1172578539/f119e822ad",
@@ -357,6 +363,12 @@
       "guest_name": "あさかつさん",
       "videos": [
         {
+          "title": "あさかつさん_リール_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205237520/1bd7f324de",
+          "status": "available",
+          "created": "2026-06-28"
+        },
+        {
           "title": "74_あさかつさん_修正_大胡",
           "vimeo_url": "https://vimeo.com/1187544325/a47cee816c",
           "status": "available",
@@ -442,6 +454,12 @@
     {
       "guest_name": "けーさん",
       "videos": [
+        {
+          "title": "けーさん_リール_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205238994/d502d970b5",
+          "status": "available",
+          "created": "2026-06-28"
+        },
         {
           "title": "67_けーさん_対談_修正_大胡",
           "vimeo_url": "https://vimeo.com/1180672397/41585f2ed5",
@@ -581,6 +599,12 @@
     {
       "guest_name": "さといも・トーマスさん",
       "videos": [
+        {
+          "title": "さといもさん_リール_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205242454/d0c1f5d771",
+          "status": "uploading",
+          "created": "2026-06-28"
+        },
         {
           "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
           "vimeo_url": "https://vimeo.com/1180117094/50dc889045",
@@ -1025,35 +1049,35 @@
       ],
       "near_candidates": [
         {
-          "title": "rokiさん_リール_初稿_大胡",
+          "title": "さといもさん_リール_初稿_大胡",
           "matched_keys": [
             "やーまん"
           ],
           "status": "uploading"
         },
         {
-          "title": "payさん_リール_初稿_大胡",
-          "matched_keys": [
-            "やーまん"
-          ],
-          "status": "transcoding"
-        },
-        {
-          "title": "lzuさん_リール_初稿_大胡",
+          "title": "こもさん_リール_初稿_大胡",
           "matched_keys": [
             "やーまん"
           ],
           "status": "available"
         },
         {
-          "title": "プロパーさん2_切り抜き_初稿_大胡",
+          "title": "けーさん_リール_初稿_大胡",
           "matched_keys": [
             "やーまん"
           ],
           "status": "available"
         },
         {
-          "title": "プロパーさん1_切り抜き_初稿_大胡",
+          "title": "あさかつさん_リール_初稿_大胡",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "ryoさん_リール_初稿_大胡",
           "matched_keys": [
             "やーまん"
           ],
@@ -1074,7 +1098,7 @@
           "matched_keys": [
             "kos"
           ],
-          "status": "uploading"
+          "status": "available"
         },
         {
           "title": "70_（反響）さといも・トーマスさん1.1倍_対談_修正2_大胡",
@@ -1109,16 +1133,16 @@
     {
       "guest_name": "ふみさん",
       "search_keys": [
-        "フミ",
-        "ふみ"
+        "ふみ",
+        "フミ"
       ],
       "near_candidates": []
     },
     {
       "guest_name": "ワンルームマンション",
       "search_keys": [
-        "ワンルームマンション",
-        "わんるーむまんしょん"
+        "わんるーむまんしょん",
+        "ワンルームマンション"
       ],
       "near_candidates": [
         {
@@ -1161,8 +1185,8 @@
     {
       "guest_name": "黄金の羽",
       "search_keys": [
-        "黄金の羽",
-        "黄金ノ羽"
+        "黄金ノ羽",
+        "黄金の羽"
       ],
       "near_candidates": [
         {
@@ -1177,12 +1201,12 @@
     {
       "guest_name": "金持ちがやらないこと / 会社員が取らない方がいい選択",
       "search_keys": [
-        "金持ちがやらないこと",
-        "金持チガヤラナイコト",
+        "会社員が取らない方がいい選択",
         "金持チガヤラナイコト / 会社員ガ取ラナイ方ガイイ選択",
         "金持ちがやらないこと / 会社員が取らない方がいい選択",
+        "金持ちがやらないこと",
         "会社員ガ取ラナイ方ガイイ選択",
-        "会社員が取らない方がいい選択"
+        "金持チガヤラナイコト"
       ],
       "near_candidates": [
         {

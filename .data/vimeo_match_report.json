@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-28T23:42:30.213326",
+  "generated_at": "2026-06-29T00:43:37.720288",
   "summary": {
     "total_members": 47,
     "matched": 38,
     "unmatched": 9,
     "total_vimeo_videos": 400,
-    "taidan_videos": 184
+    "taidan_videos": 188
   },
   "matched": [
     {
@@ -97,6 +97,12 @@
     {
       "guest_name": "ひろきょうさん",
       "videos": [
+        {
+          "title": "ひろきょうさん_リール_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205251666/e0c46dd983",
+          "status": "uploading",
+          "created": "2026-06-28"
+        },
         {
           "title": "68_ひろきょうさん_対談_修正2_大胡",
           "vimeo_url": "https://vimeo.com/1180702718/50b49886b4",
@@ -208,6 +214,12 @@
       "guest_name": "てぃーひろさん",
       "videos": [
         {
+          "title": "てぃーひろさん_リール_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205249150/f233f9dc7d",
+          "status": "transcoding",
+          "created": "2026-06-28"
+        },
+        {
           "title": "てぃーひろさん_対談_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1147585650/4373fc1ca7",
           "status": "available",
@@ -247,6 +259,12 @@
     {
       "guest_name": "さるビールさん",
       "videos": [
+        {
+          "title": "さるビールさん_リール_初稿_大胡",
+          "vimeo_url": "https://vimeo.com/1205245495/e5804b62c0",
+          "status": "available",
+          "created": "2026-06-28"
+        },
         {
           "title": "55_さるビールさん_対談_FB修正3_坂野",
           "vimeo_url": "https://vimeo.com/1174415195",
@@ -299,6 +317,12 @@
     {
       "guest_name": "しおさん",
       "videos": [
+        {
+          "title": "しおさん_リール_初稿_大胡 (1)",
+          "vimeo_url": "https://vimeo.com/1205247006/f24e85eb5b",
+          "status": "available",
+          "created": "2026-06-28"
+        },
         {
           "title": "しおさんボイチェン_対談_修正1_大胡",
           "vimeo_url": "https://vimeo.com/1173887724/32e2b9a8c6",
@@ -602,7 +626,7 @@
         {
           "title": "さといもさん_リール_初稿_大胡",
           "vimeo_url": "https://vimeo.com/1205242454/d0c1f5d771",
-          "status": "uploading",
+          "status": "available",
           "created": "2026-06-28"
         },
         {
@@ -1044,40 +1068,40 @@
     {
       "guest_name": "やーまんさん",
       "search_keys": [
-        "やーまん",
-        "ヤーマン"
+        "ヤーマン",
+        "やーまん"
       ],
       "near_candidates": [
         {
-          "title": "さといもさん_リール_初稿_大胡",
+          "title": "ひろきょうさん_リール_初稿_大胡",
           "matched_keys": [
             "やーまん"
           ],
           "status": "uploading"
         },
         {
-          "title": "こもさん_リール_初稿_大胡",
+          "title": "てぃーひろさん_リール_初稿_大胡",
+          "matched_keys": [
+            "やーまん"
+          ],
+          "status": "transcoding"
+        },
+        {
+          "title": "しおさん_リール_初稿_大胡 (1)",
           "matched_keys": [
             "やーまん"
           ],
           "status": "available"
         },
         {
-          "title": "けーさん_リール_初稿_大胡",
+          "title": "さるビールさん_リール_初稿_大胡",
           "matched_keys": [
             "やーまん"
           ],
           "status": "available"
         },
         {
-          "title": "あさかつさん_リール_初稿_大胡",
-          "matched_keys": [
-            "やーまん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "ryoさん_リール_初稿_大胡",
+          "title": "さといもさん_リール_初稿_大胡",
           "matched_keys": [
             "やーまん"
           ],
@@ -1088,8 +1112,8 @@
     {
       "guest_name": "kosさん",
       "search_keys": [
-        "kos",
         "コスト",
+        "kos",
         "こすと"
       ],
       "near_candidates": [
@@ -1141,10 +1165,31 @@
     {
       "guest_name": "ワンルームマンション",
       "search_keys": [
-        "わんるーむまんしょん",
-        "ワンルームマンション"
+        "ワンルームマンション",
+        "わんるーむまんしょん"
       ],
       "near_candidates": [
+        {
+          "title": "ひろきょうさん_リール_初稿_大胡",
+          "matched_keys": [
+            "わんるーむまんしょん"
+          ],
+          "status": "uploading"
+        },
+        {
+          "title": "しおさん_リール_初稿_大胡 (1)",
+          "matched_keys": [
+            "わんるーむまんしょん"
+          ],
+          "status": "available"
+        },
+        {
+          "title": "さるビールさん_リール_初稿_大胡",
+          "matched_keys": [
+            "わんるーむまんしょん"
+          ],
+          "status": "available"
+        },
         {
           "title": "しゃちぽこさん_リール_初稿_大胡",
           "matched_keys": [
@@ -1156,27 +1201,6 @@
           "title": "バーボンさん_リール_初稿_大胡",
           "matched_keys": [
             "ワンルームマンション"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "【レビュー用】【かなかなさん】【ロング動画トライアル初稿】提出動画",
-          "matched_keys": [
-            "ワンルームマンション"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "55_さるビールさん_対談_FB修正3_坂野",
-          "matched_keys": [
-            "わんるーむまんしょん"
-          ],
-          "status": "available"
-        },
-        {
-          "title": "55_さるビールさん_対談_FB修正2_坂野",
-          "matched_keys": [
-            "わんるーむまんしょん"
           ],
           "status": "available"
         }
@@ -1202,11 +1226,11 @@
       "guest_name": "金持ちがやらないこと / 会社員が取らない方がいい選択",
       "search_keys": [
         "会社員が取らない方がいい選択",
+        "会社員ガ取ラナイ方ガイイ選択",
         "金持チガヤラナイコト / 会社員ガ取ラナイ方ガイイ選択",
         "金持ちがやらないこと / 会社員が取らない方がいい選択",
-        "金持ちがやらないこと",
-        "会社員ガ取ラナイ方ガイイ選択",
-        "金持チガヤラナイコト"
+        "金持チガヤラナイコト",
+        "金持ちがやらないこと"
       ],
       "near_candidates": [
         {
@@ -1228,9 +1252,9 @@
     {
       "guest_name": "副業がバレる理由",
       "search_keys": [
-        "副業ガバレル理由",
         "副業がバレる理由",
-        "副業がばれる理由"
+        "副業がばれる理由",
+        "副業ガバレル理由"
       ],
       "near_candidates": []
     }

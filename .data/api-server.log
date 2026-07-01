@@ -8397,3 +8397,4 @@ INFO:     100.69.69.63:59803 - "GET /healthz HTTP/1.1" 200 OK
 INFO:     100.69.69.63:59804 - "GET /api/projects HTTP/1.1" 200 OK
 INFO:     100.69.69.63:59803 - "GET /api/v1/feedbacks/pending HTTP/1.1" 200 OK
 INFO:     127.0.0.1:56477 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49607 - "GET /api/health HTTP/1.1" 200 OK

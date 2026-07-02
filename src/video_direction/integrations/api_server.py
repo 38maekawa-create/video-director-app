@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import logging
+import html
 import os
 import re
 import sqlite3
@@ -172,6 +173,130 @@ PROPER_YAESU_KNOWLEDGE_PAGE_FILENAMES = {
     "05_weak_yen_export_side_business": "20260515_プロパー八重洲YouTube素材_06_円安時代の輸出副業.html",
     "06_nisa_asset_roadmap": "20260515_プロパー八重洲YouTube素材_10_NISAと資産ロードマップ.html",
 }
+
+PROPER_YAESU_PLACEHOLDER_TERMS = [
+    "品質確認中",
+    "整形本文の品質確認",
+    "一時的に非表示",
+    "v3 版で差し替えます",
+    "v3版で差し替えます",
+    "素材管理用URLは維持",
+]
+
+PROPER_YAESU_REQUIRED_PAGE_SECTIONS = [
+    "3行要約",
+    "編集で拾いやすい発話",
+    "整形済み文字起こし全文",
+]
+
+
+def _strip_html_tags(raw: str) -> str:
+    no_script = re.sub(r"<(script|style)\b.*?</\1>", " ", raw, flags=re.I | re.S)
+    text = re.sub(r"<[^>]+>", " ", no_script)
+    return re.sub(r"\s+", " ", html.unescape(text)).strip()
+
+
+def _html_headings(raw: str, level: int) -> list[str]:
+    found = re.findall(rf"<h{level}\b[^>]*>(.*?)</h{level}>", raw, flags=re.I | re.S)
+    return [_strip_html_tags(item) for item in found]
+
+
+def _full_transcript_html_section(raw: str) -> str:
+    match = re.search(
+        r"<h2\b[^>]*>.*?整形済み文字起こし全文.*?</h2>(.*?)(?=<h2\b|</main>|</body>)",
+        raw,
+        flags=re.I | re.S,
+    )
+    return match.group(1) if match else ""
+
+
+def _expected_paragraphs_from_package(package_id: str) -> Optional[int]:
+    detail = globals().get("LONGFORM_PACKAGE_DETAILS", {}).get(package_id, {})
+    formatted = str(detail.get("formatted") or "")
+    match = re.search(r"(\d+)\s*paragraphs", formatted)
+    return int(match.group(1)) if match else None
+
+
+def _knowledge_page_quality_from_filename(filename: object, package_id: str = "") -> Optional[dict]:
+    """AI10の閲覧ページ導線を、URL存在ではなく本文品質まで含めて表示する。"""
+    if not filename:
+        return None
+    name = Path(str(filename)).name
+    if not name.endswith(".html"):
+        name = f"{name}.html"
+    if package_id not in PROPER_YAESU_KNOWLEDGE_PAGE_FILENAMES:
+        return None
+
+    expected = _expected_paragraphs_from_package(package_id)
+    path = KNOWLEDGE_PAGES_DIR / name
+    if not path.exists():
+        return {
+            "status": "fail",
+            "severity": "blocker",
+            "label": "閲覧ページ未検出",
+            "filename": name,
+            "expected_paragraphs": expected,
+            "full_transcript_paragraphs": 0,
+            "full_transcript_chars": 0,
+            "coverage": None,
+            "issues": ["missing_local_html"],
+        }
+
+    raw = path.read_text(encoding="utf-8", errors="ignore")
+    text = _strip_html_tags(raw)
+    h2 = _html_headings(raw, 2)
+    section = _full_transcript_html_section(raw)
+    full_paragraphs = len(re.findall(r"<p\b", section, flags=re.I))
+    full_chars = len(_strip_html_tags(section))
+    placeholder_hits = [term for term in PROPER_YAESU_PLACEHOLDER_TERMS if term in raw or term in text]
+    missing_sections = [
+        name for name in PROPER_YAESU_REQUIRED_PAGE_SECTIONS if not any(name in heading for heading in h2)
+    ]
+    coverage = round(full_paragraphs / expected, 3) if expected else None
+
+    issues = []
+    if placeholder_hits:
+        issues.append("placeholder_page")
+    if missing_sections:
+        issues.append("missing_required_sections")
+    if full_paragraphs == 0:
+        issues.append("missing_full_transcript_body")
+    if expected and coverage is not None and coverage < 0.6:
+        issues.append("expected_paragraph_coverage_low")
+    elif expected and coverage is not None and coverage < 0.8:
+        issues.append("expected_paragraph_coverage_review")
+    if path.stat().st_size < 10_000:
+        issues.append("html_too_small_for_fulltext")
+
+    has_blocker = any(
+        item in issues
+        for item in (
+            "placeholder_page",
+            "missing_required_sections",
+            "missing_full_transcript_body",
+            "expected_paragraph_coverage_low",
+            "html_too_small_for_fulltext",
+        )
+    )
+    status = "fail" if has_blocker else ("review" if issues else "pass_candidate")
+    label = {
+        "pass_candidate": "閲覧ページ品質OK候補",
+        "review": "閲覧ページ要確認",
+        "fail": "閲覧ページ品質HOLD",
+    }[status]
+    return {
+        "status": status,
+        "severity": "blocker" if status == "fail" else ("warn" if status == "review" else "ok"),
+        "label": label,
+        "filename": name,
+        "expected_paragraphs": expected,
+        "full_transcript_paragraphs": full_paragraphs,
+        "full_transcript_chars": full_chars,
+        "coverage": coverage,
+        "issues": issues,
+        "placeholder_hits": placeholder_hits,
+        "missing_required_sections": missing_sections,
+    }
 
 
 def _normalize_name(name: str) -> str:
@@ -397,6 +522,7 @@ def _enrich_project_with_knowledge_url(d: dict) -> dict:
     """プロジェクト辞書にknowledge_page_urlフィールドを追加する"""
     guest_name = d.get("guest_name", "")
     shoot_date = d.get("shoot_date", "")
+    knowledge_obj = _json_object(d.get("knowledge"))
     d["knowledge_page_url"] = find_knowledge_page_url(
         guest_name,
         shoot_date,
@@ -407,6 +533,12 @@ def _enrich_project_with_knowledge_url(d: dict) -> dict:
         route_profile=d.get("route_profile"),
         category=d.get("category"),
     )
+    package_id = str(knowledge_obj.get("package_id") or "")
+    if package_id in PROPER_YAESU_KNOWLEDGE_PAGE_FILENAMES:
+        d["knowledge_page_quality"] = _knowledge_page_quality_from_filename(
+            PROPER_YAESU_KNOWLEDGE_PAGE_FILENAMES.get(package_id),
+            package_id,
+        )
     return d
 
 

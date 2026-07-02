@@ -82,6 +82,30 @@ enum ProjectStatus: String, CaseIterable, Codable {
     }
 }
 
+struct KnowledgePageQuality: Codable, Hashable {
+    let status: String?
+    let severity: String?
+    let label: String?
+    let expectedParagraphs: Int?
+    let fullTranscriptParagraphs: Int?
+    let fullTranscriptChars: Int?
+    let coverage: Double?
+    let issues: [String]?
+
+    var isHold: Bool {
+        status == "fail" || severity == "blocker"
+    }
+
+    var displayLabel: String {
+        label ?? "閲覧ページ品質未確認"
+    }
+
+    var coverageLabel: String {
+        guard let coverage else { return "-" }
+        return "\(Int((coverage * 100).rounded()))%"
+    }
+}
+
 struct VideoProject: Identifiable, Codable, Hashable {
     static func == (lhs: VideoProject, rhs: VideoProject) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
@@ -103,6 +127,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
     let knowledge: String?
     let category: String?
     let knowledgePageUrl: String?
+    let knowledgePageQuality: KnowledgePageQuality?
     let routeProfile: String?
     let routeDisplayName: String?
     let contentFamily: String?
@@ -164,6 +189,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         knowledge: String? = nil,
         category: String? = nil,
         knowledgePageUrl: String? = nil,
+        knowledgePageQuality: KnowledgePageQuality? = nil,
         routeProfile: String? = nil,
         routeDisplayName: String? = nil,
         contentFamily: String? = nil,
@@ -188,6 +214,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         self.knowledge = knowledge
         self.category = category
         self.knowledgePageUrl = knowledgePageUrl
+        self.knowledgePageQuality = knowledgePageQuality
         self.routeProfile = routeProfile
         self.routeDisplayName = routeDisplayName
         self.contentFamily = contentFamily
@@ -214,6 +241,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         case knowledge
         case category
         case knowledgePageUrl
+        case knowledgePageQuality
         case routeProfile
         case routeDisplayName
         case contentFamily
@@ -245,6 +273,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         try container.encodeIfPresent(knowledge, forKey: .knowledge)
         try container.encodeIfPresent(category, forKey: .category)
         try container.encodeIfPresent(knowledgePageUrl, forKey: .knowledgePageUrl)
+        try container.encodeIfPresent(knowledgePageQuality, forKey: .knowledgePageQuality)
         try container.encodeIfPresent(routeProfile, forKey: .routeProfile)
         try container.encodeIfPresent(routeDisplayName, forKey: .routeDisplayName)
         try container.encodeIfPresent(contentFamily, forKey: .contentFamily)
@@ -286,6 +315,7 @@ struct VideoProject: Identifiable, Codable, Hashable {
         knowledge = VideoProject.decodeKnowledgeText(from: container)
         category = try container.decodeIfPresent(String.self, forKey: .category)
         knowledgePageUrl = try container.decodeIfPresent(String.self, forKey: .knowledgePageUrl)
+        knowledgePageQuality = try container.decodeIfPresent(KnowledgePageQuality.self, forKey: .knowledgePageQuality)
         routeProfile = try container.decodeIfPresent(String.self, forKey: .routeProfile)
         routeDisplayName = try container.decodeIfPresent(String.self, forKey: .routeDisplayName)
         contentFamily = try container.decodeIfPresent(String.self, forKey: .contentFamily)

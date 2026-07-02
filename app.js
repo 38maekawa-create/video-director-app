@@ -75,6 +75,8 @@
       editedVideo: p.edited_video || null,
       feedbackSummary: p.feedback_summary || null,
       knowledge: p.knowledge || null,
+      knowledgePageUrl: p.knowledge_page_url || p.knowledge?.knowledge_page_url || null,
+      knowledgePageQuality: p.knowledge_page_quality || p.knowledge?.knowledge_page_quality || null,
       vimeoReview: null,
       relay: null,
     };
@@ -1140,9 +1142,56 @@
     return timestampToSeconds(duration);
   }
 
+function safeText(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+}
+
 function getProjectKnowledgeFile(project) {
   if (typeof findKnowledgePage !== 'function') return null;
   return findKnowledgePage(project.guestName);
+}
+
+function getProjectKnowledgeUrl(project) {
+  return project.knowledgePageUrl || project.knowledge?.knowledge_page_url || null;
+}
+
+function getProjectKnowledgeTarget(project) {
+  const knowledgeFile = getProjectKnowledgeFile(project);
+  if (knowledgeFile) {
+    const encodedFilename = encodeURIComponent(knowledgeFile);
+    return {
+      src: `knowledge-pages/${encodedFilename}`,
+      href: `knowledge-pages/${encodedFilename}`,
+      openLabel: '閲覧ページを別タブで開く ↗',
+    };
+  }
+  const url = getProjectKnowledgeUrl(project);
+  if (!url) return null;
+  return {
+    src: url,
+    href: url,
+    openLabel: 'GitHub Pagesを別タブで開く ↗',
+  };
+}
+
+function renderKnowledgeQualityNotice(project) {
+  const quality = project.knowledgePageQuality || project.knowledge?.knowledge_page_quality;
+  if (!quality) return '';
+  const coverage = typeof quality.coverage === 'number' ? `${Math.round(quality.coverage * 1000) / 10}%` : '-';
+  const issues = Array.isArray(quality.issues) && quality.issues.length ? quality.issues.join(' / ') : 'none';
+  return `
+    <div class="summary-callout knowledge-quality-notice" data-status="${safeText(quality.status)}">
+      <strong>${safeText(quality.label || '閲覧ページ品質未確認')}</strong><br>
+      全文段落 ${safeText(quality.full_transcript_paragraphs ?? '-')} / 期待 ${safeText(quality.expected_paragraphs ?? '-')}（coverage ${safeText(coverage)}）<br>
+      issues: ${safeText(issues)}
+    </div>
+  `;
 }
 
 function wireReportTabJumps(container) {
@@ -1335,8 +1384,7 @@ function renderOverviewSection() {
 function renderSourceSection() {
   const p = currentProject;
   const knowledgeHighlights = p.knowledge?.highlights || [];
-  const knowledgeFile = getProjectKnowledgeFile(p);
-  const encodedFilename = knowledgeFile ? encodeURIComponent(knowledgeFile) : null;
+  const knowledgeTarget = getProjectKnowledgeTarget(p);
   const container = document.getElementById('report-sections');
   container.innerHTML = `
     <div class="report-stack">
@@ -1352,6 +1400,7 @@ function renderSourceSection() {
             ${knowledgeHighlights.map(item => `<span class="highlight-chip">${item}</span>`).join('')}
           </div>
         ` : ''}
+        ${renderKnowledgeQualityNotice(p)}
         ${p.knowledge?.transcriptPreview ? `<div class="transcript-preview">${p.knowledge.transcriptPreview}</div>` : ''}
         <div class="transcript-section">
           <div class="transcript-section-title">全文スクリプト</div>
@@ -1362,7 +1411,7 @@ function renderSourceSection() {
           <button class="detail-link detail-link-button" data-report-tab="knowledge">ナレッジタブを開く</button>
         </div>
       </div>
-      ${knowledgeFile ? `
+      ${knowledgeTarget ? `
         <div class="knowledge-viewer embedded-source-knowledge">
           <div class="knowledge-header">
             <span class="knowledge-header-icon">KN</span>
@@ -1370,14 +1419,14 @@ function renderSourceSection() {
           </div>
           <div class="knowledge-iframe-wrap">
             <iframe
-              src="knowledge-pages/${encodedFilename}"
+              src="${safeText(knowledgeTarget.src)}"
               class="knowledge-iframe"
               sandbox="allow-same-origin"
               title="素材ナレッジ閲覧ページ"
             ></iframe>
           </div>
-          <a href="knowledge-pages/${encodedFilename}" target="_blank" class="knowledge-open-btn">
-            閲覧ページを別タブで開く ↗
+          <a href="${safeText(knowledgeTarget.href)}" target="_blank" class="knowledge-open-btn">
+            ${safeText(knowledgeTarget.openLabel)}
           </a>
         </div>
       ` : `
@@ -1732,20 +1781,20 @@ function renderEditedSection() {
 
   function renderKnowledgeSection() {
     const p = currentProject;
-    const knowledgePage = getProjectKnowledgeFile(p);
+    const knowledgeTarget = getProjectKnowledgeTarget(p);
     const container = document.getElementById('report-sections');
 
-    if (!knowledgePage) {
+    if (!knowledgeTarget) {
       renderKnowledgePage(null);
       return;
     }
 
-    const encodedFilename = encodeURIComponent(knowledgePage);
     container.innerHTML = `
       <div class="report-stack">
         <div class="info-card">
           <div class="info-card-title">素材ナレッジ要約</div>
           <div class="summary-callout">${p.knowledge?.summary || '要約未設定'}</div>
+          ${renderKnowledgeQualityNotice(p)}
           <div class="link-list compact">
             <div class="link-row"><span>全文文字起こし</span><span>${p.knowledge?.transcriptAvailable ? 'あり' : 'なし'}</span></div>
           </div>
@@ -1757,14 +1806,14 @@ function renderEditedSection() {
           </div>
           <div class="knowledge-iframe-wrap">
             <iframe
-              src="knowledge-pages/${encodedFilename}"
+              src="${safeText(knowledgeTarget.src)}"
               class="knowledge-iframe"
               sandbox="allow-same-origin"
               title="動画ナレッジページ"
             ></iframe>
           </div>
-          <a href="knowledge-pages/${encodedFilename}" target="_blank" class="knowledge-open-btn">
-            全文を別タブで開く ↗
+          <a href="${safeText(knowledgeTarget.href)}" target="_blank" class="knowledge-open-btn">
+            ${safeText(knowledgeTarget.openLabel)}
           </a>
         </div>
       </div>

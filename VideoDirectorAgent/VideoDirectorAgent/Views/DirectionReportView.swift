@@ -746,6 +746,10 @@ struct DirectionReportView: View {
 
     private var knowledgeDetailSection: some View {
         VStack(spacing: 12) {
+            if let quality = project.knowledgePageQuality {
+                knowledgeQualityCard(quality)
+            }
+
             if let knowledge = project.knowledge, !knowledge.isEmpty {
                 overviewCard(
                     title: "ナレッジハイライト",
@@ -763,6 +767,41 @@ struct DirectionReportView: View {
                 )
             }
         }
+    }
+
+    private func knowledgeQualityCard(_ quality: KnowledgePageQuality) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: quality.isHold ? "exclamationmark.triangle.fill" : "checkmark.seal.fill")
+                    .foregroundStyle(quality.isHold ? AppTheme.accent : AppTheme.statusComplete)
+                Text(quality.displayLabel)
+                    .font(AppTheme.sectionFont(18))
+                    .foregroundStyle(.white)
+                Spacer()
+            }
+
+            HStack(spacing: 12) {
+                Text("全文段落 \(quality.fullTranscriptParagraphs ?? 0)")
+                Text("期待 \(quality.expectedParagraphs ?? 0)")
+                Text("coverage \(quality.coverageLabel)")
+            }
+            .font(.caption)
+            .foregroundStyle(AppTheme.textSecondary)
+
+            if let issues = quality.issues, !issues.isEmpty {
+                Text(issues.joined(separator: " / "))
+                    .font(.caption2)
+                    .foregroundStyle(AppTheme.textMuted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(16)
+        .background(quality.isHold ? AppTheme.accent.opacity(0.16) : AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder((quality.isHold ? AppTheme.accent : AppTheme.statusComplete).opacity(0.5), lineWidth: 1)
+        )
     }
 
     private func overviewCard(title: String, icon: String, items: [String]) -> some View {

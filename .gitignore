@@ -7,6 +7,16 @@ __pycache__/
 output/
 data/
 
+# Runtime/generated state for the video director agent.
+# Keep operational data local; do not let auto-sync push logs or SQLite transient files.
+.data/*.log
+.data/*_stdout.log
+.data/*_stderr.log
+.data/*.db-shm
+.data/*.db-wal
+.data/audit/
+.data/vimeo_match_report.json
+
 # Xcode
 DerivedData/
 build/

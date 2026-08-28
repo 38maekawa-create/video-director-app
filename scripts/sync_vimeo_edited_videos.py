@@ -106,7 +106,13 @@ def fetch_vimeo_videos(token: str, max_pages: int = 4) -> list[dict]:
         )
         if result.returncode != 0:
             break
-        data = json.loads(result.stdout)
+        # 2026-08-29: APIが空ボディ/HTMLを返すとJSONDecodeErrorでプロセス全体が落ち、
+        # 1時間周期×数回連続で層C沈黙になる間欠故障(累計334回)の修理。壊れた頁はそこで打ち切り(取れた分は返す)
+        try:
+            data = json.loads(result.stdout)
+        except (ValueError, json.JSONDecodeError):
+            print(f"Vimeo API応答がJSONでない(page={page})。この頁で打ち切り(取得済み{len(all_videos)}件は返す)")
+            break
         vids = data.get("data", [])
         if not vids:
             break

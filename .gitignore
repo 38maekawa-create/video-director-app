@@ -17,6 +17,11 @@ data/
 .data/audit/
 .data/vimeo_match_report.json
 
+# 手元のデータベースは公開しない(アプリは手元のファイルをパスで直接開く。追跡だけ外す)
+.data/**/*.db
+.data/**/*.db.*
+.data/backups/
+
 # Xcode
 DerivedData/
 build/
